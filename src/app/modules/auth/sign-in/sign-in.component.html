@@ -14,14 +14,14 @@
             <div
                 class="mt-8 text-4xl font-extrabold leading-tight tracking-tight"
             >
-                Sign in
+                Iniciar Sesión
             </div>
             <div class="mt-0.5 flex items-baseline font-medium">
-                <div>Don't have an account?</div>
+                <div>¿No tienes cuenta?</div>
                 <a
                     class="ml-1 text-primary-500 hover:underline"
                     [routerLink]="['/sign-up']"
-                    >Sign up
+                    >Registrate
                 </a>
             </div>
 
@@ -49,25 +49,25 @@
                 </fuse-alert>
             }
 
-            <!-- Sign in form -->
+            <!-- Iniciar Sesión form -->
             <form class="mt-8" [formGroup]="signInForm" #signInNgForm="ngForm">
                 <!-- Email field -->
                 <mat-form-field class="w-full">
-                    <mat-label>Email address</mat-label>
+                    <mat-label>Correo electrónico</mat-label>
                     <input id="email" matInput [formControlName]="'email'" />
                     @if (signInForm.get('email').hasError('required')) {
-                        <mat-error> Email address is required </mat-error>
+                        <mat-error> Correo electrónico es requerido </mat-error>
                     }
                     @if (signInForm.get('email').hasError('email')) {
                         <mat-error>
-                            Please enter a valid email address
+                            Please enter a valid Correo electrónico
                         </mat-error>
                     }
                 </mat-form-field>
 
-                <!-- Password field -->
+                <!-- Contraseña -->
                 <mat-form-field class="w-full">
-                    <mat-label>Password</mat-label>
+                    <mat-label>Contraseña</mat-label>
                     <input
                         id="password"
                         matInput
@@ -110,12 +110,12 @@
                         [color]="'primary'"
                         [formControlName]="'rememberMe'"
                     >
-                        Remember me
+                        Recordar
                     </mat-checkbox>
                     <a
                         class="text-md font-medium text-primary-500 hover:underline"
                         [routerLink]="['/forgot-password']"
-                        >Forgot password?
+                        >¿Olvidaste Contraseña?
                     </a>
                 </div>
 
@@ -128,7 +128,7 @@
                     (click)="signIn()"
                 >
                     @if (!signInForm.disabled) {
-                        <span> Sign in </span>
+                        <span> Iniciar Sesión </span>
                     }
                     @if (signInForm.disabled) {
                         <mat-progress-spinner
@@ -141,12 +141,12 @@
                 <!-- Separator -->
                 <div class="mt-8 flex items-center">
                     <div class="mt-px flex-auto border-t"></div>
-                    <div class="text-secondary mx-2">Or continue with</div>
+                    <!-- <div class="text-secondary mx-2">Or continue with</div> -->
                     <div class="mt-px flex-auto border-t"></div>
                 </div>
 
                 <!-- Single sign-on buttons -->
-                <div class="mt-8 flex items-center space-x-4">
+                <!-- <div class="mt-8 flex items-center space-x-4">
                     <button class="flex-auto" type="button" mat-stroked-button>
                         <mat-icon
                             class="icon-size-5"
@@ -165,7 +165,7 @@
                             [svgIcon]="'feather:github'"
                         ></mat-icon>
                     </button>
-                </div>
+                </div> -->
             </form>
         </div>
     </div>
@@ -196,13 +196,11 @@
         <!-- Content -->
         <div class="relative z-10 w-full max-w-2xl">
             <div class="text-7xl font-bold leading-none text-gray-100">
-                <div>Welcome to</div>
-                <div>our community</div>
+                <div>Bienvenido a</div>
+                <div>nuestra comunidad</div>
             </div>
             <div class="mt-6 text-lg leading-6 tracking-tight text-gray-400">
-                Fuse helps developers to build organized and well coded
-                dashboards full of beautiful and rich modules. Join us and start
-                building your application today.
+                Ayuda a crear paneles organizados y bien codificados, llenos de módulos hermosos y completos. Únete a nosotros y comienza a construir tu aplicación hoy mismo.
             </div>
             <div class="mt-8 flex items-center">
                 <div class="flex flex-0 items-center -space-x-1.5">
