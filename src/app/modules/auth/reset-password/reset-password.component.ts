@@ -52,7 +52,7 @@ export class AuthResetPasswordComponent implements OnInit {
     constructor(
         private _authService: AuthService,
         private _formBuilder: UntypedFormBuilder
-    ) {}
+    ) { }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -123,7 +123,7 @@ export class AuthResetPasswordComponent implements OnInit {
                     // Set the alert
                     this.alert = {
                         type: 'error',
-                        message: 'Something went wrong, please try again.',
+                        message: 'Algo salió mal, por favor inténtalo de nuevo.',
                     };
                 }
             );

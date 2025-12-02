@@ -477,7 +477,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
                     },
                     {
                         id: 'pages.authentication.confirmation-required',
-                        title: 'Confirmation required',
+                        title: 'Se requiere confirmación',
                         type: 'collapsable',
                         link: '/pages/authentication/confirmation-required',
                         children: [

@@ -95,7 +95,7 @@ export class AuthSignUpComponent implements OnInit {
         // Crear cuenta
         this._authService.signUp(this.signUpForm.value).subscribe(
             (response) => {
-                // Navigate to the confirmation required page
+                // Navigate to the Se requiere confirmación page
                 this._router.navigateByUrl('/confirmation-required');
             },
             (response) => {
@@ -108,7 +108,7 @@ export class AuthSignUpComponent implements OnInit {
                 // Set the alert
                 this.alert = {
                     type: 'error',
-                    message: 'Something went wrong, please try again.',
+                    message: 'Algo salió mal, por favor inténtalo de nuevo.',
                 };
 
                 // Show the alert

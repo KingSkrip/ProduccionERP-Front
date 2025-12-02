@@ -254,7 +254,7 @@ export default [
             },
         ],
     },
-    // Confirmation required
+    // Se requiere confirmación
     {
         path: 'confirmation-required',
         children: [
