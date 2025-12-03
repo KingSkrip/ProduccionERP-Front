@@ -33,13 +33,9 @@ import { Subject, takeUntil } from 'rxjs';
     ],
 })
 export class UserComponent implements OnInit, OnDestroy {
-    /* eslint-disable @typescript-eslint/naming-convention */
     static ngAcceptInputType_showAvatar: BooleanInput;
-    /* eslint-enable @typescript-eslint/naming-convention */
-
     @Input() showAvatar: boolean = true;
     user: User;
-
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -49,7 +45,7 @@ export class UserComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
         private _userService: UserService
-    ) {}
+    ) { }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -65,7 +61,6 @@ export class UserComponent implements OnInit, OnDestroy {
             .subscribe((user: User) => {
                 this.user = user;
 
-                // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
     }
@@ -89,19 +84,11 @@ export class UserComponent implements OnInit, OnDestroy {
      * @param status
      */
     updateUserStatus(status: string): void {
-        // Return if user is not available
-        if (!this.user) {
-            return;
-        }
+        if (!this.user) return;
 
-        // Update the user
-        this._userService
-            .update({
-                ...this.user,
-                status,
-            })
-            .subscribe();
+        this._userService.updateUserStatus(status);
     }
+
 
     /**
      * Sign out

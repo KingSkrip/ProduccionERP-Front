@@ -72,28 +72,28 @@ export class AuthService {
         );
     }
 
-  signInUsingToken(): Observable<any> {
-    if (!this.accessToken) return of(false);
+    signInUsingToken(): Observable<any> {
+        if (!this.accessToken) return of(false);
 
-    return this._httpClient.post(`${this.apiUrl}auth/sign-in-with-token`, {
-        accessToken: this.accessToken,
-    }).pipe(
-        catchError(() => {
-            localStorage.removeItem('accessToken');
-            this._authenticated = false;
-            return of(false);
-        }),
-        switchMap((response: any) => {
-            if (response.accessToken) {
-                this.accessToken = response.accessToken;
-                this._authenticated = true;
-                this._userService.user = response.user;
-                return of(true);
-            }
-            return of(false);
-        })
-    );
-}
+        return this._httpClient.post(`${this.apiUrl}auth/sign-in-with-token`, {
+            accessToken: this.accessToken,
+        }).pipe(
+            catchError(() => {
+                localStorage.removeItem('accessToken');
+                this._authenticated = false;
+                return of(false);
+            }),
+            switchMap((response: any) => {
+                if (response.accessToken) {
+                    this.accessToken = response.accessToken;
+                    this._authenticated = true;
+                    this._userService.user = response.user;
+                    return of(true);
+                }
+                return of(false);
+            })
+        );
+    }
 
 
     signOut(): Observable<any> {
