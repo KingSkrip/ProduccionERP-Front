@@ -50,7 +50,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseMediaWatcherService: FuseMediaWatcherService
-    ) {}
+    ) { }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -65,37 +65,33 @@ export class SettingsComponent implements OnInit, OnDestroy {
             {
                 id: 'account',
                 icon: 'heroicons_outline:user-circle',
-                title: 'Account',
-                description:
-                    'Manage your public profile and private information',
+                title: 'Cuenta',
+                description: 'Administra tu perfil e información privada.',
             },
             {
                 id: 'security',
                 icon: 'heroicons_outline:lock-closed',
-                title: 'Security',
-                description:
-                    'Manage your password and 2-step verification preferences',
+                title: 'Seguridad',
+                description: 'Administra tu contraseña.',
             },
-            {
-                id: 'plan-billing',
-                icon: 'heroicons_outline:credit-card',
-                title: 'Plan & Billing',
-                description:
-                    'Manage your subscription plan, payment method and billing information',
-            },
-            {
-                id: 'notifications',
-                icon: 'heroicons_outline:bell',
-                title: 'Notifications',
-                description: "Manage when you'll be notified on which channels",
-            },
-            {
-                id: 'team',
-                icon: 'heroicons_outline:user-group',
-                title: 'Team',
-                description:
-                    'Manage your existing team and change roles/permissions',
-            },
+            // {
+            //     id: 'plan-billing',
+            //     icon: 'heroicons_outline:credit-card',
+            //     title: 'Plan y Facturación',
+            //     description: 'Administra tu plan de suscripción, método de pago e información de facturación',
+            // },
+            // {
+            //     id: 'notifications',
+            //     icon: 'heroicons_outline:bell',
+            //     title: 'Notificaciones',
+            //     description: 'Administra cuándo y por qué canal recibirás notificaciones',
+            // },
+            // {
+            //     id: 'team',
+            //     icon: 'heroicons_outline:user-group',
+            //     title: 'Equipo',
+            //     description: 'Administra tu equipo existente y cambia roles/permisos',
+            // },
         ];
 
         // Subscribe to media changes
@@ -114,6 +110,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
+
+
+
+            
     }
 
     /**
