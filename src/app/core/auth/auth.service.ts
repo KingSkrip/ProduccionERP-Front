@@ -50,11 +50,11 @@ export class AuthService {
     // -----------------------------------------------------------------------------------------------------
 
     forgotPassword(email: string): Observable<any> {
-        return this._httpClient.post(`${this.apiUrl}/auth/forgot-password`, { email });
+        return this._httpClient.post(`${this.apiUrl}auth/forgot-password`, { email });
     }
 
     resetPassword(password: string): Observable<any> {
-        return this._httpClient.post(`${this.apiUrl}/auth/reset-password`, { password });
+        return this._httpClient.post(`${this.apiUrl}auth/reset-password`, { password });
     }
 
     signIn(credentials: { email: string; password: string }): Observable<any> {
@@ -62,7 +62,7 @@ export class AuthService {
             return throwError(() => new Error('User is already logged in.'));
         }
 
-        return this._httpClient.post(`${this.apiUrl}/auth/sign-in`, credentials).pipe(
+        return this._httpClient.post(`${this.apiUrl}auth/sign-in`, credentials).pipe(
             switchMap((response: any) => {
                 this.accessToken = response.accessToken;
                 this._authenticated = true;
@@ -75,7 +75,7 @@ export class AuthService {
   signInUsingToken(): Observable<any> {
     if (!this.accessToken) return of(false);
 
-    return this._httpClient.post(`${this.apiUrl}/auth/sign-in-with-token`, {
+    return this._httpClient.post(`${this.apiUrl}auth/sign-in-with-token`, {
         accessToken: this.accessToken,
     }).pipe(
         catchError(() => {
@@ -103,11 +103,11 @@ export class AuthService {
     }
 
     signUp(user: { name: string; email: string; password: string; company: string }): Observable<any> {
-        return this._httpClient.post(`${this.apiUrl}/auth/sign-up`, user);
+        return this._httpClient.post(`${this.apiUrl}auth/sign-up`, user);
     }
 
     unlockSession(credentials: { email: string; password: string }): Observable<any> {
-        return this._httpClient.post(`${this.apiUrl}/auth/unlock-session`, credentials);
+        return this._httpClient.post(`${this.apiUrl}auth/unlock-session`, credentials);
     }
 
     check(): Observable<boolean> {

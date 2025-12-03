@@ -53,7 +53,7 @@ export class AuthSignUpComponent implements OnInit {
         private _authService: AuthService,
         private _formBuilder: UntypedFormBuilder,
         private _router: Router
-    ) {}
+    ) { }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -81,39 +81,35 @@ export class AuthSignUpComponent implements OnInit {
      * Crear cuenta
      */
     signUp(): void {
-        // Do nothing if the form is invalid
         if (this.signUpForm.invalid) {
             return;
         }
 
-        // Disable the form
         this.signUpForm.disable();
-
-        // Hide the alert
         this.showAlert = false;
-
-        // Crear cuenta
         this._authService.signUp(this.signUpForm.value).subscribe(
             (response) => {
-                // Navigate to the Se requiere confirmación page
                 this._router.navigateByUrl('/confirmation-required');
             },
-            (response) => {
-                // Re-enable the form
+            (errorResponse) => {
                 this.signUpForm.enable();
-
-                // Reset the form
                 this.signUpNgForm.resetForm();
-
-                // Set the alert
+                let message = 'Algo salió mal, por favor inténtalo de nuevo.';
+                if (errorResponse.status === 422 && errorResponse.error.errors) {
+                    const errors = errorResponse.error.errors;
+                    message = Object.values(errors)
+                        .map((errArray: any) => errArray.join(' '))
+                        .join(' ');
+                } else if (errorResponse.error?.message) {
+                    message = errorResponse.error.message;
+                }
                 this.alert = {
                     type: 'error',
-                    message: 'Algo salió mal, por favor inténtalo de nuevo.',
+                    message: message,
                 };
-
-                // Show the alert
                 this.showAlert = true;
             }
         );
     }
+
 }
