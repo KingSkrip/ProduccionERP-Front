@@ -102,7 +102,7 @@ export class UserComponent implements OnInit, OnDestroy {
 
     openProfile(): void {
       
-  const redirectURL = '/pages/profile';
+  const redirectURL = '/pages/settings';
 
             this._router.navigateByUrl(redirectURL);
         console.log('funcionando');
