@@ -91,10 +91,7 @@ export class AuthSignInComponent implements OnInit {
     this._authService.signIn(this.signInForm.value).subscribe(
         (response: any) => {
             // Tomamos el primer permiso del array
-            const userRole = response.user.permissions[0]; 
-            console.log('Rol del usuario:', userRole);
-            console.log('Dirigido a:', DashboardByRole[userRole]);
-
+            const userRole = response.user.permissions[0];
             const redirectURL = DashboardByRole[userRole] || '/signed-in-redirect';
             this._router.navigateByUrl(redirectURL);
         },

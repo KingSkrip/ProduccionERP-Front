@@ -17,10 +17,10 @@ import { Router } from '@angular/router';
 import { TranslocoModule } from '@jsverse/transloco';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 import { Subject, takeUntil } from 'rxjs';
-import { RHService } from './RH.service';
+import { ProjectService } from './project.service';
 
 @Component({
-    selector: 'RH',
+    selector: 'project',
     templateUrl: './RH.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,7 +38,7 @@ import { RHService } from './RH.service';
         CurrencyPipe,
     ],
 })
-export class RHComponent implements OnInit, OnDestroy {
+export class ProjectComponent implements OnInit, OnDestroy {
     chartGithubIssues: ApexOptions = {};
     chartTaskDistribution: ApexOptions = {};
     chartBudgetDistribution: ApexOptions = {};
@@ -53,7 +53,7 @@ export class RHComponent implements OnInit, OnDestroy {
      * Constructor
      */
     constructor(
-        private _projectService: RHService,
+        private _projectService: ProjectService,
         private _router: Router
     ) {}
 

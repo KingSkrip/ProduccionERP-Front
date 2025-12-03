@@ -15,13 +15,13 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Router } from '@angular/router';
 import { TranslocoModule } from '@jsverse/transloco';
+import { ProjectService } from 'app/modules/admin/dashboards/project/project.service';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 import { Subject, takeUntil } from 'rxjs';
-import { RHService } from './RH.service';
 
 @Component({
-    selector: 'RH',
-    templateUrl: './RH.component.html',
+    selector: 'project',
+    templateUrl: './project.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
@@ -38,7 +38,7 @@ import { RHService } from './RH.service';
         CurrencyPipe,
     ],
 })
-export class RHComponent implements OnInit, OnDestroy {
+export class ProjectComponent implements OnInit, OnDestroy {
     chartGithubIssues: ApexOptions = {};
     chartTaskDistribution: ApexOptions = {};
     chartBudgetDistribution: ApexOptions = {};
@@ -53,7 +53,7 @@ export class RHComponent implements OnInit, OnDestroy {
      * Constructor
      */
     constructor(
-        private _projectService: RHService,
+        private _projectService: ProjectService,
         private _router: Router
     ) {}
 

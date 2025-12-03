@@ -1,0 +1,8 @@
+{
+  "HOME": "Inicio",
+  "SETTINGS": "Ajustes",
+  "PROFILE": "Perfil",
+  "LOGOUT": "Cerrar sesión",
+  "WELCOME": "¡Bienvenido!",
+  "HELLO": "Hola {{name}}"
+}
