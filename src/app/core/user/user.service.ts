@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { User } from 'app/core/user/user.types';
-import { map, Observable, ReplaySubject, tap } from 'rxjs';
+import { map, Observable, ReplaySubject, Subject, tap } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
 
 @Injectable({ providedIn: 'root' })
@@ -9,6 +9,9 @@ export class UserService {
     private _httpClient = inject(HttpClient);
     private _user: ReplaySubject<User> = new ReplaySubject<User>(1);
     private apiUrl = APP_CONFIG.apiUrl;
+    private _openProfileDrawer = new Subject<void>();
+    openProfileDrawer$ = this._openProfileDrawer.asObservable();
+    
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
     // -----------------------------------------------------------------------------------------------------
@@ -75,6 +78,8 @@ export class UserService {
             });
     }
 
-
+    openProfileDrawer(): void {
+        this._openProfileDrawer.next();
+    }
 }
 

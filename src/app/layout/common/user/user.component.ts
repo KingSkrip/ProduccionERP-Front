@@ -17,6 +17,7 @@ import { Router } from '@angular/router';
 import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.types';
 import { Subject, takeUntil } from 'rxjs';
+import { ChatService } from 'app/modules/admin/apps/chat/chat.service';
 
 @Component({
     selector: 'user',
@@ -44,7 +45,8 @@ export class UserComponent implements OnInit, OnDestroy {
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
-        private _userService: UserService
+        private _userService: UserService,
+          private _chatService: ChatService
     ) { }
 
     // -----------------------------------------------------------------------------------------------------
@@ -96,4 +98,14 @@ export class UserComponent implements OnInit, OnDestroy {
     signOut(): void {
         this._router.navigate(['/sign-out']);
     }
+
+
+    openProfile(): void {
+      
+  const redirectURL = '/pages/profile';
+
+            this._router.navigateByUrl(redirectURL);
+        console.log('funcionando');
+    }
+
 }
