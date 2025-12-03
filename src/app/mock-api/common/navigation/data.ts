@@ -227,7 +227,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
                     },
                     {
                         id: 'pages.authentication.sign-up',
-                        title: 'Sign up',
+                        title: 'Crear cuenta',
                         type: 'collapsable',
                         link: '/pages/authentication/sign-up',
                         children: [
@@ -477,7 +477,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
                     },
                     {
                         id: 'pages.authentication.confirmation-required',
-                        title: 'Confirmation required',
+                        title: 'Se requiere confirmación',
                         type: 'collapsable',
                         link: '/pages/authentication/confirmation-required',
                         children: [

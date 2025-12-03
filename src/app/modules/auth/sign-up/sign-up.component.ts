@@ -53,7 +53,7 @@ export class AuthSignUpComponent implements OnInit {
         private _authService: AuthService,
         private _formBuilder: UntypedFormBuilder,
         private _router: Router
-    ) {}
+    ) { }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -78,42 +78,38 @@ export class AuthSignUpComponent implements OnInit {
     // -----------------------------------------------------------------------------------------------------
 
     /**
-     * Sign up
+     * Crear cuenta
      */
     signUp(): void {
-        // Do nothing if the form is invalid
         if (this.signUpForm.invalid) {
             return;
         }
 
-        // Disable the form
         this.signUpForm.disable();
-
-        // Hide the alert
         this.showAlert = false;
-
-        // Sign up
         this._authService.signUp(this.signUpForm.value).subscribe(
             (response) => {
-                // Navigate to the confirmation required page
                 this._router.navigateByUrl('/confirmation-required');
             },
-            (response) => {
-                // Re-enable the form
+            (errorResponse) => {
                 this.signUpForm.enable();
-
-                // Reset the form
                 this.signUpNgForm.resetForm();
-
-                // Set the alert
+                let message = 'Algo salió mal, por favor inténtalo de nuevo.';
+                if (errorResponse.status === 422 && errorResponse.error.errors) {
+                    const errors = errorResponse.error.errors;
+                    message = Object.values(errors)
+                        .map((errArray: any) => errArray.join(' '))
+                        .join(' ');
+                } else if (errorResponse.error?.message) {
+                    message = errorResponse.error.message;
+                }
                 this.alert = {
                     type: 'error',
-                    message: 'Something went wrong, please try again.',
+                    message: message,
                 };
-
-                // Show the alert
                 this.showAlert = true;
             }
         );
     }
+
 }
