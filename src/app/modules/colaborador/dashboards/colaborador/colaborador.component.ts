@@ -34,8 +34,6 @@ import { Subject, takeUntil } from 'rxjs';
         MatButtonToggleModule,
         NgApexchartsModule,
         MatTableModule,
-        NgClass,
-        CurrencyPipe,
     ],
 })
 export class ColaboradorComponent implements OnInit, OnDestroy {

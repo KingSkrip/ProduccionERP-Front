@@ -45,7 +45,6 @@ import { AuthService } from 'app/core/auth/auth.service';
         DenseLayoutComponent,
         FuturisticLayoutComponent,
         ThinLayoutComponent,
-        SettingsComponent,
     ],
 })
 export class LayoutComponent implements OnInit, OnDestroy {

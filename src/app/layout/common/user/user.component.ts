@@ -46,7 +46,7 @@ export class UserComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
         private _userService: UserService,
-          private _chatService: ChatService
+        private _chatService: ChatService
     ) { }
 
     // -----------------------------------------------------------------------------------------------------
@@ -101,11 +101,19 @@ export class UserComponent implements OnInit, OnDestroy {
 
 
     openProfile(): void {
-      
-  const redirectURL = '/pages/settings';
 
-            this._router.navigateByUrl(redirectURL);
-        console.log('funcionando');
+        const redirectURL = '/pages/settings';
+
+        this._router.navigateByUrl(redirectURL);
+     
+    }
+
+
+    openSettings(): void {
+
+        const redirectURL = '/pages/profile';
+
+        this._router.navigateByUrl(redirectURL);
     }
 
 }
