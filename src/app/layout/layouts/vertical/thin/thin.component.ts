@@ -81,7 +81,6 @@ export class ThinLayoutComponent implements OnInit, OnDestroy {
             .subscribe(({ key }) => {
                 if (key === 'main') {
                     this.navigation = this._fuseNavigationService.getNavigation('main');
-                    console.log('Navegación actualizada:', this.navigation);
                 }
             });
 

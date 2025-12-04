@@ -68,11 +68,7 @@ export class NavigationService {
      * @param navigation
      */
     storeNavigation(key: string, navigation: FuseNavigationItem[]): void {
-        console.log('📦 Almacenando navegación con key:', key, navigation);
-        // Add to the store
         this._navigationStore.set(key, navigation);
-        
-        // NUEVO: Emitir el cambio
         this._navigationChanged$.next({ key, navigation });
     }
 
@@ -83,7 +79,6 @@ export class NavigationService {
      */
     getNavigation(key: string): FuseNavigationItem[] {
         const nav = this._navigationStore.get(key) ?? [];
-        console.log('🔍 Obteniendo navegación con key:', key, nav);
         return nav;
     }
 
@@ -201,15 +196,12 @@ export class NavigationService {
 
         switch (roleId) {
             case RoleEnum.RH:
-                console.log("🎯 Cargando menú RH");
                 navigation = menuRh;
                 break;
             case RoleEnum.SUADMIN:
-                console.log("🎯 Cargando menú ADMIN");
                 navigation = menuAdmin;
                 break;
             default:
-                console.warn("⚠️ Rol no reconocido:", roleId);
                 navigation = [];
                 break;
         }

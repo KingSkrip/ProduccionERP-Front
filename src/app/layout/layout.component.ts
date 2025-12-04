@@ -157,29 +157,19 @@ export class LayoutComponent implements OnInit, OnDestroy {
         this._authService.getUserRole()
         .pipe(takeUntil(this._unsubscribeAll))
         .subscribe(userRole => {
-            console.log("👤 Layout - Rol del usuario recibido:", userRole);
-            
             if (userRole !== null) {
                 let navigation = this._fuseNavigationService.getNavigationByRole(userRole);
 
                 // CRÍTICO: Asegurarse que siempre sea un array válido
                 if (!navigation) {
-                    console.warn("⚠️ getNavigationByRole devolvió null/undefined");
                     navigation = [];
                 } else if (!Array.isArray(navigation)) {
-                    console.warn("⚠️ getNavigationByRole no devolvió un array:", navigation);
                     navigation = [];
                 }
 
                 this.navigationItems = navigation;
-
-                // Guardar en el storage (esto dispará el BehaviorSubject)
-                console.log("💾 Layout - Guardando navegación:", this.navigationItems);
                 this._fuseNavigationService.storeNavigation('main', this.navigationItems);
-
-                console.log("✅ Layout - Navegación guardada y emitida");
             } else {
-                console.warn("⚠️ No hay rol de usuario");
                 this.navigationItems = [];
                 this._fuseNavigationService.storeNavigation('main', []);
             }

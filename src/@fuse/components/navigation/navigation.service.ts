@@ -181,7 +181,6 @@ export class FuseNavigationService {
 
     switch (roleId) {
         case RoleEnum.RH:
-            console.log("menu rh")
             navigation = menuRh;
             break;
         case RoleEnum.SUADMIN:

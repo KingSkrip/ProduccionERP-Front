@@ -118,9 +118,7 @@ export class SettingsAccountComponent implements OnInit {
 
         this._settings.updatePerfil(payload).subscribe({
             next: (resp) => {
-                console.log('Perfil actualizado', resp);
 
-                // Actualizar la vista con la nueva foto del servidor
                 if (resp.user?.PHOTO) {
                     this.preview = `${APP_CONFIG.apiBase}/${resp.user.PHOTO}`;
                 }

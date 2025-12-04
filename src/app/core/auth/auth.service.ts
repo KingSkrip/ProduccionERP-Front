@@ -141,11 +141,9 @@ getUserRole(): Observable<number | null> {
     return this._userService.user$.pipe(
         map(user => {
             if (!user || !user.permissions || !user.permissions.length) {
-                console.log("No hay usuario o roles");
                 return null;
             }
-            console.log("Roles del usuario:", user.permissions);
-            return user.permissions[0]; // primer rol
+            return user.permissions[0];
         })
     );
 }

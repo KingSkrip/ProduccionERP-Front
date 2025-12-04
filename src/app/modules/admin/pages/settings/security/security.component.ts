@@ -215,8 +215,6 @@ export class SettingsSecurityComponent implements OnInit {
 
         this._settings.updatePassword(payload).subscribe({
             next: (resp) => {
-                console.log('Contraseña cambiada', resp);
-                // Limpiar formulario después de éxito
                 this.cancelar();
             },
             error: (err) => console.error(err),
