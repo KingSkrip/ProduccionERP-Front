@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { APP_CONFIG } from 'app/core/config/app-config';
+import { UserService } from 'app/core/user/user.service';
 
 @Injectable({
     providedIn: 'root'
@@ -11,6 +12,7 @@ export class SettingsService {
 
     private http = inject(HttpClient);
     private apiUrl = APP_CONFIG.apiUrl;
+    public userService = inject(UserService);
 
     getPerfil(): Observable<any> {
         return this.http.get(`${this.apiUrl}perfil`);

@@ -8,17 +8,22 @@
                 <!-- Avatar and name -->
                 <div class="flex min-w-0 flex-auto items-center">
                     <div class="h-16 w-16 flex-0 overflow-hidden rounded-full">
-                        <img
-                            class="h-full w-full object-cover"
-                            src="images/avatars/brian-hughes.jpg"
-                        />
+                        <img [src]="photoUrl" />
                     </div>
                     <div class="ml-4 flex min-w-0 flex-col">
                         <ng-container *transloco="let t">
                             <div
                                 class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug"
                             >
-                                {{ 'Bienvenido' }}, Brian!
+                                <ng-container *transloco="let t">
+                                    Bienvenido,
+                                </ng-container>
+                                <span class="font-bold">
+                                    {{
+                                        (user$ | async)?.name?.split(' ')[0] ||
+                                            'Usuario'
+                                    }}!
+                                </span>
                             </div>
                         </ng-container>
                         <div class="flex items-center">

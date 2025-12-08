@@ -1306,6 +1306,14 @@ export const menuRh: FuseNavigationItem[] = [
         icon: 'heroicons_outline:home',
         link: '/apps/RH',
     },
+    {
+        id: 'cruds',
+        tooltip: 'Gestion',
+        type: 'basic',
+        icon: 'heroicons_outline:user-group',
+        link: '/apps/Gestion',
+    },
+
 ];
 
 export const menuAdmin: FuseNavigationItem[] = [
@@ -1346,8 +1354,50 @@ export const menuAdmin: FuseNavigationItem[] = [
                 link: '/dashboards/crypto',
             },
         ],
-
     },
+    // {
+    //     id: 'cruds',
+    //     tooltip: 'Gestion',
+    //     type: 'basic',
+    //     icon: 'heroicons_outline:user-group',
+    //     link: '/apps/Gestion',
+    // },
+
+
+
+  {
+    id: 'cruds',
+    title: 'Gestion',              // le agregamos title para que aparezca como los demás
+    subtitle: 'Opciones de gestión',
+    type: 'collapsable',
+    icon: 'heroicons_outline:user-group',
+    children: [
+        {
+            id: 'cruds.superadmin',
+            title: 'Super Admin',
+            type: 'basic',
+            icon: 'heroicons_outline:user-group',
+            link: '/apps/Gestion',
+        },
+        {
+            id: 'cruds.usuarios',
+            title: 'Usuarios',
+            type: 'basic',
+            icon: 'heroicons_outline:user',
+            link: '/apps/Gestion/usuarios',
+        },
+        {
+            id: 'cruds.roles',
+            title: 'Roles',
+            type: 'basic',
+            icon: 'heroicons_outline:shield-check',
+            link: '/apps/Gestion/roles',
+        },
+    ],
+},
+
+
+
     {
         id: 'apps',
         title: 'Applications',

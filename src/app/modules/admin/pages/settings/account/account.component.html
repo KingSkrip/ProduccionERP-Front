@@ -164,19 +164,56 @@
         <!-- Divisor -->
         <div class="mb-10 mt-11 border-t"></div>
 
+        <!-- Mensajes de éxito -->
+        <div
+            *ngIf="mensajeExito"
+            class="mb-4 flex items-start gap-3 rounded-lg border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-3 shadow-sm"
+        >
+            <mat-icon
+                class="mt-0.5 text-green-600 icon-size-5"
+                [svgIcon]="'heroicons_solid:check-circle'"
+            ></mat-icon>
+            <span class="flex-1 text-sm font-medium text-green-800">{{
+                mensajeExito
+            }}</span>
+        </div>
+
+        <!-- Mensajes de error -->
+        <div
+            *ngIf="mensajeError"
+            class="mb-4 flex items-start gap-3 rounded-lg border border-red-300 bg-gradient-to-r from-red-50 to-rose-50 px-4 py-3 shadow-sm"
+        >
+            <mat-icon
+                class="mt-0.5 text-red-600 icon-size-5"
+                [svgIcon]="'heroicons_solid:exclamation-circle'"
+            ></mat-icon>
+            <span class="flex-1 text-sm font-medium text-red-800">{{
+                mensajeError
+            }}</span>
+        </div>
+
         <!-- Acciones -->
         <div class="flex items-center justify-end">
             <button mat-stroked-button type="button">Cancelar</button>
 
             <button
-                class="ml-4"
+                class="relative ml-4 flex items-center justify-center"
                 mat-flat-button
                 type="button"
                 [color]="'primary'"
                 (click)="guardarPerfil()"
-                [disabled]="isLoadingForm"
+                [disabled]="isLoadingForm || !formChanged"
             >
-                Guardar
+                <!-- Spinner cuando está cargando -->
+                <mat-spinner
+                    *ngIf="isLoadingForm"
+                    [diameter]="20"
+                    [strokeWidth]="3"
+                    class="absolute"
+                ></mat-spinner>
+
+                <!-- Texto del botón -->
+                <span [class.opacity-0]="isLoadingForm">Guardar</span>
             </button>
         </div>
     </form>

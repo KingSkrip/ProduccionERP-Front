@@ -1,7 +1,8 @@
-import { CurrencyPipe, NgClass } from '@angular/common';
+import { AsyncPipe, CurrencyPipe, NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
+    inject,
     OnDestroy,
     OnInit,
     ViewEncapsulation,
@@ -15,9 +16,12 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Router } from '@angular/router';
 import { TranslocoModule } from '@jsverse/transloco';
+import { APP_CONFIG } from 'app/core/config/app-config';
+import { UserService } from 'app/core/user/user.service';
 import { ProjectService } from 'app/modules/admin/dashboards/project/project.service';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
-import { Subject, takeUntil } from 'rxjs';
+import { BehaviorSubject, map, Subject, takeUntil } from 'rxjs';
+
 
 @Component({
     selector: 'project',
@@ -36,6 +40,7 @@ import { Subject, takeUntil } from 'rxjs';
         MatTableModule,
         NgClass,
         CurrencyPipe,
+        AsyncPipe,
     ],
 })
 export class ProjectComponent implements OnInit, OnDestroy {
@@ -48,14 +53,18 @@ export class ProjectComponent implements OnInit, OnDestroy {
     data: any;
     selectedProject: string = 'ACME Corp. Backend App';
     private _unsubscribeAll: Subject<any> = new Subject<any>();
+    private _user = new BehaviorSubject<any>(null);
+    user$ = this._user.asObservable();
+    apiBase = APP_CONFIG.apiBase;
 
     /**
      * Constructor
      */
     constructor(
         private _projectService: ProjectService,
-        private _router: Router
-    ) {}
+        private _router: Router,
+        private _userService: UserService,
+    ) { }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -65,27 +74,27 @@ export class ProjectComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
-        // Get the data
+        // Get the data del dashboard
         this._projectService.data$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((data) => {
-                // Store the data
                 this.data = data;
-
-                // Prepare the chart data
                 this._prepareChartData();
             });
 
-        // Attach SVG fill fixer to all ApexCharts
+        // Suscribirse al usuario real del UserService
+        this._userService.user$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((user) => {
+                this._user.next(user); // <-- Esta línea es la que faltaba!
+            });
+
+        // SVG fix para ApexCharts
         window['Apex'] = {
             chart: {
                 events: {
-                    mounted: (chart: any, options?: any): void => {
-                        this._fixSvgFill(chart.el);
-                    },
-                    updated: (chart: any, options?: any): void => {
-                        this._fixSvgFill(chart.el);
-                    },
+                    mounted: (chart: any) => this._fixSvgFill(chart.el),
+                    updated: (chart: any) => this._fixSvgFill(chart.el),
                 },
             },
         };
@@ -114,9 +123,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
         return item.id || index;
     }
 
+
     // -----------------------------------------------------------------------------------------------------
     // @ Private methods
     // -----------------------------------------------------------------------------------------------------
+
 
     /**
      * Fix the SVG fill references. This fix must be applied to all ApexCharts
@@ -451,4 +462,20 @@ export class ProjectComponent implements OnInit, OnDestroy {
             },
         };
     }
+
+
+    private _photoVersion = Date.now();
+
+    get photoUrl(): string {
+        const user = this._user.value;
+        if (!user?.photo) return;
+
+        const base = this.apiBase.endsWith('/') ? this.apiBase : this.apiBase + '/';
+        const photo = user.photo.startsWith('/') ? user.photo.substring(1) : user.photo;
+
+        return `${base + photo}?v=${this._photoVersion}`;
+    }
+
+
+
 }

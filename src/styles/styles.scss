@@ -1,4 +1,13 @@
 /* ----------------------------------------------------------------------------------------------------- */
-/*  @ Import/write your custom styles here.
-/*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
+/* @ Importa/escribe tus estilos personalizados aquí.
+/* @ Los estilos de este archivo anularán los estilos base de 'vendors.scss' y Fuse.
 /* ----------------------------------------------------------------------------------------------------- */
+.success-snackbar {
+  background-color: #4caf50; /* verde */
+  color: #fff;
+}
+
+.error-snackbar {
+  background-color: #d32f2f; /* rojo */
+  color: #fff;
+}

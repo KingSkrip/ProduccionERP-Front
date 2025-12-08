@@ -2,3 +2,13 @@
 /*  @ Main Tailwind file for injecting utilities.
 /* ----------------------------------------------------------------------------------------------------- */
 @tailwind utilities;
+
+.success-snackbar {
+  background-color: #4caf50; /* verde */
+  color: #fff;
+}
+
+.error-snackbar {
+  background-color: #d32f2f; /* rojo */
+  color: #fff;
+}

@@ -51,6 +51,8 @@ export class SettingsAccountComponent implements OnInit {
     selectedFile: File | null = null;
     isLoadingImage: boolean = false;
     isLoadingForm = true;
+    mensajeExito: string | null = null;
+    mensajeError: string | null = null;
 
     /**
      * Constructor
@@ -69,7 +71,6 @@ export class SettingsAccountComponent implements OnInit {
      * On init
      */
     ngOnInit(): void {
-        // Crear formulario con valores vacíos iniciales
         this.accountForm = this._formBuilder.group({
             name: [''],
             username: [''],
@@ -90,17 +91,16 @@ export class SettingsAccountComponent implements OnInit {
                     departamento: user.DEPARTAMENTO ?? '',
                 });
 
-                // Concatenar URL de la foto siempre
                 this.preview = user.PHOTO ? `${APP_CONFIG.apiBase}/${user.PHOTO}` : 'images/avatars/user.jpg';
-
                 this.isLoadingForm = false;
                 this._cdr.markForCheck();
             },
             error: () => {
                 this.isLoadingForm = false;
+                this.mensajeError = 'No se pudo cargar la información del perfil.';
+                this._cdr.markForCheck();
             }
         });
-
     }
 
     guardarPerfil(): void {
@@ -116,18 +116,30 @@ export class SettingsAccountComponent implements OnInit {
             payload.append('FOTO', this.selectedFile);
         }
 
+        this.isLoadingForm = true;
+        this.mensajeExito = null;
+        this.mensajeError = null;
+
         this._settings.updatePerfil(payload).subscribe({
             next: (resp) => {
+                this.isLoadingForm = false;
 
-                if (resp.user?.PHOTO) {
-                    this.preview = `${APP_CONFIG.apiBase}/${resp.user.PHOTO}`;
+                if (resp.success) {
+                    this.mensajeExito = resp.message;
+                    this.mensajeError = null;
+
+                    if (resp.user && resp.user.PHOTO) {
+                        this.preview = `${APP_CONFIG.apiBase}/${resp.user.PHOTO}`;
+                    }
+                } else {
+                    this.mensajeError = resp.message ?? 'Ocurrió un error al actualizar el perfil.';
                 }
-
 
                 this._cdr.markForCheck();
             },
             error: (err) => {
-                console.error('Error al actualizar perfil:', err);
+                this.isLoadingForm = false;
+                this.mensajeError = err.error?.message ?? 'Ocurrió un error al actualizar el perfil.';
                 this._cdr.markForCheck();
             }
         });
@@ -148,9 +160,16 @@ export class SettingsAccountComponent implements OnInit {
             };
             reader.onerror = () => {
                 this.isLoadingImage = false;
+                this.mensajeError = 'Error al cargar la imagen.';
                 this._cdr.markForCheck();
             };
             reader.readAsDataURL(file);
         }
     }
+
+    get formChanged(): boolean {
+    // true si el formulario ha cambiado o si se seleccionó un archivo
+    return this.accountForm.dirty || !!this.selectedFile;
+}
+
 }

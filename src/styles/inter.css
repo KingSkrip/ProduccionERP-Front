@@ -17,3 +17,13 @@
     src: url('../../public/fonts/inter/Inter-italic.var.woff2?v=3.18')
         format('woff2');
 }
+
+.success-snackbar {
+  background-color: #4caf50; /* verde */
+  color: #fff;
+}
+
+.error-snackbar {
+  background-color: #d32f2f; /* rojo */
+  color: #fff;
+}

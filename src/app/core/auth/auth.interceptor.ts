@@ -49,14 +49,19 @@ export const authInterceptor = (
         catchError((error) => {
             // Catch "401 Unauthorized" responses
             if (error instanceof HttpErrorResponse && error.status === 401) {
-                // Sign out
+                
+                // 🔥 SOLUCIÓN: NO hacer reload/logout si es el endpoint de sign-in
+                const isSignInRequest = req.url.includes('/auth/sign-in');
+                
+                if (isSignInRequest) {
+                    return throwError(() => error);
+                }
+                
                 authService.signOut();
-
-                // Reload the app
                 location.reload();
             }
 
-            return throwError(error);
+            return throwError(() => error);
         })
     );
 };
