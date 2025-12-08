@@ -1365,36 +1365,37 @@ export const menuAdmin: FuseNavigationItem[] = [
 
 
 
-  {
-    id: 'cruds',
-    title: 'Gestion',              // le agregamos title para que aparezca como los demás
-    subtitle: 'Opciones de gestión',
-    type: 'collapsable',
-    icon: 'heroicons_outline:user-group',
-    children: [
-        {
-            id: 'cruds.superadmin',
-            title: 'Super Admin',
-            type: 'basic',
-            icon: 'heroicons_outline:user-group',
-            link: '/apps/Gestion',
-        },
-        {
-            id: 'cruds.usuarios',
-            title: 'Usuarios',
-            type: 'basic',
-            icon: 'heroicons_outline:user',
-            link: '/apps/Gestion/usuarios',
-        },
-        {
-            id: 'cruds.roles',
-            title: 'Roles',
-            type: 'basic',
-            icon: 'heroicons_outline:shield-check',
-            link: '/apps/Gestion/roles',
-        },
-    ],
-},
+    {
+        id: 'cruds',
+        title: 'Gestion',              // le agregamos title para que aparezca como los demás
+        subtitle: 'Opciones de usuarios',
+        type: 'collapsable',
+        icon: 'heroicons_outline:user-group',
+        children: [
+            {
+                id: 'cruds.superadmin',
+                title: 'Super Administrador',
+                type: 'basic',
+                icon: 'heroicons_outline:user-group',
+                link: '/apps/Gestion_nimdaus',
+            },
+            {
+                id: 'cruds.rh',
+                title: 'RH',
+                type: 'basic',
+                icon: 'heroicons_outline:user',
+                link: '/apps/hr_noitseG',
+            },
+            {
+                id: 'cruds.roles',
+                title: 'Roles',
+                type: 'basic',
+                icon: 'heroicons_outline:shield-check',
+                link: '/apps/Gestion/roles',
+            },
+        ],
+    },
+
 
 
 

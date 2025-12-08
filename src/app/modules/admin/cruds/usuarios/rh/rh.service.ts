@@ -6,7 +6,7 @@ import { APP_CONFIG } from 'app/core/config/app-config';
 import { Usuarios } from '../usuarios.types';
 
 @Injectable({ providedIn: 'root' })
-export class SuadminService {
+export class RHService {
     // Private
     private _usuarios: BehaviorSubject<Usuarios[] | null> = new BehaviorSubject<Usuarios[] | null>(null);
     private apiUrl = APP_CONFIG.apiUrl;
@@ -26,7 +26,7 @@ export class SuadminService {
     }
     // Obtener todos los superadmins
     getUsuarios(): Observable<Usuarios[]> {
-        return this._httpClient.get<{ message: string, data: Usuarios[] }>(`${this.apiUrl}superadmin/data`)
+        return this._httpClient.get<{ message: string, data: Usuarios[] }>(`${this.apiUrl}rh/data`)
             .pipe(
                 tap(response => this._usuarios.next(response.data)),
                 map(response => response.data),
@@ -39,7 +39,7 @@ export class SuadminService {
 
     // Obtener un superadmin por id
     getUsuarioById(id: string): Observable<Usuarios> {
-        return this._httpClient.get<{ message: string, user: Usuarios }>(`${this.apiUrl}superadmin/suadmin/${id}`)
+        return this._httpClient.get<{ message: string, user: Usuarios }>(`${this.apiUrl}rh/suadmin/${id}`)
             .pipe(
                 map(response => response.user),
                 catchError(error => {
@@ -58,7 +58,7 @@ export class SuadminService {
                 const isFormData = data instanceof FormData;
 
                 return this._httpClient.post<{ message: string, user: Usuarios }>(
-                    `${this.apiUrl}superadmin/suadmin`,
+                    `${this.apiUrl}rh/suadmin`,
                     data,
                     isFormData ? { headers: { 'Accept': 'application/json' } } : {}
                 ).pipe(
@@ -81,7 +81,7 @@ export class SuadminService {
         return this.usuarios$.pipe(
             take(1),
             switchMap(usuarios =>
-                this._httpClient.put<{ message: string, user: Usuarios }>(`${this.apiUrl}superadmin/suadmin/${id}`, usuario)
+                this._httpClient.put<{ message: string, user: Usuarios }>(`${this.apiUrl}rh/suadmin/${id}`, usuario)
                     .pipe(
                         tap(response => {
                             const updatedUsuarios = (usuarios || []).map(u => u.id === id ? response.user : u);
@@ -98,7 +98,7 @@ export class SuadminService {
         return this.usuarios$.pipe(
             take(1),
             switchMap(usuarios =>
-                this._httpClient.delete<{ message: string, user: Usuarios }>(`${this.apiUrl}superadmin/suadmin/${id}`)
+                this._httpClient.delete<{ message: string, user: Usuarios }>(`${this.apiUrl}rh/suadmin/${id}`)
                     .pipe(
                         tap(() => {
                             const updatedUsuarios = (usuarios || []).filter(u => u.id !== id);

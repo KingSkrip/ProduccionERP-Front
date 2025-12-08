@@ -15,13 +15,15 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSortModule } from '@angular/material/sort';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
+import { RHService } from 'app/modules/admin/cruds/usuarios/rh/rh.service';
+
+
 import { Subject, takeUntil } from 'rxjs';
-import { SuadminService } from 'app/modules/admin/cruds/usuarios/suadmin/suadmin.service';
 
 @Component({
-    selector: 'add-suadmin',
-    templateUrl: './add-suadmin.component.html',
-    styleUrls: ['./add-suadmin.component.scss'],
+    selector: 'add-rh',
+    templateUrl: './add-rh.component.html',
+    styleUrls: ['./add-rh.component.scss'],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     animations: fuseAnimations,
@@ -43,7 +45,7 @@ import { SuadminService } from 'app/modules/admin/cruds/usuarios/suadmin/suadmin
         MatRippleModule,
     ],
 })
-export class AddsuadminComponent implements OnInit, OnDestroy {
+export class AddrhComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     @Output() onCreated = new EventEmitter<void>();
     newUsuarioForm: UntypedFormGroup;
@@ -64,8 +66,8 @@ export class AddsuadminComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
         private _formBuilder: UntypedFormBuilder,
-private _suadminService: SuadminService,
-        private _dialogRef: MatDialogRef<AddsuadminComponent>,
+        private _rhService: RHService,
+        private _dialogRef: MatDialogRef<AddrhComponent>,
     ) { }
 
     // -----------------------------------------------------------------------------------------------------
@@ -235,13 +237,13 @@ private _suadminService: SuadminService,
             formData.append('photo', this.selectedPhotoFile, this.selectedPhotoFile.name);
         }
 
-        console.log('Creando superadmin con FormData...');
         this.isLoading = true;
 
-        this._suadminService.createUsuario(formData)
+        this._rhService.createUsuario(formData)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (newUser) => {
+                      this._rhService.getUsuarios().subscribe();
                     this._fuseConfirmationService.open({
                         title: 'Éxito',
                         message: 'Superadmin creado correctamente',
@@ -260,13 +262,13 @@ private _suadminService: SuadminService,
                         },
                     });
 
-                this._suadminService.addUsuarioToList(newUser);
+                
 
-                 this._dialogRef.close(newUser);
+                    this._dialogRef.close(newUser);
 
-    this.isLoading = false;
-    this._changeDetectorRef.markForCheck();
-    this.newUsuarioForm.reset();
+                    this.isLoading = false;
+                    this._changeDetectorRef.markForCheck();
+                    this.newUsuarioForm.reset();
                 },
                 error: (err) => {
                     console.error('Error al crear', err);
