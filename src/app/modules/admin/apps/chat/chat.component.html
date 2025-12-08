@@ -1,6 +1,13 @@
-<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
-    <!-- Main -->
+<mat-drawer-container class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+
+    <!-- Drawer del perfil -->
+    <mat-drawer #profileDrawer mode="over" position="end" class="w-80 bg-card">
+        <chat-profile [drawer]="profileDrawer"></chat-profile>
+    </mat-drawer>
+
+    <!-- Contenido principal -->
     <div class="flex flex-auto overflow-hidden">
         <router-outlet></router-outlet>
     </div>
-</div>
+
+</mat-drawer-container>

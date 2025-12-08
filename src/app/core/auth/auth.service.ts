@@ -2,21 +2,25 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
-import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
+import { catchError, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
+import { NavigationByRole, RoleEnum } from './roles/dataroles';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
     private _authenticated: boolean = false;
-    private _httpClient = inject(HttpClient);
-    private _userService = inject(UserService);
+
 
     private apiUrl = APP_CONFIG.apiUrl;
 
-
-    constructor() {
+    constructor(
+        private _httpClient: HttpClient,
+        private _userService: UserService,
+        
+    ) {
         this.checkStoredToken();
     }
+
 
     private checkStoredToken() {
         const token = this.accessToken;
@@ -72,28 +76,28 @@ export class AuthService {
         );
     }
 
-  signInUsingToken(): Observable<any> {
-    if (!this.accessToken) return of(false);
+    signInUsingToken(): Observable<any> {
+        if (!this.accessToken) return of(false);
 
-    return this._httpClient.post(`${this.apiUrl}auth/sign-in-with-token`, {
-        accessToken: this.accessToken,
-    }).pipe(
-        catchError(() => {
-            localStorage.removeItem('accessToken');
-            this._authenticated = false;
-            return of(false);
-        }),
-        switchMap((response: any) => {
-            if (response.accessToken) {
-                this.accessToken = response.accessToken;
-                this._authenticated = true;
-                this._userService.user = response.user;
-                return of(true);
-            }
-            return of(false);
-        })
-    );
-}
+        return this._httpClient.post(`${this.apiUrl}auth/sign-in-with-token`, {
+            accessToken: this.accessToken,
+        }).pipe(
+            catchError(() => {
+                localStorage.removeItem('accessToken');
+                this._authenticated = false;
+                return of(false);
+            }),
+            switchMap((response: any) => {
+                if (response.accessToken) {
+                    this.accessToken = response.accessToken;
+                    this._authenticated = true;
+                    this._userService.user = response.user;
+                    return of(true);
+                }
+                return of(false);
+            })
+        );
+    }
 
 
     signOut(): Observable<any> {
@@ -116,4 +120,40 @@ export class AuthService {
         if (AuthUtils.isTokenExpired(this.accessToken)) return of(false);
         return this.signInUsingToken();
     }
+
+
+
+    getMenu(): string[] {
+        const user = this._userService.user;
+
+        if (!user || !user.permissions || !user.permissions.length) return [];
+
+        // Tomamos el primer permiso (puedes ajustarlo si tu app soporta multi-rol)
+        const roleId = user.permissions[0];
+
+        return NavigationByRole[roleId as RoleEnum] ?? [];
+    }
+
+ /**
+     * Obtener el rol principal del usuario
+     */
+getUserRole(): Observable<number | null> {
+    return this._userService.user$.pipe(
+        map(user => {
+            if (!user || !user.permissions || !user.permissions.length) {
+                return null;
+            }
+            return user.permissions[0];
+        })
+    );
+}
+
+    /**
+     * Obtener el usuario completo (opcional)
+     */
+    getUser() {
+        return this._userService.user;
+    }
+
+    
 }

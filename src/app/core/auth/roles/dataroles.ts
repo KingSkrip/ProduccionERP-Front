@@ -12,3 +12,10 @@ export enum RoleEnum {
     RH = 2,
     SUADMIN = 3
 }
+
+
+export const NavigationByRole = {
+    [RoleEnum.COLABORADOR]: ['Inicio', 'Perfil', 'Viajes', 'Historial'],
+    [RoleEnum.RH]: ['Inicio', 'Usuarios', 'Pagos', 'Rutas', 'Reportes'],
+    [RoleEnum.SUADMIN]: ['Inicio', 'Usuarios', 'Pagos', 'Rutas', 'Reportes', 'Configuración']
+};

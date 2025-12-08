@@ -7,3 +7,13 @@
 
 /* Quill */
 @import 'quill/dist/quill.snow.css';
+
+.success-snackbar {
+  background-color: #4caf50; /* verde */
+  color: #fff;
+}
+
+.error-snackbar {
+  background-color: #d32f2f; /* rojo */
+  color: #fff;
+}

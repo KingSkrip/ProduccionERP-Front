@@ -7,10 +7,9 @@ import { FuseLoadingBarComponent } from '@fuse/components/loading-bar';
 import {
     FuseNavigationService,
     FuseVerticalNavigationComponent,
+    FuseNavigationItem,
 } from '@fuse/components/navigation';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
-import { NavigationService } from 'app/core/navigation/navigation.service';
-import { Navigation } from 'app/core/navigation/navigation.types';
 import { LanguagesComponent } from 'app/layout/common/languages/languages.component';
 import { MessagesComponent } from 'app/layout/common/messages/messages.component';
 import { NotificationsComponent } from 'app/layout/common/notifications/notifications.component';
@@ -29,10 +28,8 @@ import { Subject, takeUntil } from 'rxjs';
         FuseVerticalNavigationComponent,
         MatButtonModule,
         MatIconModule,
-        LanguagesComponent,
         FuseFullscreenComponent,
         SearchComponent,
-        ShortcutsComponent,
         MessagesComponent,
         NotificationsComponent,
         UserComponent,
@@ -42,7 +39,7 @@ import { Subject, takeUntil } from 'rxjs';
 })
 export class ThinLayoutComponent implements OnInit, OnDestroy {
     isScreenSmall: boolean;
-    navigation: Navigation;
+    navigation: FuseNavigationItem[] = []; // Cambio: inicializar como array vacío
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -51,10 +48,9 @@ export class ThinLayoutComponent implements OnInit, OnDestroy {
     constructor(
         private _activatedRoute: ActivatedRoute,
         private _router: Router,
-        private _navigationService: NavigationService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _fuseNavigationService: FuseNavigationService
-    ) {}
+    ) { }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
@@ -75,12 +71,21 @@ export class ThinLayoutComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
-        // Subscribe to navigation data
-        this._navigationService.navigation$
+        // Cargar navegación inicial
+        this.navigation = this._fuseNavigationService.getNavigation('main');
+
+        this._fuseNavigationService.onNavigationChanged$
             .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((navigation: Navigation) => {
-                this.navigation = navigation;
+            .subscribe(({ key }) => {
+                if (key === 'main') {
+                    this.navigation = this._fuseNavigationService.getNavigation('main');
+                }
             });
+
+        // Si no hay navegación, asegurarse de que sea un array vacío
+        if (!this.navigation || !Array.isArray(this.navigation)) {
+            this.navigation = [];
+        }
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$

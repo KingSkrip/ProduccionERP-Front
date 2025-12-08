@@ -31,15 +31,11 @@ import { Subject, takeUntil } from 'rxjs';
     encapsulation: ViewEncapsulation.None,
     exportAs: 'quickChat',
     imports: [
-        NgClass,
         MatIconModule,
         MatButtonModule,
-        FuseScrollbarDirective,
-        NgTemplateOutlet,
         MatFormFieldModule,
         MatInputModule,
         TextFieldModule,
-        DatePipe,
     ],
 })
 export class QuickChatComponent implements OnInit, AfterViewInit, OnDestroy {

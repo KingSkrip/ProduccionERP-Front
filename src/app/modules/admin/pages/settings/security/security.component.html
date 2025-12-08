@@ -3,32 +3,16 @@
     <form [formGroup]="securityForm">
         <!-- Section -->
         <div class="w-full">
-            <div class="text-xl">Change your password</div>
+            <div class="text-xl">Cambiar tu contraseña</div>
             <div class="text-secondary">
-                You can only change your password twice within 24 hours!
+                ¡Solo puedes cambiar tu contraseña dos veces dentro de 24 horas!
             </div>
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- Current password -->
-            <div class="sm:col-span-4">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Current password</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:key'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'currentPassword'"
-                        type="password"
-                        matInput
-                    />
-                </mat-form-field>
-            </div>
             <!-- New password -->
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>New password</mat-label>
+                    <mat-label>Nueva Contraseña</mat-label>
                     <mat-icon
                         class="icon-size-5"
                         [svgIcon]="'heroicons_solid:key'"
@@ -36,71 +20,87 @@
                     ></mat-icon>
                     <input
                         [formControlName]="'newPassword'"
-                        type="password"
+                        [type]="hideNewPassword ? 'password' : 'text'"
+                        maxlength="16"
+                        (paste)="onPaste($event)"
                         matInput
                     />
+                    <button
+                        mat-icon-button
+                        matSuffix
+                        type="button"
+                        (click)="hideNewPassword = !hideNewPassword"
+                        [attr.aria-label]="'Hide password'"
+                        [attr.aria-pressed]="hideNewPassword"
+                    >
+                        <mat-icon>{{hideNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button>
+                    <mat-error *ngIf="securityForm.get('newPassword')?.hasError('required')">
+                        La nueva contraseña es requerida
+                    </mat-error>
+                    <mat-error *ngIf="securityForm.get('newPassword')?.hasError('minlength')">
+                        Mínimo 8 caracteres
+                    </mat-error>
                 </mat-form-field>
+                
+                <!-- Barra de seguridad de contraseña -->
+                <div *ngIf="securityForm.get('newPassword')?.value" class="mt-2">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-secondary">Seguridad de la contraseña:</span>
+                        <span class="text-sm font-medium" 
+                              [ngClass]="{
+                                'text-warn': passwordStrengthColor === 'warn',
+                                'text-accent': passwordStrengthColor === 'accent',
+                                'text-primary': passwordStrengthColor === 'primary'
+                              }">
+                            {{passwordStrengthText}}
+                        </span>
+                    </div>
+                    <mat-progress-bar 
+                        mode="determinate" 
+                        [value]="passwordStrength"
+                        [color]="passwordStrengthColor">
+                    </mat-progress-bar>
+                </div>
+                
                 <div class="text-hint mt-1 text-md">
-                    Minimum 8 characters. Must include numbers, letters and
-                    special characters.
+                    Mínimo 8 caracteres. Debe incluir números, letras y caracteres especiales.
                 </div>
             </div>
-        </div>
-
-        <!-- Divider -->
-        <div class="my-10 border-t"></div>
-
-        <!-- Section -->
-        <div class="w-full">
-            <div class="text-xl">Security preferences</div>
-            <div class="text-secondary">
-                Keep your account more secure with following preferences.
-            </div>
-        </div>
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- 2-step auth -->
-            <div class="flex items-center justify-between sm:col-span-4">
-                <div
-                    class="flex-auto cursor-pointer"
-                    (click)="twoStepToggle.toggle()"
-                >
-                    <div class="font-medium leading-6">
-                        Enable 2-step authentication
-                    </div>
-                    <div class="text-secondary text-md">
-                        Protects you against password theft by requesting an
-                        authentication code via SMS on every login.
-                    </div>
-                </div>
-                <mat-slide-toggle
-                    class="ml-4"
-                    [color]="'primary'"
-                    [formControlName]="'twoStep'"
-                    #twoStepToggle
-                >
-                </mat-slide-toggle>
-            </div>
-            <!-- Ask to change password -->
-            <div class="flex items-center justify-between sm:col-span-4">
-                <div
-                    class="flex-auto cursor-pointer"
-                    (click)="askPasswordChangeToggle.toggle()"
-                >
-                    <div class="font-medium leading-6">
-                        Ask to change password on every 6 months
-                    </div>
-                    <div class="text-secondary text-md">
-                        A simple but an effective way to be protected against
-                        data leaks and password theft.
-                    </div>
-                </div>
-                <mat-slide-toggle
-                    class="ml-4"
-                    [color]="'primary'"
-                    [formControlName]="'askPasswordChange'"
-                    #askPasswordChangeToggle
-                >
-                </mat-slide-toggle>
+            <!-- Confirm password -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Confirmar contraseña</mat-label>
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_solid:key'"
+                        matPrefix
+                    ></mat-icon>
+                    <input
+                        [formControlName]="'confirmPassword'"
+                        [type]="hideConfirmPassword ? 'password' : 'text'"
+                        maxlength="16"
+                        (paste)="onPaste($event)"
+                        matInput
+                    />
+                    <button
+                        mat-icon-button
+                        matSuffix
+                        type="button"
+                        (click)="hideConfirmPassword = !hideConfirmPassword"
+                        [attr.aria-label]="'Hide password'"
+                        [attr.aria-pressed]="hideConfirmPassword"
+                    >
+                        <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button>
+                    <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('required')">
+                        Confirmar contraseña es requerido
+                    </mat-error>
+                    <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('passwordMismatch') && 
+                                      securityForm.get('confirmPassword')?.value">
+                        Las contraseñas no coinciden
+                    </mat-error>
+                </mat-form-field>
             </div>
         </div>
 
@@ -109,14 +109,22 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancel</button>
+            <button 
+                mat-stroked-button 
+                type="button"
+                (click)="cancelar()"
+            >
+                Cancelar
+            </button>
             <button
                 class="ml-4"
                 mat-flat-button
                 type="button"
                 [color]="'primary'"
+                (click)="guardarPassword()"
+                [disabled]="securityForm.invalid"
             >
-                Save
+                Guardar
             </button>
         </div>
     </form>

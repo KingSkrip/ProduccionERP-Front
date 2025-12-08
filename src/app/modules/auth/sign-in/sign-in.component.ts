@@ -47,9 +47,6 @@ export class AuthSignInComponent implements OnInit {
     signInForm: UntypedFormGroup;
     showAlert: boolean = false;
 
-    /**
-     * Constructor
-     */
     constructor(
         private _activatedRoute: ActivatedRoute,
         private _authService: AuthService,
@@ -57,57 +54,57 @@ export class AuthSignInComponent implements OnInit {
         private _router: Router
     ) { }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Lifecycle hooks
-    // -----------------------------------------------------------------------------------------------------
-
-    /**
-     * On init
-     */
     ngOnInit(): void {
-        // Create the form
-        this.signInForm = this._formBuilder.group({
-            email: ['', [Validators.required, Validators.email]],
-            password: ['', Validators.required],
-            rememberMe: [''],
+      localStorage.removeItem('accessToken');
+    this._authService.signOut().subscribe(); // resetea estado
+
+    this.signInForm = this._formBuilder.group({
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', Validators.required],
+        rememberMe: [''],
+    });
+    }
+
+    signIn(event?: Event): void {
+        // CRÍTICO: Prevenir reload de la página
+        if (event) {
+            event.preventDefault();
+        }
+
+        // Validar el formulario
+        if (this.signInForm.invalid) {
+            return;
+        }
+
+        // Deshabilitar el formulario y ocultar alertas previas
+        this.signInForm.disable();
+        this.showAlert = false;
+
+
+        this._authService.signIn(this.signInForm.value).subscribe({
+            next: (response: any) => {
+                // Éxito: redirigir según el rol
+                const userRole = response.user.permissions[0];
+                const redirectURL = DashboardByRole[userRole] || '/signed-in-redirect';
+                this._router.navigateByUrl(redirectURL);
+            },
+            error: (error) => {
+                console.error('❌ Error en login:', error);
+                
+                // Re-habilitar el formulario
+                this.signInForm.enable();
+
+                // Mostrar mensaje de error
+                this.alert = {
+                    type: 'error',
+                    message: 'Correo electrónico o contraseña incorrectos',
+                };
+                this.showAlert = true;
+
+                // Solo limpiar el campo de contraseña por seguridad
+                this.signInForm.patchValue({ password: '' });
+                
+            }
         });
     }
-
-    // -----------------------------------------------------------------------------------------------------
-    // @ Public methods
-    // -----------------------------------------------------------------------------------------------------
-
-    /**
-     * Sign in
-     */
-   signIn(): void {
-    if (this.signInForm.invalid) {
-        return;
-    }
-
-    this.signInForm.disable();
-    this.showAlert = false;
-
-    this._authService.signIn(this.signInForm.value).subscribe(
-        (response: any) => {
-            // Tomamos el primer permiso del array
-            const userRole = response.user.permissions[0]; 
-            console.log('Rol del usuario:', userRole);
-            console.log('Dirigido a:', DashboardByRole[userRole]);
-
-            const redirectURL = DashboardByRole[userRole] || '/signed-in-redirect';
-            this._router.navigateByUrl(redirectURL);
-        },
-        (response) => {
-            this.signInForm.enable();
-            this.signInNgForm.resetForm();
-            this.alert = {
-                type: 'error',
-                message: 'Correo electrónico o contraseña incorrectos',
-            };
-            this.showAlert = true;
-        }
-    );
-}
-
 }

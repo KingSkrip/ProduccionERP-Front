@@ -1,4 +1,4 @@
-<div
+<!-- <div
     class="fixed bottom-0 top-0 w-full sm:w-96 lg:sticky lg:left-full lg:h-screen lg:w-16 lg:shadow"
 >
     <div
@@ -8,14 +8,14 @@
                 opened,
             'translate-x-0': !opened,
         }"
-    >
+    > -->
         <!-- Header -->
-        <div
+        <!-- <div
             class="quick-chat-header flex flex-0 cursor-pointer items-center justify-start"
             (click)="toggle()"
-        >
+        > -->
             <!-- Toggle -->
-            @if (!opened || (opened && !selectedChat)) {
+            <!-- @if (!opened || (opened && !selectedChat)) {
                 <div class="flex flex-auto items-center justify-center">
                     <div class="flex w-16 flex-0 items-center justify-center">
                         <mat-icon
@@ -34,10 +34,10 @@
                         ></mat-icon>
                     </button>
                 </div>
-            }
+            } -->
 
             <!-- Contact info -->
-            @if (opened && selectedChat) {
+            <!-- @if (opened && selectedChat) {
                 <div class="ml-3 flex flex-auto items-center">
                     <div
                         class="relative flex h-10 w-10 flex-0 items-center justify-center"
@@ -67,12 +67,12 @@
                     </button>
                 </div>
             }
-        </div>
+        </div> -->
 
         <!-- Content -->
-        <div class="flex flex-auto overflow-hidden border-t">
+        <!-- <div class="flex flex-auto overflow-hidden border-t"> -->
             <!-- Chat list -->
-            <div
+            <!-- <div
                 class="h-full w-16 flex-0 overflow-y-auto overscroll-y-contain sm:overflow-hidden sm:overscroll-auto"
                 fuseScrollbar
                 [fuseScrollbarOptions]="{ wheelPropagation: false }"
@@ -120,10 +120,10 @@
                         </div>
                     }
                 </div>
-            </div>
+            </div> -->
 
             <!-- Conversation -->
-            <div
+            <!-- <div
                 class="flex flex-auto flex-col overflow-hidden border-l bg-gray-50 dark:bg-transparent"
             >
                 @if (chat) {
@@ -137,9 +137,9 @@
                                 let i = $index;
                                 let first = $first;
                                 let last = $last
-                            ) {
+                            ) { -->
                                 <!-- Start of the day -->
-                                @if (
+                                <!-- @if (
                                     first ||
                                     (chat.messages[i - 1].createdAt
                                         | date: 'd') !==
@@ -159,8 +159,8 @@
                                         </div>
                                         <div class="flex-auto border-b"></div>
                                     </div>
-                                }
-                                <div
+                                } -->
+                                <!-- <div
                                     class="flex flex-col"
                                     [ngClass]="{
                                         'items-end': message.isMine,
@@ -174,9 +174,9 @@
                                             chat.messages[i - 1].isMine !==
                                                 message.isMine,
                                     }"
-                                >
+                                > -->
                                     <!-- Bubble -->
-                                    <div
+                                    <!-- <div
                                         class="relative max-w-3/4 rounded-lg px-3 py-2"
                                         [ngClass]="{
                                             'bg-blue-500 text-blue-50':
@@ -184,9 +184,9 @@
                                             'bg-gray-500 text-gray-50':
                                                 !message.isMine,
                                         }"
-                                    >
+                                    > -->
                                         <!-- Speech bubble tail -->
-                                        @if (
+                                        <!-- @if (
                                             last ||
                                             chat.messages[i + 1].isMine !==
                                                 message.isMine
@@ -206,15 +206,15 @@
                                                     "
                                                 ></ng-container>
                                             </div>
-                                        }
+                                        } -->
                                         <!-- Message -->
-                                        <div
+                                        <!-- <div
                                             class="min-w-4 leading-5"
                                             [innerHTML]="message.value"
                                         ></div>
-                                    </div>
+                                    </div> -->
                                     <!-- Time -->
-                                    @if (
+                                    <!-- @if (
                                         first ||
                                         last ||
                                         chat.messages[i + 1].isMine !==
@@ -238,10 +238,10 @@
                                 </div>
                             }
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Message field -->
-                    <div
+                    <!-- <div
                         class="flex items-end border-t bg-gray-50 p-4 dark:bg-transparent"
                     >
                         <mat-form-field
@@ -284,16 +284,16 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- Select chat or start new template -->
 
 <!-- Speech bubble tail SVG -->
 <!-- prettier-ignore -->
-<ng-template #speechBubbleExtension>
+<!-- <ng-template #speechBubbleExtension>
     <svg width="100%" height="100%" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
         <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
             <path d="M1.01522827,0.516204834 C-8.83532715,54.3062744 61.7609863,70.5215302 64.8009949,64.3061218 C68.8074951,54.8859711 30.1663208,52.9997559 37.5036011,0.516204834 L1.01522827,0.516204834 Z" fill="currentColor" fill-rule="nonzero"></path>
         </g>
     </svg>
-</ng-template>
+</ng-template> -->

@@ -9,6 +9,7 @@ import {
     FuseNavigationService,
     FuseVerticalNavigationComponent,
 } from '@fuse/components/navigation';
+import { AuthService } from 'app/core/auth/auth.service';
 import { FuseComponentsComponent } from 'app/modules/admin/ui/fuse-components/fuse-components.component';
 
 @Component({
@@ -23,18 +24,23 @@ import { FuseComponentsComponent } from 'app/modules/admin/ui/fuse-components/fu
     ],
 })
 export class NavigationComponent {
+
+    menu: string[] = [];
     /**
      * Constructor
      */
     constructor(
         private _fuseNavigationService: FuseNavigationService,
+        private _menuService: AuthService,
         private _fuseComponentsComponent: FuseComponentsComponent
-    ) {}
+    ) { }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
-
+    ngOnInit() {
+        this.menu = this._menuService.getMenu();
+    }
     /**
      * Get navigation item
      *

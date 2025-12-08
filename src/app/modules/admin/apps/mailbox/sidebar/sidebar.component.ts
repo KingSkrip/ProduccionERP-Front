@@ -41,7 +41,8 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
     constructor(
         private _mailboxService: MailboxService,
         private _matDialog: MatDialog,
-        private _fuseNavigationService: FuseNavigationService
+        private _fuseNavigationService: FuseNavigationService,
+        
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -110,7 +111,6 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
         const dialogRef = this._matDialog.open(MailboxComposeComponent);
 
         dialogRef.afterClosed().subscribe((result) => {
-            console.log('Compose dialog was closed!');
         });
     }
 

@@ -4,6 +4,7 @@ import { Chat, Contact, Profile } from 'app/modules/admin/apps/chat/chat.types';
 import {
     BehaviorSubject,
     Observable,
+    Subject,
     filter,
     map,
     of,
@@ -24,7 +25,7 @@ export class ChatService {
     /**
      * Constructor
      */
-    constructor(private _httpClient: HttpClient) {}
+    constructor(private _httpClient: HttpClient) { }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
@@ -200,4 +201,13 @@ export class ChatService {
     resetChat(): void {
         this._chat.next(null);
     }
+
+
+    private _openProfileDrawer = new Subject<void>();
+    openProfileDrawer$ = this._openProfileDrawer.asObservable();
+
+    openProfileDrawer(): void {
+        this._openProfileDrawer.next();
+    }
+
 }

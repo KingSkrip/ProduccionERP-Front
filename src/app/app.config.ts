@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import {
+    APP_INITIALIZER,
     ApplicationConfig,
     inject,
     isDevMode,
@@ -17,6 +18,7 @@ import { provideIcons } from 'app/core/icons/icons.provider';
 import { MockApiService } from 'app/mock-api';
 import { firstValueFrom } from 'rxjs';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
+import { UserService } from './core/user/user.service';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -27,17 +29,12 @@ export const appConfig: ApplicationConfig = {
             withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })
         ),
 
-        // Material Date Adapter
-        {
-            provide: DateAdapter,
-            useClass: LuxonDateAdapter,
-        },
+        // Date adapter
+        { provide: DateAdapter, useClass: LuxonDateAdapter },
         {
             provide: MAT_DATE_FORMATS,
             useValue: {
-                parse: {
-                    dateInput: 'D',
-                },
+                parse: { dateInput: 'D' },
                 display: {
                     dateInput: 'DDD',
                     monthYearLabel: 'LLL yyyy',
@@ -47,18 +44,12 @@ export const appConfig: ApplicationConfig = {
             },
         },
 
-        // Transloco Config
+        // Transloco
         provideTransloco({
             config: {
                 availableLangs: [
-                    {
-                        id: 'en',
-                        label: 'English',
-                    },
-                    {
-                        id: 'tr',
-                        label: 'Turkish',
-                    },
+                    { id: 'en', label: 'English' },
+                    { id: 'tr', label: 'Turkish' },
                 ],
                 defaultLang: 'en',
                 fallbackLang: 'en',
@@ -67,6 +58,7 @@ export const appConfig: ApplicationConfig = {
             },
             loader: TranslocoHttpLoader,
         }),
+
         provideAppInitializer(() => {
             const translocoService = inject(TranslocoService);
             const defaultLang = translocoService.getDefaultLang();
@@ -74,6 +66,14 @@ export const appConfig: ApplicationConfig = {
 
             return firstValueFrom(translocoService.load(defaultLang));
         }),
+
+        // 🔥 AQUÍ AGREGAS TU APP_INITIALIZER
+        {
+            provide: APP_INITIALIZER,
+            useFactory: (userService: UserService) => () => userService.init(),
+            deps: [UserService],
+            multi: true,
+        },
 
         // Fuse
         provideAuth(),
@@ -92,34 +92,17 @@ export const appConfig: ApplicationConfig = {
                     lg: '1280px',
                     xl: '1440px',
                 },
-                theme: 'theme-default',
+                theme: 'theme-teal',
                 themes: [
-                    {
-                        id: 'theme-default',
-                        name: 'Default',
-                    },
-                    {
-                        id: 'theme-brand',
-                        name: 'Brand',
-                    },
-                    {
-                        id: 'theme-teal',
-                        name: 'Teal',
-                    },
-                    {
-                        id: 'theme-rose',
-                        name: 'Rose',
-                    },
-                    {
-                        id: 'theme-purple',
-                        name: 'Purple',
-                    },
-                    {
-                        id: 'theme-amber',
-                        name: 'Amber',
-                    },
+                    { id: 'theme-default', name: 'Default' },
+                    { id: 'theme-brand', name: 'Brand' },
+                    { id: 'theme-teal', name: 'Teal' },
+                    { id: 'theme-rose', name: 'Rose' },
+                    { id: 'theme-purple', name: 'Purple' },
+                    { id: 'theme-amber', name: 'Amber' },
                 ],
             },
         }),
     ],
 };
+
