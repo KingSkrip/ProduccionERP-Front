@@ -14,16 +14,17 @@ import { Observable, Subject, debounceTime, map, merge, switchMap, takeUntil } f
 
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { MatDialog } from '@angular/material/dialog';
-import { AddrhComponent } from 'app/modules/modals/RH/add-rh/add-rh.component';
-import { ConfirmpasswordComponent } from 'app/modules/modals/RH/confirm-password/confirm-password.component';
+import { AddcolaboradorComponent } from 'app/modules/modals/Colaborador/add-colaborador/add-colaborador.component';
+import { ConfirmpasswordComponent } from 'app/modules/modals/Colaborador/confirm-password/confirm-password.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { RHService } from '../rh.service';
+
 import { Usuarios } from '../../usuarios.types';
+import { ColaboradorService } from '../colaborador.service';
 
 @Component({
-    selector: 'rh-list',
-    templateUrl: './rhList.component.html',
+    selector: 'colaborador-list',
+    templateUrl: './colaboradorList.component.html',
     styles: [`
         .inventory-grid {
             grid-template-columns: 48px auto 40px;
@@ -51,7 +52,7 @@ import { Usuarios } from '../../usuarios.types';
         MatTableModule,
     ],
 })
-export class RHListComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ColaboradorListComponent implements OnInit, AfterViewInit, OnDestroy {
     displayedColumns: string[] = ['id', 'photo', 'name', 'email', 'actions'];
     searchInputControl: UntypedFormControl = new UntypedFormControl();
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -78,7 +79,7 @@ export class RHListComponent implements OnInit, AfterViewInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
         private _formBuilder: UntypedFormBuilder,
-        private _inventoryService: RHService,
+        private _inventoryService: ColaboradorService,
         private _dialog: MatDialog,
         private snackBar: MatSnackBar,
     ) { }
@@ -94,6 +95,7 @@ export class RHListComponent implements OnInit, AfterViewInit, OnDestroy {
             name: ['', [Validators.required]],
             email: ['', [Validators.required, Validators.email]],
             departamento: [''],
+            desktop: [''],
             usuario: [''],
             photo: [''],
             password: [''],
@@ -192,6 +194,7 @@ export class RHListComponent implements OnInit, AfterViewInit, OnDestroy {
                     name: usuario.name,
                     email: usuario.email,
                     departamento: usuario.departamento,
+                    desktop: usuario.desktop,
                     usuario: usuario.usuario,
                     photo: usuario.photo,
                     password: usuario.password,
@@ -230,6 +233,7 @@ export class RHListComponent implements OnInit, AfterViewInit, OnDestroy {
             name: usuario.name,
             email: usuario.email,
             departamento: usuario.departamento,
+            desktop: usuario.desktop,
             usuario: usuario.usuario,
             photo: usuario.photo,
         };
@@ -323,7 +327,7 @@ export class RHListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     AddModal(): void {
-        const dialogRef = this._dialog.open(AddrhComponent, {
+        const dialogRef = this._dialog.open(AddcolaboradorComponent, {
             width: '600px',
             disableClose: true,
             data: {}

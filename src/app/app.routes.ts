@@ -98,10 +98,19 @@ export const appRoutes: Route[] = [
                     { path: 'contacts', loadChildren: () => import('app/modules/admin/apps/contacts/contacts.routes') },
                     { path: 'ecommerce', loadChildren: () => import('app/modules/admin/apps/ecommerce/ecommerce.routes') },
 
+                    //roles
+                    { path: 'selor_noitseG', loadChildren: () => import('app/modules/admin/cruds/usuarios/roles/roles.routes') },
+
                     { path: 'Gestion_nimdaus', loadChildren: () => import('app/modules/admin/cruds/usuarios/suadmin/suadmin.routes') },
                     { path: 'hr_noitseG', loadChildren: () => import('app/modules/admin/cruds/usuarios/rh/rh.routes') },
-                    { path: 'rodarobaloc_noitseG', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
                     { path: 'selor_noitseG', loadChildren: () => import('app/modules/admin/cruds/usuarios/roles/roles.routes') },
+                    
+                    { path: 'rodarobaloc_noitseG_ONE', loadChildren: () => import('app/modules/RH/cruds/usuarios/EmpresaOne/colaborador/colaborador.routes') },
+                    { path: 'rodarobaloc_noitseG_TWO', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
+                    { path: 'rodarobaloc_noitseG_THREE', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
+                    { path: 'rodarobaloc_noitseG_FOUR', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
+
+
 
                     { path: 'file-manager', loadChildren: () => import('app/modules/admin/apps/file-manager/file-manager.routes') },
                     { path: 'help-center', loadChildren: () => import('app/modules/admin/apps/help-center/help-center.routes') },
@@ -228,10 +237,10 @@ export const appRoutes: Route[] = [
 
 
             // RH dashboard
-            {
-                path: 'apps/RH',
-                loadChildren: () => import('app/modules/RH/dashboards/RH/RH.routes')
-            },
+            // {
+            //     path: 'apps/RH',
+            //     loadChildren: () => import('app/modules/RH/dashboards/RH/RH.routes')
+            // },
 
             // COLABORADOR dashboard
             {

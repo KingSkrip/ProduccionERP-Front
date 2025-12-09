@@ -18,48 +18,58 @@ export class UserService {
 
     /**
      * Setter & getter for user
-     *
-     * @param value
      */
     set user(value: User) {
-        // Store the value
         this._user.next(value);
+    }
+
+    get user$(): Observable<User | null> {
+        return this._user.asObservable();
+    }
+
+    /**
+     * Get current user synchronously (usar con precaución)
+     */
+    get user(): User | null {
+        let currentUser: User | null = null;
+        this._user.pipe(take(1)).subscribe(user => currentUser = user);
+        return currentUser;
     }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
-    get user$(): Observable<User | null> {
-        return this._user.asObservable();
-    }
 
-    // -----------------------------------------------------------
-    // Load user at startup using token
-    // -----------------------------------------------------------
+    /**
+     * Load user at startup using token
+     * 🔥 CORRECCIÓN: Mejorar manejo de errores y agregar logs
+     */
     init(): void {
         const token = localStorage.getItem('accessToken');
 
         if (!token) {
+            console.log('[UserService] No hay token, usuario = null');
             this._user.next(null);
             return;
         }
 
         this._httpClient.get(`${this.apiUrl}dash/me`, {
             headers: { Authorization: `Bearer ${token}` }
-        })
-            .subscribe({
-                next: (resp: any) => {
-                    this._user.next(resp.user);
-                },
-                error: () => {
-                    this._user.next(null);
-                }
-            });
+        }).subscribe({
+            next: (resp: any) => {
+                this._user.next(resp.user);
+            },
+            error: (err) => {
+                console.error('[UserService] Error al cargar usuario:', err);
+                localStorage.removeItem('accessToken');
+                this._user.next(null);
+            }
+        });
     }
 
-    // -----------------------------------------------------------
-    // Update user info
-    // -----------------------------------------------------------
+    /**
+     * Update user info
+     */
     update(user: User): Observable<any> {
         return this._httpClient.patch(`${this.apiUrl}dash/user`, user).pipe(
             tap((resp: any) => {
@@ -68,13 +78,18 @@ export class UserService {
         );
     }
 
-    // -----------------------------------------------------------
-    // Update user status (online / away / etc)
-    // -----------------------------------------------------------
+    /**
+     * Update user status (online / away / etc)
+     */
     updateUserStatus(status: string): void {
         this._httpClient.post(`${this.apiUrl}dash/update-status`, { status })
-            .subscribe((resp: any) => {
-                this._user.next(resp.user);
+            .subscribe({
+                next: (resp: any) => {
+                    this._user.next(resp.user);
+                },
+                error: (err) => {
+                    console.error('[UserService] Error al actualizar status:', err);
+                }
             });
     }
 
@@ -87,30 +102,30 @@ export class UserService {
      * SOLUCIÓN: Preserva todas las propiedades del usuario actual
      */
     updateUser(data: any): void {
-        // Obtener el usuario actual una sola vez
         this._user.pipe(take(1)).subscribe((currentUser) => {
-            // Normalizar los datos nuevos
             const normalized = this.normalizeUser(data);
-
-            // Hacer merge: preservar datos existentes y sobrescribir solo lo nuevo
             const mergedUser = {
-                ...currentUser,  // Mantener todos los datos actuales
-                ...normalized    // Sobrescribir solo lo que venga en 'data'
+                ...currentUser,
+                ...normalized
             };
-
-            // Emitir el usuario actualizado
+            console.log('[UserService] Usuario actualizado:', mergedUser);
             this._user.next(mergedUser);
         });
     }
 
     /**
      * Normaliza los datos del usuario que vienen del backend
-     * Maneja diferentes formatos (mayúsculas/minúsculas)
+     * 🔥 CORRECCIÓN: Simplificar normalización
      */
     normalizeUser(apiUser: any): Partial<User> {
+        // Si el usuario ya viene normalizado, devolverlo directamente
+        if (apiUser.email && apiUser.name) {
+            return apiUser;
+        }
+
+        // Normalizar solo si viene en formato antiguo
         const normalized: any = {};
 
-        // Solo agregar propiedades que realmente vengan en apiUser
         if (apiUser.ID !== undefined || apiUser.id !== undefined) {
             normalized.id = apiUser.ID ?? apiUser.id;
         }
@@ -120,14 +135,17 @@ export class UserService {
         if (apiUser.CORREO !== undefined || apiUser.email !== undefined) {
             normalized.email = apiUser.CORREO ?? apiUser.email;
         }
-        if (apiUser.USUARIO !== undefined || apiUser.username !== undefined) {
-            normalized.username = apiUser.USUARIO ?? apiUser.username;
+        if (apiUser.USUARIO !== undefined || apiUser.usuario !== undefined) {
+            normalized.usuario = apiUser.USUARIO ?? apiUser.usuario;
         }
         if (apiUser.PHOTO !== undefined || apiUser.photo !== undefined) {
             normalized.photo = apiUser.PHOTO ?? apiUser.photo;
         }
         if (apiUser.DEPARTAMENTO !== undefined || apiUser.departamento !== undefined) {
             normalized.departamento = apiUser.DEPARTAMENTO ?? apiUser.departamento;
+        }
+        if (apiUser.permissions !== undefined) {
+            normalized.permissions = apiUser.permissions;
         }
 
         return normalized;

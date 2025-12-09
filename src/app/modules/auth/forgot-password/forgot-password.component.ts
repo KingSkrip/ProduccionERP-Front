@@ -113,7 +113,7 @@ export class AuthForgotPasswordComponent implements OnInit {
                     this.alert = {
                         type: 'error',
                         message:
-                            'Email does not found! Are you sure you are already a member?',
+                            '¡No se encontró tu correo electrónico! ¿Estás seguro de que ya eres miembro?',
                     };
                 }
             );

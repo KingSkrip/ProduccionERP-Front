@@ -1301,17 +1301,49 @@ export const horizontalNavigation: FuseNavigationItem[] = [
 export const menuRh: FuseNavigationItem[] = [
     {
         id: 'rh.dashboard',
+        title: 'Inicio',
         tooltip: 'Inicio',
         type: 'basic',
         icon: 'heroicons_outline:home',
-        link: '/apps/RH',
+       link: '/dashboards/project'
     },
-    {
+
+      {
         id: 'cruds',
-        tooltip: 'Gestion',
-        type: 'basic',
+        title: 'Colaboradores',              // le agregamos title para que aparezca como los demás
+        subtitle: 'Gestión de usuarios',
+        type: 'collapsable',
         icon: 'heroicons_outline:user-group',
-        link: '/apps/Gestion',
+        children: [
+            {
+                id: 'cruds.colaboradores',
+                title: 'Empresa uno',
+                type: 'basic',
+                icon: 'heroicons_outline:users',
+                link: '/apps/rodarobaloc_noitseG_ONE',
+            },
+             {
+                id: 'cruds.colaboradores',
+                title: 'Empresa dos',
+                type: 'basic',
+                icon: 'heroicons_outline:users',
+                link: '/apps/rodarobaloc_noitseG_TWO',
+            },
+             {
+                id: 'cruds.colaboradores',
+                title: 'Empresa tres',
+                type: 'basic',
+                icon: 'heroicons_outline:users',
+                link: '/apps/rodarobaloc_noitseG_THREE',
+            },
+             {
+                id: 'cruds.colaboradores',
+                title: 'Empresa cuatro',
+                type: 'basic',
+                icon: 'heroicons_outline:users',
+                link: '/apps/rodarobaloc_noitseG_FOUR',
+            },
+        ],
     },
 
 ];
