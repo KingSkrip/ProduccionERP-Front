@@ -77,14 +77,19 @@ export class RHService {
     }
 
     // Actualizar superadmin
-    updateUsuario(id: string, usuario: { name: string, email: string, password?: string }): Observable<Usuarios> {
+    updateUsuario(
+        id: string,
+        usuario: { name: string, email: string, password?: string }
+    ): Observable<Usuarios> {
+        const numericId = Number(id); // <-- convertimos a number
+
         return this.usuarios$.pipe(
             take(1),
             switchMap(usuarios =>
                 this._httpClient.put<{ message: string, user: Usuarios }>(`${this.apiUrl}rh/suadmin/${id}`, usuario)
                     .pipe(
                         tap(response => {
-                            const updatedUsuarios = (usuarios || []).map(u => u.id === id ? response.user : u);
+                            const updatedUsuarios = (usuarios || []).map(u => u.id === numericId ? response.user : u);
                             this._usuarios.next(updatedUsuarios);
                         }),
                         map(response => response.user)
@@ -93,15 +98,18 @@ export class RHService {
         );
     }
 
+
     // Eliminar superadmin
     deleteUsuario(id: string): Observable<boolean> {
+        const numericId = Number(id); // <-- convertimos a number
+
         return this.usuarios$.pipe(
             take(1),
             switchMap(usuarios =>
                 this._httpClient.delete<{ message: string, user: Usuarios }>(`${this.apiUrl}rh/suadmin/${id}`)
                     .pipe(
                         tap(() => {
-                            const updatedUsuarios = (usuarios || []).filter(u => u.id !== id);
+                            const updatedUsuarios = (usuarios || []).filter(u => u.id !== numericId);
                             this._usuarios.next(updatedUsuarios);
                         }),
                         map(() => true)

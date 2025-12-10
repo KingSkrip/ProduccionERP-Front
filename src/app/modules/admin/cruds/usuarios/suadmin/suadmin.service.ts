@@ -77,38 +77,45 @@ export class SuadminService {
     }
 
     // Actualizar superadmin
-    updateUsuario(id: string, usuario: { name: string, email: string, password?: string }): Observable<Usuarios> {
-        return this.usuarios$.pipe(
-            take(1),
-            switchMap(usuarios =>
-                this._httpClient.put<{ message: string, user: Usuarios }>(`${this.apiUrl}superadmin/suadmin/${id}`, usuario)
-                    .pipe(
-                        tap(response => {
-                            const updatedUsuarios = (usuarios || []).map(u => u.id === id ? response.user : u);
-                            this._usuarios.next(updatedUsuarios);
-                        }),
-                        map(response => response.user)
-                    )
-            )
-        );
-    }
+    updateUsuario(
+    id: string,
+    usuario: { name: string, email: string, password?: string }
+): Observable<Usuarios> {
+    const numericId = Number(id); // <-- conversión
+
+    return this.usuarios$.pipe(
+        take(1),
+        switchMap(usuarios =>
+            this._httpClient.put<{ message: string, user: Usuarios }>(`${this.apiUrl}superadmin/suadmin/${id}`, usuario)
+                .pipe(
+                    tap(response => {
+                        const updatedUsuarios = (usuarios || []).map(u => u.id === numericId ? response.user : u);
+                        this._usuarios.next(updatedUsuarios);
+                    }),
+                    map(response => response.user)
+                )
+        )
+    );
+}
 
     // Eliminar superadmin
-    deleteUsuario(id: string): Observable<boolean> {
-        return this.usuarios$.pipe(
-            take(1),
-            switchMap(usuarios =>
-                this._httpClient.delete<{ message: string, user: Usuarios }>(`${this.apiUrl}superadmin/suadmin/${id}`)
-                    .pipe(
-                        tap(() => {
-                            const updatedUsuarios = (usuarios || []).filter(u => u.id !== id);
-                            this._usuarios.next(updatedUsuarios);
-                        }),
-                        map(() => true)
-                    )
-            )
-        );
-    }
+   deleteUsuario(id: string): Observable<boolean> {
+    const numericId = Number(id); // <-- conversión
+
+    return this.usuarios$.pipe(
+        take(1),
+        switchMap(usuarios =>
+            this._httpClient.delete<{ message: string, user: Usuarios }>(`${this.apiUrl}superadmin/suadmin/${id}`)
+                .pipe(
+                    tap(() => {
+                        const updatedUsuarios = (usuarios || []).filter(u => u.id !== numericId);
+                        this._usuarios.next(updatedUsuarios);
+                    }),
+                    map(() => true)
+                )
+        )
+    );
+}
 
 
 

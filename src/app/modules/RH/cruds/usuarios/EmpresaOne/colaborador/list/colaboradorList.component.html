@@ -1,0 +1,212 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent w-full h-full">
+
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+
+        @if (isLoading) {
+        <div class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+        </div>
+        }
+
+        <div class="text-4xl font-extrabold tracking-tight">
+            Empleados Empresa 1
+        </div>
+
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
+                    placeholder="Buscar empleado" />
+            </mat-form-field>
+        </div>
+
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
+
+            @if (EmpleadoE1$ | async; as empleados) {
+
+            @if (empleados.length > 0) {
+
+            <div class="grid">
+
+                <!-- Cabecera -->
+                <div
+                    class="grid grid-cols-[1fr_1fr_1fr] text-secondary sticky top-0 z-10 gap-6 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8">
+                    <div>Nombre</div>
+                    <div>Correo electrónico</div>
+                    <div>Puesto</div>
+                </div>
+
+                <!-- Filas -->
+                @for (empleado of paginatedEmpleados; track trackByFn) {
+
+                <div class="grid grid-cols-[1fr_1fr_1fr] items-center gap-6 border-b px-4 py-3 md:px-8">
+                    <div>{{ empleado.NOMBRE }} {{ empleado.AP_PAT_ }} {{ empleado.AP_MAT_ }}</div>
+                    <div>{{ empleado.EMAIL }}</div>
+                    <div>{{ empleado.PUESTO }}</div>
+                    <!-- <div></div> -->
+                </div>
+
+                }
+            </div>
+
+
+            <!-- Paginador -->
+            <div class="flex justify-center space-x-2 p-4 bg-gray-900 text-gray-200">
+
+                <!-- Anterior -->
+                <button class="px-3 py-1 rounded hover:bg-gray-700" (click)="prevPage()" [disabled]="currentPage === 0">
+                    <mat-icon>chevron_left</mat-icon>
+                </button>
+
+                <!-- Números -->
+                <div class="flex items-center space-x-2">
+                    <button *ngFor="let p of totalPagesArray" (click)="goToPage(p)"
+                        class="px-3 py-1 rounded transition-all duration-200" [ngClass]="{
+                                'bg-primary-600 text-white': p === currentPage,
+                                'hover:bg-gray-700': p !== currentPage
+                            }">
+                        {{ p + 1 }}
+                    </button>
+                </div>
+
+                <!-- Siguiente -->
+                <button class="px-3 py-1 rounded hover:bg-gray-700" (click)="nextPage()"
+                    [disabled]="currentPage >= totalPages - 1">
+                    <mat-icon>chevron_right</mat-icon>
+                </button>
+
+            </div>
+
+            } @else {
+            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                ¡No hay empleados registrados!
+            </div>
+            }
+
+            }
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Plantilla de detalles -->
+<!-- <ng-template #rowDetailsTemplate let-usuario>
+    <div class="overflow-hidden shadow-lg">
+        <form class="w-full" [formGroup]="selectedUsuarioForm">
+            <div class="p-4 sm:p-6 lg:p-8">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8"> -->
+
+<!-- Foto de perfil -->
+<!-- <div class="flex justify-center lg:col-span-3 lg:justify-start">
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="relative flex h-32 w-32 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-gray-200 bg-gray-100 shadow-md">
+                                <img [src]="selectedPhotoUrl" class="h-full w-full object-cover" alt="Foto de perfil" />
+                            </div>
+                            <p class="mt-3 text-center text-sm text-gray-500">Foto de perfil</p>
+                        </div>
+                    </div> -->
+
+<!-- Campos del formulario -->
+<!-- <div class="lg:col-span-9">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                            <div class="sm:col-span-2">
+                                <mat-form-field class="w-full">
+                                    <mat-label>Nombre completo</mat-label>
+                                    <input matInput formControlName="name" placeholder="Nombre completo" />
+                                </mat-form-field>
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <mat-form-field class="w-full">
+                                    <mat-label>Correo electrónico</mat-label>
+                                    <input matInput type="email" formControlName="email"
+                                        placeholder="correo@ejemplo.com" />
+                                </mat-form-field>
+                            </div>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Departamento</mat-label>
+                                <input matInput formControlName="departamento" placeholder="Departamento" />
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Desktop</mat-label>
+                                <input matInput formControlName="desktop" placeholder="Desktop" />
+                            </mat-form-field>
+
+                            <div class="sm:col-span-2">
+                                <mat-form-field class="w-full">
+                                    <mat-label>Usuario</mat-label>
+                                    <input matInput formControlName="usuario" placeholder="Nombre de usuario"
+                                        autocomplete="off" />
+                                </mat-form-field>
+                            </div>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Nueva contraseña</mat-label>
+                                <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                                    placeholder="Dejar vacío si no deseas cambiarla" autocomplete="off"
+                                    (paste)="blockPaste($event)" />
+                                <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+                                    <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                                </button>
+                                <mat-hint>Deja vacío si no quieres cambiar la contraseña</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Confirmar nueva contraseña</mat-label>
+                                <input matInput [type]="showPasswordConfirmation ? 'text' : 'password'"
+                                    formControlName="password_confirmation" placeholder="Repite la contraseña"
+                                    autocomplete="off" (paste)="blockPaste($event)" />
+                                <button mat-icon-button matSuffix type="button"
+                                    (click)="togglePasswordConfirmationVisibility()">
+                                    <mat-icon>{{ showPasswordConfirmation ? 'visibility_off' : 'visibility'
+                                        }}</mat-icon>
+                                </button>
+                                <mat-error *ngIf="passwordsDontMatch()">Las contraseñas no coinciden</mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div> -->
+<!-- </div>
+            </div> -->
+
+<!-- Botones de acción -->
+<!-- <div
+                class="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+                <button class="order-2 sm:order-1" mat-button [color]="'warn'" (click)="deleteSelectedUsuario()">
+                    <mat-icon class="mr-2">delete</mat-icon>
+                    Eliminar usuario
+                </button>
+
+                <div class="order-1 flex flex-col items-center gap-3 sm:order-2 sm:flex-row">
+                    @if (flashMessage) {
+                    <div class="flex items-center">
+                        @if (flashMessage === 'success') {
+                        <mat-icon class="text-green-500" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                        <span class="ml-2 text-sm">¡Usuario actualizado correctamente!</span>
+                        }
+                        @if (flashMessage === 'error') {
+                        <mat-icon class="text-red-500" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                        <span class="ml-2 text-sm">Ocurrió un error</span>
+                        }
+                    </div>
+                    }
+                    <button mat-flat-button [color]="'primary'" (click)="updateSelectedUsuario()"
+                        class="w-full sm:w-auto">
+                        <mat-icon class="mr-2">save</mat-icon>
+                        Guardar cambios
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</ng-template> -->

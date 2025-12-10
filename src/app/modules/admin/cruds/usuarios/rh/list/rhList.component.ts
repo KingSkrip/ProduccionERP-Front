@@ -94,7 +94,6 @@ export class RHListComponent implements OnInit, AfterViewInit, OnDestroy {
             name: ['', [Validators.required]],
             email: ['', [Validators.required, Validators.email]],
             departamento: [''],
-            desktop: [''],
             usuario: [''],
             photo: [''],
             password: [''],
@@ -193,7 +192,6 @@ export class RHListComponent implements OnInit, AfterViewInit, OnDestroy {
                     name: usuario.name,
                     email: usuario.email,
                     departamento: usuario.departamento,
-                    desktop: usuario.desktop,
                     usuario: usuario.usuario,
                     photo: usuario.photo,
                     password: usuario.password,
@@ -232,7 +230,6 @@ export class RHListComponent implements OnInit, AfterViewInit, OnDestroy {
             name: usuario.name,
             email: usuario.email,
             departamento: usuario.departamento,
-            desktop: usuario.desktop,
             usuario: usuario.usuario,
             photo: usuario.photo,
         };

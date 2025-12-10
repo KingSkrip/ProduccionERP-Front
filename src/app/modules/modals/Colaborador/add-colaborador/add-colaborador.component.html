@@ -1,0 +1,470 @@
+<!-- Backdrop -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <!-- MODAL -->
+    <div
+        class="animate-fadeIn flex h-full w-full flex-col overflow-hidden rounded-none bg-white shadow-xl sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl dark:bg-gray-900">
+        <!-- HEADER -->
+        <header
+            class="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+            <h2 class="text-lg font-semibold">Crear colaborador</h2>
+            <button class="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800" (click)="closeModal()"
+                [disabled]="isLoading">
+                ✕
+            </button>
+        </header>
+
+        <!-- Loading Bar -->
+        @if (isLoading) {
+        <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+        }
+
+        <!-- STEPPER PROGRESS -->
+        <div class="border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+            <div class="flex items-center justify-between">
+                @for (step of steps; track step.id) {
+                <div class="flex flex-1 items-center">
+                    <div class="flex flex-col items-center">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-all"
+                            [ngClass]="{
+                                    'border-primary-600 bg-primary-600 text-white': currentStep === step.id,
+                                    'border-green-600 bg-green-600 text-white': currentStep > step.id,
+                                    'border-gray-300 bg-white text-gray-400 dark:border-gray-600 dark:bg-gray-700': currentStep < step.id
+                                }">
+                            @if (currentStep > step.id) {
+                            <mat-icon class="text-base" svgIcon="heroicons_outline:check"></mat-icon>
+                            } @else {
+                            {{ step.id }}
+                            }
+                        </div>
+                        <span class="mt-1 hidden text-xs text-gray-600 dark:text-gray-400 sm:block">{{ step.label
+                            }}</span>
+                    </div>
+                    @if ($index < steps.length - 1) { <div class="mx-2 h-0.5 flex-1 bg-gray-300 dark:bg-gray-600"
+                        [ngClass]="{'bg-green-600': currentStep > step.id}">
+                </div>
+                }
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- CONTENIDO SCROLLEABLE -->
+    <div class="flex-1 overflow-y-auto p-4">
+        <form [formGroup]="newUsuarioForm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+            <!-- ============ STEP 1: DATOS PERSONALES ============ -->
+            @if (currentStep === 1) {
+            <div class="space-y-6 animate-fadeIn">
+                <!-- Avatar -->
+                <div class="flex flex-col items-center">
+                    <div class="relative group">
+                        <!-- FOTO -->
+                        <img class="h-32 w-32 rounded-full border object-cover shadow" [src]="newPhotoUrl" />
+
+                        <!-- OVERLAY (se muestra al hacer hover) -->
+                        <div class="absolute inset-0 flex items-center justify-center rounded-full 
+                   bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
+                            (click)="fileInput.click()">
+                            <mat-icon class="text-white" svgIcon="heroicons_outline:camera"></mat-icon>
+                        </div>
+
+                        <!-- INPUT FILE -->
+                        <input #fileInput type="file" accept="image/*" class="hidden"
+                            (change)="onPhotoSelected($event)" />
+                    </div>
+
+                    <!-- BOTÓN (solo en móvil) -->
+                    <button class="mt-3 block rounded-lg bg-gray-200 px-3 py-1 hover:bg-gray-300 sm:hidden 
+               dark:bg-gray-800 dark:hover:bg-gray-700" (click)="fileInput.click()">
+                        Cambiar foto
+                    </button>
+
+                    <!-- ERROR OPCIONAL -->
+                    <mat-error *ngIf="newUsuarioForm.get('photo')?.hasError('required')">
+                        La foto es obligatoria.
+                    </mat-error>
+                </div>
+
+                <mat-form-field class="w-full">
+                    <mat-label>CURP</mat-label>
+                    <input matInput formControlName="curp" placeholder="CURP" maxlength="18" />
+                    <mat-error *ngIf="newUsuarioForm.get('curp')?.hasError('required')">
+                        El curp es obligatorio.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Nombre completo</mat-label>
+                    <input matInput formControlName="name" placeholder="Nombre completo" maxlength="255" />
+                    <mat-error *ngIf="newUsuarioForm.get('name')?.hasError('required')">
+                        El nombre es obligatorio.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Correo electrónico</mat-label>
+                    <input matInput type="email" formControlName="email" placeholder="correo@ejemplo.com"
+                        maxlength="100" />
+                    <mat-error *ngIf="newUsuarioForm.get('email')?.hasError('required')">
+                        El correo es obligatorio.
+                    </mat-error>
+                    <mat-error *ngIf="newUsuarioForm.get('email')?.hasError('email')">
+                        Introduce un correo válido.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Teléfono</mat-label>
+                    <input matInput formControlName="telefono" placeholder="5512345678" maxlength="15" />
+                    <mat-error *ngIf="newUsuarioForm.get('telefono')?.hasError('required')">
+                        El teléfono es obligatorio.
+                    </mat-error>
+                </mat-form-field>
+
+            </div>
+            }
+
+            <!-- ============ STEP 2: DIRECCIÓN ============ -->
+            @if (currentStep === 2) {
+            <div class="space-y-4 animate-fadeIn" formGroupName="direccion">
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">
+                    Dirección del colaborador
+                </h3>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Código Postal</mat-label>
+                        <input matInput formControlName="cp" maxlength="10" />
+                        <mat-error *ngIf="newUsuarioForm.get('direccion.cp')?.hasError('required')">
+                            El código postal es obligatorio.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Estado</mat-label>
+                        <input matInput formControlName="estado" maxlength="100" />
+                        <mat-error *ngIf="newUsuarioForm.get('direccion.estado')?.hasError('required')">
+                            El estado es obligatorio.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Entidad Federativa</mat-label>
+                        <input matInput formControlName="entidad_federativa" maxlength="100" />
+                        <mat-error *ngIf="newUsuarioForm.get('direccion.entidad_federativa')?.hasError('required')">
+                            La entidad federativa es obligatoria.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Municipio</mat-label>
+                        <input matInput formControlName="municipio" maxlength="100" />
+                        <mat-error *ngIf="newUsuarioForm.get('direccion.municipio')?.hasError('required')">
+                            El municipio es obligatorio.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Colonia</mat-label>
+                        <input matInput formControlName="colonia" maxlength="100" />
+                        <mat-error *ngIf="newUsuarioForm.get('direccion.colonia')?.hasError('required')">
+                            La colonia es obligatoria.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Calle</mat-label>
+                        <input matInput formControlName="calle" maxlength="100" />
+                        <mat-error *ngIf="newUsuarioForm.get('direccion.calle')?.hasError('required')">
+                            La calle es obligatoria.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>No. Exterior</mat-label>
+                        <input matInput formControlName="no_ext" maxlength="10" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>No. Interior</mat-label>
+                        <input matInput formControlName="no_int" maxlength="10" />
+                    </mat-form-field>
+
+                </div>
+            </div>
+            }
+
+
+            <!-- ============ STEP 3: DATOS ADMINISTRATIVOS ============ -->
+            @if (currentStep === 3) {
+            <div class="space-y-4 animate-fadeIn">
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información administrativa
+                </h3>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Departamento</mat-label>
+                    <mat-select formControlName="departamento_id">
+                        <mat-option [value]="null">Sin departamento</mat-option>
+                        @for (dept of departamentos; track dept.id) {
+                        <mat-option [value]="dept.id">{{ dept.nombre }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+
+                <div class="space-y-4" formGroupName="empleo">
+                    <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400">Datos de empleo</h4>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Puesto</mat-label>
+                        <input matInput formControlName="puesto" maxlength="100" />
+                        <mat-error *ngIf="newUsuarioForm.get('empleo.puesto')?.hasError('required')">
+                            El empleo es obligatorio.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+<mat-form-field class="w-full">
+  <mat-label>Fecha de inicio</mat-label>
+  <input matInput [matDatepicker]="fechaInicioPicker" formControlName="fecha_inicio" placeholder="Selecciona fecha">
+  <mat-datepicker-toggle matSuffix [for]="fechaInicioPicker"></mat-datepicker-toggle>
+  <mat-datepicker #fechaInicioPicker></mat-datepicker>
+  <mat-error *ngIf="newUsuarioForm.get('empleo.fecha_inicio')?.hasError('required')">
+    La fecha de inicio es obligatoria.
+  </mat-error>
+</mat-form-field>
+
+
+<mat-form-field class="w-full">
+  <mat-label>Fecha fin</mat-label>
+  <input matInput [matDatepicker]="fechaFinPicker" formControlName="fecha_fin" placeholder="Selecciona fecha">
+  <mat-datepicker-toggle matSuffix [for]="fechaFinPicker"></mat-datepicker-toggle>
+  <mat-datepicker #fechaFinPicker></mat-datepicker>
+</mat-form-field>
+
+
+                    </div>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Comentarios</mat-label>
+                        <textarea matInput formControlName="comentarios" rows="3" maxlength="500"></textarea>
+                    </mat-form-field>
+                </div>
+            </div>
+            }
+
+            <!-- ============ STEP 4: DATOS FISCALES Y SEGURIDAD SOCIAL ============ -->
+            @if (currentStep === 4) {
+            <div class="space-y-6 animate-fadeIn">
+                <!-- Datos Fiscales -->
+                <div class="space-y-4" formGroupName="fiscal">
+                    <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300">Datos fiscales</h3>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>RFC</mat-label>
+                        <input matInput formControlName="rfc" maxlength="13" />
+                        <mat-error *ngIf="newUsuarioForm.get('fiscal.rfc')?.hasError('required')">
+                            El RFC es obligatorio.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Régimen fiscal</mat-label>
+                        <input matInput formControlName="regimen_fiscal" maxlength="100" />
+                        <mat-error *ngIf="newUsuarioForm.get('fiscal.regimen_fiscal')?.hasError('required')">
+                            El régimen fiscal es obligatorio.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <!-- Seguridad Social -->
+                <div class="space-y-4" formGroupName="seguridad_social">
+                    <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300">Seguridad social</h3>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Número IMSS</mat-label>
+                        <input matInput formControlName="numero_imss" maxlength="20" />
+                        <mat-error *ngIf="newUsuarioForm.get('seguridad_social.numero_imss')?.hasError('required')">
+                            El número de IMSS es obligatorio.
+                        </mat-error>
+                    </mat-form-field>
+
+<mat-form-field class="w-full">
+  <mat-label>Fecha de alta</mat-label>
+  <input matInput [matDatepicker]="fechaAltaPicker" formControlName="fecha_alta" placeholder="Selecciona fecha">
+  <mat-datepicker-toggle matSuffix [for]="fechaAltaPicker"></mat-datepicker-toggle>
+  <mat-datepicker #fechaAltaPicker></mat-datepicker>
+  <mat-error *ngIf="newUsuarioForm.get('seguridad_social.fecha_alta')?.hasError('required')">
+    La fecha de alta es obligatoria.
+  </mat-error>
+</mat-form-field>
+
+
+
+
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Tipo de seguro</mat-label>
+                        <mat-select formControlName="tipo_seguro">
+                            <mat-option value="obligatorio">Obligatorio</mat-option>
+                            <mat-option value="voluntario">Voluntario</mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="newUsuarioForm.get('seguridad_social.tipo_seguro')?.hasError('required')">
+                            El tipo de seguro es obligatorio.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+            }
+
+            <!-- ============ STEP 5: NÓMINA ============ -->
+            @if (currentStep === 5) {
+            <div class="space-y-4 animate-fadeIn" formGroupName="nomina">
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información de nómina</h3>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Número de tarjeta</mat-label>
+                    <input matInput formControlName="numero_tarjeta" maxlength="20" />
+                    <mat-error *ngIf="newUsuarioForm.get('nomina.numero_tarjeta')?.hasError('required')">
+                        El númeor de tarjeta es obligatorio.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Banco</mat-label>
+                    <input matInput formControlName="banco" maxlength="100" />
+                    <mat-error *ngIf="newUsuarioForm.get('nomina.banco')?.hasError('required')">
+                        El banco es obligatorio.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>CLABE interbancaria</mat-label>
+                    <input matInput formControlName="clabe_interbancaria" maxlength="18" />
+                    <mat-error *ngIf="newUsuarioForm.get('nomina.clabe_interbancaria')?.hasError('required')">
+                        La clabe interbancaria es obligatorio.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Salario base</mat-label>
+                    <input matInput type="number" formControlName="salario_base" step="0.01" />
+                    <mat-error *ngIf="newUsuarioForm.get('nomina.salario_base')?.hasError('required')">
+                        El salario base es obligatorio.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Frecuencia de pago</mat-label>
+                    <mat-select formControlName="frecuencia_pago">
+                        <mat-option value="semanal">Semanal</mat-option>
+                        <mat-option value="quincenal">Quincenal</mat-option>
+                        <mat-option value="mensual">Mensual</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="newUsuarioForm.get('nomina.frecuencia_pago')?.hasError('required')">
+                        La frecuencia de pago es obligatoria.
+                    </mat-error>
+                </mat-form-field>
+
+            </div>
+            }
+
+            <!-- ============ STEP 6: CREDENCIALES ============ -->
+            @if (currentStep === 6) {
+            <div class="space-y-4 animate-fadeIn">
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Credenciales de acceso</h3>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Usuario</mat-label>
+                    <input matInput formControlName="usuario" placeholder="Usuario" maxlength="18" autocomplete="off"
+                        autocorrect="off" autocapitalize="none" spellcheck="false" />
+                    <mat-error *ngIf="newUsuarioForm.get('usuario')?.hasError('required')">
+                        El usuario es obligatorio.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Contraseña</mat-label>
+                    <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                        maxlength="16" autocomplete="new-password" />
+                    <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+                        <mat-icon
+                            [svgIcon]="showPassword ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'"></mat-icon>
+                    </button>
+
+                    <mat-error *ngIf="newUsuarioForm.get('password')?.hasError('required')">
+                        La contraseña es obligatoria.
+                    </mat-error>
+                    <mat-error *ngIf="newUsuarioForm.get('password')?.hasError('minlength')">
+                        La contraseña debe tener al menos 6 caracteres.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Confirmar contraseña</mat-label>
+                    <input matInput [type]="showPasswordConfirmation ? 'text' : 'password'"
+                        formControlName="password_confirmation" (paste)="blockPaste($event)" maxlength="16"
+                        autocomplete="new-password" />
+                    <button mat-icon-button matSuffix type="button" (click)="togglePasswordConfirmationVisibility()">
+                        <mat-icon
+                            [svgIcon]="showPasswordConfirmation ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'"></mat-icon>
+                    </button>
+                    <mat-error *ngIf="newUsuarioForm.get('password_confirmation')?.hasError('required')">
+                        Debes repetir la contraseña.
+                    </mat-error>
+                </mat-form-field>
+
+                @if (newUsuarioForm.get('password')?.value) {
+                <div class="mb-4">
+                    <div class="mb-1 flex items-center justify-between">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Seguridad:</span>
+                        <span class="text-sm font-medium" [ngClass]="{
+                                            'text-red-600': passwordStrengthColor === 'warn',
+                                            'text-yellow-600': passwordStrengthColor === 'accent',
+                                            'text-green-600': passwordStrengthColor === 'primary'
+                                        }">{{ passwordStrengthLabel }}</span>
+                    </div>
+                    <mat-progress-bar [mode]="'determinate'" [value]="passwordStrength"
+                        [color]="passwordStrengthColor"></mat-progress-bar>
+                </div>
+                }
+
+            </div>
+            }
+        </form>
+    </div>
+
+    <!-- FOOTER NAVIGATION -->
+    <footer
+        class="sticky bottom-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+        <button
+            class="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300 disabled:opacity-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+            (click)="previousStep()" [disabled]="currentStep === 1 || isLoading">
+            ← Anterior
+        </button>
+
+        <div class="flex gap-2">
+            <button class="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+                (click)="closeModal()" [disabled]="isLoading">
+                Cancelar
+            </button>
+
+            @if (currentStep < totalSteps) { <button
+                class="rounded-lg bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 disabled:opacity-50"
+                (click)="nextStep()" [disabled]="isLoading">
+                Siguiente →
+                </button>
+                } @else {
+                <button class="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
+                    (click)="submitForm()" [disabled]="isLoading">
+                    @if (isLoading) {
+                    <span>Guardando...</span>
+                    } @else {
+                    <span>✓ Guardar</span>
+                    }
+                </button>
+                }
+        </div>
+    </footer>
+</div>
+</div>

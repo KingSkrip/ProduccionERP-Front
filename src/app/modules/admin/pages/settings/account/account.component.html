@@ -1,162 +1,201 @@
 <div class="w-full max-w-3xl">
     <!-- Formulario -->
     <form [formGroup]="accountForm">
-        <!-- Sección -->
-        <div class="w-full">
-            <div class="text-xl">Perfil</div>
-            <div class="text-secondary">
-                La siguiente información se muestra públicamente, ¡ten cuidado!
-            </div>
-        </div>
-
-        <!-- Foto de perfil arriba -->
+        <!-- Foto de perfil -->
         <div class="mb-10 mt-6 flex flex-col items-center">
-            <!-- Contenedor de la imagen con hover effect -->
             <div class="group relative">
-                <!-- Loader mientras carga la imagen -->
-                <div
-                    *ngIf="isLoadingImage"
-                    class="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-black bg-opacity-60"
-                >
-                    <mat-spinner
-                        [diameter]="36"
-                        [color]="'accent'"
-                    ></mat-spinner>
+                <div *ngIf="isLoadingImage"
+                    class="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-black bg-opacity-60">
+                    <mat-spinner [diameter]="36" [color]="'accent'"></mat-spinner>
                 </div>
 
-                <!-- Imagen de perfil -->
-                <img
-                    [src]="preview"
-                    alt="Foto de perfil"
+                <img [src]="preview" alt="Foto de perfil"
                     class="h-40 w-40 rounded-full border-4 border-gray-200 object-cover shadow-xl transition-all duration-300 group-hover:border-primary group-hover:shadow-2xl"
-                    [class.opacity-40]="isLoadingImage"
-                />
+                    [class.opacity-40]="isLoadingImage" />
 
-                <!-- Overlay oscuro al hacer hover -->
-                <div
-                    *ngIf="!isLoadingImage"
-                    class="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black bg-opacity-0 transition-all duration-300 group-hover:bg-opacity-40"
-                >
+                <div *ngIf="!isLoadingImage"
+                    class="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black bg-opacity-0 transition-all duration-300 group-hover:bg-opacity-40">
                     <div
-                        class="flex flex-col items-center gap-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    >
-                        <mat-icon
-                            class="text-white"
-                            [svgIcon]="'heroicons_outline:camera'"
-                        ></mat-icon>
-                        <span class="text-xs font-medium text-white"
-                            >Editar</span
-                        >
+                        class="flex flex-col items-center gap-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                        <mat-icon class="text-white" [svgIcon]="'heroicons_outline:camera'"></mat-icon>
+                        <span class="text-xs font-medium text-white">Editar</span>
                     </div>
                 </div>
 
-                <!-- Input file invisible sobre la imagen -->
-                <input
-                    type="file"
-                    #fileInput
-                    accept="image/*"
-                    (change)="onFileSelected($event)"
-                    class="absolute inset-0 cursor-pointer opacity-0"
-                    [disabled]="isLoadingImage"
-                />
+                <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)"
+                    class="absolute inset-0 cursor-pointer opacity-0" [disabled]="isLoadingImage" />
             </div>
 
-            <!-- Botón de cambiar foto solo en móviles -->
-            <button
-                type="button"
+            <button type="button"
                 class="mt-6 block flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 hover:shadow disabled:cursor-not-allowed disabled:opacity-50 md:hidden"
-                (click)="fileInput.click()"
-                [disabled]="isLoadingImage"
-            >
-                <mat-icon
-                    class="text-gray-600 icon-size-5"
-                    [svgIcon]="'heroicons_outline:camera'"
-                ></mat-icon>
+                (click)="fileInput.click()" [disabled]="isLoadingImage">
+                <mat-icon class="text-gray-600 icon-size-5" [svgIcon]="'heroicons_outline:camera'"></mat-icon>
                 {{ isLoadingImage ? 'Cargando imagen...' : 'Cambiar foto' }}
             </button>
 
-            <!-- Texto de ayuda -->
             <p class="mt-3 text-xs text-gray-500">
-                Formatos: JPG, PNG o GIF · Tamaño máximo: 2MB
+                Formatos: JPG o PNG
             </p>
         </div>
 
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-2">
-            <!-- Nombre -->
-            <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Nombre de usuario</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:user'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'username'"
-                        maxlength="18"
-                        matInput
-                    />
-                </mat-form-field>
-            </div>
-
-            <!-- Departamento -->
-            <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Departamento</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:building-office'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'departamento'"
-                        maxlength="25"
-                        matInput
-                    />
-                </mat-form-field>
-            </div>
-        </div>
-
-        <!-- Divisor -->
-        <div class="my-10 border-t"></div>
-
-        <!-- Sección -->
+        <!-- Sección Información personal -->
         <div class="w-full">
             <div class="text-xl">Información personal</div>
             <div class="text-secondary">
-                Detalles de contacto en caso de que queramos comunicarnos
-                contigo. Esta información se mantendrá privada.
+                Esta información se mantendrá privada.
             </div>
         </div>
 
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- Nombre -->
-            <div class="sm:col-span-4">
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-2">
+            <!-- Nombre de usuario -->
+            <div class="w-full">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Nombre</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:user'"
-                        matPrefix
-                    ></mat-icon>
-                    <input [formControlName]="'name'" maxlength="35" matInput />
+                    <mat-label>Nombre de usuario</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
+                    <input [formControlName]="'username'" maxlength="18" matInput />
+
+                    <mat-error *ngIf="accountForm.get('username')?.hasError('required')">
+                        El nombre de usuario es obligatorio.
+                    </mat-error>
+                    <mat-error *ngIf="accountForm.get('username')?.hasError('pattern')">
+                        Solo se permiten letras, números, puntos, guiones y guion bajo.
+                    </mat-error>
+                    <mat-error *ngIf="accountForm.get('username')?.hasError('maxlength')">
+                        Máximo 20 caracteres.
+                    </mat-error>
                 </mat-form-field>
             </div>
 
-            <!-- Email -->
-            <div class="sm:col-span-4">
+
+            <!-- Nombre completo -->
+            <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Nombre</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
+                    <input [formControlName]="'name'" maxlength="35" matInput />
+
+                    <mat-error *ngIf="accountForm.get('name')?.hasError('required')">
+                        El nombre es obligatorio.
+                    </mat-error>
+                    <mat-error *ngIf="accountForm.get('name')?.hasError('pattern')">
+                        Solo se permiten letras y espacios.
+                    </mat-error>
+                    <mat-error *ngIf="accountForm.get('name')?.hasError('maxlength')">
+                        Máximo 50 caracteres.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+
+
+            <!-- Correo electrónico -->
+            <div class="w-full">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Correo electrónico</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:envelope'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'email'"
-                        maxlength="40"
-                        matInput
-                    />
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
+                    <input [formControlName]="'email'" maxlength="40" matInput />
+
+                    <mat-error *ngIf="accountForm.get('email')?.hasError('required')">
+                        El correo es obligatorio.
+                    </mat-error>
+                    <mat-error *ngIf="accountForm.get('email')?.hasError('email')">
+                        Ingrese un correo electrónico válido.
+                    </mat-error>
+                    <mat-error *ngIf="accountForm.get('email')?.hasError('maxlength')">
+                        Máximo 50 caracteres.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+
+
+            <!-- Teléfono -->
+            <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Teléfono</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:phone'" matPrefix></mat-icon>
+                    <input [formControlName]="'phone'" maxlength="10" matInput />
+
+                    <mat-error *ngIf="accountForm.get('phone')?.hasError('required')">
+                        El teléfono es obligatorio.
+                    </mat-error>
+                    <mat-error *ngIf="accountForm.get('phone')?.hasError('pattern')">
+                        Solo números.
+                    </mat-error>
+                    <mat-error *ngIf="accountForm.get('phone')?.hasError('minlength')">
+                        Mínimo 7 dígitos.
+                    </mat-error>
+                    <mat-error *ngIf="accountForm.get('phone')?.hasError('maxlength')">
+                        Máximo 15 dígitos.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+
+        </div>
+
+
+        <!-- Sección Dirección -->
+        <div class="my-10 border-t"></div>
+        <div class="w-full">
+            <div class="text-xl">Dirección</div>
+            <div class="text-secondary">
+                Agrega tu dirección completa para mantener tus registros actualizados.
+            </div>
+        </div>
+
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-2">
+            <!-- Código Postal -->
+            <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Código Postal</mat-label>
+                    <input [formControlName]="'cp'" matInput />
+                </mat-form-field>
+            </div>
+
+            <!-- Estado -->
+            <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Estado</mat-label>
+                    <input [formControlName]="'estado'" matInput />
+                </mat-form-field>
+            </div>
+
+            <!-- Municipio -->
+            <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Municipio</mat-label>
+                    <input [formControlName]="'municipio'" matInput />
+                </mat-form-field>
+            </div>
+
+            <!-- Colonia -->
+            <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Colonia</mat-label>
+                    <input [formControlName]="'colonia'" matInput />
+                </mat-form-field>
+            </div>
+
+
+            <!-- Calle -->
+            <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Calle</mat-label>
+                    <input [formControlName]="'calle'" matInput />
+                </mat-form-field>
+            </div>
+
+            <!-- Número exterior -->
+            <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>No. Exterior</mat-label>
+                    <input [formControlName]="'no_ext'" matInput />
+                </mat-form-field>
+            </div>
+
+            <!-- Número interior -->
+            <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>No. Interior</mat-label>
+                    <input [formControlName]="'no_int'" matInput />
                 </mat-form-field>
             </div>
         </div>
@@ -164,55 +203,26 @@
         <!-- Divisor -->
         <div class="mb-10 mt-11 border-t"></div>
 
-        <!-- Mensajes de éxito -->
-        <div
-            *ngIf="mensajeExito"
-            class="mb-4 flex items-start gap-3 rounded-lg border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-3 shadow-sm"
-        >
-            <mat-icon
-                class="mt-0.5 text-green-600 icon-size-5"
-                [svgIcon]="'heroicons_solid:check-circle'"
-            ></mat-icon>
-            <span class="flex-1 text-sm font-medium text-green-800">{{
-                mensajeExito
-            }}</span>
+        <!-- Mensajes -->
+        <div *ngIf="mensajeExito"
+            class="mb-4 flex items-start gap-3 rounded-lg border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-3 shadow-sm">
+            <mat-icon class="mt-0.5 text-green-600 icon-size-5" [svgIcon]="'heroicons_solid:check-circle'"></mat-icon>
+            <span class="flex-1 text-sm font-medium text-green-800">{{ mensajeExito }}</span>
         </div>
 
-        <!-- Mensajes de error -->
-        <div
-            *ngIf="mensajeError"
-            class="mb-4 flex items-start gap-3 rounded-lg border border-red-300 bg-gradient-to-r from-red-50 to-rose-50 px-4 py-3 shadow-sm"
-        >
-            <mat-icon
-                class="mt-0.5 text-red-600 icon-size-5"
-                [svgIcon]="'heroicons_solid:exclamation-circle'"
-            ></mat-icon>
-            <span class="flex-1 text-sm font-medium text-red-800">{{
-                mensajeError
-            }}</span>
+        <div *ngIf="mensajeError"
+            class="mb-4 flex items-start gap-3 rounded-lg border border-red-300 bg-gradient-to-r from-red-50 to-rose-50 px-4 py-3 shadow-sm">
+            <mat-icon class="mt-0.5 text-red-600 icon-size-5"
+                [svgIcon]="'heroicons_solid:exclamation-circle'"></mat-icon>
+            <span class="flex-1 text-sm font-medium text-red-800">{{ mensajeError }}</span>
         </div>
 
         <!-- Acciones -->
         <div class="flex items-center justify-end">
             <button mat-stroked-button type="button">Cancelar</button>
-
-            <button
-                class="relative ml-4 flex items-center justify-center"
-                mat-flat-button
-                type="button"
-                [color]="'primary'"
-                (click)="guardarPerfil()"
-                [disabled]="isLoadingForm || !formChanged"
-            >
-                <!-- Spinner cuando está cargando -->
-                <mat-spinner
-                    *ngIf="isLoadingForm"
-                    [diameter]="20"
-                    [strokeWidth]="3"
-                    class="absolute"
-                ></mat-spinner>
-
-                <!-- Texto del botón -->
+            <button class="relative ml-4 flex items-center justify-center" mat-flat-button type="button" color="primary"
+                (click)="guardarPerfil()" [disabled]="isLoadingForm || !formChanged">
+                <mat-spinner *ngIf="isLoadingForm" [diameter]="20" [strokeWidth]="3" class="absolute"></mat-spinner>
                 <span [class.opacity-0]="isLoadingForm">Guardar</span>
             </button>
         </div>

@@ -9,18 +9,14 @@ import { NavigationByRole, RoleEnum } from './roles/dataroles';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
     private _authenticated: boolean = false;
-
-
     private apiUrl = APP_CONFIG.apiUrl;
 
     constructor(
         private _httpClient: HttpClient,
         private _userService: UserService,
-        
     ) {
         this.checkStoredToken();
     }
-
 
     private checkStoredToken() {
         const token = this.accessToken;
@@ -40,7 +36,6 @@ export class AuthService {
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
     // -----------------------------------------------------------------------------------------------------
-
     set accessToken(token: string) {
         localStorage.setItem('accessToken', token);
     }
@@ -52,15 +47,27 @@ export class AuthService {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
-
+    
+    /**
+     * Forgot Password
+     * 🔥 CORRECCIÓN: Usar comillas invertidas ` en lugar de comillas normales
+     */
     forgotPassword(email: string): Observable<any> {
         return this._httpClient.post(`${this.apiUrl}auth/forgot-password`, { email });
     }
 
-    resetPassword(password: string): Observable<any> {
-        return this._httpClient.post(`${this.apiUrl}auth/reset-password`, { password });
+    /**
+     * Reset Password
+     * 🔥 CORRECCIÓN: Usar comillas invertidas `
+     */
+    resetPassword(data: { token: string; email: string; password: string }): Observable<any> {
+        return this._httpClient.post(`${this.apiUrl}auth/reset-password`, data);
     }
 
+    /**
+     * Sign In
+     * 🔥 CORRECCIÓN: Usar comillas invertidas `
+     */
     signIn(credentials: { email: string; password: string }): Observable<any> {
         if (this._authenticated) {
             return throwError(() => new Error('User is already logged in.'));
@@ -76,6 +83,10 @@ export class AuthService {
         );
     }
 
+    /**
+     * Sign In Using Token (Refresh)
+     * 🔥 CORRECCIÓN: Usar comillas invertidas `
+     */
     signInUsingToken(): Observable<any> {
         if (!this.accessToken) return of(false);
 
@@ -99,21 +110,34 @@ export class AuthService {
         );
     }
 
-
+    /**
+     * Sign Out
+     */
     signOut(): Observable<any> {
         localStorage.removeItem('accessToken');
         this._authenticated = false;
         return of(true);
     }
 
+    /**
+     * Sign Up
+     * 🔥 CORRECCIÓN: Usar comillas invertidas `
+     */
     signUp(user: { name: string; email: string; password: string; company: string }): Observable<any> {
         return this._httpClient.post(`${this.apiUrl}auth/sign-up`, user);
     }
 
+    /**
+     * Unlock Session
+     * 🔥 CORRECCIÓN: Usar comillas invertidas `
+     */
     unlockSession(credentials: { email: string; password: string }): Observable<any> {
         return this._httpClient.post(`${this.apiUrl}auth/unlock-session`, credentials);
     }
 
+    /**
+     * Check Authentication
+     */
     check(): Observable<boolean> {
         if (this._authenticated) return of(true);
         if (!this.accessToken) return of(false);
@@ -121,39 +145,36 @@ export class AuthService {
         return this.signInUsingToken();
     }
 
-
-
+    /**
+     * Get Menu by Role
+     */
     getMenu(): string[] {
         const user = this._userService.user;
-
         if (!user || !user.permissions || !user.permissions.length) return [];
-
+        
         // Tomamos el primer permiso (puedes ajustarlo si tu app soporta multi-rol)
         const roleId = user.permissions[0];
-
         return NavigationByRole[roleId as RoleEnum] ?? [];
     }
 
- /**
+    /**
      * Obtener el rol principal del usuario
      */
-getUserRole(): Observable<number | null> {
-    return this._userService.user$.pipe(
-        map(user => {
-            if (!user || !user.permissions || !user.permissions.length) {
-                return null;
-            }
-            return user.permissions[0];
-        })
-    );
-}
+    getUserRole(): Observable<number | null> {
+        return this._userService.user$.pipe(
+            map(user => {
+                if (!user || !user.permissions || !user.permissions.length) {
+                    return null;
+                }
+                return user.permissions[0];
+            })
+        );
+    }
 
     /**
-     * Obtener el usuario completo (opcional)
+     * Obtener el usuario completo
      */
     getUser() {
         return this._userService.user;
     }
-
-    
 }

@@ -3,6 +3,6 @@ import { RoleEnum } from './dataroles';
 
 export const DashboardByRole = {
     [RoleEnum.SUADMIN]: '/dashboards/project',
-    [RoleEnum.RH]: '/apps/RH',
-    [RoleEnum.COLABORADOR]: '/apps/colaborador'
+    [RoleEnum.RH]: '/dashboards/project',
+    [RoleEnum.COLABORADOR]: '/dashboards/project'
 };

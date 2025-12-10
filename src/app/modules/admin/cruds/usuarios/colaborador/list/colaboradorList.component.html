@@ -1,0 +1,520 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent w-full h-full">
+
+  <!-- Header -->
+  <div class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+    <div *ngIf="isLoading" class="absolute inset-x-0 bottom-0">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+
+    <div class="text-4xl font-extrabold tracking-tight">
+      Gestionar colaboradores
+    </div>
+
+    <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+      <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+        <mat-icon class="icon-size-5" matPrefix svgIcon="heroicons_solid:magnifying-glass"></mat-icon>
+        <input matInput [formControl]="searchInputControl" autocomplete="off" placeholder="Buscar colaboradores" />
+      </mat-form-field>
+
+      <button class="ml-4" mat-flat-button color="primary" (click)="AddModal()">
+        <mat-icon svgIcon="heroicons_outline:plus"></mat-icon>
+        <span class="ml-2 mr-1">Agregar</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="flex flex-auto overflow-hidden">
+    <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
+
+      <ng-container *ngIf="usuarios$ | async as usuarios">
+        <ng-container *ngIf="paginatedUsuarios.length > 0; else noUsuarios">
+
+          <div class="grid">
+
+            <!-- Cabecera de tabla -->
+            <div
+              class="grid grid-cols-[40px_64px_1fr_140px_120px_180px_96px_96px] text-secondary sticky top-0 z-10 gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+              matSort matSortDisableClear>
+
+              <div class="text-center" mat-sort-header="id">#</div>
+              <div class="flex items-center justify-center">Foto</div>
+              <div class="pl-2">Nombre</div>
+              <div class="pl-2">CURP</div>
+              <div class="pl-2">Teléfono</div>
+              <div class="pl-2">Correo</div>
+              <div class="pl-2">Estado</div>
+              <div class="text-center">Detalles</div>
+
+            </div>
+
+            <!-- Filas -->
+            <div *ngFor="let usuario of paginatedUsuarios; let idx = index; trackBy: trackByFn"
+                 class="grid grid-cols-[40px_64px_1fr_140px_120px_180px_96px_96px] items-center gap-4 border-b px-6 py-3 md:px-8 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+
+              <!-- Index -->
+              <div class="text-center font-semibold">
+                {{ (currentPage * itemsPerPage) + idx + 1 }}
+              </div>
+
+              <!-- Foto -->
+              <div class="flex items-center justify-center">
+                <div class="relative flex h-10 w-10 overflow-hidden rounded-full border bg-gray-100">
+                  <img [src]="getPhotoUrl(usuario.photo)" class="h-full w-full object-cover" alt="Foto" />
+                </div>
+              </div>
+
+              <!-- Nombre -->
+              <div class="truncate pl-2">
+                {{ usuario.nombre || usuario.name || 'Sin nombre' }}
+              </div>
+
+              <!-- CURP -->
+              <div class="truncate pl-2">
+                {{ usuario.curp || 'Sin CURP' }}
+              </div>
+
+              <!-- Teléfono -->
+              <div class="truncate pl-2">
+                {{ usuario.telefono || 'Sin teléfono' }}
+              </div>
+
+              <!-- Correo -->
+              <div class="truncate pl-2">
+                {{ usuario.correo || usuario.email || 'Sin correo' }}
+              </div>
+
+<!-- Status con switch editable -->
+<div class="truncate pl-2">
+  <mat-slide-toggle
+    [checked]="usuario.status_id === 1"
+    color="primary"
+    (change)="onStatusChange(usuario, $event.checked)">
+  </mat-slide-toggle>
+</div>
+
+
+
+
+              <!-- Detalles -->
+              <div class="flex justify-center gap-2">
+                <button mat-icon-button matTooltip="Ver detalles" (click)="toggleDetails(usuario)">
+                  <mat-icon class="icon-size-5"
+                    [svgIcon]="selectedUsuario?.id === usuario.id ? 'heroicons_solid:chevron-up' : 'heroicons_solid:chevron-down'">
+                  </mat-icon>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Detalles expandibles -->
+            <ng-container *ngFor="let usuario of paginatedUsuarios">
+              <ng-container *ngIf="selectedUsuario?.id === usuario.id">
+                <ng-container *ngTemplateOutlet="rowDetailsTemplate; context: {$implicit: usuario}"></ng-container>
+              </ng-container>
+            </ng-container>
+
+          </div>
+
+          <!-- Paginador -->
+          <div class="flex justify-center items-center space-x-2 p-4 bg-white dark:bg-gray-900 border-t">
+            <button mat-icon-button (click)="prevPage()" [disabled]="currentPage === 0"
+                    class="transition-all duration-200">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+
+            <div class="flex items-center space-x-2">
+              <button *ngFor="let p of totalPagesArray" (click)="goToPage(p)" mat-button
+                      class="min-w-[40px] transition-all duration-200" [ngClass]="{
+                        'bg-primary text-white': p === currentPage,
+                        'hover:bg-gray-100 dark:hover:bg-gray-700': p !== currentPage
+                      }">
+                {{ p + 1 }}
+              </button>
+            </div>
+
+            <button mat-icon-button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
+                    class="transition-all duration-200">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+
+        </ng-container>
+
+        <!-- No usuarios -->
+        <ng-template #noUsuarios>
+          <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+            ¡No hay colaboradores registrados!
+          </div>
+        </ng-template>
+
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Plantilla de detalles expandible con pasos -->
+<ng-template #rowDetailsTemplate let-usuario>
+    <div class="overflow-hidden shadow-lg bg-white dark:bg-gray-800">
+
+        <!-- STEPPER PROGRESS -->
+        <div class="border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+            <div class="flex items-center justify-between">
+                @for (step of steps; track step.id) {
+                <div class="flex flex-1 items-center">
+                    <div class="flex flex-col items-center">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all cursor-pointer"
+                            [ngClass]="{
+                                'border-primary-600 bg-primary-600 text-white': currentDetailStep === step.id,
+                                'border-gray-300 bg-white text-gray-400 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700': currentDetailStep !== step.id
+                            }" (click)="goToDetailStep(step.id)">
+                            {{ step.id }}
+                        </div>
+                        <span class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ step.label }}</span>
+                    </div>
+                    @if ($index < steps.length - 1) { <div class="mx-2 h-0.5 flex-1 bg-gray-300 dark:bg-gray-600">
+                </div>
+                }
+            </div>
+            }
+        </div>
+    </div>
+
+    <form class="w-full" [formGroup]="selectedUsuarioForm">
+        <div class="p-4 sm:p-6 lg:p-8">
+
+            <!-- ============ STEP 1: DATOS PERSONALES ============ -->
+            @if (currentDetailStep === 1) {
+            <div class="animate-fadeIn">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+
+                    <!-- Foto de perfil -->
+                    <div class="flex justify-center lg:col-span-3 lg:justify-start">
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="relative flex h-32 w-32 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-gray-200 bg-gray-100 shadow-md">
+                                <img [src]="selectedPhotoUrl" class="h-full w-full object-cover" alt="Foto de perfil" />
+                                <!-- Botón para cambiar foto -->
+                                <button mat-icon-button class="absolute bottom-0 right-0 bg-primary text-white"
+                                    (click)="fileInput.click()">
+                                    <mat-icon>photo_camera</mat-icon>
+                                </button>
+                                <input #fileInput type="file" accept="image/*" style="display:none"
+                                    (change)="onFileSelected($event)" />
+                            </div>
+                            <p class="mt-3 text-center text-sm text-gray-500">Foto de perfil</p>
+                        </div>
+                    </div>
+
+                    <!-- Campos del formulario -->
+                    <div class="lg:col-span-9">
+                        <div class="space-y-4">
+                            <mat-form-field class="w-full">
+                                <mat-label>CURP</mat-label>
+                                <input matInput formControlName="curp" />
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Nombre completo</mat-label>
+                                <input matInput formControlName="name" />
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Correo electrónico</mat-label>
+                                <input matInput type="email" formControlName="email" />
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Teléfono</mat-label>
+                                <input matInput formControlName="telefono" />
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+
+            <!-- ============ STEP 2: DIRECCIÓN ============ -->
+            @if (currentDetailStep === 2) {
+            <div class="space-y-4 animate-fadeIn" formGroupName="direccion">
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">
+                    Dirección del colaborador
+                </h3>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <mat-form-field class="w-full">
+                        <mat-label>Código Postal</mat-label>
+                        <input matInput formControlName="cp" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Estado</mat-label>
+                        <input matInput formControlName="estado" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Entidad Federativa</mat-label>
+                        <input matInput formControlName="entidad_federativa" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Municipio</mat-label>
+                        <input matInput formControlName="municipio" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Colonia</mat-label>
+                        <input matInput formControlName="colonia" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Calle</mat-label>
+                        <input matInput formControlName="calle" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>No. Exterior</mat-label>
+                        <input matInput formControlName="no_ext" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>No. Interior</mat-label>
+                        <input matInput formControlName="no_int" />
+                    </mat-form-field>
+                </div>
+            </div>
+            }
+
+            <!-- ============ STEP 3: DATOS ADMINISTRATIVOS ============ -->
+            @if (currentDetailStep === 3) {
+            <div class="space-y-4 animate-fadeIn">
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información administrativa
+                </h3>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Departamento</mat-label>
+                    <mat-select formControlName="departamento_id">
+                        <mat-option [value]="null">Sin departamento</mat-option>
+                        <mat-option *ngFor="let dept of departamentos" [value]="dept.id">
+                            {{ dept.nombre }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+
+                <div class="space-y-4" formGroupName="empleo">
+                    <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400">Datos de empleo</h4>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Puesto</mat-label>
+                        <input matInput formControlName="puesto" />
+                    </mat-form-field>
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <mat-form-field class="w-full">
+                            <mat-label>Fecha de inicio</mat-label>
+                            <input matInput formControlName="fecha_inicio" />
+                        </mat-form-field>
+
+                        <mat-form-field class="w-full">
+                            <mat-label>Fecha fin</mat-label>
+                            <input matInput formControlName="fecha_fin" />
+                        </mat-form-field>
+                    </div>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Comentarios</mat-label>
+                        <textarea matInput formControlName="comentarios" rows="3"></textarea>
+                    </mat-form-field>
+                </div>
+            </div>
+            }
+
+            <!-- ============ STEP 4: DATOS FISCALES Y SEGURIDAD SOCIAL ============ -->
+            @if (currentDetailStep === 4) {
+            <div class="space-y-6 animate-fadeIn">
+                <!-- Datos Fiscales -->
+                <div class="space-y-4" formGroupName="fiscal">
+                    <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300">Datos fiscales</h3>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>RFC</mat-label>
+                        <input matInput formControlName="rfc" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Régimen fiscal</mat-label>
+                        <input matInput formControlName="regimen_fiscal" />
+                    </mat-form-field>
+                </div>
+
+                <!-- Seguridad Social -->
+                <div class="space-y-4" formGroupName="seguridad_social">
+                    <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300">Seguridad social</h3>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Número IMSS</mat-label>
+                        <input matInput formControlName="numero_imss" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Fecha de alta</mat-label>
+                        <input matInput formControlName="fecha_alta" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full">
+                        <mat-label>Tipo de seguro</mat-label>
+                        <input matInput formControlName="tipo_seguro" />
+                    </mat-form-field>
+                </div>
+            </div>
+            }
+
+            <!-- ============ STEP 5: NÓMINA ============ -->
+            @if (currentDetailStep === 5) {
+            <div class="space-y-4 animate-fadeIn" formGroupName="nomina">
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información de nómina</h3>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Número de tarjeta</mat-label>
+                    <input matInput formControlName="numero_tarjeta" />
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Banco</mat-label>
+                    <input matInput formControlName="banco" />
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>CLABE interbancaria</mat-label>
+                    <input matInput formControlName="clabe_interbancaria" />
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Salario base</mat-label>
+                    <input matInput formControlName="salario_base" />
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Frecuencia de pago</mat-label>
+                    <input matInput formControlName="frecuencia_pago" />
+                </mat-form-field>
+            </div>
+            }
+
+            <!-- ============ STEP 6: CREDENCIALES ============ -->
+            <!-- ============ STEP 6: CREDENCIALES ============ -->
+            @if (currentDetailStep === 6) {
+            <div class="space-y-6 animate-fadeIn">
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">
+                    Credenciales de acceso
+                </h3>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                    <!-- Usuario (solo lectura) -->
+                    <mat-form-field class="w-full md:col-span-2" appearance="outline">
+                        <mat-label>Nombre de usuario</mat-label>
+                        <input matInput formControlName="usuario" />
+                        <mat-icon matPrefix class="text-gray-400">account_circle</mat-icon>
+                    </mat-form-field>
+
+                    <!-- Nueva contraseña -->
+                    <mat-form-field class="w-full" appearance="outline">
+                        <mat-label>Nueva contraseña</mat-label>
+                        <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                            placeholder="Dejar vacío para no cambiar" autocomplete="new-password"
+                            (paste)="blockPaste($event)" />
+                        <mat-icon matPrefix class="text-gray-400">lock</mat-icon>
+                        <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()"
+                            [attr.aria-label]="'Mostrar contraseña'">
+                            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                        </button>
+                        <mat-hint>Deja vacío para mantener la contraseña actual</mat-hint>
+                    </mat-form-field>
+
+                    <!-- Confirmar contraseña -->
+                    <mat-form-field class="w-full" appearance="outline">
+                        <mat-label>Confirmar nueva contraseña</mat-label>
+                        <input matInput [type]="showPasswordConfirmation ? 'text' : 'password'"
+                            formControlName="password_confirmation" placeholder="Repite la contraseña"
+                            autocomplete="new-password" (paste)="blockPaste($event)" />
+                        <mat-icon matPrefix class="text-gray-400">lock_outline</mat-icon>
+                        <button mat-icon-button matSuffix type="button" (click)="togglePasswordConfirmationVisibility()"
+                            [attr.aria-label]="'Mostrar confirmación'">
+                            <mat-icon>{{ showPasswordConfirmation ? 'visibility_off' : 'visibility' }}</mat-icon>
+                        </button>
+                        <mat-error *ngIf="passwordsDontMatch()">
+                            Las contraseñas no coinciden
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <!-- Mostrar coincidencia visual (opcional pero queda bonito) -->
+                @if (passwordsMatch() && selectedUsuarioForm.get('password')?.value) {
+                <div class="flex items-center text-green-600 text-sm">
+                    <mat-icon class="icon-size-4 mr-1">check_circle</mat-icon>
+                    Las contraseñas coinciden
+                </div>
+                }
+            </div>
+            }
+        </div>
+
+        <!-- Botones de navegación entre pasos -->
+        <div class="border-t border-gray-200 px-4 py-3 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <button mat-button (click)="previousDetailStep()" [disabled]="currentDetailStep === 1">
+                    <mat-icon>chevron_left</mat-icon>
+                    Anterior
+                </button>
+
+                <span class="text-sm text-gray-500">
+                    Paso {{ currentDetailStep }} de {{ totalSteps }}
+                </span>
+
+                <button mat-button (click)="nextDetailStep()" [disabled]="currentDetailStep === totalSteps">
+                    Siguiente
+                    <mat-icon>chevron_right</mat-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div
+            class="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+            <button class="order-2 sm:order-1" mat-button [color]="'warn'" (click)="deleteSelectedUsuario()">
+                <mat-icon class="mr-2">delete</mat-icon>
+                Eliminar colaborador
+            </button>
+
+            <div class="order-1 flex flex-col items-center gap-3 sm:order-2 sm:flex-row">
+                <button mat-stroked-button (click)="closeDetails()" class="w-full sm:w-auto">
+                    <mat-icon class="mr-2">close</mat-icon>
+                    Cerrar
+                </button>
+                <button mat-flat-button [color]="'primary'" class="w-full sm:w-auto" (click)="updateColaborador()">
+                    <mat-icon class="mr-2">save</mat-icon>
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </form>
+    </div>
+</ng-template>
+
+
+
+<style>
+    .success-snackbar {
+        background: #4caf50 !important;
+        color: white !important;
+    }
+
+    .error-snackbar {
+        background: #f44336 !important;
+        color: white !important;
+    }
+</style>

@@ -81,7 +81,7 @@
             </div>
 
             <!-- Paginador personalizado con estilo oscuro minimalista -->
-            <div class="flex justify-center space-x-2 p-4 bg-gray-900 text-gray-200">
+            <div class="flex justify-center space-x-2 p-4  dark:bg-gray-900 dark:text-white">
 
                 <!-- Botón anterior -->
                 <button class="px-3 py-1 rounded hover:bg-gray-700 transition-all duration-200" (click)="prevPage()"
@@ -112,7 +112,7 @@
 
             } @else {
             <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-                ¡No hay super usuarios registrados!
+                ¡No hay usuarios de RH registrados!
             </div>
             }
             }
@@ -120,7 +120,7 @@
     </div>
 </div>
 
-<!-- Plantilla de detalles -->
+<!-- Plantilla de detalles mejorada -->
 <ng-template #rowDetailsTemplate let-usuario>
     <div class="overflow-hidden shadow-lg">
         <form class="w-full" [formGroup]="selectedUsuarioForm">
@@ -128,103 +128,118 @@
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
 
                     <!-- Foto de perfil -->
-                    <div class="flex justify-center lg:col-span-3 lg:justify-start">
+                    <div class="flex justify-center lg:col-span-3">
                         <div class="flex flex-col items-center">
                             <div
-                                class="relative flex h-32 w-32 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-gray-200 bg-gray-100 shadow-md">
+                                class="relative flex h-40 w-40 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-primary-200 bg-gray-50 shadow-lg transition-all hover:border-primary-400">
                                 <img [src]="selectedPhotoUrl" class="h-full w-full object-cover" alt="Foto de perfil" />
                             </div>
-                            <p class="mt-3 text-center text-sm text-gray-500">Foto de perfil</p>
+                            <p class="mt-4 text-center text-sm font-medium text-gray-600">Foto de perfil</p>
                         </div>
                     </div>
 
                     <!-- Campos del formulario -->
                     <div class="lg:col-span-9">
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
-                            <div class="sm:col-span-2">
-                                <mat-form-field class="w-full">
+                        <!-- Sección: Información Personal -->
+                        <div class="mb-4">
+                            <h3 class="mb-3 text-base font-semibold dark:text-white text-black border-b pb-2">
+                                Información Personal
+                            </h3>
+                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                <mat-form-field class="w-full" appearance="outline">
                                     <mat-label>Nombre completo</mat-label>
-                                    <input matInput formControlName="name" placeholder="Nombre completo" />
+                                    <input matInput formControlName="name" placeholder="Ingresa el nombre completo" />
+                                    <mat-icon matPrefix class="text-gray-400">person</mat-icon>
                                 </mat-form-field>
-                            </div>
 
-                            <div class="sm:col-span-2">
-                                <mat-form-field class="w-full">
+                                <mat-form-field class="w-full" appearance="outline">
                                     <mat-label>Correo electrónico</mat-label>
                                     <input matInput type="email" formControlName="email"
                                         placeholder="correo@ejemplo.com" />
+                                    <mat-icon matPrefix class="text-gray-400">email</mat-icon>
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full md:col-span-2" appearance="outline">
+                                    <mat-label>Departamento</mat-label>
+                                    <input matInput formControlName="departamento" placeholder="Ej. Recursos Humanos" />
+                                    <mat-icon matPrefix class="text-gray-400">business</mat-icon>
                                 </mat-form-field>
                             </div>
+                        </div>
 
-                            <mat-form-field class="w-full">
-                                <mat-label>Departamento</mat-label>
-                                <input matInput formControlName="departamento" placeholder="Departamento" />
-                            </mat-form-field>
-
-                            <mat-form-field class="w-full">
-                                <mat-label>Desktop</mat-label>
-                                <input matInput formControlName="desktop" placeholder="Desktop" />
-                            </mat-form-field>
-
-                            <div class="sm:col-span-2">
-                                <mat-form-field class="w-full">
-                                    <mat-label>Usuario</mat-label>
-                                    <input matInput formControlName="usuario" placeholder="Nombre de usuario"
+                        <!-- Sección: Credenciales de Acceso -->
+                        <div>
+                            <h3 class="mb-3 text-base font-semibold dark:text-white text-black border-b pb-2">
+                                Credenciales de Acceso
+                            </h3>
+                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                <mat-form-field class="w-full md:col-span-2" appearance="outline">
+                                    <mat-label>Nombre de usuario</mat-label>
+                                    <input matInput formControlName="usuario" placeholder="usuario123"
                                         autocomplete="off" />
+                                    <mat-icon matPrefix class="text-gray-400">account_circle</mat-icon>
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full" appearance="outline">
+                                    <mat-label>Nueva contraseña</mat-label>
+                                    <input matInput [type]="showPassword ? 'text' : 'password'"
+                                        formControlName="password" placeholder="Mínimo 8 caracteres"
+                                        autocomplete="new-password" (paste)="blockPaste($event)" />
+                                    <mat-icon matPrefix class="text-gray-400">lock</mat-icon>
+                                    <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()"
+                                        [attr.aria-label]="'Mostrar contraseña'">
+                                        <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                                    </button>
+                                    <mat-hint>Dejar vacío para mantener la contraseña actual</mat-hint>
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full" appearance="outline">
+                                    <mat-label>Confirmar contraseña</mat-label>
+                                    <input matInput [type]="showPasswordConfirmation ? 'text' : 'password'"
+                                        formControlName="password_confirmation" placeholder="Repite la contraseña"
+                                        autocomplete="new-password" (paste)="blockPaste($event)" />
+                                    <mat-icon matPrefix class="text-gray-400">lock_outline</mat-icon>
+                                    <button mat-icon-button matSuffix type="button"
+                                        (click)="togglePasswordConfirmationVisibility()"
+                                        [attr.aria-label]="'Mostrar confirmación'">
+                                        <mat-icon>{{ showPasswordConfirmation ? 'visibility_off' : 'visibility' }}
+                                        </mat-icon>
+                                    </button>
+                                    <mat-error *ngIf="passwordsDontMatch()">
+                                        Las contraseñas no coinciden
+                                    </mat-error>
                                 </mat-form-field>
                             </div>
-
-                            <mat-form-field class="w-full">
-                                <mat-label>Nueva contraseña</mat-label>
-                                <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password"
-                                    placeholder="Dejar vacío si no deseas cambiarla" autocomplete="off"
-                                    (paste)="blockPaste($event)" />
-                                <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
-                                    <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-                                </button>
-                                <mat-hint>Deja vacío si no quieres cambiar la contraseña</mat-hint>
-                            </mat-form-field>
-
-                            <mat-form-field class="w-full">
-                                <mat-label>Confirmar nueva contraseña</mat-label>
-                                <input matInput [type]="showPasswordConfirmation ? 'text' : 'password'"
-                                    formControlName="password_confirmation" placeholder="Repite la contraseña"
-                                    autocomplete="off" (paste)="blockPaste($event)" />
-                                <button mat-icon-button matSuffix type="button"
-                                    (click)="togglePasswordConfirmationVisibility()">
-                                    <mat-icon>{{ showPasswordConfirmation ? 'visibility_off' : 'visibility'
-                                        }}</mat-icon>
-                                </button>
-                                <mat-error *ngIf="passwordsDontMatch()">Las contraseñas no coinciden</mat-error>
-                            </mat-form-field>
                         </div>
                     </div>
+
                 </div>
             </div>
 
             <!-- Botones de acción -->
             <div
                 class="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-                <button class="order-2 sm:order-1" mat-button [color]="'warn'" (click)="deleteSelectedUsuario()">
+                <button class="order-2 sm:order-1" mat-stroked-button color="warn" type="button"
+                    (click)="deleteSelectedUsuario()">
                     <mat-icon class="mr-2">delete</mat-icon>
                     Eliminar usuario
                 </button>
 
-                <div class="order-1 flex flex-col items-center gap-3 sm:order-2 sm:flex-row">
+                <div class="order-1 flex flex-col items-stretch gap-3 sm:order-2 sm:flex-row sm:items-center">
                     @if (flashMessage) {
-                    <div class="flex items-center">
+                    <div class="flex items-center justify-center rounded-lg px-4 py-2"
+                        [ngClass]="flashMessage === 'success' ? 'bg-green-50' : 'bg-red-50'">
                         @if (flashMessage === 'success') {
-                        <mat-icon class="text-green-500" [svgIcon]="'heroicons_outline:check'"></mat-icon>
-                        <span class="ml-2 text-sm">¡Usuario actualizado correctamente!</span>
+                        <mat-icon class="text-green-600 mr-2" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                        <span class="text-sm font-medium text-green-800">¡Usuario actualizado!</span>
                         }
                         @if (flashMessage === 'error') {
-                        <mat-icon class="text-red-500" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
-                        <span class="ml-2 text-sm">Ocurrió un error</span>
+                        <mat-icon class="text-red-600 mr-2" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                        <span class="text-sm font-medium text-red-800">Error al actualizar</span>
                         }
                     </div>
                     }
-                    <button mat-flat-button [color]="'primary'" (click)="updateSelectedUsuario()"
+                    <button mat-flat-button color="primary" type="button" (click)="updateSelectedUsuario()"
                         class="w-full sm:w-auto">
                         <mat-icon class="mr-2">save</mat-icon>
                         Guardar cambios

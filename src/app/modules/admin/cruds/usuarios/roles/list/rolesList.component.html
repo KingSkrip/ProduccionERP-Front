@@ -1,0 +1,138 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent w-full h-full">
+
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <div *ngIf="isLoading" class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+        </div>
+
+        <div class="text-4xl font-extrabold tracking-tight">
+            Gestionar Roles
+        </div>
+
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [formControl]="searchInputControl" [autocomplete]="'off'" placeholder="Buscar roles" />
+            </mat-form-field>
+
+            <button class="ml-4" mat-flat-button [color]="'primary'" (click)="AddModal()">
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2 mr-1">Agregar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
+
+            <ng-container *ngIf="roles$ | async as roles">
+                <ng-container *ngIf="roles.length > 0; else noRoles">
+
+                    <div class="grid">
+
+                        <!-- Cabecera de tabla - Mobile: solo Nombre y Acciones -->
+                        <div class="grid grid-cols-[1fr_auto] sm:grid-cols-[48px_1fr_1fr_auto] text-secondary sticky top-0 z-10 gap-4 sm:gap-6 bg-gray-50 px-4 sm:px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+                            matSort matSortDisableClear>
+                            <div class="hidden sm:block text-center w-12" [mat-sort-header]="'CLAVE'">#</div>
+                            <div>Nombre</div>
+                            <div class="hidden sm:block">Tipo de rol</div>
+                            <div class="text-center w-16 sm:w-24">Acciones</div>
+                        </div>
+
+                        <!-- Filas - Mobile: solo Nombre y Acciones -->
+                        <ng-container *ngFor="let rol of paginatedRoles; let idx = index; trackBy: trackByFn">
+                            <div
+                                class="grid grid-cols-[1fr_auto] sm:grid-cols-[48px_1fr_1fr_auto] items-center gap-4 sm:gap-6 border-b px-4 py-3 md:px-8">
+
+                                <div class="hidden sm:block text-center font-semibold w-12">{{ idx + 1 }}</div>
+                                <div class="truncate">{{ rol.NOMBRE }}</div>
+                                <div class="hidden sm:block truncate">{{ rol.GUARD_NAME }}</div>
+
+                                <div class="flex justify-center w-16 sm:w-24">
+                                    <button mat-stroked-button class="h-7 min-h-7 min-w-10 px-2 leading-6"
+                                        (click)="toggleDetails(rol)">
+                                        <mat-icon class="icon-size-5">
+                                            {{ selectedRol?.CLAVE === rol.CLAVE ? 'expand_less' : 'expand_more' }}
+                                        </mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Detalles expandibles -->
+                            <ng-container *ngIf="selectedRol?.CLAVE === rol.CLAVE">
+                                <ng-container
+                                    *ngTemplateOutlet="rowDetailsTemplate; context: {$implicit: rol}"></ng-container>
+                            </ng-container>
+                        </ng-container>
+                    </div>
+
+                    <!-- Paginador -->
+                    <div class="flex justify-center space-x-2 p-4 bg-gray-900 text-gray-200">
+                        <button class="px-3 py-1 rounded hover:bg-gray-700 transition-all duration-200"
+                            (click)="prevPage()" [disabled]="currentPage === 0">
+                            <mat-icon>chevron_left</mat-icon>
+                        </button>
+
+                        <div class="flex items-center space-x-2">
+                            <button *ngFor="let p of totalPagesArray" (click)="goToPage(p)"
+                                class="px-3 py-1 rounded transition-all duration-200"
+                                [ngClass]="{'bg-primary-600 text-white': p === currentPage, 'hover:bg-gray-700': p !== currentPage}">
+                                {{ p + 1 }}
+                            </button>
+                        </div>
+
+                        <button class="px-3 py-1 rounded hover:bg-gray-700 transition-all duration-200"
+                            (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
+                            <mat-icon>chevron_right</mat-icon>
+                        </button>
+                    </div>
+
+                </ng-container>
+
+                <ng-template #noRoles>
+                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                        ¡No hay roles registrados!
+                    </div>
+                </ng-template>
+            </ng-container>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Plantilla de detalles para roles -->
+<ng-template #rowDetailsTemplate let-rol>
+    <div class="overflow-hidden shadow-lg">
+        <form class="w-full" [formGroup]="selectedRolForm">
+            <div class="p-4 sm:p-6 lg:p-8">
+
+                <!-- Nombre del rol -->
+                <mat-form-field class="w-full">
+                    <mat-label>Nombre del rol</mat-label>
+                    <input matInput formControlName="NOMBRE" placeholder="Nombre del rol" />
+                </mat-form-field>
+            </div>
+
+            <!-- Botones de acción -->
+            <div
+                class="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+
+                <!-- <button class="order-2 sm:order-1" mat-button [color]="'warn'" (click)="deleteSelectedRol()">
+                    <mat-icon class="mr-2">delete</mat-icon>
+                    Eliminar rol
+                </button> -->
+
+                <div class="order-1 flex flex-col items-center gap-3 sm:order-2 sm:flex-row">
+                    <button mat-flat-button [color]="'primary'" (click)="updateSelectedRol()" class="w-full sm:w-auto">
+                        <mat-icon class="mr-2">save</mat-icon>
+                        Guardar cambios
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</ng-template>

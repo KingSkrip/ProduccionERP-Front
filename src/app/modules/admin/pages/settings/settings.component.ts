@@ -19,6 +19,9 @@ import { SettingsPlanBillingComponent } from './plan-billing/plan-billing.compon
 import { SettingsSecurityComponent } from './security/security.component';
 import { SettingsTeamComponent } from './team/team.component';
 
+import { Roles, RoleEnum } from 'app/core/auth/roles/dataroles';
+import { UserService } from 'app/core/user/user.service';
+
 @Component({
     selector: 'settings',
     templateUrl: './settings.component.html',
@@ -49,7 +52,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
+        private _fuseMediaWatcherService: FuseMediaWatcherService,
+        private _userService: UserService
     ) { }
 
     // -----------------------------------------------------------------------------------------------------
@@ -60,6 +64,38 @@ export class SettingsComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
+
+        this._userService.user$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(user => {
+
+                if (!user) return;
+
+                const perms = user.permissions ?? [];
+
+                this.panels = [
+                    {
+                        id: 'account',
+                        icon: 'heroicons_outline:user-circle',
+                        title: 'Cuenta',
+                        description: 'Administra tu perfil e información privada.',
+                    }
+                ];
+
+                if (!perms.includes(RoleEnum.COLABORADOR)) {
+                    this.panels.push({
+                        id: 'security',
+                        icon: 'heroicons_outline:lock-closed',
+                        title: 'Seguridad',
+                        description: 'Administra tu contraseña.',
+                    });
+                }
+
+                this._changeDetectorRef.markForCheck();
+
+            });
+
+
         // Setup available panels
         this.panels = [
             {
@@ -67,12 +103,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
                 icon: 'heroicons_outline:user-circle',
                 title: 'Cuenta',
                 description: 'Administra tu perfil e información privada.',
-            },
-            {
-                id: 'security',
-                icon: 'heroicons_outline:lock-closed',
-                title: 'Seguridad',
-                description: 'Administra tu contraseña.',
             },
             // {
             //     id: 'plan-billing',
@@ -111,9 +141,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.markForCheck();
             });
 
-
-
-            
     }
 
     /**
