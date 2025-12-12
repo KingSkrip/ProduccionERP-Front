@@ -1,18 +1,18 @@
 import { Injectable } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
 import { RoleEnum } from 'app/core/auth/roles/dataroles';
-import { menuAdmin, menuRh } from 'app/mock-api/common/navigation/data';
+import { menuAdmin, menuColaborador, menuRh } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class FuseNavigationService {
     private _componentRegistry: Map<string, any> = new Map();
     private _navigationStore: Map<string, FuseNavigationItem[]> = new Map();
-    
-    private _onNavigationChanged: BehaviorSubject<{key: string, navigation: FuseNavigationItem[]}> 
-        = new BehaviorSubject<{key: string, navigation: FuseNavigationItem[]}>({ key: '', navigation: [] });
 
-    public onNavigationChanged$: Observable<{key: string, navigation: FuseNavigationItem[]}> 
+    private _onNavigationChanged: BehaviorSubject<{ key: string, navigation: FuseNavigationItem[] }>
+        = new BehaviorSubject<{ key: string, navigation: FuseNavigationItem[] }>({ key: '', navigation: [] });
+
+    public onNavigationChanged$: Observable<{ key: string, navigation: FuseNavigationItem[] }>
         = this._onNavigationChanged.asObservable();
 
     // -----------------------------------------------------------------------------------------------------
@@ -53,9 +53,9 @@ export class FuseNavigationService {
      * @param key
      * @param navigation
      */
-   storeNavigation(key: string, navigation: FuseNavigationItem[]): void {
+    storeNavigation(key: string, navigation: FuseNavigationItem[]): void {
         this._navigationStore.set(key, navigation);
-        
+
         // Emitir el cambio con estructura correcta
         this._onNavigationChanged.next({ key, navigation });
     }
@@ -64,7 +64,7 @@ export class FuseNavigationService {
      *
      * @param key
      */
-   getNavigation(key: string): FuseNavigationItem[] {
+    getNavigation(key: string): FuseNavigationItem[] {
         return this._navigationStore.get(key) ?? [];
     }
 
@@ -176,34 +176,37 @@ export class FuseNavigationService {
 
 
 
-   getNavigationByRole(roleId: number): FuseNavigationItem[] {
-    let navigation: FuseNavigationItem[];
+    getNavigationByRole(roleId: number): FuseNavigationItem[] {
+        let navigation: FuseNavigationItem[];
 
-    switch (roleId) {
-        case RoleEnum.RH:
-            navigation = menuRh;
-            break;
-        case RoleEnum.SUADMIN:
-            navigation = menuAdmin;
-            break;
-        default:
-            navigation = [];
-            break;
+        switch (roleId) {
+            case RoleEnum.RH:
+                navigation = menuRh;
+                break;
+            case RoleEnum.SUADMIN:
+                navigation = menuAdmin;
+                break;
+            case RoleEnum.COLABORADOR:
+                navigation = menuColaborador;
+                break;
+            default:
+                navigation = [];
+                break;
+        }
+
+        // CRÍTICO: Triple verificación de que sea un array válido
+        if (!navigation) {
+            console.error("Navigation es null/undefined para roleId:", roleId);
+            return [];
+        }
+
+        if (!Array.isArray(navigation)) {
+            console.error("Navigation no es un array para roleId:", roleId, navigation);
+            return [];
+        }
+
+        // Crear una copia para evitar mutaciones
+        return [...navigation];
     }
-
-    // CRÍTICO: Triple verificación de que sea un array válido
-    if (!navigation) {
-        console.error("Navigation es null/undefined para roleId:", roleId);
-        return [];
-    }
-
-    if (!Array.isArray(navigation)) {
-        console.error("Navigation no es un array para roleId:", roleId, navigation);
-        return [];
-    }
-
-    // Crear una copia para evitar mutaciones
-    return [...navigation];
-}
 
 }

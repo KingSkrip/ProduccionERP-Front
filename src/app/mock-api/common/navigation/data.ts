@@ -1305,10 +1305,10 @@ export const menuRh: FuseNavigationItem[] = [
         tooltip: 'Inicio',
         type: 'basic',
         icon: 'heroicons_outline:home',
-       link: '/dashboards/project'
+        link: '/dashboards/project'
     },
 
-      {
+    {
         id: 'cruds',
         title: 'Colaboradores',              // le agregamos title para que aparezca como los demás
         subtitle: 'Gestión de usuarios',
@@ -1322,21 +1322,21 @@ export const menuRh: FuseNavigationItem[] = [
                 icon: 'heroicons_outline:users',
                 link: '/apps/rodarobaloc_noitseG_ONE',
             },
-             {
+            {
                 id: 'cruds.colaboradores',
                 title: 'Empresa dos',
                 type: 'basic',
                 icon: 'heroicons_outline:users',
                 link: '/apps/rodarobaloc_noitseG_TWO',
             },
-             {
+            {
                 id: 'cruds.colaboradores',
                 title: 'Empresa tres',
                 type: 'basic',
                 icon: 'heroicons_outline:users',
                 link: '/apps/rodarobaloc_noitseG_THREE',
             },
-             {
+            {
                 id: 'cruds.colaboradores',
                 title: 'Empresa cuatro',
                 type: 'basic',
@@ -2563,4 +2563,18 @@ export const menuAdmin: FuseNavigationItem[] = [
     //         },
     //     ],
     // },
+];
+
+
+
+export const menuColaborador: FuseNavigationItem[] = [
+    {
+        id: 'rh.dashboard',
+        title: 'Inicio',
+        tooltip: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project'
+    },
+
 ];

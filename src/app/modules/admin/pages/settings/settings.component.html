@@ -74,11 +74,12 @@
                     <settings-account></settings-account>
                     }
                     <!-- Security -->
-                    @case ('security') {
-                    @if (user?.permissions !== 3 || user?.permissions !== 2) {
+                    @case('security') {
+                    @if (user?.permissions?.includes(2) || user?.permissions?.includes(3)) {
                     <settings-security></settings-security>
                     }
                     }
+
 
                     <!-- Plan & Billing -->
                     @case ('plan-billing') {

@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
 import { RoleEnum } from 'app/core/auth/roles/dataroles';
-import { menuAdmin, menuRh } from 'app/mock-api/common/navigation/data';
-import { BehaviorSubject, Observable, ReplaySubject, tap  } from 'rxjs';
+import { menuAdmin, menuColaborador, menuRh } from 'app/mock-api/common/navigation/data';
+import { BehaviorSubject, Observable, ReplaySubject, tap } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
 import { Navigation } from 'app/core/navigation/navigation.types';
@@ -18,10 +18,10 @@ export class NavigationService {
         string,
         any
     >();
-    
+
     // NUEVO: Subject para emitir cambios en la navegación
     private _navigationChanged$ = new BehaviorSubject<{ key: string, navigation: FuseNavigationItem[] } | null>(null);
-    
+
     /**
      * Observable para suscribirse a cambios en la navegación
      */
@@ -97,7 +97,7 @@ export class NavigationService {
 
         // Delete from the storage
         this._navigationStore.delete(key);
-        
+
         // Emitir cambio
         this._navigationChanged$.next({ key, navigation: [] });
     }
@@ -201,6 +201,9 @@ export class NavigationService {
             case RoleEnum.SUADMIN:
                 navigation = menuAdmin;
                 break;
+            case RoleEnum.COLABORADOR:
+                navigation = menuColaborador;
+                break;
             default:
                 navigation = [];
                 break;
@@ -220,7 +223,7 @@ export class NavigationService {
         // Crear una copia para evitar mutaciones
         return [...navigation];
     }
-    
+
 
     /**
      * Get all navigation data
@@ -233,9 +236,9 @@ export class NavigationService {
         );
     }
 
-     /**
-     * Getter for navigation
-     */
+    /**
+    * Getter for navigation
+    */
     get navigation$(): Observable<Navigation> {
         return this._navigation.asObservable();
     }
