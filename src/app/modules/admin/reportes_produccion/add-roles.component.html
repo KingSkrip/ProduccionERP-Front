@@ -1,0 +1,69 @@
+<!-- Backdrop -->
+<div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+>
+    <!-- MODAL -->
+    <div
+        class="animate-fadeIn flex w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900"
+    >
+        <!-- HEADER -->
+        <header
+            class="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900"
+        >
+            <h2 class="text-lg font-semibold">Crear Rol</h2>
+            <button
+                class="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                (click)="closeModal()"
+                [disabled]="isLoading"
+            >
+                ✕
+            </button>
+        </header>
+
+        <!-- Loading Bar -->
+        <div *ngIf="isLoading">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <!-- Contenido -->
+        <div class="flex-1 overflow-y-auto p-4">
+            <form [formGroup]="newRolForm" class="flex flex-col gap-4">
+                <mat-form-field class="w-full">
+                    <mat-label>Nombre del rol</mat-label>
+                    <input
+                        matInput
+                        formControlName="NOMBRE"
+                        placeholder="Nombre del rol"
+                        maxlength="35"
+                        autocomplete="off"
+                    />
+                    <mat-error *ngIf="newRolForm.get('NOMBRE')?.touched && newRolForm.get('NOMBRE')?.hasError('required')">
+                        El nombre es obligatorio.
+                    </mat-error>
+                </mat-form-field>
+            </form>
+        </div>
+
+        <!-- FOOTER -->
+        <footer
+            class="sticky bottom-0 flex items-center justify-end space-x-3 border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900"
+        >
+            <button
+                class="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+                (click)="closeModal()"
+                [disabled]="isLoading"
+            >
+                Cancelar
+            </button>
+
+            <button
+                class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                (click)="submitForm()"
+                [disabled]="isLoading"
+            >
+                <span *ngIf="!isLoading">Guardar</span>
+                <span *ngIf="isLoading">Guardando...</span>
+            </button>
+        </footer>
+    </div>
+</div>

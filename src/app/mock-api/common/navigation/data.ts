@@ -1453,6 +1453,23 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     },
 
 
+     {
+        id: 'produccion',
+        type: 'group',
+
+        children: [
+            {
+                id: 'aprob.pedidos',
+                title: 'Aprobar Pedidos',
+                type: 'basic',
+                icon: 'heroicons_outline:check',
+                link: '/apps/AceptPedidos',
+            },
+        ],
+    },
+
+
+
     // {
     //     id: 'apps',
     //     title: 'Applications',

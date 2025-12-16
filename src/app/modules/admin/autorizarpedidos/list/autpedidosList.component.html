@@ -1,0 +1,129 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- Header -->
+    <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between py-8 px-6 md:px-8 border-b bg-card dark:bg-transparent">
+        
+        <!-- Loading bar -->
+        <div class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar *ngIf="isLoading" [mode]="'indeterminate'"></mat-progress-bar>
+        </div>
+
+        <!-- Title -->
+        <div class="text-4xl font-extrabold tracking-tight leading-none">
+            Autorización de Créditos
+        </div>
+
+        <!-- Actions -->
+        <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:magnifying-glass'" matPrefix></mat-icon>
+                <input matInput [formControl]="searchControl" [autocomplete]="'off'" 
+                       [placeholder]="'Buscar pedidos...'">
+            </mat-form-field>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-col flex-auto sm:mb-18 overflow-hidden sm:overflow-y-auto">
+            
+            <!-- Empty state -->
+            <ng-container *ngIf="!isLoading && pedidosFiltrados.length === 0">
+                <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
+                    <mat-icon class="icon-size-24 text-hint" [svgIcon]="'heroicons_outline:inbox'"></mat-icon>
+                    <div class="mt-4 text-2xl font-semibold tracking-tight text-secondary">
+                        No hay pedidos pendientes
+                    </div>
+                    <div class="mt-2 text-md text-secondary">
+                        No tienes pedidos de crédito por autorizar en este momento.
+                    </div>
+                </div>
+            </ng-container>
+
+            <!-- Pedidos list -->
+            <ng-container *ngIf="pedidosFiltrados.length > 0">
+                <div class="grid gap-4 p-6 md:p-8 sm:gap-6 md:gap-8">
+                    
+                    <!-- Pedido card -->
+                    <div *ngFor="let pedido of pedidosFiltrados; trackBy: trackByFn"
+                         class="flex flex-col sm:flex-row sm:items-center p-6 bg-card shadow rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
+                        
+                        <!-- Status indicator -->
+                        <div class="absolute inset-y-0 left-0 w-1 bg-yellow-500"></div>
+
+                        <!-- Content -->
+                        <div class="flex flex-col flex-auto min-w-0">
+                            <!-- Header -->
+                            <div class="flex items-center mb-2">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <div class="text-lg font-semibold leading-5 truncate">
+                                        Pedido {{ pedido.PEDIDO }}
+                                    </div>
+                                    <div class="flex items-center justify-center px-2.5 h-7 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-600 dark:text-yellow-50">
+                                        <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_solid:clock'"></mat-icon>
+                                        Pendiente
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cliente -->
+                            <div class="flex items-center mb-3">
+                                <mat-icon class="icon-size-5 text-hint mr-2" [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                                <div class="text-sm text-secondary">
+                                    Cliente: <span class="font-medium text-primary">{{ pedido.CVE_CTE }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Details -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                                <!-- Fecha -->
+                                <div class="flex items-center">
+                                    <mat-icon class="icon-size-4 text-hint mr-2" [svgIcon]="'heroicons_solid:calendar'"></mat-icon>
+                                    <div class="text-secondary">
+                                        <span class="mr-1">Fecha:</span>
+                                        <span class="font-medium">{{ pedido.FECHAELAB | date:'dd/MM/yyyy' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Moneda -->
+                                <div class="flex items-center">
+                                    <mat-icon class="icon-size-4 text-hint mr-2" [svgIcon]="'heroicons_solid:banknotes'"></mat-icon>
+                                    <div class="text-secondary">
+                                        <span class="mr-1">Moneda:</span>
+                                        <span class="font-medium">{{ pedido.MONEDA }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Total (si existe) -->
+                                <div *ngIf="pedido.TOTAL" class="flex items-center">
+                                    <mat-icon class="icon-size-4 text-hint mr-2" [svgIcon]="'heroicons_solid:currency-dollar'"></mat-icon>
+                                    <div class="text-secondary">
+                                        <span class="mr-1">Total:</span>
+                                        <span class="font-medium">{{ pedido.TOTAL | currency }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex sm:flex-col gap-2 mt-4 sm:mt-0 sm:ml-6 sm:pl-6 sm:border-l">
+                            <button mat-flat-button
+                                    [color]="'primary'"
+                                    class="flex-auto sm:flex-none"
+                                    [disabled]="isLoading"
+                                    (click)="autorizarPedido(pedido)">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                                <span class="ml-2">Autorizar crédito</span>
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+            </ng-container>
+
+        </div>
+    </div>
+
+</div>
