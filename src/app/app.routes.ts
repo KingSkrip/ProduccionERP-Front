@@ -4,6 +4,8 @@ import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 
+
+
 // prettier-ignore
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
@@ -111,6 +113,8 @@ export const appRoutes: Route[] = [
                     { path: 'rodarobaloc_noitseG_THREE', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
                     { path: 'rodarobaloc_noitseG_FOUR', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
 
+//Solicitudes
+ { path: 'Soli_Vac', loadChildren: () => import('app/modules/admin/solicitudes/Vacaciones/vacaciones.routes') },
 
 
                     { path: 'file-manager', loadChildren: () => import('app/modules/admin/apps/file-manager/file-manager.routes') },

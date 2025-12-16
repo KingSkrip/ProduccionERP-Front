@@ -1,0 +1,216 @@
+<div class="flex flex-col flex-auto min-w-0">
+    <!-- Header -->
+    <div
+        class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-6 sm:py-8 sm:px-10 border-b bg-card dark:bg-transparent">
+        <div class="flex-1 min-w-0">
+            <!-- Title -->
+            <div class="mt-2">
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                    Solicitudes de Vacaciones
+                </h2>
+            </div>
+        </div>
+        <!-- Actions -->
+        <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [formControl]="searchControl" [autocomplete]="'off'"
+                    [placeholder]="'Buscar solicitudes...'" #searchInput>
+            </mat-form-field>
+        </div>
+    </div>
+
+    <!-- Loading Bar -->
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="absolute top-0 left-0 right-0 z-50">
+    </mat-progress-bar>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-col flex-auto sm:mb-18 overflow-hidden sm:overflow-y-auto">
+            <!-- Tabs -->
+            <div class="sticky top-0 z-10 flex border-b bg-gray-50 dark:bg-transparent">
+                <button (click)="cambiarTab('pendientes')" [class.border-primary]="tabActiva === 'pendientes'"
+                    class="px-6 py-4 font-medium border-b-2 transition-colors"
+                    [class.border-transparent]="tabActiva !== 'pendientes'"
+                    [class.hover:bg-hover]="tabActiva !== 'pendientes'" type="button">
+                    <span>Pendientes</span>
+                    <span class="ml-2 px-2 py-0.5 rounded-full text-sm font-semibold"
+                        [class.bg-primary]="tabActiva === 'pendientes'"
+                        [class.text-on-primary]="tabActiva === 'pendientes'"
+                        [class.bg-gray-300]="tabActiva !== 'pendientes'"
+                        [class.dark:bg-gray-700]="tabActiva !== 'pendientes'">
+                        {{ contadores.pendientes }}
+                    </span>
+                </button>
+                <button (click)="cambiarTab('aprobadas')" [class.border-primary]="tabActiva === 'aprobadas'"
+                    class="px-6 py-4 font-medium border-b-2 transition-colors"
+                    [class.border-transparent]="tabActiva !== 'aprobadas'"
+                    [class.hover:bg-hover]="tabActiva !== 'aprobadas'" type="button">
+                    <span>Aprobadas</span>
+                    <span class="ml-2 px-2 py-0.5 rounded-full text-sm font-semibold"
+                        [class.bg-primary]="tabActiva === 'aprobadas'"
+                        [class.text-on-primary]="tabActiva === 'aprobadas'"
+                        [class.bg-gray-300]="tabActiva !== 'aprobadas'"
+                        [class.dark:bg-gray-700]="tabActiva !== 'aprobadas'">
+                        {{ contadores.aprobadas }}
+                    </span>
+                </button>
+                <button (click)="cambiarTab('rechazadas')" [class.border-primary]="tabActiva === 'rechazadas'"
+                    class="px-6 py-4 font-medium border-b-2 transition-colors"
+                    [class.border-transparent]="tabActiva !== 'rechazadas'"
+                    [class.hover:bg-hover]="tabActiva !== 'rechazadas'" type="button">
+                    <span>Rechazadas</span>
+                    <span class="ml-2 px-2 py-0.5 rounded-full text-sm font-semibold"
+                        [class.bg-primary]="tabActiva === 'rechazadas'"
+                        [class.text-on-primary]="tabActiva === 'rechazadas'"
+                        [class.bg-gray-300]="tabActiva !== 'rechazadas'"
+                        [class.dark:bg-gray-700]="tabActiva !== 'rechazadas'">
+                        {{ contadores.rechazadas }}
+                    </span>
+                </button>
+            </div>
+
+            <!-- Solicitudes List -->
+            <div class="flex flex-col p-6 sm:p-8 sm:pb-20 space-y-4">
+                <!-- Empty State -->
+                <div *ngIf="!isLoading && solicitudesFiltradas.length === 0"
+                    class="flex flex-col items-center justify-center p-12 sm:p-16 text-center">
+                    <mat-icon class="icon-size-24 text-hint mb-4" [svgIcon]="'heroicons_outline:inbox'"></mat-icon>
+                    <h3 class="text-2xl font-semibold mb-2">No hay solicitudes {{ tabActiva }}</h3>
+                    <p class="text-secondary">
+                        <ng-container *ngIf="tabActiva === 'pendientes'">
+                            No tienes solicitudes de vacaciones por revisar en este momento.
+                        </ng-container>
+                        <ng-container *ngIf="tabActiva === 'aprobadas'">
+                            Aún no has aprobado ninguna solicitud de vacaciones.
+                        </ng-container>
+                        <ng-container *ngIf="tabActiva === 'rechazadas'">
+                            No has rechazado ninguna solicitud de vacaciones.
+                        </ng-container>
+                    </p>
+                </div>
+
+                <!-- Solicitudes Cards -->
+                <div *ngFor="let solicitud of solicitudesFiltradas; let i = index; trackBy: trackByFn"
+                    class="flex flex-col sm:flex-row sm:items-center p-6 sm:p-8 bg-card shadow rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
+
+                    <!-- Avatar & Info -->
+                    <div class="flex items-start sm:items-center space-x-4 flex-1">
+                        <div class="flex-shrink-0">
+                            <div class="relative">
+                                <img class="w-16 h-16 rounded-full object-cover ring-4 ring-bg-card"
+                                    [src]="getFotoUsuario(solicitud.usuario)"
+                                    [alt]="getNombreCompleto(solicitud.usuario)">
+                                <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full ring-2 ring-bg-card flex items-center justify-center"
+                                    [class.bg-yellow-500]="tabActiva === 'pendientes'"
+                                    [class.bg-green-500]="tabActiva === 'aprobadas'"
+                                    [class.bg-red-500]="tabActiva === 'rechazadas'">
+                                    <mat-icon class="icon-size-4 text-white" [svgIcon]="tabActiva === 'pendientes' ? 'heroicons_solid:clock' : 
+                                                         tabActiva === 'aprobadas' ? 'heroicons_solid:check' : 
+                                                         'heroicons_solid:x-mark'">
+                                    </mat-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h3 class="text-lg font-semibold truncate">
+                                    {{ getNombreCompleto(solicitud.usuario) }}
+                                </h3>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium"
+                                    [class.bg-yellow-100]="tabActiva === 'pendientes'"
+                                    [class.text-yellow-800]="tabActiva === 'pendientes'"
+                                    [class.dark:bg-yellow-900]="tabActiva === 'pendientes'"
+                                    [class.dark:text-yellow-200]="tabActiva === 'pendientes'"
+                                    [class.bg-green-100]="tabActiva === 'aprobadas'"
+                                    [class.text-green-800]="tabActiva === 'aprobadas'"
+                                    [class.dark:bg-green-900]="tabActiva === 'aprobadas'"
+                                    [class.dark:text-green-200]="tabActiva === 'aprobadas'"
+                                    [class.bg-red-100]="tabActiva === 'rechazadas'"
+                                    [class.text-red-800]="tabActiva === 'rechazadas'"
+                                    [class.dark:bg-red-900]="tabActiva === 'rechazadas'"
+                                    [class.dark:text-red-200]="tabActiva === 'rechazadas'">
+                                    {{ tabActiva === 'pendientes' ? 'Pendiente' :
+                                    tabActiva === 'aprobadas' ? 'Aprobada' : 'Rechazada' }}
+                                </span>
+                            </div>
+
+                            <p class="text-sm text-secondary mb-2">
+                                {{ getPuesto(solicitud.usuario) }}
+                            </p>
+
+                            <div class="flex flex-wrap gap-4 text-sm" *ngIf="getHistorial(solicitud) as h">
+                                <div class="flex items-center space-x-1">
+                                    <mat-icon class="icon-size-4 text-secondary"
+                                        svgIcon="heroicons_solid:calendar"></mat-icon>
+                                    <span class="text-secondary">Del:</span>
+                                    <span class="font-medium">{{ h.fecha_inicio }}</span>
+                                </div>
+
+                                <div class="flex items-center space-x-1">
+                                    <mat-icon class="icon-size-4 text-secondary"
+                                        svgIcon="heroicons_solid:calendar"></mat-icon>
+                                    <span class="text-secondary">Al:</span>
+                                    <span class="font-medium">{{h.fecha_fin }}</span>
+                                </div>
+
+                                <div class="flex items-center space-x-1">
+                                    <mat-icon class="icon-size-4 text-secondary"
+                                        svgIcon="heroicons_solid:clock"></mat-icon>
+                                    <span class="font-medium text-primary">{{ h.dias || 0 }} días</span>
+                                </div>
+                            </div>
+
+
+                            <div class="mt-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg"
+                                *ngIf="solicitud.historial?.comentarios || solicitud.workorder?.comentarios_solicitante">
+                                <p class="text-sm text-secondary flex items-start">
+                                    <mat-icon class="icon-size-4 mr-2 mt-0.5"
+                                        [svgIcon]="'heroicons_solid:chat-bubble-left-ellipsis'"></mat-icon>
+                                    <span>
+                                        <strong>Motivo:</strong>
+                                        {{ solicitud.historial?.comentarios ||
+                                        solicitud.workorder?.comentarios_solicitante || 'Sin comentarios' }}
+                                    </span>
+                                </p>
+                            </div>
+
+                            <div class="mt-2 flex items-center justify-between">
+                                <div class="flex items-center text-xs text-secondary">
+                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_solid:clock'"></mat-icon>
+                                    {{ getTiempoDesde(solicitud.workorder?.fecha_solicitud ) }}
+                                </div>
+                                <div *ngIf="tabActiva === 'pendientes' && tienePocosDias(solicitud)"
+                                    class="flex items-center text-xs text-amber-600 dark:text-amber-400">
+                                    <mat-icon class="icon-size-4 mr-1"
+                                        [svgIcon]="'heroicons_solid:exclamation-triangle'"></mat-icon>
+                                    Días disponibles: {{ (solicitud.historial?.dias_disponibles || 0) -
+                                    (solicitud.historial?.dias_disfrutados || 0) }}
+                                    de {{ solicitud.historial?.dias_disponibles || 0 }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions - Solo mostrar en pendientes -->
+                    <div *ngIf="tabActiva === 'pendientes'" class="flex sm:flex-col gap-2 mt-4 sm:mt-0 sm:ml-6">
+                        <button (click)="aprobarSolicitud(solicitud)"
+                            class="flex-1 sm:flex-initial px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                            mat-flat-button type="button" [disabled]="isLoading">
+                            <mat-icon class="icon-size-5 mr-1" [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                            Aprobar
+                        </button>
+                        <button (click)="rechazarSolicitud(solicitud)"
+                            class="flex-1 sm:flex-initial px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                            mat-flat-button type="button" [disabled]="isLoading">
+                            <mat-icon class="icon-size-5 mr-1" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                            Rechazar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

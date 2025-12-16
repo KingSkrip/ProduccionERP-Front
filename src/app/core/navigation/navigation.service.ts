@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
 import { RoleEnum } from 'app/core/auth/roles/dataroles';
-import { menuAdmin, menuColaborador, menuRh } from 'app/mock-api/common/navigation/data';
+import { menuSuAdmin, menuColaborador, menuRh, menuAdmin } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable, ReplaySubject, tap } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
@@ -199,8 +199,13 @@ export class NavigationService {
                 navigation = menuRh;
                 break;
             case RoleEnum.SUADMIN:
+                navigation = menuSuAdmin;
+                break;
+
+            case RoleEnum.ADMIN:
                 navigation = menuAdmin;
                 break;
+
             case RoleEnum.COLABORADOR:
                 navigation = menuColaborador;
                 break;

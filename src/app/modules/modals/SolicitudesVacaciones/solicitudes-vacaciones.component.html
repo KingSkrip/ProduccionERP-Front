@@ -1,0 +1,184 @@
+<!-- Backdrop -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" *ngIf="true">
+  <!-- Siempre visible o controla con una variable si lo abres con MatDialog -->
+
+  <!-- Modal -->
+  <div
+    class="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-fadeIn">
+
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Solicitud de Vacaciones</h2>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="px-6 pt-4">
+      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        <div class="bg-primary-600 h-2.5 rounded-full transition-all duration-300" [style.width.%]="progressPercentage">
+        </div>
+      </div>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Paso {{ currentStep }} de {{ totalSteps }}</p>
+    </div>
+
+    <!-- Contenido -->
+    <div class="flex-1 overflow-y-auto px-6 py-6">
+
+      <!-- Paso 1: Selección de fechas -->
+      <div *ngIf="currentStep === 1" [@fadeIn]>
+        <div class="space-y-6">
+
+          <!-- Información de días disponibles -->
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-5">
+            <h3 class="font-medium text-blue-900 dark:text-blue-300 mb-4">Días de vacaciones {{ vacacionesData.anio }}
+            </h3>
+            <div class="grid grid-cols-3 gap-6 text-center">
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Totales</p>
+                <p class="text-3xl font-bold text-blue-900 dark:text-blue-300">{{ vacacionesData.diasTotales }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Disfrutados</p>
+                <p class="text-3xl font-bold text-blue-900 dark:text-blue-300">{{ vacacionesData.diasDisfrutados }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Disponibles</p>
+                <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ vacacionesData.diasDisponibles }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fechas -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Fecha de inicio <span class="text-red-500">*</span>
+              </label>
+              <input type="date" [formControl]="vacationForm.controls['fecha_inicio']" (change)="calcularDias()"
+                [min]="minDate | date:'yyyy-MM-dd'"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Fecha de fin <span class="text-red-500">*</span>
+              </label>
+              <input type="date" [formControl]="vacationForm.controls['fecha_fin']" (change)="calcularDias()"
+                [min]="vacationForm.controls['fecha_inicio'].value ? (vacationForm.controls['fecha_inicio'].value | date:'yyyy-MM-dd') : (minDate | date:'yyyy-MM-dd')"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800">
+            </div>
+          </div>
+
+
+          <!-- Días solicitados -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-5 text-center">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Días hábiles solicitados</p>
+            <p class="text-5xl font-bold text-gray-900 dark:text-white mt-3">
+              {{ diasSolicitados || 0 }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 2: Revisión -->
+      <div *ngIf="currentStep === 2" [@fadeIn]>
+        <div class="space-y-6">
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-5">
+            <h3 class="font-semibold text-amber-900 dark:text-amber-300">Resumen de la solicitud</h3>
+            <dl class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <dt class="text-sm text-gray-600 dark:text-gray-400">Período solicitado</dt>
+                <dd class="text-lg font-medium text-gray-900 dark:text-white">
+                  {{ fechaInicio | date:'dd MMMM yyyy' : '' : 'es-MX' }} → {{ fechaFin | date:'dd MMMM yyyy' : '' :'es-MX' }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm text-gray-600 dark:text-gray-400">Días hábiles</dt>
+                <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ diasSolicitados }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm text-gray-600 dark:text-gray-400">Días disponibles actualmente</dt>
+                <dd class="text-lg font-medium text-green-600 dark:text-green-400">{{ vacacionesData.diasDisponibles }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm text-gray-600 dark:text-gray-400">Días restantes después</dt>
+                <dd class="text-lg font-medium"
+                  [class.text-green-600]="diasSolicitados <= vacacionesData.diasDisponibles"
+                  [class.text-red-600]="diasSolicitados > vacacionesData.diasDisponibles">
+                  {{ vacacionesData.diasDisponibles - diasSolicitados }}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div *ngIf="diasSolicitados > vacacionesData.diasDisponibles"
+            class="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg p-5">
+            <p class="text-red-800 dark:text-red-300 font-medium">
+              No tienes suficientes días disponibles. Solo cuentas con {{ vacacionesData.diasDisponibles }} días.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 3: Comentarios y confirmación -->
+      <div *ngIf="currentStep === 3" [@fadeIn]>
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Comentarios (opcional)
+            </label>
+            <textarea [(ngModel)]="vacationForm.controls['comentarios'].value" rows="6" maxlength="500"
+              placeholder="Ejemplo: Necesito estos días para asuntos familiares..."
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 resize-none"></textarea>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
+              {{ vacationForm.controls['comentarios'].value?.length || 0 }}/500
+            </p>
+          </div>
+
+          <label class="flex items-start space-x-3 cursor-pointer">
+            <input type="checkbox" [(ngModel)]="vacationForm.controls['confirmar'].value"
+              class="mt-1 w-5 h-5 text-primary-600 rounded focus:ring-primary-500">
+            <span class="text-sm text-gray-700 dark:text-gray-300">
+              Confirmo que he revisado las fechas y entiendo que esta solicitud está sujeta a aprobación por parte de
+              Recursos Humanos.
+            </span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer
+      class="sticky bottom-0 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-4">
+      <button
+        class="rounded-lg bg-gray-200 dark:bg-gray-800 px-5 py-2.5 hover:bg-gray-300 dark:hover:bg-gray-700 disabled:opacity-50"
+        (click)="closeModal()" [disabled]="isLoading">
+        Cancelar
+      </button>
+
+      <div class="flex gap-3">
+        <button *ngIf="currentStep > 1"
+          class="rounded-lg bg-gray-200 dark:bg-gray-800 px-5 py-2.5 hover:bg-gray-300 dark:hover:bg-gray-700"
+          (click)="previousStep()" [disabled]="isLoading">
+          ← Anterior
+        </button>
+
+        <button *ngIf="currentStep < totalSteps"
+          class="rounded-lg bg-primary-600 px-6 py-2.5 text-white hover:bg-primary-700 disabled:opacity-50"
+          (click)="nextStep()"
+          [disabled]="isLoading || (currentStep === 1 && (diasSolicitados === 0 || !fechaInicio || !fechaFin)) || (currentStep === 2 && diasSolicitados > vacacionesData.diasDisponibles)">
+          Siguiente →
+        </button>
+
+        <button *ngIf="currentStep === totalSteps"
+          class="rounded-lg bg-green-600 px-6 py-2.5 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+          (click)="submitForm()">
+          <!-- [disabled]="isLoading || !vacationForm.valid || diasSolicitados > vacacionesData.diasDisponibles" -->
+          <span *ngIf="isLoading" class="animate-pulse">Guardando...</span>
+          <span *ngIf="!isLoading">✓ Guardar solicitud</span>
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>
