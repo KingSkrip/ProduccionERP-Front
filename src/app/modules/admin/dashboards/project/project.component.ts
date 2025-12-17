@@ -98,10 +98,7 @@ showChart = true;
             .subscribe((user) => {
                 if (user) {
                     this._user.next(user);
-                    if (user.name) {
-                        const nombre = user.name.split(" ")[0];
-                        this.speak(`Bienvenido ${nombre}`);
-                    }
+                    
                     this._prepareChartData();
                     this._cdr.markForCheck();
                 }
@@ -452,15 +449,6 @@ showChart = true;
                 style: { colors: 'var(--fuse-text-secondary)' },
             },
         };
-    }
-
-    private speak(text: string): void {
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'es-MX';
-            utterance.rate = 1;
-            speechSynthesis.speak(utterance);
-        }
     }
 
     // ASISTENCIAS

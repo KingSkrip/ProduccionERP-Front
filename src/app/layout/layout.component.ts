@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
+    ChangeDetectorRef,
     Component,
     Inject,
     OnDestroy,
@@ -67,7 +68,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _fusePlatformService: FusePlatformService,
         private _fuseNavigationService: FuseNavigationService,
-        private _authService: AuthService
+        private _authService: AuthService,
+          private _cdr: ChangeDetectorRef,
     ) { }
 
     // -----------------------------------------------------------------------------------------------------
@@ -153,26 +155,36 @@ export class LayoutComponent implements OnInit, OnDestroy {
         );
 
 
-        this._authService.getUserRole()
-        .pipe(takeUntil(this._unsubscribeAll))
-        .subscribe(userRole => {
-            if (userRole !== null) {
-                let navigation = this._fuseNavigationService.getNavigationByRole(userRole);
+    this._authService.getUserRole()
+    .pipe(takeUntil(this._unsubscribeAll))
+    .subscribe(userRole => {
 
-                // CRÍTICO: Asegurarse que siempre sea un array válido
-                if (!navigation) {
-                    navigation = [];
-                } else if (!Array.isArray(navigation)) {
-                    navigation = [];
-                }
+        let navigation: FuseNavigationItem[] = [];
 
-                this.navigationItems = navigation;
-                this._fuseNavigationService.storeNavigation('main', this.navigationItems);
-            } else {
-                this.navigationItems = [];
-                this._fuseNavigationService.storeNavigation('main', []);
+        if (userRole !== null) {
+            const nav = this._fuseNavigationService.getNavigationByRole(userRole);
+            navigation = Array.isArray(nav) ? nav : [];
+        }
+
+        this.navigationItems = navigation;
+        this._fuseNavigationService.storeNavigation('main', navigation);
+
+        // 🔥 CLAVE: forzar render + refresh del menú
+        setTimeout(() => {
+
+            // Forzar detección de cambios
+            this._cdr.detectChanges();
+
+            // Obtener el componente real del navigation
+            const navComponent =
+                this._fuseNavigationService.getComponent<FuseVerticalNavigationComponent>('mainNavigation');
+
+            if (navComponent) {
+                navComponent.refresh();
             }
+
         });
+    });
 
 
 

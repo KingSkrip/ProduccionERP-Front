@@ -1,8 +1,7 @@
 import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
-
-import { VacacionesListComponent } from './list/vacacionesList.component';
-import { VacacionesComponent } from './vacaciones.component';
+import { ReportProdComponent } from './reportprod.component';
+import { ReportProdListComponent } from './list/reportprodList.component';
 
 
 
@@ -16,11 +15,11 @@ export default [
     },
     {
         path: 'list',
-        component: VacacionesComponent,
+        component: ReportProdComponent,
         children: [
             {
                 path: '',
-                component: VacacionesListComponent,
+                component:  ReportProdListComponent,
                 resolve: {
                     // brands: () => inject(SuadminService).getBrands(),
                     // categories: () => inject(SuadminService).getCategories(),

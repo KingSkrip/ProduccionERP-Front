@@ -118,8 +118,9 @@ export const appRoutes: Route[] = [
 
                     //Autorizar pedidos
                     { path: 'AceptPedidos', loadChildren: () => import('app/modules/admin/autorizarpedidos/autpedidos.routes') },
+
                     //Reportes de produccion
-                    // { path: 'Soli_Vac', loadChildren: () => import('app/modules/admin/reportes_produccion/add-roles.routes') },
+                    { path: 'ReportProd', loadChildren: () => import('app/modules/admin/reportes_produccion/reportprod.routes') },
 
 
                     { path: 'file-manager', loadChildren: () => import('app/modules/admin/apps/file-manager/file-manager.routes') },
