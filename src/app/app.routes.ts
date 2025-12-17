@@ -4,6 +4,8 @@ import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 
+
+
 // prettier-ignore
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
@@ -103,14 +105,22 @@ export const appRoutes: Route[] = [
 
                     { path: 'Gestion_nimdaus', loadChildren: () => import('app/modules/admin/cruds/usuarios/suadmin/suadmin.routes') },
                     { path: 'hr_noitseG', loadChildren: () => import('app/modules/admin/cruds/usuarios/rh/rh.routes') },
-                     { path: 'rodarobaloc_noitseG', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
+                    { path: 'rodarobaloc_noitseG', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
                     { path: 'selor_noitseG', loadChildren: () => import('app/modules/admin/cruds/usuarios/roles/roles.routes') },
-                    
+
                     { path: 'rodarobaloc_noitseG_ONE', loadChildren: () => import('app/modules/RH/cruds/usuarios/EmpresaOne/colaborador/colaborador.routes') },
                     { path: 'rodarobaloc_noitseG_TWO', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
                     { path: 'rodarobaloc_noitseG_THREE', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
                     { path: 'rodarobaloc_noitseG_FOUR', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
 
+                    //Solicitudes
+                    { path: 'Soli_Vac', loadChildren: () => import('app/modules/admin/solicitudes/Vacaciones/vacaciones.routes') },
+
+                    //Autorizar pedidos
+                    { path: 'AceptPedidos', loadChildren: () => import('app/modules/admin/autorizarpedidos/autpedidos.routes') },
+
+                    //Reportes de produccion
+                    { path: 'ReportProd', loadChildren: () => import('app/modules/admin/reportes_produccion/reportprod.routes') },
 
 
                     { path: 'file-manager', loadChildren: () => import('app/modules/admin/apps/file-manager/file-manager.routes') },

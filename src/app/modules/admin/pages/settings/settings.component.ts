@@ -97,32 +97,32 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
 
         // Setup available panels
-        this.panels = [
-            {
-                id: 'account',
-                icon: 'heroicons_outline:user-circle',
-                title: 'Cuenta',
-                description: 'Administra tu perfil e información privada.',
-            },
-            // {
-            //     id: 'plan-billing',
-            //     icon: 'heroicons_outline:credit-card',
-            //     title: 'Plan y Facturación',
-            //     description: 'Administra tu plan de suscripción, método de pago e información de facturación',
-            // },
-            // {
-            //     id: 'notifications',
-            //     icon: 'heroicons_outline:bell',
-            //     title: 'Notificaciones',
-            //     description: 'Administra cuándo y por qué canal recibirás notificaciones',
-            // },
-            // {
-            //     id: 'team',
-            //     icon: 'heroicons_outline:user-group',
-            //     title: 'Equipo',
-            //     description: 'Administra tu equipo existente y cambia roles/permisos',
-            // },
-        ];
+        // this.panels = [
+        //     {
+        //         id: 'account',
+        //         icon: 'heroicons_outline:user-circle',
+        //         title: 'Cuenta',
+        //         description: 'Administra tu perfil e información privada.',
+        //     },
+        //     {
+        //         id: 'plan-billing',
+        //         icon: 'heroicons_outline:credit-card',
+        //         title: 'Plan y Facturación',
+        //         description: 'Administra tu plan de suscripción, método de pago e información de facturación',
+        //     },
+        //     {
+        //         id: 'notifications',
+        //         icon: 'heroicons_outline:bell',
+        //         title: 'Notificaciones',
+        //         description: 'Administra cuándo y por qué canal recibirás notificaciones',
+        //     },
+        //     {
+        //         id: 'team',
+        //         icon: 'heroicons_outline:user-group',
+        //         title: 'Equipo',
+        //         description: 'Administra tu equipo existente y cambia roles/permisos',
+        //     },
+        // ];
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$

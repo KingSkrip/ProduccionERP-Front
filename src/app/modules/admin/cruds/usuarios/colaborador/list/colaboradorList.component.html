@@ -1,163 +1,165 @@
 <div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent w-full h-full">
 
-  <!-- Header -->
-  <div class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
-    <div *ngIf="isLoading" class="absolute inset-x-0 bottom-0">
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    </div>
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <div *ngIf="isLoading" class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
 
-    <div class="text-4xl font-extrabold tracking-tight">
-      Gestionar colaboradores
-    </div>
+        <div class="text-4xl font-extrabold tracking-tight">
+            Gestionar colaboradores
+        </div>
 
-    <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
-      <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
-        <mat-icon class="icon-size-5" matPrefix svgIcon="heroicons_solid:magnifying-glass"></mat-icon>
-        <input matInput [formControl]="searchInputControl" autocomplete="off" placeholder="Buscar colaboradores" />
-      </mat-form-field>
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix svgIcon="heroicons_solid:magnifying-glass"></mat-icon>
+                <input matInput [formControl]="searchInputControl" autocomplete="off"
+                    placeholder="Buscar colaboradores" />
+            </mat-form-field>
 
-      <button class="ml-4" mat-flat-button color="primary" (click)="AddModal()">
-        <mat-icon svgIcon="heroicons_outline:plus"></mat-icon>
-        <span class="ml-2 mr-1">Agregar</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Main -->
-  <div class="flex flex-auto overflow-hidden">
-    <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-
-      <ng-container *ngIf="usuarios$ | async as usuarios">
-        <ng-container *ngIf="paginatedUsuarios.length > 0; else noUsuarios">
-
-          <div class="grid">
-
-            <!-- Cabecera de tabla -->
-            <div
-              class="grid grid-cols-[40px_64px_1fr_140px_120px_180px_96px_96px] text-secondary sticky top-0 z-10 gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
-              matSort matSortDisableClear>
-
-              <div class="text-center" mat-sort-header="id">#</div>
-              <div class="flex items-center justify-center">Foto</div>
-              <div class="pl-2">Nombre</div>
-              <div class="pl-2">CURP</div>
-              <div class="pl-2">Teléfono</div>
-              <div class="pl-2">Correo</div>
-              <div class="pl-2">Estado</div>
-              <div class="text-center">Detalles</div>
-
-            </div>
-
-            <!-- Filas -->
-            <div *ngFor="let usuario of paginatedUsuarios; let idx = index; trackBy: trackByFn"
-                 class="grid grid-cols-[40px_64px_1fr_140px_120px_180px_96px_96px] items-center gap-4 border-b px-6 py-3 md:px-8 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
-
-              <!-- Index -->
-              <div class="text-center font-semibold">
-                {{ (currentPage * itemsPerPage) + idx + 1 }}
-              </div>
-
-              <!-- Foto -->
-              <div class="flex items-center justify-center">
-                <div class="relative flex h-10 w-10 overflow-hidden rounded-full border bg-gray-100">
-                  <img [src]="getPhotoUrl(usuario.photo)" class="h-full w-full object-cover" alt="Foto" />
-                </div>
-              </div>
-
-              <!-- Nombre -->
-              <div class="truncate pl-2">
-                {{ usuario.nombre || usuario.name || 'Sin nombre' }}
-              </div>
-
-              <!-- CURP -->
-              <div class="truncate pl-2">
-                {{ usuario.curp || 'Sin CURP' }}
-              </div>
-
-              <!-- Teléfono -->
-              <div class="truncate pl-2">
-                {{ usuario.telefono || 'Sin teléfono' }}
-              </div>
-
-              <!-- Correo -->
-              <div class="truncate pl-2">
-                {{ usuario.correo || usuario.email || 'Sin correo' }}
-              </div>
-
-<!-- Status con switch editable -->
-<div class="truncate pl-2">
-  <mat-slide-toggle
-    [checked]="usuario.status_id === 1"
-    color="primary"
-    (change)="onStatusChange(usuario, $event.checked)">
-  </mat-slide-toggle>
-</div>
-
-
-
-
-              <!-- Detalles -->
-              <div class="flex justify-center gap-2">
-                <button mat-icon-button matTooltip="Ver detalles" (click)="toggleDetails(usuario)">
-                  <mat-icon class="icon-size-5"
-                    [svgIcon]="selectedUsuario?.id === usuario.id ? 'heroicons_solid:chevron-up' : 'heroicons_solid:chevron-down'">
-                  </mat-icon>
-                </button>
-              </div>
-
-            </div>
-
-            <!-- Detalles expandibles -->
-            <ng-container *ngFor="let usuario of paginatedUsuarios">
-              <ng-container *ngIf="selectedUsuario?.id === usuario.id">
-                <ng-container *ngTemplateOutlet="rowDetailsTemplate; context: {$implicit: usuario}"></ng-container>
-              </ng-container>
-            </ng-container>
-
-          </div>
-
-          <!-- Paginador -->
-          <div class="flex justify-center items-center space-x-2 p-4 bg-white dark:bg-gray-900 border-t">
-            <button mat-icon-button (click)="prevPage()" [disabled]="currentPage === 0"
-                    class="transition-all duration-200">
-              <mat-icon>chevron_left</mat-icon>
+            <button class="ml-4" mat-flat-button color="primary" (click)="AddModal()">
+                <mat-icon svgIcon="heroicons_outline:plus"></mat-icon>
+                <span class="ml-2 mr-1">Agregar</span>
             </button>
+        </div>
+    </div>
 
-            <div class="flex items-center space-x-2">
-              <button *ngFor="let p of totalPagesArray" (click)="goToPage(p)" mat-button
-                      class="min-w-[40px] transition-all duration-200" [ngClass]="{
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
+
+            <ng-container *ngIf="usuarios$ | async as usuarios">
+                <ng-container *ngIf="paginatedUsuarios.length > 0; else noUsuarios">
+
+                    <div class="grid">
+
+                        <!-- Cabecera de tabla -->
+                        <div class="grid grid-cols-[64px_1fr_auto] md:grid-cols-[40px_64px_1fr_1fr_1fr_1fr_1fr_1fr] text-secondary sticky top-0 z-10 gap-4 bg-gray-50 pr-3  py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+                            matSort matSortDisableClear>
+
+                            <div class="text-center hidden md:block" mat-sort-header="id">#</div>
+                            <div class="flex items-center justify-center">Foto</div>
+                            <div class="pl-2">Nombre</div>
+                            <div class="pl-2 hidden md:block">CURP</div>
+                            <div class="pl-2 hidden md:block">Teléfono</div>
+                            <div class="pl-2 hidden md:block">Correo</div>
+                            <div class="pl-2 hidden md:block">Estado</div>
+                            <div class="text-center">Detalles</div>
+
+                        </div>
+
+
+                        <!-- Filas -->
+                        <div *ngFor="let usuario of paginatedUsuarios; let idx = index; trackBy: trackByFn"
+                            class="grid grid-cols-[64px_1fr_auto] md:grid-cols-[40px_64px_1fr_1fr_1fr_1fr_1fr_1fr] items-center gap-4 border-b pr-3 py-3 md:px-8 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+
+                            <!-- Index -->
+                            <div class="text-center font-semibold hidden md:block">
+                                {{ (currentPage * itemsPerPage) + idx + 1 }}
+                            </div>
+
+                            <!-- Foto -->
+                            <div class="flex items-center justify-center">
+                                <div class="relative flex h-10 w-10 overflow-hidden rounded-full border bg-gray-100">
+                                    <img [src]="getPhotoUrl(usuario.photo)" class="h-full w-full object-cover"
+                                        alt="Foto" />
+                                </div>
+                            </div>
+
+                            <!-- Nombre (en móvil incluye correo debajo) -->
+                            <div class="pl-2 min-w-0">
+                                <div class="truncate font-medium">
+                                    {{ usuario.nombre || usuario.name || 'Sin nombre' }}
+                                </div>
+                                <div class="truncate text-sm text-gray-500 md:hidden">
+                                    {{ usuario.correo || usuario.email || 'Sin correo' }}
+                                </div>
+                            </div>
+
+                            <!-- CURP -->
+                            <div class="truncate pl-2 hidden md:block">
+                                {{ usuario.curp || 'Sin CURP' }}
+                            </div>
+
+                            <!-- Teléfono -->
+                            <div class="truncate pl-2 hidden md:block">
+                                {{ usuario.telefono || 'Sin teléfono' }}
+                            </div>
+
+                            <!-- Correo -->
+                            <div class="truncate pl-2 hidden md:block">
+                                {{ usuario.correo || usuario.email || 'Sin correo' }}
+                            </div>
+
+                            <!-- Status con switch editable -->
+                            <div class="truncate pl-2 hidden md:block">
+                                <mat-slide-toggle [checked]="usuario.status_id === 1" color="primary"
+                                    (change)="onStatusChange(usuario, $event.checked)">
+                                </mat-slide-toggle>
+                            </div>
+
+                            <!-- Botón detalles -->
+                            <div class="flex justify-center gap-2">
+                                <button mat-icon-button matTooltip="Ver detalles" (click)="toggleDetails(usuario)">
+                                    <mat-icon class="icon-size-5"
+                                        [svgIcon]="selectedUsuario?.id === usuario.id ? 'heroicons_solid:chevron-up' : 'heroicons_solid:chevron-down'">
+                                    </mat-icon>
+                                </button>
+                            </div>
+
+                            <!-- 🔥 DETALLES AQUI MISMO, DENTRO DEL ngFor -->
+                            <div class="col-span-full" *ngIf="selectedUsuario?.id === usuario.id">
+                                <ng-container *ngTemplateOutlet="rowDetailsTemplate; context: {$implicit: usuario}">
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paginador -->
+                    <div class="flex justify-center items-center space-x-2 p-4 bg-white dark:bg-gray-900 border-t">
+                        <button mat-icon-button (click)="prevPage()" [disabled]="currentPage === 0"
+                            class="transition-all duration-200">
+                            <mat-icon>chevron_left</mat-icon>
+                        </button>
+
+                        <div class="flex items-center space-x-2">
+                            <button *ngFor="let p of totalPagesArray" (click)="goToPage(p)" mat-button
+                                class="min-w-[40px] transition-all duration-200" [ngClass]="{
                         'bg-primary text-white': p === currentPage,
                         'hover:bg-gray-100 dark:hover:bg-gray-700': p !== currentPage
                       }">
-                {{ p + 1 }}
-              </button>
-            </div>
+                                {{ p + 1 }}
+                            </button>
+                        </div>
 
-            <button mat-icon-button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
-                    class="transition-all duration-200">
-              <mat-icon>chevron_right</mat-icon>
-            </button>
-          </div>
+                        <button mat-icon-button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
+                            class="transition-all duration-200">
+                            <mat-icon>chevron_right</mat-icon>
+                        </button>
+                    </div>
 
-        </ng-container>
+                </ng-container>
 
-        <!-- No usuarios -->
-        <ng-template #noUsuarios>
-          <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-            ¡No hay colaboradores registrados!
-          </div>
-        </ng-template>
+                <!-- No usuarios -->
+                <ng-template #noUsuarios>
+                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                        ¡No hay colaboradores registrados!
+                    </div>
+                </ng-template>
 
-      </ng-container>
+            </ng-container>
+        </div>
     </div>
-  </div>
 </div>
+
+
 
 
 
 <!-- Plantilla de detalles expandible con pasos -->
 <ng-template #rowDetailsTemplate let-usuario>
-    <div class="overflow-hidden shadow-lg bg-white dark:bg-gray-800">
+    <div class="overflow-hidden shadow-lg bg-white dark:bg-gray-800 rounded-b-lg">
 
         <!-- STEPPER PROGRESS -->
         <div class="border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
@@ -193,18 +195,35 @@
                     <!-- Foto de perfil -->
                     <div class="flex justify-center lg:col-span-3 lg:justify-start">
                         <div class="flex flex-col items-center">
-                            <div
-                                class="relative flex h-32 w-32 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-gray-200 bg-gray-100 shadow-md">
-                                <img [src]="selectedPhotoUrl" class="h-full w-full object-cover" alt="Foto de perfil" />
-                                <!-- Botón para cambiar foto -->
-                                <button mat-icon-button class="absolute bottom-0 right-0 bg-primary text-white"
-                                    (click)="fileInput.click()">
-                                    <mat-icon>photo_camera</mat-icon>
-                                </button>
-                                <input #fileInput type="file" accept="image/*" style="display:none"
-                                    (change)="onFileSelected($event)" />
+                            <div class="group relative">
+                                <div *ngIf="isLoadingImage"
+                                    class="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-black bg-opacity-60">
+                                    <mat-spinner [diameter]="36" [color]="'accent'"></mat-spinner>
+                                </div>
+                                <img [src]="selectedPhotoUrl" alt="Foto de perfil"
+                                    class="h-32 w-32 rounded-full border-4 border-gray-200 object-cover shadow-xl transition-all duration-300 group-hover:border-primary group-hover:shadow-2xl"
+                                    [class.opacity-40]="isLoadingImage" />
+                                <div *ngIf="!isLoadingImage"
+                                    class="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black bg-opacity-0 transition-all duration-300 group-hover:bg-opacity-40">
+                                    <div
+                                        class="flex flex-col items-center gap-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                        <mat-icon class="text-white" [svgIcon]="'heroicons_outline:camera'"></mat-icon>
+                                        <span class="text-xs font-medium text-white">Editar</span>
+                                    </div>
+                                </div>
+                                <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)"
+                                    class="absolute inset-0 cursor-pointer opacity-0" [disabled]="isLoadingImage" />
                             </div>
-                            <p class="mt-3 text-center text-sm text-gray-500">Foto de perfil</p>
+                            <button type="button"
+                                class="mt-6 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 hover:shadow disabled:cursor-not-allowed disabled:opacity-50 md:hidden"
+                                (click)="fileInput.click()" [disabled]="isLoadingImage">
+                                <mat-icon class="text-gray-600 icon-size-5"
+                                    [svgIcon]="'heroicons_outline:camera'"></mat-icon>
+                                {{ isLoadingImage ? 'Cargando imagen...' : 'Cambiar foto' }}
+                            </button>
+                            <p class="mt-3 text-center text-xs text-gray-500">
+                                Formatos: JPG o PNG
+                            </p>
                         </div>
                     </div>
 
@@ -290,7 +309,8 @@
             <!-- ============ STEP 3: DATOS ADMINISTRATIVOS ============ -->
             @if (currentDetailStep === 3) {
             <div class="space-y-4 animate-fadeIn">
-                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información administrativa
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información
+                    administrativa
                 </h3>
 
                 <mat-form-field class="w-full">
@@ -352,7 +372,8 @@
 
                 <!-- Seguridad Social -->
                 <div class="space-y-4" formGroupName="seguridad_social">
-                    <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300">Seguridad social</h3>
+                    <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300">Seguridad social
+                    </h3>
 
                     <mat-form-field class="w-full">
                         <mat-label>Número IMSS</mat-label>
@@ -375,7 +396,8 @@
             <!-- ============ STEP 5: NÓMINA ============ -->
             @if (currentDetailStep === 5) {
             <div class="space-y-4 animate-fadeIn" formGroupName="nomina">
-                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información de nómina</h3>
+                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información de
+                    nómina</h3>
 
                 <mat-form-field class="w-full">
                     <mat-label>Número de tarjeta</mat-label>
@@ -404,7 +426,6 @@
             </div>
             }
 
-            <!-- ============ STEP 6: CREDENCIALES ============ -->
             <!-- ============ STEP 6: CREDENCIALES ============ -->
             @if (currentDetailStep === 6) {
             <div class="space-y-6 animate-fadeIn">
@@ -444,7 +465,8 @@
                         <mat-icon matPrefix class="text-gray-400">lock_outline</mat-icon>
                         <button mat-icon-button matSuffix type="button" (click)="togglePasswordConfirmationVisibility()"
                             [attr.aria-label]="'Mostrar confirmación'">
-                            <mat-icon>{{ showPasswordConfirmation ? 'visibility_off' : 'visibility' }}</mat-icon>
+                            <mat-icon>{{ showPasswordConfirmation ? 'visibility_off' : 'visibility'
+                                }}</mat-icon>
                         </button>
                         <mat-error *ngIf="passwordsDontMatch()">
                             Las contraseñas no coinciden
@@ -504,6 +526,8 @@
     </form>
     </div>
 </ng-template>
+
+
 
 
 

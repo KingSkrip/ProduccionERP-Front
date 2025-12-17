@@ -2,18 +2,16 @@
 <fuse-loading-bar></fuse-loading-bar>
 
 <!-- Navigation -->
- <!-- menu lateral izquierdo -->
 <fuse-vertical-navigation
     class="bg-card dark:bg-gray-900 print:hidden"
-    [appearance]="'dense'"
+    [appearance]="isScreenSmall ? 'futuristic' : 'dense'"
     [mode]="isScreenSmall ? 'over' : 'side'"
-    [name]="'mainNavigation'"
+    name="mainNavigation"
     [navigation]="navigation"
     [opened]="!isScreenSmall">
 
     <!-- Navigation header hook -->
     <ng-container fuseVerticalNavigationContentHeader>
-        <!-- Logo -->
         <div class="flex h-20 items-center justify-center">
             <img class="w-8" src="images/logo/logo.svg" alt="Logo image" />
         </div>

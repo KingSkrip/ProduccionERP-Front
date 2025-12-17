@@ -20,6 +20,7 @@ import { firstValueFrom } from 'rxjs';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
 import { UserService } from './core/user/user.service';
 
+
 export const appConfig: ApplicationConfig = {
     providers: [
         provideAnimations(),
@@ -43,6 +44,7 @@ export const appConfig: ApplicationConfig = {
                 },
             },
         },
+      
 
         // Transloco
         provideTransloco({

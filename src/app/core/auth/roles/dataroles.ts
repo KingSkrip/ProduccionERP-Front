@@ -3,19 +3,22 @@
 export const Roles = {
     1: 'COLABORADOR',
     2: 'RH',
-    3: 'SUADMIN'
+    3: 'SUADMIN',
+    4: 'ADMIN'
 };
 
 // También puedes crear un enum si quieres usarlo de forma más tipada
 export enum RoleEnum {
     COLABORADOR = 1,
     RH = 2,
-    SUADMIN = 3
+    SUADMIN = 3,
+    ADMIN = 4
 }
 
 
 export const NavigationByRole = {
     [RoleEnum.COLABORADOR]: ['Inicio', 'Perfil', 'Viajes', 'Historial'],
     [RoleEnum.RH]: ['Inicio', 'Usuarios', 'Pagos', 'Rutas', 'Reportes'],
-    [RoleEnum.SUADMIN]: ['Inicio', 'Usuarios', 'Pagos', 'Rutas', 'Reportes', 'Configuración']
+    [RoleEnum.SUADMIN]: ['Inicio', 'Usuarios', 'Pagos', 'Rutas', 'Reportes', 'Configuración'],
+    [RoleEnum.ADMIN]: ['Inicio', 'Usuarios', 'Pagos', 'Rutas', 'Reportes', 'Configuración']
 };

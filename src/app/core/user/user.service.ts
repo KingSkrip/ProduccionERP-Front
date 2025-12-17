@@ -42,14 +42,17 @@ export class UserService {
 
     /**
      * Load user at startup using token
-     * 🔥 CORRECCIÓN: Mejorar manejo de errores y agregar logs
+     * 🔥 CORRECCIÓN: Usar setTimeout para evitar NG0100
      */
     init(): void {
         const token = localStorage.getItem('accessToken');
 
         if (!token) {
             console.log('[UserService] No hay token, usuario = null');
-            this._user.next(null);
+            // Usar setTimeout para evitar cambios durante detección de cambios
+            setTimeout(() => {
+                this._user.next(null);
+            });
             return;
         }
 
@@ -57,12 +60,18 @@ export class UserService {
             headers: { Authorization: `Bearer ${token}` }
         }).subscribe({
             next: (resp: any) => {
-                this._user.next(resp.user);
+                // Usar setTimeout para evitar cambios durante detección de cambios
+                setTimeout(() => {
+                    this._user.next(resp.user);
+                });
             },
             error: (err) => {
                 console.error('[UserService] Error al cargar usuario:', err);
                 localStorage.removeItem('accessToken');
-                this._user.next(null);
+                // Usar setTimeout para evitar cambios durante detección de cambios
+                setTimeout(() => {
+                    this._user.next(null);
+                });
             }
         });
     }

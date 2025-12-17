@@ -4,6 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { UserService } from 'app/core/user/user.service';
+import { AuthService } from 'app/core/auth/auth.service';
+
 
 @Injectable({
     providedIn: 'root'
@@ -13,6 +15,8 @@ export class SettingsService {
     private http = inject(HttpClient);
     private apiUrl = APP_CONFIG.apiUrl;
     public userService = inject(UserService);
+    public authService = inject(AuthService);
+
 
     getPerfil(): Observable<any> {
         return this.http.get(`${this.apiUrl}perfil`);
@@ -46,4 +50,12 @@ export class SettingsService {
             }
         );
     }
+
+    private getHeaders() {
+        return {
+            Authorization: `Bearer ${this.authService.accessToken}`,
+        };
+    }
+
+
 }

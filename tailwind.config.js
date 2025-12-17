@@ -99,6 +99,7 @@ const config = {
             },
             colors: {
                 gray: colors.slate,
+                white: colors.white,
             },
             flex: {
                 0: '0 0 auto',

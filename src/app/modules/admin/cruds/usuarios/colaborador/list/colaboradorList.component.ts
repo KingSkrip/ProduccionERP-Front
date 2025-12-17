@@ -270,6 +270,9 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
         this._changeDetectorRef.markForCheck();
     }
 
+
+   
+
     compareDepartamentos(d1: any, d2: any) {
         return d1 && d2 ? d1.id === d2.id : d1 === d2;
     }
