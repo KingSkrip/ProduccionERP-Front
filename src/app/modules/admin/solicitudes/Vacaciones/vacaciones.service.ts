@@ -98,7 +98,7 @@ export class VacacionesService {
         return this._httpClient.get<{ message: string, data: any }>(`${this.apiUrl}colaboradores/vacaciones/1/edit`)
             .pipe(
                 tap(response => {
-                    // Procesar datos para extraer solicitudes pendientes
+                    // Procesar datos para extraer TODAS las solicitudes (pendientes, aprobadas y rechazadas)
                     const solicitudes = this.procesarSolicitudes(response.data);
                     this._solicitudes.next(solicitudes);
                 }),
@@ -121,13 +121,13 @@ export class VacacionesService {
         }
 
         usuarios.forEach(usuario => {
-            // Buscar work orders de tipo "Vacaciones" con status pendiente (5)
+            // Buscar TODAS las work orders de tipo "Vacaciones" (pendientes: 5, aprobadas: 3, rechazadas: 4)
             if (usuario.workorders_solicitadas && Array.isArray(usuario.workorders_solicitadas)) {
-                const solicitudesPendientes = usuario.workorders_solicitadas.filter(
-                    wo => wo.titulo === 'Vacaciones' && wo.status_id === 5
+                const solicitudesVacaciones = usuario.workorders_solicitadas.filter(
+                    wo => wo.titulo === 'Vacaciones' && [3, 4, 5].includes(wo.status_id)
                 );
 
-                solicitudesPendientes.forEach(wo => {
+                solicitudesVacaciones.forEach(wo => {
                     // Buscar el historial de vacaciones correspondiente
                     let historialVacacion = null;
                     if (usuario.vacaciones && Array.isArray(usuario.vacaciones)) {
@@ -202,9 +202,19 @@ export class VacacionesService {
     private actualizarSolicitudLocal(historialId: number, nuevoStatus: number): void {
         const solicitudesActuales = this._solicitudes.getValue();
         if (solicitudesActuales) {
-            const solicitudesActualizadas = solicitudesActuales.filter(
-                s => s.historial?.id !== historialId
-            );
+            // Actualizar el status en lugar de eliminar
+            const solicitudesActualizadas = solicitudesActuales.map(s => {
+                if (s.historial?.id === historialId) {
+                    return {
+                        ...s,
+                        workorder: {
+                            ...s.workorder,
+                            status_id: nuevoStatus
+                        }
+                    };
+                }
+                return s;
+            });
             this._solicitudes.next(solicitudesActualizadas);
         }
     }

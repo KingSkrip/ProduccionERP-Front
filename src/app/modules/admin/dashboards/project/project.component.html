@@ -460,14 +460,14 @@
                                                 <div class="flex items-center space-x-4">
                                                     <div class="flex items-center justify-center w-10 h-10 rounded-full"
                                                         [ngClass]="{
-               'bg-green-100 dark:bg-green-900/20': solicitud.estado === 'aprobada',
-               'bg-amber-100 dark:bg-amber-900/20': solicitud.estado === 'pendiente',
-               'bg-red-100 dark:bg-red-900/20': solicitud.estado === 'rechazada'
+               'bg-green-100 dark:bg-green-900/20': solicitud.status_id === 'aprobada',
+               'bg-amber-100 dark:bg-amber-900/20': solicitud.status_id === 'pendiente',
+               'bg-red-100 dark:bg-red-900/20': solicitud.status_id === 'rechazada'
              }">
                                                         <mat-icon [ngClass]="{
-            'text-green-600': solicitud.estado === 'aprobada',
-            'text-amber-600': solicitud.estado === 'pendiente',
-            'text-red-600': solicitud.estado === 'rechazada'
+            'text-green-600': solicitud.status_id === 'aprobada',
+            'text-amber-600': solicitud.status_id === 'pendiente',
+            'text-red-600': solicitud.status_id === 'rechazada'
           }" [svgIcon]="getEstadoIcon(solicitud.estado)">
                                                         </mat-icon>
                                                     </div>

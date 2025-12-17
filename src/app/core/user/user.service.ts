@@ -48,7 +48,6 @@ export class UserService {
         const token = localStorage.getItem('accessToken');
 
         if (!token) {
-            console.log('[UserService] No hay token, usuario = null');
             // Usar setTimeout para evitar cambios durante detección de cambios
             setTimeout(() => {
                 this._user.next(null);
@@ -117,7 +116,6 @@ export class UserService {
                 ...currentUser,
                 ...normalized
             };
-            console.log('[UserService] Usuario actualizado:', mergedUser);
             this._user.next(mergedUser);
         });
     }

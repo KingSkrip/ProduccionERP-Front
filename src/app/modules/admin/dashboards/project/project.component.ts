@@ -543,10 +543,9 @@ showChart = true;
 
     dialogRef.afterClosed().subscribe((result) => {
         if (result) {
-            console.log('Solicitud enviada:', result);
-            // Opcional: recargar datos del usuario o mostrar notificación
+           
             // this._userService.reloadUser(); // Si tienes un método para refrescar
-            this._prepareChartData(); // Refresca gráficas si es necesario
+            this._prepareChartData();
         }
     });
 }

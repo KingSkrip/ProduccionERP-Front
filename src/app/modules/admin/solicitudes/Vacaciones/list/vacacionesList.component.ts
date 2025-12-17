@@ -69,7 +69,19 @@ export class VacacionesListComponent implements OnInit, OnDestroy {
         rechazadas: 0
     };
 
+    // Controles de filtros
     searchControl: FormControl = new FormControl('');
+    filtroFechaControl: FormControl = new FormControl('todos');
+    
+    // Opciones de filtro por fecha
+    opcionesFecha = [
+        { value: 'todos', label: 'Todas las fechas' },
+        { value: 'hoy', label: 'Hoy' },
+        { value: 'semana', label: 'Esta semana' },
+        { value: 'mes', label: 'Este mes' },
+        { value: 'trimestre', label: 'Este trimestre' }
+    ];
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
@@ -85,6 +97,7 @@ export class VacacionesListComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.cargarSolicitudes();
         this.configurarBuscador();
+        this.configurarFiltroFecha();
     }
 
     ngOnDestroy(): void {
@@ -137,7 +150,19 @@ export class VacacionesListComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Aplicar filtros según tab activa y búsqueda
+     * Configurar el filtro de fecha
+     */
+    configurarFiltroFecha(): void {
+        this.filtroFechaControl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(() => {
+                this.aplicarFiltros();
+                this._changeDetectorRef.markForCheck();
+            });
+    }
+
+    /**
+     * Aplicar filtros según tab activa, búsqueda y fecha
      */
     aplicarFiltros(): void {
         let solicitudesFiltradas = [...this.solicitudes];
@@ -165,7 +190,73 @@ export class VacacionesListComponent implements OnInit, OnDestroy {
             });
         }
 
+        // Filtrar por fecha (solo para aprobadas y rechazadas)
+        if (this.tabActiva !== 'pendientes' && this.filtroFechaControl.value !== 'todos') {
+            solicitudesFiltradas = this.filtrarPorRangoFecha(solicitudesFiltradas, this.filtroFechaControl.value);
+        }
+
         this.solicitudesFiltradas = solicitudesFiltradas;
+    }
+
+    /**
+     * Filtrar solicitudes por rango de fecha
+     */
+    filtrarPorRangoFecha(solicitudes: any[], rango: string): any[] {
+        const ahora = new Date();
+        const inicioDia = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+        
+        return solicitudes.filter(s => {
+            const fechaSolicitud = this.parsearFecha(s.workorder?.fecha_solicitud);
+            if (!fechaSolicitud) return false;
+
+            switch (rango) {
+                case 'hoy':
+                    return fechaSolicitud >= inicioDia;
+                
+                case 'semana':
+                    const inicioSemana = new Date(inicioDia);
+                    inicioSemana.setDate(inicioDia.getDate() - inicioDia.getDay());
+                    return fechaSolicitud >= inicioSemana;
+                
+                case 'mes':
+                    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+                    return fechaSolicitud >= inicioMes;
+                
+                case 'trimestre':
+                    const mesActual = ahora.getMonth();
+                    const inicioTrimestre = new Date(ahora.getFullYear(), Math.floor(mesActual / 3) * 3, 1);
+                    return fechaSolicitud >= inicioTrimestre;
+                
+                default:
+                    return true;
+            }
+        });
+    }
+
+    /**
+     * Parsear fecha desde string
+     */
+    parsearFecha(fecha: any): Date | null {
+        if (!fecha) return null;
+
+        if (fecha instanceof Date) {
+            return fecha;
+        }
+        
+        if (typeof fecha === 'string') {
+            const [fechaParte, horaParte = '00:00:00'] = fecha.split(' ');
+            const [dia, mes, anio] = fechaParte.split('/');
+            const iso = `${anio}-${mes}-${dia}T${horaParte}`;
+            const parsedDate = new Date(iso);
+            return isNaN(parsedDate.getTime()) ? null : parsedDate;
+        }
+        
+        if (fecha?.date) {
+            const limpia = fecha.date.split('.')[0];
+            return this.parsearFecha(limpia);
+        }
+
+        return null;
     }
 
     /**
@@ -184,6 +275,7 @@ export class VacacionesListComponent implements OnInit, OnDestroy {
      */
     cambiarTab(tab: 'pendientes' | 'aprobadas' | 'rechazadas'): void {
         this.tabActiva = tab;
+        this.filtroFechaControl.setValue('todos', { emitEvent: false });
         this.aplicarFiltros();
         this._changeDetectorRef.markForCheck();
     }
@@ -192,81 +284,79 @@ export class VacacionesListComponent implements OnInit, OnDestroy {
      * Aprobar solicitud
      */
     aprobarSolicitud(solicitud: any): void {
-    const historialId = solicitud.usuario.vacaciones?.[0]?.historial?.[0].id;
+        const historialId = solicitud.usuario.vacaciones?.[0]?.historial?.[0].id;
 
-    if (!historialId) {
-        this._snackBar.open('No se encontró el historial', 'Cerrar', { duration: 3000 });
-        return;
-    }
-
-    this._fuseConfirmationService.open({
-        title: 'Aprobar solicitud',
-        message: `¿Aprobar vacaciones de ${solicitud.usuario?.nombre}?`,
-        icon: { name: 'heroicons_outline:check-circle', color: 'success' },
-        actions: {
-            confirm: { label: 'Aprobar', color: 'primary' },
-            cancel: { label: 'Cancelar' }
+        if (!historialId) {
+            this._snackBar.open('No se encontró el historial', 'Cerrar', { duration: 3000 });
+            return;
         }
-    }).afterClosed().subscribe(result => {
-        if (result !== 'confirmed') return;
 
-        this.isLoading = true;
+        this._fuseConfirmationService.open({
+            title: 'Aprobar solicitud',
+            message: `¿Aprobar vacaciones de ${solicitud.usuario?.name}?`,
+            icon: { name: 'heroicons_outline:check-circle', color: 'success' },
+            actions: {
+                confirm: { label: 'Aprobar', color: 'primary' },
+                cancel: { label: 'Cancelar' }
+            }
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
 
-        this._vacacionesService.aprobarSolicitud(historialId)
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe({
-                next: () => {
-                    this._snackBar.open('Solicitud aprobada', 'Cerrar', { duration: 3000 });
-                    this.cargarSolicitudes();
-                },
-                error: () => {
-                    this._snackBar.open('Error al aprobar', 'Cerrar', { duration: 3000 });
-                    this.isLoading = false;
-                }
-            });
-    });
-}
+            this.isLoading = true;
 
+            this._vacacionesService.aprobarSolicitud(historialId)
+                .pipe(takeUntil(this._unsubscribeAll))
+                .subscribe({
+                    next: () => {
+                        this._snackBar.open('Solicitud aprobada', 'Cerrar', { duration: 3000 });
+                        this.cargarSolicitudes();
+                    },
+                    error: () => {
+                        this._snackBar.open('Error al aprobar', 'Cerrar', { duration: 3000 });
+                        this.isLoading = false;
+                    }
+                });
+        });
+    }
 
     /**
      * Rechazar solicitud
      */
-   rechazarSolicitud(solicitud: any): void {
-    const historialId = solicitud?.historial?.id;
+    rechazarSolicitud(solicitud: any): void {
+        const historialId = solicitud.usuario.vacaciones?.[0]?.historial?.[0].id;
 
-    if (!historialId) {
-        this._snackBar.open('No se encontró el historial', 'Cerrar', { duration: 3000 });
-        return;
-    }
-
-    this._fuseConfirmationService.open({
-        title: 'Rechazar solicitud',
-        message: `¿Rechazar vacaciones de ${solicitud.usuario?.nombre}?`,
-        icon: { name: 'heroicons_outline:x-circle', color: 'warn' },
-        actions: {
-            confirm: { label: 'Rechazar', color: 'warn' },
-            cancel: { label: 'Cancelar' }
+        if (!historialId) {
+            this._snackBar.open('No se encontró el historial', 'Cerrar', { duration: 3000 });
+            return;
         }
-    }).afterClosed().subscribe(result => {
-        if (result !== 'confirmed') return;
 
-        this.isLoading = true;
+        this._fuseConfirmationService.open({
+            title: 'Rechazar solicitud',
+            message: `¿Rechazar vacaciones de ${solicitud.usuario?.name}?`,
+            icon: { name: 'heroicons_outline:x-circle', color: 'warn' },
+            actions: {
+                confirm: { label: 'Rechazar', color: 'warn' },
+                cancel: { label: 'Cancelar' }
+            }
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
 
-        this._vacacionesService.rechazarSolicitud(historialId)
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe({
-                next: () => {
-                    this._snackBar.open('Solicitud rechazada', 'Cerrar', { duration: 3000 });
-                    this.cargarSolicitudes();
-                },
-                error: () => {
-                    this._snackBar.open('Error al rechazar', 'Cerrar', { duration: 3000 });
-                    this.isLoading = false;
-                }
-            });
-    });
-}
+            this.isLoading = true;
 
+            this._vacacionesService.rechazarSolicitud(historialId)
+                .pipe(takeUntil(this._unsubscribeAll))
+                .subscribe({
+                    next: () => {
+                        this._snackBar.open('Solicitud rechazada', 'Cerrar', { duration: 3000 });
+                        this.cargarSolicitudes();
+                    },
+                    error: () => {
+                        this._snackBar.open('Error al rechazar', 'Cerrar', { duration: 3000 });
+                        this.isLoading = false;
+                    }
+                });
+        });
+    }
 
     /**
      * Obtener nombre completo del usuario
@@ -302,48 +392,41 @@ export class VacacionesListComponent implements OnInit, OnDestroy {
     /**
      * Calcular tiempo desde la solicitud
      */
-getTiempoDesde(fecha: any): string {
-    if (!fecha) return '—';
+    getTiempoDesde(fecha: any): string {
+        if (!fecha) return '—';
 
-    let fechaSolicitud: Date;
+        let fechaSolicitud: Date;
 
-    if (fecha instanceof Date) {
-        fechaSolicitud = fecha;
+        if (fecha instanceof Date) {
+            fechaSolicitud = fecha;
+        }
+        else if (typeof fecha === 'string') {
+            const [fechaParte, horaParte = '00:00:00'] = fecha.split(' ');
+            const [dia, mes, anio] = fechaParte.split('/');
+            const iso = `${anio}-${mes}-${dia}T${horaParte}`;
+            fechaSolicitud = new Date(iso);
+        }
+        else if (fecha?.date) {
+            const limpia = fecha.date.split('.')[0];
+            return this.getTiempoDesde(limpia);
+        }
+        else {
+            return '—';
+        }
+
+        if (isNaN(fechaSolicitud.getTime())) return '—';
+
+        const ahora = new Date();
+        let diffMs = ahora.getTime() - fechaSolicitud.getTime();
+        if (diffMs < 0) diffMs = 0;
+
+        const diffHoras = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffHoras < 1) return 'Hace menos de 1 hora';
+        if (diffHoras < 24) return `Hace ${diffHoras} hora${diffHoras !== 1 ? 's' : ''}`;
+        return `Hace ${diffDias} día${diffDias !== 1 ? 's' : ''}`;
     }
-    else if (typeof fecha === 'string') {
-        // Esperado: "16/12/2025 00:00:00"
-        const [fechaParte, horaParte = '00:00:00'] = fecha.split(' ');
-        const [dia, mes, anio] = fechaParte.split('/');
-
-        // yyyy-MM-ddTHH:mm:ss  ✅
-        const iso = `${anio}-${mes}-${dia}T${horaParte}`;
-        fechaSolicitud = new Date(iso);
-    }
-    else if (fecha?.date) {
-        // Por si Laravel manda objeto
-        const limpia = fecha.date.split('.')[0];
-        return this.getTiempoDesde(limpia);
-    }
-    else {
-        return '—';
-    }
-
-    if (isNaN(fechaSolicitud.getTime())) return '—';
-
-    const ahora = new Date();
-    let diffMs = ahora.getTime() - fechaSolicitud.getTime();
-    if (diffMs < 0) diffMs = 0;
-
-    const diffHoras = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffHoras < 1) return 'Hace menos de 1 hora';
-    if (diffHoras < 24) return `Hace ${diffHoras} hora${diffHoras !== 1 ? 's' : ''}`;
-    return `Hace ${diffDias} día${diffDias !== 1 ? 's' : ''}`;
-}
-
-
-
 
     /**
      * Verificar si tiene pocos días disponibles
@@ -377,20 +460,14 @@ getTiempoDesde(fecha: any): string {
         return item.historial?.id || index;
     }
 
-
     getFotoUsuario(usuario: any): string {
         if (usuario?.photo) {
             return `${APP_CONFIG.apiBase}/${usuario.photo}`;
         }
-
         return 'assets/images/avatars/default-avatar.jpg';
     }
 
-
     getHistorial(solicitud: any): any | null {
-        // console.log(solicitud.usuario.vacaciones?.[0]?.historial?.[0].fecha_inicio);
-    return solicitud?.usuario?.vacaciones?.[0]?.historial?.[0] ?? null;
-}
-
-
+        return solicitud?.usuario?.vacaciones?.[0]?.historial?.[0] ?? null;
+    }
 }

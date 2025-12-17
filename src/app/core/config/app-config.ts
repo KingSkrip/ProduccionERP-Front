@@ -1,8 +1,8 @@
 import { AppConfig } from './app-config.model';
 
 export const APP_CONFIG: AppConfig = {
-  apiUrl: 'https://admitted-regional-heating-determining.trycloudflare.com/api/',
-  apiBase:'https://admitted-regional-heating-determining.trycloudflare.com',
+  apiUrl: 'http://localhost:8000/api/',
+  apiBase:'http://localhost:8000',
   appName: 'Fibrasan',
   environment: 'dev',
   featureFlagX: true,

@@ -11,7 +11,19 @@
             </div>
         </div>
         <!-- Actions -->
-        <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
+        <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4 gap-3">
+            <!-- Filtro de Fecha (solo visible en aprobadas y rechazadas) -->
+            <mat-form-field *ngIf="tabActiva !== 'pendientes'" 
+                class="fuse-mat-dense fuse-mat-rounded min-w-48" 
+                [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:calendar'"></mat-icon>
+                <mat-select [formControl]="filtroFechaControl" placeholder="Filtrar por fecha">
+                    <mat-option *ngFor="let opcion of opcionesFecha" [value]="opcion.value">
+                        {{ opcion.label }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
             <!-- Search -->
             <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
                 <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
@@ -79,10 +91,20 @@
                             No tienes solicitudes de vacaciones por revisar en este momento.
                         </ng-container>
                         <ng-container *ngIf="tabActiva === 'aprobadas'">
-                            Aún no has aprobado ninguna solicitud de vacaciones.
+                            <ng-container *ngIf="filtroFechaControl.value === 'todos'">
+                                Aún no has aprobado ninguna solicitud de vacaciones.
+                            </ng-container>
+                            <ng-container *ngIf="filtroFechaControl.value !== 'todos'">
+                                No hay solicitudes aprobadas en el rango de fecha seleccionado.
+                            </ng-container>
                         </ng-container>
                         <ng-container *ngIf="tabActiva === 'rechazadas'">
-                            No has rechazado ninguna solicitud de vacaciones.
+                            <ng-container *ngIf="filtroFechaControl.value === 'todos'">
+                                No has rechazado ninguna solicitud de vacaciones.
+                            </ng-container>
+                            <ng-container *ngIf="filtroFechaControl.value !== 'todos'">
+                                No hay solicitudes rechazadas en el rango de fecha seleccionado.
+                            </ng-container>
                         </ng-container>
                     </p>
                 </div>

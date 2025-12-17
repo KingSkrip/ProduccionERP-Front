@@ -11,40 +11,40 @@ export class VacacionesService {
      * Obtiene las solicitudes ordenadas por fecha (más recientes primero)
      */
     solicitudesOrdenadas(user: any): any[] {
+        // Filtrar solicitudes con status_id 3, 4 o 5 y título "Vacaciones"
         const solicitudesVacaciones = user.workorders_solicitadas.filter(
-            (wo: any) => wo.titulo === 'Vacaciones'
+            (wo: any) => wo.titulo === 'Vacaciones' && [3, 4, 5].includes(wo.status_id)
         );
         const historialVacaciones = user?.vacaciones?.[0]?.historial ?? [];
 
-        const historialOrdenado = [...historialVacaciones].sort((a: any, b: any) => {
-            return this.parseFecha(b.fecha_inicio).getTime()
-                - this.parseFecha(a.fecha_inicio).getTime();
+        // Ordenar workorders por created_at (del historial más reciente)
+        const workordersOrdenadas = [...solicitudesVacaciones].sort((a: any, b: any) => {
+            const fechaA = this.parseFecha(a.fecha_solicitud || a.created_at);
+            const fechaB = this.parseFecha(b.fecha_solicitud || b.created_at);
+            return fechaB.getTime() - fechaA.getTime();
         });
 
-        // 4️⃣ Mapear solicitudes usando el historial (1 a 1)
-        const solicitudesMapeadas = solicitudesVacaciones.map((wo: any, index: number) => {
+        // Ordenar historial por created_at (más reciente primero)
+        const historialOrdenado = [...historialVacaciones].sort((a: any, b: any) => {
+            return this.parseFecha(b.created_at).getTime() - this.parseFecha(a.created_at).getTime();
+        });
 
+        // Mapear solicitudes usando el historial (1 a 1 por índice)
+        const solicitudesMapeadas = workordersOrdenadas.map((wo: any, index: number) => {
             const historial = historialOrdenado[index];
-
             return {
                 id: wo.id,
                 fecha_inicio: historial?.fecha_inicio ?? 'N/A',
                 fecha_fin: historial?.fecha_fin ?? 'N/A',
                 dias_solicitados: historial?.dias ?? 'N/A',
                 fecha_solicitud: this.formatearFechaCorta(wo.fecha_solicitud || wo.created_at),
-                motivo: wo.descripcion || '',
+                motivo: wo.descripcion || historial?.comentarios || '',
                 estado: this.mapearEstado(wo.status_id),
                 status_id: wo.status_id
             };
         });
 
-        const solicitudesOrdenadas = solicitudesMapeadas.sort((a, b) => {
-            const fechaA = this.parseFecha(a.fecha_solicitud);
-            const fechaB = this.parseFecha(b.fecha_solicitud);
-            return fechaB.getTime() - fechaA.getTime();
-        });
-
-        return solicitudesOrdenadas;
+        return solicitudesMapeadas;
     }
 
 
@@ -56,13 +56,15 @@ export class VacacionesService {
 
     /**
      * Mapea el status_id a un estado legible
+     * 3 = Aprobada
+     * 4 = Rechazada
+     * 5 = En Proceso (Pendiente)
      */
     private mapearEstado(statusId: number): string {
         const estados = {
-            5: 'pendiente',
-            6: 'aprobada',
-            7: 'rechazada',
-            8: 'cancelada'
+            3: 'aprobada',
+            4: 'rechazada',
+            5: 'pendiente'
         };
         return estados[statusId] || 'pendiente';
     }
@@ -255,7 +257,7 @@ export class VacacionesService {
     formatearEstado(estado: string): string {
         const estados = {
             'aprobada': 'Aprobada',
-            'pendiente': 'Pendiente',
+            'pendiente': 'En Proceso',
             'rechazada': 'Rechazada',
             'cancelada': 'Cancelada'
         };
@@ -287,7 +289,7 @@ export class VacacionesService {
     }
 
     /**
-     * Verifica si hay solicitudes pendientes
+     * Verifica si hay solicitudes pendientes (status_id = 5)
      */
     tieneSolicitudesPendientes(user: any): boolean {
         if (!user?.workorders_solicitadas) return false;
@@ -296,7 +298,4 @@ export class VacacionesService {
             wo => wo.titulo === 'Vacaciones' && wo.status_id === 5
         );
     }
-
-
-
 }
