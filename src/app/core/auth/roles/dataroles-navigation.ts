@@ -2,7 +2,8 @@
 
 import { RoleEnum } from "./dataroles";
 
-export const NavigationByRole = {
+// Definimos la navegación por rol
+export const NavigationByRole: Record<RoleEnum, string[]> = {
     [RoleEnum.COLABORADOR]: [
         'Inicio',
         'Perfil',
@@ -17,6 +18,14 @@ export const NavigationByRole = {
         'Reportes'
     ],
     [RoleEnum.SUADMIN]: [
+        'Inicio',
+        'Usuarios',
+        'Pagos',
+        'Rutas',
+        'Reportes',
+        'Configuración'
+    ],
+    [RoleEnum.ADMIN]: [
         'Inicio',
         'Usuarios',
         'Pagos',

@@ -69,7 +69,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
         private _fusePlatformService: FusePlatformService,
         private _fuseNavigationService: FuseNavigationService,
         private _authService: AuthService,
-          private _cdr: ChangeDetectorRef,
+        private _cdr: ChangeDetectorRef,
     ) { }
 
     // -----------------------------------------------------------------------------------------------------
@@ -155,36 +155,26 @@ export class LayoutComponent implements OnInit, OnDestroy {
         );
 
 
-    this._authService.getUserRole()
-    .pipe(takeUntil(this._unsubscribeAll))
-    .subscribe(userRole => {
+        this._authService.getUserRole()
+            .pipe(
+                takeUntil(this._unsubscribeAll),
+                filter(roleInfo => !!roleInfo)
+            )
+            .subscribe(roleInfo => {
 
-        let navigation: FuseNavigationItem[] = [];
+                const { roleId, subRoleId } = roleInfo;
 
-        if (userRole !== null) {
-            const nav = this._fuseNavigationService.getNavigationByRole(userRole);
-            navigation = Array.isArray(nav) ? nav : [];
-        }
+                const navigation = this._fuseNavigationService.getNavigationByRole(
+                    roleId,
+                    subRoleId ?? undefined
+                );
 
-        this.navigationItems = navigation;
-        this._fuseNavigationService.storeNavigation('main', navigation);
+                this.navigationItems = navigation;
 
-        // 🔥 CLAVE: forzar render + refresh del menú
-        setTimeout(() => {
+                // 🔥 Store correcto (Fuse escucha esto solo)
+                this._fuseNavigationService.storeNavigation('main', navigation);
+            });
 
-            // Forzar detección de cambios
-            this._cdr.detectChanges();
-
-            // Obtener el componente real del navigation
-            const navComponent =
-                this._fuseNavigationService.getComponent<FuseVerticalNavigationComponent>('mainNavigation');
-
-            if (navComponent) {
-                navComponent.refresh();
-            }
-
-        });
-    });
 
 
 

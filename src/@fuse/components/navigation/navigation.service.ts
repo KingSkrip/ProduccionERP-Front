@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
-import { RoleEnum } from 'app/core/auth/roles/dataroles';
-import { menuSuAdmin, menuColaborador, menuRh, menuAdmin } from 'app/mock-api/common/navigation/data';
+import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
+import { menuSuAdmin, menuColaborador, menuRh, menuAdmin, menuJefe } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -174,15 +174,18 @@ export class FuseNavigationService {
         return null;
     }
 
+    //SubRoleEnum
 
+    getNavigationByRole(roleId: number, subRoleId?: number): FuseNavigationItem[] {
+        let navigation: FuseNavigationItem[] = [];
 
-    getNavigationByRole(roleId: number): FuseNavigationItem[] {
-        let navigation: FuseNavigationItem[];
-
+        // 1️⃣ Navegación base por ROL
         switch (roleId) {
+
             case RoleEnum.RH:
                 navigation = menuRh;
                 break;
+
             case RoleEnum.SUADMIN:
                 navigation = menuSuAdmin;
                 break;
@@ -194,24 +197,31 @@ export class FuseNavigationService {
             case RoleEnum.COLABORADOR:
                 navigation = menuColaborador;
                 break;
+
             default:
                 navigation = [];
                 break;
         }
 
-        // CRÍTICO: Triple verificación de que sea un array válido
-        if (!navigation) {
-            console.error("Navigation es null/undefined para roleId:", roleId);
-            return [];
+        // 2️⃣ Sobrescribir por SUBROL
+        if (subRoleId) {
+
+            switch (subRoleId) {
+                case SubRoleEnum.JEFE:
+                    navigation = menuJefe;
+                    break;
+                // futuros subroles aquí
+            }
         }
 
+        // 3️⃣ Seguridad
         if (!Array.isArray(navigation)) {
-            console.error("Navigation no es un array para roleId:", roleId, navigation);
+            console.error('Navigation inválida', { roleId, subRoleId });
             return [];
         }
 
-        // Crear una copia para evitar mutaciones
         return [...navigation];
     }
+
 
 }

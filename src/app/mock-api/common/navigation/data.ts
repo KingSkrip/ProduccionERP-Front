@@ -3929,3 +3929,53 @@ export const menuColaborador: FuseNavigationItem[] = [
     },
 
 ];
+
+
+
+
+export const menuJefe: FuseNavigationItem[] = [
+
+    // =======================
+    // DASHBOARDS
+    // =======================
+    {
+        id: 'group.dashboards',
+        title: 'Dashboards',
+        type: 'group',
+        children: [
+            {
+                id: 'dashboards.inicio',
+                title: 'Inicio',
+                type: 'basic',
+                icon: 'heroicons_outline:home',
+                link: '/dashboards/project',
+            },
+        ],
+    },
+
+    // =======================
+    // PRODUCCIÓN
+    // =======================
+    {
+        id: 'group.produccion',
+        title: 'Producción',
+        type: 'group',
+        children: [
+            {
+                id: 'produccion.aprobar-pedidos',
+                title: 'Aprobar pedidos',
+                type: 'basic',
+                icon: 'heroicons_outline:check',
+                link: '/apps/AceptPedidos',
+            },
+            {
+                id: 'produccion.reportes',
+                title: 'Reportes de producción',
+                type: 'basic',
+                icon: 'heroicons_outline:rectangle-stack',
+                link: '/apps/ReportProd',
+            },
+        ],
+    },
+];
+

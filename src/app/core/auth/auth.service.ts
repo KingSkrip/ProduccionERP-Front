@@ -4,7 +4,7 @@ import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
 import { catchError, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
-import { NavigationByRole, RoleEnum } from './roles/dataroles';
+import { NavigationByRole, NavigationBySubRole, RoleEnum } from './roles/dataroles';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -148,28 +148,42 @@ export class AuthService {
     /**
      * Get Menu by Role
      */
-    getMenu(): string[] {
-        const user = this._userService.user;
-        if (!user || !user.permissions || !user.permissions.length) return [];
-        
-        // Tomamos el primer permiso (puedes ajustarlo si tu app soporta multi-rol)
-        const roleId = user.permissions[0];
-        return NavigationByRole[roleId as RoleEnum] ?? [];
+getMenu(): string[] {
+    const user = this._userService.user;
+
+    if (!user?.permissions?.length) {
+        return [];
     }
+
+    const roleId = user.permissions[0] as RoleEnum;
+    const subRoleId = user.sub_permissions?.[0] ?? null;
+
+    console.log('MENU DEBUG → role:', roleId, 'subrole:', subRoleId);
+
+    // Por ahora solo rol (puedes extender a subrol después)
+    return NavigationByRole[roleId] ?? [];
+}
+
+
 
     /**
      * Obtener el rol principal del usuario
      */
-    getUserRole(): Observable<number | null> {
-        return this._userService.user$.pipe(
-            map(user => {
-                if (!user || !user.permissions || !user.permissions.length) {
-                    return null;
-                }
-                return user.permissions[0];
-            })
-        );
-    }
+ getUserRole(): Observable<{ roleId: number; subRoleId: number | null }> {
+    return this._userService.user$.pipe(
+        map(user => {
+            if (!user || !user.permissions?.length) {
+                return { roleId: null, subRoleId: null };
+            }
+
+            return {
+                roleId: user.permissions[0],
+                subRoleId: user.sub_permissions?.[0] ?? null
+            };
+        })
+    );
+}
+
 
     /**
      * Obtener el usuario completo

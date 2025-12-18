@@ -8,4 +8,5 @@ export interface User {
     usuario?: string;
     perfil?: number;
     permissions?: number[];
+    sub_permissions?: number[];
 }
