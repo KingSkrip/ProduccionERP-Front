@@ -20,12 +20,20 @@
                                 </span>
                             </div>
                         </ng-container>
-                        <div class="flex items-center">
-                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
-                            <div class="text-secondary ml-1.5 truncate leading-6">
-                                {{ (user$ | async)?.seguridad_social?.numero_imss?.split(' ')[0] }}!
-                            </div>
-                        </div>
+                       <div
+    class="flex items-center"
+    *ngIf="(user$ | async)?.seguridad_social?.numero_imss as imss"
+>
+    <mat-icon
+        class="icon-size-5"
+        [svgIcon]="'heroicons_solid:bell'">
+    </mat-icon>
+
+    <div class="text-secondary ml-1.5 truncate leading-6">
+        {{ imss.split(' ')[0] }}
+    </div>
+</div>
+
                     </div>
                 </div>
                 <!-- Actions -->
