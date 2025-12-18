@@ -26,6 +26,13 @@ import { ReportProdService } from '../reportprod.service';
 import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatBadgeModule } from '@angular/material/badge';
 
+interface DatoAgrupado {
+    departamento: string;
+    procesos: { proceso: string; cantidad: number }[];
+    cantidadTotal: number;
+    expandido?: boolean;
+}
+
 @Component({
     selector: 'reportprod-list',
     templateUrl: './reportprodList.component.html',
@@ -52,22 +59,22 @@ import { MatBadgeModule } from '@angular/material/badge';
 export class ReportProdListComponent implements OnInit, OnDestroy {
     datos: any[] = [];
     datosFiltrados: any[] = [];
+    datosAgrupados: DatoAgrupado[] = [];
     isLoading = false;
     mostrarPanelFiltros = false;
-    // Control del panel de fechas
     mostrarPanelFechas = false;
 
     // Controles de filtros
     searchControl = new FormControl('');
     deptoControl = new FormControl('');
     procesoControl = new FormControl('');
-    rangoFechaControl = new FormControl('todos');
+    rangoFechaControl = new FormControl('mes_actual');
     fechaInicioControl = new FormControl(null);
     fechaFinControl = new FormControl(null);
     verTodosControl = new FormControl(true);
 
-    // Rango de fecha seleccionado
-    rangoFechaSeleccionado: | 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo' = 'todos';
+    // Rango de fecha seleccionado - CAMBIADO A MES_ACTUAL POR DEFAULT
+    rangoFechaSeleccionado: | 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo' = 'mes_actual';
 
     // Listas únicas para los filtros
     departamentosUnicos: string[] = [];
@@ -86,7 +93,8 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        this.cargarDatos();
+        // Cargar datos del mes actual por defecto
+        this.seleccionarRangoFecha('mes_actual');
         this.configurarFiltros();
     }
 
@@ -122,6 +130,7 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
                     this.datos = response;
                     this.datosFiltrados = [...response];
                     this.extraerDatosUnicos();
+                    this.aplicarFiltros();
                     this.isLoading = false;
                     this._cd.markForCheck();
                 },
@@ -145,11 +154,10 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
 
         this.rangoFechaSeleccionado = rango;
 
-        // 👉 VER TODOS = sin fechas
+        // VER TODOS = sin fechas
         if (rango === 'todos') {
             this.fechaInicioControl.setValue(null);
             this.fechaFinControl.setValue(null);
-
             this.cargarDatos(undefined, undefined);
             this.mostrarPanelFechas = false;
             this._cd.markForCheck();
@@ -197,8 +205,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this._cd.markForCheck();
     }
 
-
-
     /** Aplicar filtro de fechas personalizado */
     aplicarFiltroFechas(): void {
         const fechaInicio = this.fechaInicioControl.value;
@@ -222,22 +228,22 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
 
         this.cargarDatos(fechaInicio, fechaFin);
-        this.mostrarPanelFechas = false; // Cerrar panel después de aplicar
+        this.mostrarPanelFechas = false;
         this._cd.markForCheck();
     }
 
     /** Limpiar filtro de fechas */
     limpiarFiltroFechas(): void {
-        this.rangoFechaControl.setValue('todos');
-        this.rangoFechaSeleccionado = 'todos';
-        this.fechaInicioControl.setValue(new Date());
-        this.fechaFinControl.setValue(new Date());
-        this.cargarDatos();
+        this.rangoFechaControl.setValue('mes_actual');
+        this.rangoFechaSeleccionado = 'mes_actual';
+        this.fechaInicioControl.setValue(null);
+        this.fechaFinControl.setValue(null);
+        this.seleccionarRangoFecha('mes_actual');
         this.mostrarPanelFechas = false;
         this._cd.markForCheck();
     }
 
-    /** Obtener texto de fecha seleccionada para mostrar en el botón */
+    /** Obtener texto de fecha seleccionada */
     obtenerTextoFechaSeleccionada(): string {
         const opciones: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
         const hoy = new Date();
@@ -245,7 +251,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         switch (this.rangoFechaSeleccionado) {
             case 'todos':
                 return 'Todos los registros';
-
 
             case 'hoy':
                 return `Hoy - ${hoy.toLocaleDateString('es-MX', opciones)}`;
@@ -279,7 +284,7 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
                 return 'Periodo de fechas';
 
             default:
-                return `Hoy - ${hoy.toLocaleDateString('es-MX', opciones)}`;
+                return `Mes actual`;
         }
     }
 
@@ -316,7 +321,7 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
             .subscribe(() => this.aplicarFiltros());
     }
 
-    /** Aplicar todos los filtros */
+    /** Aplicar todos los filtros y agrupar datos */
     aplicarFiltros(): void {
         const busqueda = this.searchControl.value?.toLowerCase().trim() || '';
         const deptoSeleccionado = this.deptoControl.value || '';
@@ -338,10 +343,53 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
             return coincideBusqueda && coincideDepto && coincideProceso;
         });
 
+        // Si hay filtro de proceso, NO agrupar, mostrar detalle
+        if (procesoSeleccionado) {
+            this.datosAgrupados = [];
+        } else {
+            this.agruparDatosPorDepartamento();
+        }
+
         if (this.ordenActual.campo) {
             this.aplicarOrdenamiento();
         }
 
+        this._cd.markForCheck();
+    }
+
+    /** Agrupar datos por departamento */
+    agruparDatosPorDepartamento(): void {
+        const grupos = new Map<string, DatoAgrupado>();
+
+        this.datosFiltrados.forEach(item => {
+            const depto = item.departamento;
+            
+            if (!grupos.has(depto)) {
+                grupos.set(depto, {
+                    departamento: depto,
+                    procesos: [],
+                    cantidadTotal: 0,
+                    expandido: false
+                });
+            }
+
+            const grupo = grupos.get(depto)!;
+            const cantidad = parseFloat(item.CANTIDAD) || 0;
+            
+            grupo.procesos.push({
+                proceso: item.proceso,
+                cantidad: cantidad
+            });
+            
+            grupo.cantidadTotal += cantidad;
+        });
+
+        this.datosAgrupados = Array.from(grupos.values());
+    }
+
+    /** Expandir/Colapsar departamento */
+    toggleDepartamento(index: number): void {
+        this.datosAgrupados[index].expandido = !this.datosAgrupados[index].expandido;
         this._cd.markForCheck();
     }
 
@@ -363,49 +411,69 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         const campo = this.ordenActual.campo;
         const direccion = this.ordenActual.direccion;
 
-        this.datosFiltrados.sort((a, b) => {
-            let valorA = a[campo];
-            let valorB = b[campo];
+        if (this.procesoControl.value) {
+            // Ordenar datos normales
+            this.datosFiltrados.sort((a, b) => {
+                let valorA = a[campo];
+                let valorB = b[campo];
 
-            if (campo === 'CANTIDAD') {
-                valorA = parseFloat(valorA) || 0;
-                valorB = parseFloat(valorB) || 0;
-            }
+                if (campo === 'CANTIDAD') {
+                    valorA = parseFloat(valorA) || 0;
+                    valorB = parseFloat(valorB) || 0;
+                }
 
-            if (valorA < valorB) return direccion === 'asc' ? -1 : 1;
-            if (valorA > valorB) return direccion === 'asc' ? 1 : -1;
-            return 0;
-        });
+                if (valorA < valorB) return direccion === 'asc' ? -1 : 1;
+                if (valorA > valorB) return direccion === 'asc' ? 1 : -1;
+                return 0;
+            });
+        } else {
+            // Ordenar datos agrupados
+            this.datosAgrupados.sort((a, b) => {
+                let valorA = campo === 'CANTIDAD' ? a.cantidadTotal : a.departamento;
+                let valorB = campo === 'CANTIDAD' ? b.cantidadTotal : b.departamento;
+
+                if (valorA < valorB) return direccion === 'asc' ? -1 : 1;
+                if (valorA > valorB) return direccion === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
     }
 
     /** Calcular cantidad total */
     calcularCantidadTotal(): number {
-        return this.datosFiltrados.reduce((total, item) => {
-            return total + (parseFloat(item.CANTIDAD) || 0);
-        }, 0);
+        if (this.procesoControl.value) {
+            return this.datosFiltrados.reduce((total, item) => {
+                return total + (parseFloat(item.CANTIDAD) || 0);
+            }, 0);
+        } else {
+            return this.datosAgrupados.reduce((total, grupo) => {
+                return total + grupo.cantidadTotal;
+            }, 0);
+        }
     }
 
     /** Contar departamentos únicos */
     contarDepartamentos(): number {
-        const departamentos = new Set(this.datosFiltrados.map(item => item.departamento));
-        return departamentos.size;
+        if (this.procesoControl.value) {
+            const departamentos = new Set(this.datosFiltrados.map(item => item.departamento));
+            return departamentos.size;
+        } else {
+            return this.datosAgrupados.length;
+        }
     }
 
     /** Track by function */
     trackByFn(index: number, item: any): string {
-        return `${item.depto}-${item.proc}` || index.toString();
+        return item.departamento || `${item.depto}-${item.proc}` || index.toString();
     }
 
-
-
-
-    // Toggle del panel grande
+    /** Toggle del panel grande */
     togglePanelFiltros(): void {
         this.mostrarPanelFiltros = !this.mostrarPanelFiltros;
         this._cd.markForCheck();
     }
 
-    // Cerrar con ESC (opcional pero chido)
+    /** Cerrar con ESC */
     @HostListener('document:keydown.escape')
     onEscape(): void {
         if (this.mostrarPanelFiltros || this.mostrarPanelFechas) {
@@ -415,21 +483,16 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
     }
 
-    // Contar filtros activos para el badge
+    /** Contar filtros activos para el badge */
     filtrosActivosCount(): number {
         let count = 0;
-
-        if (this.rangoFechaSeleccionado !== 'todos') {
-            count++;
-        }
+        if (this.rangoFechaSeleccionado !== 'mes_actual') count++;
         if (this.deptoControl.value) count++;
         if (this.procesoControl.value) count++;
-
         return count;
     }
 
-
-    // Limpiar todos los filtros
+    /** Limpiar todos los filtros */
     limpiarTodosFiltros(): void {
         this.searchControl.setValue('');
         this.deptoControl.setValue('');
@@ -437,8 +500,4 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this.limpiarFiltroFechas();
         this.aplicarFiltros();
     }
-
-
-
-
 }
