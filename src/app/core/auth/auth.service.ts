@@ -158,7 +158,7 @@ getMenu(): string[] {
     const roleId = user.permissions[0] as RoleEnum;
     const subRoleId = user.sub_permissions?.[0] ?? null;
 
-    console.log('MENU DEBUG → role:', roleId, 'subrole:', subRoleId);
+ 
 
     // Por ahora solo rol (puedes extender a subrol después)
     return NavigationByRole[roleId] ?? [];

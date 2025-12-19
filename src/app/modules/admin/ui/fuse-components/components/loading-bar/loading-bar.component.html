@@ -1,45 +1,30 @@
 <div class="flex min-w-0 flex-auto flex-col">
     <!-- Header -->
     <div
-        class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8"
-    >
+        class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
         <div class="min-w-0 flex-1">
             <!-- Breadcrumbs -->
             <div class="flex flex-wrap items-center font-medium">
                 <div>
-                    <a class="whitespace-nowrap text-primary-500"
-                        >Documentation</a
-                    >
+                    <a class="whitespace-nowrap text-primary-500">Documentation</a>
                 </div>
                 <div class="ml-1 flex items-center whitespace-nowrap">
-                    <mat-icon
-                        class="text-secondary icon-size-5"
-                        [svgIcon]="'heroicons_mini:chevron-right'"
-                    ></mat-icon>
+                    <mat-icon class="text-secondary icon-size-5" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
                     <a class="ml-1 text-primary-500">Fuse Components</a>
                 </div>
                 <div class="ml-1 flex items-center whitespace-nowrap">
-                    <mat-icon
-                        class="text-secondary icon-size-5"
-                        [svgIcon]="'heroicons_mini:chevron-right'"
-                    ></mat-icon>
+                    <mat-icon class="text-secondary icon-size-5" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
                     <span class="text-secondary ml-1">Components</span>
                 </div>
             </div>
             <!-- Title -->
             <div class="mt-2">
-                <h2
-                    class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl"
-                >
+                <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
                     Loading Bar
                 </h2>
             </div>
         </div>
-        <button
-            class="order-first -ml-3 mb-2 sm:order-last sm:mb-0 sm:ml-0"
-            mat-icon-button
-            (click)="toggleDrawer()"
-        >
+        <button class="order-first -ml-3 mb-2 sm:order-last sm:mb-0 sm:ml-0" mat-icon-button (click)="toggleDrawer()">
             <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
         </button>
     </div>
@@ -150,19 +135,11 @@
                     <ng-template matTabContent>
                         <div class="bg-gray-100 p-4">
                             <div class="mx-auto flex max-w-80 space-x-4">
-                                <button
-                                    mat-flat-button
-                                    [color]="'primary'"
-                                    (click)="showLoadingBar()"
-                                >
+                                <button mat-flat-button [color]="'primary'" (click)="showLoadingBar()">
                                     Show loading bar
                                 </button>
 
-                                <button
-                                    mat-flat-button
-                                    [color]="'primary'"
-                                    (click)="hideLoadingBar()"
-                                >
+                                <button mat-flat-button [color]="'primary'" (click)="hideLoadingBar()">
                                     Hide loading bar
                                 </button>
                             </div>
@@ -223,24 +200,14 @@
                 <mat-tab label="Preview">
                     <ng-template matTabContent>
                         <div class="bg-gray-100 p-4">
-                            <div
-                                class="mx-auto flex max-w-80 flex-col items-center"
-                            >
-                                <mat-slide-toggle
-                                    [checked]="true"
-                                    [color]="'primary'"
-                                    (change)="setAutoMode($event)"
-                                >
+                            <div class="mx-auto flex max-w-80 flex-col items-center">
+                                <mat-slide-toggle [checked]="true" [color]="'primary'" (change)="setAutoMode($event)">
                                     Auto Mode
                                 </mat-slide-toggle>
 
                                 <div class="mb-6 w-24 border-b pt-6"></div>
 
-                                <button
-                                    mat-flat-button
-                                    [color]="'primary'"
-                                    (click)="makeAPICall()"
-                                >
+                                <button mat-flat-button [color]="'primary'" (click)="makeAPICall()">
                                     Make an API call (2000ms delay)
                                 </button>
 
@@ -322,43 +289,25 @@
                 <mat-tab label="Preview">
                     <ng-template matTabContent>
                         <div class="bg-gray-100 p-4">
-                            <div
-                                class="mx-auto flex max-w-80 flex-col items-center space-y-8"
-                            >
+                            <div class="mx-auto flex max-w-80 flex-col items-center space-y-8">
                                 <div class="flex items-center space-x-4">
-                                    <button
-                                        mat-flat-button
-                                        [color]="'primary'"
-                                        (click)="showLoadingBar()"
-                                    >
+                                    <button mat-flat-button [color]="'primary'" (click)="showLoadingBar()">
                                         Show loading bar
                                     </button>
 
-                                    <button
-                                        mat-flat-button
-                                        [color]="'primary'"
-                                        (click)="hideLoadingBar()"
-                                    >
+                                    <button mat-flat-button [color]="'primary'" (click)="hideLoadingBar()">
                                         Hide loading bar
                                     </button>
                                 </div>
 
-                                <mat-slide-toggle
-                                    [checked]="false"
-                                    [color]="'primary'"
-                                    (change)="toggleMode()"
-                                >
+                                <mat-slide-toggle [checked]="false" [color]="'primary'" (change)="toggleMode()">
                                     Toggle determinate mode
                                 </mat-slide-toggle>
 
                                 <div>
                                     Progress value
                                     <mat-slider [color]="'primary'">
-                                        <input
-                                            matSliderThumb
-                                            [(value)]="sliderValue"
-                                            (valueChange)="setProgress()"
-                                        />
+                                        <input matSliderThumb [(value)]="sliderValue" (valueChange)="setProgress()" />
                                     </mat-slider>
                                 </div>
                             </div>

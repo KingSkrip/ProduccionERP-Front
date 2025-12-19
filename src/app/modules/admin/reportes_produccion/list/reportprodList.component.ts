@@ -18,13 +18,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { fuseAnimations } from '@fuse/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { ReportProdService } from '../reportprod.service';
-import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatBadgeModule } from '@angular/material/badge';
 
 interface DatoAgrupado {
     departamento: string;
@@ -36,11 +38,13 @@ interface DatoAgrupado {
 @Component({
     selector: 'reportprod-list',
     templateUrl: './reportprodList.component.html',
+    styleUrls: ['./reportprodList.component.scss'],
     standalone: true,
     imports: [
         CommonModule,
         ReactiveFormsModule,
         MatProgressBarModule,
+        MatProgressSpinnerModule,
         MatIconModule,
         MatButtonModule,
         MatFormFieldModule,
@@ -51,6 +55,7 @@ interface DatoAgrupado {
         MatTooltipModule,
         MatBottomSheetModule,
         MatBadgeModule,
+        MatTabsModule,
     ],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,6 +69,24 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
     mostrarPanelFiltros = false;
     mostrarPanelFechas = false;
 
+    // DATOS ORIGINALES Y FILTRADOS PARA TODOS LOS TABS
+    datosTejido: any[] = [];
+    datosTejidoFiltrados: any[] = [];
+    datosRevisado: any[] = [];
+    datosRevisadoFiltrados: any[] = [];
+    datosPorRevisar: any[] = [];
+    datosPorRevisarFiltrados: any[] = [];
+    datosSaldos: any[] = [];
+    datosSaldosFiltrados: any[] = [];
+    datosEmbarques: any[] = [];
+    datosEmbarquesFiltrados: any[] = [];
+
+    isLoadingTejido = false;
+    isLoadingRevisado = false;
+    isLoadingPorRevisar = false;
+    isLoadingSaldos = false;
+    isLoadingEmbarques = false;
+
     // Controles de filtros
     searchControl = new FormControl('');
     deptoControl = new FormControl('');
@@ -72,15 +95,14 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
     fechaInicioControl = new FormControl(null);
     fechaFinControl = new FormControl(null);
     verTodosControl = new FormControl(true);
+    tipoEmbarqueControl = new FormControl('');
 
-    // Rango de fecha seleccionado - CAMBIADO A MES_ACTUAL POR DEFAULT
-    rangoFechaSeleccionado: | 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo' = 'mes_actual';
+    rangoFechaSeleccionado: 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo' = 'mes_actual';
 
-    // Listas únicas para los filtros
     departamentosUnicos: string[] = [];
     procesosUnicos: string[] = [];
+    tiposEmbarqueUnicos: string[] = [];
 
-    // Ordenamiento
     ordenActual: { campo: string; direccion: 'asc' | 'desc' } = { campo: '', direccion: 'asc' };
 
     private _unsubscribeAll = new Subject<void>();
@@ -93,7 +115,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        // Cargar datos del mes actual por defecto
         this.seleccionarRangoFecha('mes_actual');
         this.configurarFiltros();
     }
@@ -103,13 +124,11 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
-    /** Toggle del panel de fechas */
     toggleDatePanel(): void {
         this.mostrarPanelFechas = !this.mostrarPanelFechas;
         this._cd.markForCheck();
     }
 
-    /** Cerrar panel al presionar ESC */
     @HostListener('document:keydown.escape')
     onEscapeKey(): void {
         if (this.mostrarPanelFechas) {
@@ -118,7 +137,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
     }
 
-    /** Cargar datos desde el servicio */
     cargarDatos(fechaInicio?: Date, fechaFin?: Date): void {
         this.isLoading = true;
         this._cd.markForCheck();
@@ -137,7 +155,7 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
                 error: err => {
                     console.error('Error al cargar datos:', err);
                     this._snackBar.open(
-                        'Error al cargar datos de producción. Verifica tu conexión.',
+                        'Error al cargar datos de producción',
                         'Cerrar',
                         { duration: 5000, panelClass: 'error-snackbar' }
                     );
@@ -147,24 +165,174 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
             });
     }
 
-    /** Seleccionar rango de fecha predefinido */
+    cargarProduccionTejido(fechaInicio?: Date, fechaFin?: Date): void {
+        this.isLoadingTejido = true;
+        this._cd.markForCheck();
+
+        this._reportService.getProduccionTejido(fechaInicio, fechaFin)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: response => {
+                    this.datosTejido = response;
+                    this.datosTejidoFiltrados = [...response];
+                    this.aplicarFiltros();
+                    this.isLoadingTejido = false;
+                    this._cd.markForCheck();
+                },
+                error: err => {
+                    console.error('Error al cargar producción de tejido:', err);
+                    this._snackBar.open('Error al cargar producción de tejido', 'Cerrar', { duration: 5000 });
+                    this.isLoadingTejido = false;
+                    this._cd.markForCheck();
+                }
+            });
+    }
+
+    cargarRevisadoTejido(fechaInicio?: Date, fechaFin?: Date): void {
+        this.isLoadingRevisado = true;
+        this._cd.markForCheck();
+
+        this._reportService.getRevisadoTejido(fechaInicio, fechaFin)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: response => {
+                    this.datosRevisado = response;
+                    this.datosRevisadoFiltrados = [...response];
+                    this.aplicarFiltros();
+                    this.isLoadingRevisado = false;
+                    this._cd.markForCheck();
+                },
+                error: err => {
+                    console.error('Error al cargar revisado de tejido:', err);
+                    this._snackBar.open('Error al cargar revisado de tejido', 'Cerrar', { duration: 5000 });
+                    this.isLoadingRevisado = false;
+                    this._cd.markForCheck();
+                }
+            });
+    }
+
+    cargarPorRevisarTejido(fechaInicio?: Date, fechaFin?: Date): void {
+        this.isLoadingPorRevisar = true;
+        this._cd.markForCheck();
+
+        this._reportService.getPorRevisarTejido(fechaInicio, fechaFin)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: response => {
+                    this.datosPorRevisar = response;
+                    this.datosPorRevisarFiltrados = [...response];
+                    this.aplicarFiltros();
+                    this.isLoadingPorRevisar = false;
+                    this._cd.markForCheck();
+                },
+                error: err => {
+                    console.error('Error al cargar por revisar:', err);
+                    this._snackBar.open('Error al cargar datos por revisar', 'Cerrar', { duration: 5000 });
+                    this.isLoadingPorRevisar = false;
+                    this._cd.markForCheck();
+                }
+            });
+    }
+
+    cargarSaldosTejido(fechaInicio?: Date, fechaFin?: Date): void {
+        this.isLoadingSaldos = true;
+        this._cd.markForCheck();
+
+        this._reportService.getSaldosTejido(fechaInicio, fechaFin)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: response => {
+                    this.datosSaldos = response;
+                    this.datosSaldosFiltrados = [...response];
+                    this.aplicarFiltros();
+                    this.isLoadingSaldos = false;
+                    this._cd.markForCheck();
+                },
+                error: err => {
+                    console.error('Error al cargar saldos:', err);
+                    this._snackBar.open('Error al cargar saldos', 'Cerrar', { duration: 5000 });
+                    this.isLoadingSaldos = false;
+                    this._cd.markForCheck();
+                }
+            });
+    }
+
+    // 🔥 NUEVO: CARGAR EMBARQUES
+    cargarEmbarques(fechaInicio?: Date, fechaFin?: Date): void {
+        console.log('🚀 === INICIANDO CARGA DE EMBARQUES ===');
+        console.log('📅 Fecha inicio:', fechaInicio);
+        console.log('📅 Fecha fin:', fechaFin);
+
+        this.isLoadingEmbarques = true;
+        this._cd.markForCheck();
+
+        this._reportService.getEntregadoaEmbarques(fechaInicio, fechaFin)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: response => {
+                    console.log('✅ === RESPUESTA EXITOSA ===');
+                    console.log('📦 Datos recibidos:', response);
+                    console.log('📊 Cantidad de registros:', response?.length || 0);
+
+                    if (response && response.length > 0) {
+                        console.log('🔍 Primer registro:', response[0]);
+                        console.log('🔍 Tipos encontrados:', [...new Set(response.map(r => r.TIPO))]);
+                    }
+
+                    this.datosEmbarques = response || [];
+                    this.datosEmbarquesFiltrados = [...(response || [])];
+
+                    console.log('💾 Datos guardados en componente:');
+                    console.log('  - datosEmbarques:', this.datosEmbarques.length);
+                    console.log('  - datosEmbarquesFiltrados:', this.datosEmbarquesFiltrados.length);
+
+                    this.extraerTiposEmbarque();
+                    this.aplicarFiltros();
+
+                    this.isLoadingEmbarques = false;
+                    this._cd.detectChanges(); // Usar detectChanges para forzar actualización
+
+                    const total = this.calcularTotalEmbarques();
+                    console.log('💰 Total calculado inmediatamente:', total);
+                    console.log('🏁 === CARGA COMPLETA ===\n');
+                },
+                error: err => {
+                    console.error('❌ === ERROR EN CARGA ===');
+                    console.error('Error completo:', err);
+                    console.error('Mensaje:', err.message);
+                    console.error('Status:', err.status);
+
+                    this._snackBar.open(
+                        'Error al cargar datos de embarques: ' + (err.message || 'Error desconocido'),
+                        'Cerrar',
+                        { duration: 5000 }
+                    );
+
+                    this.isLoadingEmbarques = false;
+                    this._cd.markForCheck();
+                }
+            });
+    }
+
     seleccionarRangoFecha(
         rango: 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo'
     ): void {
-
         this.rangoFechaSeleccionado = rango;
 
-        // VER TODOS = sin fechas
         if (rango === 'todos') {
             this.fechaInicioControl.setValue(null);
             this.fechaFinControl.setValue(null);
             this.cargarDatos(undefined, undefined);
+            this.cargarProduccionTejido(undefined, undefined);
+            this.cargarRevisadoTejido(undefined, undefined);
+            this.cargarPorRevisarTejido(undefined, undefined);
+            this.cargarSaldosTejido(undefined, undefined);
+            this.cargarEmbarques(undefined, undefined);
             this.mostrarPanelFechas = false;
             this._cd.markForCheck();
             return;
         }
 
-        // Personalizados
         if (rango === 'fecha_especifica' || rango === 'periodo') {
             this._cd.markForCheck();
             return;
@@ -178,19 +346,16 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
                 fechaInicio = new Date();
                 fechaFin = new Date();
                 break;
-
             case 'ayer':
                 fechaInicio = new Date();
                 fechaInicio.setDate(fechaInicio.getDate() - 1);
                 fechaFin = new Date(fechaInicio);
                 break;
-
             case 'mes_actual':
                 fechaInicio = new Date();
                 fechaInicio.setDate(1);
                 fechaFin = new Date();
                 break;
-
             case 'mes_anterior':
                 fechaInicio = new Date();
                 fechaInicio.setMonth(fechaInicio.getMonth() - 1);
@@ -201,11 +366,15 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
 
         this.cargarDatos(fechaInicio, fechaFin);
+        this.cargarProduccionTejido(fechaInicio, fechaFin);
+        this.cargarRevisadoTejido(fechaInicio, fechaFin);
+        this.cargarPorRevisarTejido(fechaInicio, fechaFin);
+        this.cargarSaldosTejido(fechaInicio, fechaFin);
+        this.cargarEmbarques(fechaInicio, fechaFin);
         this.mostrarPanelFechas = false;
         this._cd.markForCheck();
     }
 
-    /** Aplicar filtro de fechas personalizado */
     aplicarFiltroFechas(): void {
         const fechaInicio = this.fechaInicioControl.value;
         const fechaFin = this.rangoFechaSeleccionado === 'periodo'
@@ -228,11 +397,16 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
 
         this.cargarDatos(fechaInicio, fechaFin);
+        this.cargarProduccionTejido(fechaInicio, fechaFin);
+        this.cargarRevisadoTejido(fechaInicio, fechaFin);
+        this.cargarPorRevisarTejido(fechaInicio, fechaFin);
+        this.cargarSaldosTejido(fechaInicio, fechaFin);
+        this.cargarEmbarques(fechaInicio, fechaFin);
+
         this.mostrarPanelFechas = false;
         this._cd.markForCheck();
     }
 
-    /** Limpiar filtro de fechas */
     limpiarFiltroFechas(): void {
         this.rangoFechaControl.setValue('mes_actual');
         this.rangoFechaSeleccionado = 'mes_actual';
@@ -243,38 +417,27 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this._cd.markForCheck();
     }
 
-    /** Obtener texto de fecha seleccionada */
     obtenerTextoFechaSeleccionada(): string {
         const opciones: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
         const hoy = new Date();
 
         switch (this.rangoFechaSeleccionado) {
-            case 'todos':
-                return 'Todos los registros';
-
-            case 'hoy':
-                return `Hoy - ${hoy.toLocaleDateString('es-MX', opciones)}`;
-
+            case 'todos': return 'Todos los registros';
+            case 'hoy': return `Hoy - ${hoy.toLocaleDateString('es-MX', opciones)}`;
             case 'ayer':
                 const ayer = new Date();
                 ayer.setDate(ayer.getDate() - 1);
                 return `Ayer - ${ayer.toLocaleDateString('es-MX', opciones)}`;
-
             case 'mes_actual':
                 const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
                 return `${inicioMes.toLocaleDateString('es-MX', opciones)} - ${hoy.toLocaleDateString('es-MX', opciones)}`;
-
             case 'mes_anterior':
                 const inicioMesAnt = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
                 const finMesAnt = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
                 return `${inicioMesAnt.toLocaleDateString('es-MX', opciones)} - ${finMesAnt.toLocaleDateString('es-MX', opciones)}`;
-
             case 'fecha_especifica':
                 const fecha = this.fechaInicioControl.value;
-                return fecha
-                    ? `Fecha: ${fecha.toLocaleDateString('es-MX', opciones)}`
-                    : 'Seleccionar fecha';
-
+                return fecha ? `Fecha: ${fecha.toLocaleDateString('es-MX', opciones)}` : 'Seleccionar fecha';
             case 'periodo':
                 const inicio = this.fechaInicioControl.value;
                 const fin = this.fechaFinControl.value;
@@ -282,13 +445,10 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
                     return `${inicio.toLocaleDateString('es-MX', opciones)} - ${fin.toLocaleDateString('es-MX', opciones)}`;
                 }
                 return 'Periodo de fechas';
-
-            default:
-                return `Mes actual`;
+            default: return 'Mes actual';
         }
     }
 
-    /** Extraer listas únicas para los filtros */
     extraerDatosUnicos(): void {
         const deptosSet = new Set<string>();
         const procesosSet = new Set<string>();
@@ -302,14 +462,31 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this.procesosUnicos = Array.from(procesosSet).sort();
     }
 
-    /** Configurar filtros con debounce */
+    extraerTiposEmbarque(): void {
+        console.log('📋 === EXTRAYENDO TIPOS DE EMBARQUE ===');
+        console.log('Datos a procesar:', this.datosEmbarques.length, 'registros');
+
+        const tiposSet = new Set<string>();
+
+        this.datosEmbarques.forEach((item, index) => {
+            if (item.TIPO) {
+                tiposSet.add(item.TIPO);
+                if (index < 5) { // Mostrar solo los primeros 5
+                    console.log(`  [${index}] Tipo: "${item.TIPO}" - Artículo: ${item.ARTICULO}`);
+                }
+            } else {
+                console.warn(`  ⚠️ Item sin TIPO:`, item);
+            }
+        });
+
+        this.tiposEmbarqueUnicos = Array.from(tiposSet).sort();
+        console.log('✅ Tipos únicos extraídos:', this.tiposEmbarqueUnicos);
+        console.log('🏁 === EXTRACCIÓN COMPLETA ===\n');
+    }
+
     configurarFiltros(): void {
         this.searchControl.valueChanges
-            .pipe(
-                debounceTime(300),
-                distinctUntilChanged(),
-                takeUntil(this._unsubscribeAll)
-            )
+            .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
             .subscribe(() => this.aplicarFiltros());
 
         this.deptoControl.valueChanges
@@ -319,31 +496,57 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this.procesoControl.valueChanges
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(() => this.aplicarFiltros());
+
+        this.tipoEmbarqueControl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(() => this.aplicarFiltros());
     }
 
-    /** Aplicar todos los filtros y agrupar datos */
     aplicarFiltros(): void {
         const busqueda = this.searchControl.value?.toLowerCase().trim() || '';
         const deptoSeleccionado = this.deptoControl.value || '';
         const procesoSeleccionado = this.procesoControl.value || '';
+        const tipoSeleccionado = this.tipoEmbarqueControl.value || '';
 
+        // FILTRAR DATOS PRINCIPALES
         this.datosFiltrados = this.datos.filter(item => {
             const coincideBusqueda = !busqueda ||
                 item.departamento?.toLowerCase().includes(busqueda) ||
-                item.proceso?.toLowerCase().includes(busqueda) ||
-                item.proc?.toLowerCase().includes(busqueda) ||
-                item.depto?.toString().includes(busqueda);
-
-            const coincideDepto = !deptoSeleccionado ||
-                item.departamento === deptoSeleccionado;
-
-            const coincideProceso = !procesoSeleccionado ||
-                item.proceso === procesoSeleccionado;
-
+                item.proceso?.toLowerCase().includes(busqueda);
+            const coincideDepto = !deptoSeleccionado || item.departamento === deptoSeleccionado;
+            const coincideProceso = !procesoSeleccionado || item.proceso === procesoSeleccionado;
             return coincideBusqueda && coincideDepto && coincideProceso;
         });
 
-        // Si hay filtro de proceso, NO agrupar, mostrar detalle
+        // FILTRAR TEJIDO
+        this.datosTejidoFiltrados = this.datosTejido.filter(item => {
+            return !busqueda || item.ARTICULO?.toString().toLowerCase().includes(busqueda);
+        });
+
+        // FILTRAR REVISADO
+        this.datosRevisadoFiltrados = this.datosRevisado.filter(item => {
+            return !busqueda || item.ARTICULO?.toString().toLowerCase().includes(busqueda);
+        });
+
+        // FILTRAR POR REVISAR
+        this.datosPorRevisarFiltrados = this.datosPorRevisar.filter(item => {
+            return !busqueda || item.ARTICULO?.toLowerCase().includes(busqueda);
+        });
+
+        // FILTRAR SALDOS
+        this.datosSaldosFiltrados = this.datosSaldos.filter(item => {
+            return !busqueda || item.ARTICULO?.toLowerCase().includes(busqueda);
+        });
+
+        // FILTRAR EMBARQUES
+        this.datosEmbarquesFiltrados = this.datosEmbarques.filter(item => {
+            const coincideBusqueda = !busqueda ||
+                item.ARTICULO?.toLowerCase().includes(busqueda) ||
+                item.TIPO?.toLowerCase().includes(busqueda);
+            const coincideTipo = !tipoSeleccionado || item.TIPO === tipoSeleccionado;
+            return coincideBusqueda && coincideTipo;
+        });
+
         if (procesoSeleccionado) {
             this.datosAgrupados = [];
         } else {
@@ -357,13 +560,13 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this._cd.markForCheck();
     }
 
-    /** Agrupar datos por departamento */
+
     agruparDatosPorDepartamento(): void {
         const grupos = new Map<string, DatoAgrupado>();
 
         this.datosFiltrados.forEach(item => {
             const depto = item.departamento;
-            
+
             if (!grupos.has(depto)) {
                 grupos.set(depto, {
                     departamento: depto,
@@ -375,25 +578,23 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
 
             const grupo = grupos.get(depto)!;
             const cantidad = parseFloat(item.CANTIDAD) || 0;
-            
+
             grupo.procesos.push({
                 proceso: item.proceso,
                 cantidad: cantidad
             });
-            
+
             grupo.cantidadTotal += cantidad;
         });
 
         this.datosAgrupados = Array.from(grupos.values());
     }
 
-    /** Expandir/Colapsar departamento */
     toggleDepartamento(index: number): void {
         this.datosAgrupados[index].expandido = !this.datosAgrupados[index].expandido;
         this._cd.markForCheck();
     }
 
-    /** Ordenar por columna */
     ordenar(campo: string): void {
         if (this.ordenActual.campo === campo) {
             this.ordenActual.direccion = this.ordenActual.direccion === 'asc' ? 'desc' : 'asc';
@@ -406,13 +607,11 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this._cd.markForCheck();
     }
 
-    /** Aplicar ordenamiento actual */
     aplicarOrdenamiento(): void {
         const campo = this.ordenActual.campo;
         const direccion = this.ordenActual.direccion;
 
         if (this.procesoControl.value) {
-            // Ordenar datos normales
             this.datosFiltrados.sort((a, b) => {
                 let valorA = a[campo];
                 let valorB = b[campo];
@@ -427,7 +626,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
                 return 0;
             });
         } else {
-            // Ordenar datos agrupados
             this.datosAgrupados.sort((a, b) => {
                 let valorA = campo === 'CANTIDAD' ? a.cantidadTotal : a.departamento;
                 let valorB = campo === 'CANTIDAD' ? b.cantidadTotal : b.departamento;
@@ -439,7 +637,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
     }
 
-    /** Calcular cantidad total */
     calcularCantidadTotal(): number {
         if (this.procesoControl.value) {
             return this.datosFiltrados.reduce((total, item) => {
@@ -452,7 +649,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
     }
 
-    /** Contar departamentos únicos */
     contarDepartamentos(): number {
         if (this.procesoControl.value) {
             const departamentos = new Set(this.datosFiltrados.map(item => item.departamento));
@@ -462,18 +658,137 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
     }
 
-    /** Track by function */
-    trackByFn(index: number, item: any): string {
-        return item.departamento || `${item.depto}-${item.proc}` || index.toString();
+    // MÉTODOS DE CÁLCULO PARA TEJIDO
+    calcularTotalPesoTejido(): number {
+        return this.datosTejidoFiltrados.reduce((total, item) => {
+            const valor = parseFloat(item.TOTAL_TJ) || 0;
+            return total + valor;
+        }, 0);
     }
 
-    /** Toggle del panel grande */
+    calcularTotalPiezasTejido(): number {
+        return this.datosTejidoFiltrados.reduce((total, item) => total + (parseFloat(item.PIEZAS) || 0), 0);
+    }
+
+    contarArticulosTejido(): number {
+        return this.datosTejidoFiltrados.length;
+    }
+
+    // MÉTODOS DE CÁLCULO PARA REVISADO
+    calcularTotalPesoRevisado(): number {
+        return this.datosRevisadoFiltrados.reduce((total, item) => {
+            const valor = parseFloat(item.TOTAL_RV) || 0;
+            return total + valor;
+        }, 0);
+    }
+
+    calcularTotalPiezasRevisado(): number {
+        return this.datosRevisadoFiltrados.reduce((total, item) => total + (parseFloat(item.PIEZAS) || 0), 0);
+    }
+
+    contarArticulosRevisado(): number {
+        return this.datosRevisadoFiltrados.length;
+    }
+
+    // MÉTODOS DE CÁLCULO PARA POR REVISAR
+    calcularTotalPesoPorRevisar(): number {
+        return this.datosPorRevisarFiltrados.reduce((total, item) => total + (parseFloat(item.TOTAL_POR_REVISAR) || 0), 0);
+    }
+
+    calcularTotalPiezasPorRevisar(): number {
+        return this.datosPorRevisarFiltrados.reduce((total, item) => total + (parseFloat(item.PIEZAS) || 0), 0);
+    }
+
+    contarArticulosPorRevisar(): number {
+        return this.datosPorRevisarFiltrados.length;
+    }
+
+    // MÉTODOS DE CÁLCULO PARA SALDOS
+    calcularTotalPesoSaldos(): number {
+        return this.datosSaldosFiltrados.reduce((total, item) => total + (parseFloat(item.TOTAL_SALDO) || 0), 0);
+    }
+
+    calcularTotalPiezasSaldos(): number {
+        return this.datosSaldosFiltrados.reduce((total, item) => total + (parseFloat(item.PIEZAS) || 0), 0);
+    }
+
+    contarArticulosSaldos(): number {
+        return this.datosSaldosFiltrados.length;
+    }
+
+    // 🔥 NUEVOS MÉTODOS DE CÁLCULO PARA EMBARQUES
+    calcularTotalEmbarques(): number {
+        console.log('💰 === CALCULANDO TOTAL EMBARQUES ===');
+        console.log('Registros a sumar:', this.datosEmbarquesFiltrados.length);
+
+        if (this.datosEmbarquesFiltrados.length === 0) {
+            console.warn('⚠️ No hay datos filtrados para calcular');
+            return 0;
+        }
+
+        let total = 0;
+        this.datosEmbarquesFiltrados.forEach((item, index) => {
+            // Limpiamos espacios y reemplazamos coma por punto
+            const cantidadStr = item.CANTIDAD.trim().replace(',', '.');
+            const cantidad = parseFloat(cantidadStr) || 0;
+
+            total += cantidad;
+
+            if (index < 3) { // Mostrar solo los primeros 3
+                console.log(`  [${index}] ${item.ARTICULO} (${item.TIPO.trim()}): ${cantidad} kg`);
+            }
+        });
+
+        console.log('✅ Total calculado:', total.toFixed(2), 'kg');
+        console.log('🏁 === CÁLCULO COMPLETO ===\n');
+        return total;
+    }
+
+    calcularPorTipo(tipo: string): number {
+        console.log(`🎯 Calculando tipo: "${tipo}"`);
+
+        const itemsFiltrados = this.datosEmbarquesFiltrados.filter(
+            item => item.TIPO.trim() === tipo
+        );
+
+        console.log(`  Registros encontrados: ${itemsFiltrados.length}`);
+
+        if (itemsFiltrados.length === 0) {
+            console.log(`  ⚠️ Sin datos para tipo "${tipo}"`);
+            return 0;
+        }
+
+        const total = itemsFiltrados.reduce((sum, item) => {
+            const cantidad = parseFloat(item.CANTIDAD) || 0;
+            return sum + cantidad;
+        }, 0);
+
+        console.log(`  ✅ Total para "${tipo}": ${total.toFixed(2)} kg`);
+        return total;
+    }
+
+
+    contarArticulosEmbarques(): number {
+        const articulos = new Set(this.datosEmbarquesFiltrados.map(item => item.ARTICULO));
+        return articulos.size;
+    }
+
+    contarTiposEmbarque(): number {
+        const tipos = new Set(this.datosEmbarquesFiltrados.map(item => item.TIPO));
+        return tipos.size;
+    }
+
+
+
+    trackByFn(index: number, item: any): string {
+        return item.departamento || item.CVE_ART || `${item.depto}-${item.proc}` || index.toString();
+    }
+
     togglePanelFiltros(): void {
         this.mostrarPanelFiltros = !this.mostrarPanelFiltros;
         this._cd.markForCheck();
     }
 
-    /** Cerrar con ESC */
     @HostListener('document:keydown.escape')
     onEscape(): void {
         if (this.mostrarPanelFiltros || this.mostrarPanelFechas) {
@@ -483,7 +798,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
     }
 
-    /** Contar filtros activos para el badge */
     filtrosActivosCount(): number {
         let count = 0;
         if (this.rangoFechaSeleccionado !== 'mes_actual') count++;
@@ -491,8 +805,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         if (this.procesoControl.value) count++;
         return count;
     }
-
-    /** Limpiar todos los filtros */
     limpiarTodosFiltros(): void {
         this.searchControl.setValue('');
         this.deptoControl.setValue('');

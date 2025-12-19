@@ -202,7 +202,7 @@ export class NavigationService {
                 break;
 
             case RoleEnum.SUADMIN:
-                console.log("DEBUG", SubRoleEnum.JEFE);
+             
                 navigation = menuSuAdmin;
                 break;
 
