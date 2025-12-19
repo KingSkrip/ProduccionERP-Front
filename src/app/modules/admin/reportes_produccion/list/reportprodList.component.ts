@@ -259,42 +259,20 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
 
     // 🔥 NUEVO: CARGAR EMBARQUES
     cargarEmbarques(fechaInicio?: Date, fechaFin?: Date): void {
-        console.log('🚀 === INICIANDO CARGA DE EMBARQUES ===');
-        console.log('📅 Fecha inicio:', fechaInicio);
-        console.log('📅 Fecha fin:', fechaFin);
-
         this.isLoadingEmbarques = true;
         this._cd.markForCheck();
-
         this._reportService.getEntregadoaEmbarques(fechaInicio, fechaFin)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: response => {
-                    console.log('✅ === RESPUESTA EXITOSA ===');
-                    console.log('📦 Datos recibidos:', response);
-                    console.log('📊 Cantidad de registros:', response?.length || 0);
-
-                    if (response && response.length > 0) {
-                        console.log('🔍 Primer registro:', response[0]);
-                        console.log('🔍 Tipos encontrados:', [...new Set(response.map(r => r.TIPO))]);
-                    }
-
                     this.datosEmbarques = response || [];
                     this.datosEmbarquesFiltrados = [...(response || [])];
-
-                    console.log('💾 Datos guardados en componente:');
-                    console.log('  - datosEmbarques:', this.datosEmbarques.length);
-                    console.log('  - datosEmbarquesFiltrados:', this.datosEmbarquesFiltrados.length);
-
                     this.extraerTiposEmbarque();
                     this.aplicarFiltros();
-
                     this.isLoadingEmbarques = false;
                     this._cd.detectChanges(); // Usar detectChanges para forzar actualización
 
                     const total = this.calcularTotalEmbarques();
-                    console.log('💰 Total calculado inmediatamente:', total);
-                    console.log('🏁 === CARGA COMPLETA ===\n');
                 },
                 error: err => {
                     console.error('❌ === ERROR EN CARGA ===');
@@ -463,25 +441,15 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
     }
 
     extraerTiposEmbarque(): void {
-        console.log('📋 === EXTRAYENDO TIPOS DE EMBARQUE ===');
-        console.log('Datos a procesar:', this.datosEmbarques.length, 'registros');
-
         const tiposSet = new Set<string>();
-
         this.datosEmbarques.forEach((item, index) => {
             if (item.TIPO) {
                 tiposSet.add(item.TIPO);
-                if (index < 5) { // Mostrar solo los primeros 5
-                    console.log(`  [${index}] Tipo: "${item.TIPO}" - Artículo: ${item.ARTICULO}`);
-                }
-            } else {
-                console.warn(`  ⚠️ Item sin TIPO:`, item);
-            }
+                
+            } 
         });
 
         this.tiposEmbarqueUnicos = Array.from(tiposSet).sort();
-        console.log('✅ Tipos únicos extraídos:', this.tiposEmbarqueUnicos);
-        console.log('🏁 === EXTRACCIÓN COMPLETA ===\n');
     }
 
     configurarFiltros(): void {
@@ -718,8 +686,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
 
     // 🔥 NUEVOS MÉTODOS DE CÁLCULO PARA EMBARQUES
     calcularTotalEmbarques(): number {
-        console.log('💰 === CALCULANDO TOTAL EMBARQUES ===');
-        console.log('Registros a sumar:', this.datosEmbarquesFiltrados.length);
 
         if (this.datosEmbarquesFiltrados.length === 0) {
             console.warn('⚠️ No hay datos filtrados para calcular');
@@ -734,36 +700,22 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
 
             total += cantidad;
 
-            if (index < 3) { // Mostrar solo los primeros 3
-                console.log(`  [${index}] ${item.ARTICULO} (${item.TIPO.trim()}): ${cantidad} kg`);
-            }
         });
 
-        console.log('✅ Total calculado:', total.toFixed(2), 'kg');
-        console.log('🏁 === CÁLCULO COMPLETO ===\n');
         return total;
     }
 
     calcularPorTipo(tipo: string): number {
-        console.log(`🎯 Calculando tipo: "${tipo}"`);
 
         const itemsFiltrados = this.datosEmbarquesFiltrados.filter(
             item => item.TIPO.trim() === tipo
         );
-
-        console.log(`  Registros encontrados: ${itemsFiltrados.length}`);
-
-        if (itemsFiltrados.length === 0) {
-            console.log(`  ⚠️ Sin datos para tipo "${tipo}"`);
-            return 0;
-        }
 
         const total = itemsFiltrados.reduce((sum, item) => {
             const cantidad = parseFloat(item.CANTIDAD) || 0;
             return sum + cantidad;
         }, 0);
 
-        console.log(`  ✅ Total para "${tipo}": ${total.toFixed(2)} kg`);
         return total;
     }
 
