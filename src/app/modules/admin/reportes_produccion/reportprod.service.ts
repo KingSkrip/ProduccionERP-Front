@@ -257,7 +257,7 @@ export class ReportProdService {
             )
             .pipe(
                 map(resp => {
-                    console.log('🔧 SERVICE: Respuesta del servidor:', resp);
+                    // console.log('🔧 SERVICE: Respuesta del servidor:', resp);
                     return resp.data || []; // 🔥 ASEGÚRATE DE RETORNAR resp.data
                 }),
                 catchError(err => {

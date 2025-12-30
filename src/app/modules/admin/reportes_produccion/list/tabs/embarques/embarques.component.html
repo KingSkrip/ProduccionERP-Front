@@ -1,0 +1,204 @@
+  <!-- Cards de resumen por tipo -->
+                            <div class="px-4 py-3 md:px-8 md:py-4 mt-3">
+                                <!-- Vista móvil - Card único con total -->
+                                <div class="md:hidden">
+                                    <div class="bg-card shadow-sm rounded-lg px-4 py-2 border-l-4 border-cyan-500">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <div class="text-sm font-medium text-secondary mb-1">Total Embarques
+                                                </div>
+                                                <div class="text-2xl font-bold">{{ calcularTotalEmbarques() |
+                                                    number:'1.0-0' }}</div>
+                                                <div class="text-xs text-secondary mt-1">kilogramos</div>
+                                            </div>
+                                            <mat-icon class="text-cyan-500 icon-size-8"
+                                                [svgIcon]="'heroicons_solid:truck'"></mat-icon>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Vista desktop - Grid de 7 cards (6 tipos + 1 total) -->
+                                <div class="hidden md:block">
+                                    <!-- Primera fila: 4 cards -->
+                                    <div class="grid grid-cols-4 gap-3 mb-3">
+                                        <!-- PRIMERA -->
+                                        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-blue-500">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <div class="text-sm font-medium text-secondary">Primera</div>
+                                                <mat-icon class="text-blue-500 icon-size-5"
+                                                    [svgIcon]="'heroicons_solid:star'"></mat-icon>
+                                            </div>
+                                            <div class="text-2xl font-bold">{{ calcularPorTipo('PRIMERA') |
+                                                number:'1.0-0' }}</div>
+                                            <div class="text-xs text-secondary">kg</div>
+                                        </div>
+
+                                        <!-- PREFERIDA -->
+                                        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-indigo-500">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <div class="text-sm font-medium text-secondary">Preferida</div>
+                                                <mat-icon class="text-indigo-500 icon-size-5"
+                                                    [svgIcon]="'heroicons_solid:heart'"></mat-icon>
+                                            </div>
+                                            <div class="text-2xl font-bold">{{ calcularPorTipo('PREFERIDA') |
+                                                number:'1.0-0' }}</div>
+                                            <div class="text-xs text-secondary">kg</div>
+                                        </div>
+
+                                        <!-- SEGUNDA -->
+                                        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-orange-500">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <div class="text-sm font-medium text-secondary">Segunda</div>
+                                                <mat-icon class="text-orange-500 icon-size-5"
+                                                    [svgIcon]="'heroicons_solid:chevron-double-down'"></mat-icon>
+                                            </div>
+                                            <div class="text-2xl font-bold">{{ calcularPorTipo('SEGUNDA') |
+                                                number:'1.0-0' }}</div>
+                                            <div class="text-xs text-secondary">kg</div>
+                                        </div>
+
+                                        <!-- ORILLAS -->
+                                        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-teal-500">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <div class="text-sm font-medium text-secondary">Orillas</div>
+                                                <mat-icon class="text-teal-500 icon-size-5"
+                                                    [svgIcon]="'heroicons_solid:arrows-pointing-out'"></mat-icon>
+                                            </div>
+                                            <div class="text-2xl font-bold">{{ calcularPorTipo('ORILLAS') |
+                                                number:'1.0-0' }}</div>
+                                            <div class="text-xs text-secondary">kg</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Segunda fila: 3 cards -->
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <!-- RETAZO -->
+                                        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-amber-500">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <div class="text-sm font-medium text-secondary">Retazo</div>
+                                                <mat-icon class="text-amber-500 icon-size-5"
+                                                    [svgIcon]="'heroicons_solid:scissors'"></mat-icon>
+                                            </div>
+                                            <div class="text-2xl font-bold">{{ calcularPorTipo('RETAZO') |
+                                                number:'1.0-0' }}</div>
+                                            <div class="text-xs text-secondary">kg</div>
+                                        </div>
+
+                                        <!-- MUESTRAS -->
+                                        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-purple-500">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <div class="text-sm font-medium text-secondary">Muestras</div>
+                                                <mat-icon class="text-purple-500 icon-size-5"
+                                                    [svgIcon]="'heroicons_solid:beaker'"></mat-icon>
+                                            </div>
+                                            <div class="text-2xl font-bold">{{ calcularPorTipo('MUESTRAS') |
+                                                number:'1.0-0' }}</div>
+                                            <div class="text-xs text-secondary">kg</div>
+                                        </div>
+
+                                        <!-- TOTAL GENERAL -->
+                                        <div
+                                            class="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white shadow-lg rounded-xl p-4">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <div class="text-sm font-semibold">Total General</div>
+                                                <mat-icon class="icon-size-5"
+                                                    [svgIcon]="'heroicons_solid:calculator'"></mat-icon>
+                                            </div>
+                                            <div class="text-3xl font-bold">{{ calcularTotalEmbarques() | number:'1.0-0'
+                                                }}</div>
+                                            <div class="text-xs opacity-90">kilogramos totales</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Filtro adicional por tipo (solo desktop) -->
+                            <div class="hidden md:block px-4 md:px-8 mb-4">
+                                <mat-form-field class="fuse-mat-dense fuse-mat-rounded w-64">
+                                    <mat-icon matPrefix [svgIcon]="'heroicons_solid:funnel'"></mat-icon>
+                                    <mat-select [formControl]="tipoEmbarqueControl" placeholder="Filtrar por tipo">
+                                        <mat-option [value]="''">Todos los tipos</mat-option>
+                                        <mat-option *ngFor="let tipo of tiposEmbarqueUnicos" [value]="tipo">{{ tipo
+                                            }}</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div>
+
+                            <!-- Tabla de datos -->
+                            <div class="mt-6 overflow-x-auto px-4 md:px-8">
+                                <div *ngIf="isLoadingEmbarques" class="p-8 text-center">
+                                    <mat-spinner diameter="40" class="mx-auto"></mat-spinner>
+                                    <p class="mt-4 text-secondary">Cargando datos de embarques...</p>
+                                </div>
+
+                                <table *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length > 0"
+                                    class="w-full bg-card shadow-sm rounded-2xl overflow-hidden">
+                                    <thead class="bg-gray-50 dark:bg-gray-800">
+                                        <tr>
+                                            <th
+                                                class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
+                                                Tipo
+                                            </th>
+                                            <th
+                                                class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
+                                                Artículo
+                                            </th>
+                                            <th
+                                                class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider">
+                                                Cantidad (kg)
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y">
+                                        <tr *ngFor="let item of datosEmbarquesFiltrados"
+                                            class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                                                        [ngClass]="{
+                                    'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300': item.TIPO === 'PRIMERA',
+                                    'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300': item.TIPO === 'PREFERIDA',
+                                    'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300': item.TIPO === 'SEGUNDA',
+                                    'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300': item.TIPO === 'ORILLAS',
+                                    'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300': item.TIPO === 'RETAZO',
+                                    'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300': item.TIPO === 'MUESTRAS',
+                                    'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300': item.TIPO === 'SIN CLASIFICAR'
+                                }">
+                                                        {{ item.TIPO }}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <mat-icon class="icon-size-5 text-cyan-500"
+                                                        [svgIcon]="'heroicons_solid:cube'"></mat-icon>
+                                                    <span class="font-medium">{{ item.ARTICULO }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">
+                                                <span class="font-semibold text-cyan-600 dark:text-cyan-400 text-lg">
+                                                    {{ item.CANTIDAD | number:'1.2-2' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="bg-gray-50 dark:bg-gray-800 font-bold border-t-2">
+                                        <tr>
+                                            <td colspan="2" class="px-6 py-4 uppercase text-sm">Total:</td>
+                                            <td class="px-6 py-4 text-right">
+                                                <span class="text-lg text-cyan-600 dark:text-cyan-400">
+                                                    {{ calcularTotalEmbarques() | number:'1.2-2' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+
+                                <div *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length === 0"
+                                    class="p-8 text-center text-secondary">
+                                    <mat-icon class="icon-size-16 mb-4"
+                                        [svgIcon]="'heroicons_outline:truck'"></mat-icon>
+                                    <p class="text-lg font-medium mb-2">Sin datos de embarques</p>
+                                    <p class="text-sm">No hay registros de producción entregada a embarques</p>
+                                </div>
+                            </div>

@@ -48,68 +48,69 @@
 
                         <!-- Card Header -->
                         <div
-                            class="flex flex-row sm:flex-row sm:items-center sm:justify-between p-4 sm:p-6 pb-3 sm:pb-4 gap-3">
-                            <div class="flex flex-row sm:flex-row sm:items-center gap-2 sm:gap-3 w-full">
-                                <div class="text-lg sm:text-xl font-semibold">
+                            class="flex flex-row sm:flex-row items-center justify-between p-4 sm:p-6 pb-3 sm:pb-4 gap-3 bg-gradient-to-r from-gray-50 to-gray-50 dark:from-gray-800 dark:to-gray-700">
+                            <div class="flex flex-row items-center gap-2 sm:gap-4">
+                                <div class="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white">
                                     Pedido {{ pedido.PEDIDO }}
                                 </div>
-                                <div
-                                    class="flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-600 dark:text-black w-fit ml-auto">
-                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_solid:clock'"></mat-icon>
+                                <!-- <div
+                                    class="flex items-center justify-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-600 dark:text-black">
+                                    <mat-icon class="icon-size-4 mr-1.5" [svgIcon]="'heroicons_solid:clock'"></mat-icon>
                                     Pendiente
-                                </div>
+                                </div> -->
                             </div>
 
                             <!-- Action button (desktop) -->
                             <div class="hidden sm:block">
-                                <button mat-flat-button [color]="'primary'" class="text-white" [disabled]="isLoading"
-                                    (click)="autorizarPedido(pedido)">
+                                <button mat-flat-button [color]="'primary'" class="text-white px-6 py-2"
+                                    [disabled]="isLoading" (click)="autorizarPedido(pedido)">
                                     <mat-icon class="icon-size-5" svgIcon="heroicons_solid:check"></mat-icon>
-                                    <span class="ml-2 text-white">Autorizar</span>
+                                    <span class="ml-2 text-white font-semibold">Autorizar</span>
                                 </button>
                             </div>
                         </div>
 
-
-
                         <!-- Card Body -->
                         <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
 
-                            <!-- Cliente y Autorización Ventas -->
-                            <div class="flex flex-row items-start gap-4 sm:gap-8 justify-between">
+                            <!-- Cliente y Autorización Ventas - Grid en mobile y desktop -->
+                            <div class="grid grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-8">
 
                                 <!-- Cliente Section -->
-                                <div class="space-y-2 min-w-0">
+                                <div class="space-y-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                     <div class="flex items-center gap-2">
-                                        <mat-icon class="icon-size-5 text-hint"
+                                        <mat-icon class="icon-size-6 text-blue-600 dark:text-blue-400"
                                             [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
-                                        <span class="text-sm sm:text-base font-semibold text-black dark:text-white">
+                                        <span class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
                                             Cliente
                                         </span>
                                     </div>
-                                    <div class="pl-0 sm:pl-7">
-                                        <div class="text-sm sm:text-base text-primary font-medium break-words">
+                                    <div class="pl-0 lg:pl-2">
+                                        <div class="text-base sm:text-lg text-primary font-semibold break-words">
                                             {{ pedido.CLIENTE }}
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Autorización Ventas (hasta la derecha) -->
-                                <div class="space-y-2 ml-auto text-right w-fit">
-                                    <div class="flex items-center gap-2 justify-end">
-                                        <mat-icon class="icon-size-5"
-                                            [ngClass]="pedido.AUTORIZAVTAS === 1 ? 'text-green-600' : 'text-red-600'"
+                                <!-- Autorización Ventas -->
+                                <div class="space-y-3 p-4 rounded-xl" [ngClass]="pedido.AUTORIZAVTAS === 1 
+                                        ? 'bg-gray-50 dark:bg-gray-800' 
+                                        : 'bg-gray-50 dark:bg-gray-800'">
+                                    <div class="flex items-center gap-2">
+                                        <mat-icon class="icon-size-6"
+                                            [ngClass]="pedido.AUTORIZAVTAS === 1 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
                                             [svgIcon]="pedido.AUTORIZAVTAS === 1 
-                    ? 'heroicons_solid:check-circle' 
-                    : 'heroicons_solid:x-circle'">
+                                                ? 'heroicons_solid:check-circle' 
+                                                : 'heroicons_solid:x-circle'">
                                         </mat-icon>
-                                        <span class="text-sm sm:text-base font-semibold text-black dark:text-white">
-                                            Autorización Ventas
+                                        <span class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
+                                            Autorización ventas
                                         </span>
                                     </div>
-                                    <div>
-                                        <div class="text-sm sm:text-base font-medium"
-                                            [ngClass]="pedido.AUTORIZAVTAS === 1 ? 'text-green-600' : 'text-red-600'">
+                                    <div class="pl-0 lg:pl-2">
+                                        <div class="text-base sm:text-lg font-bold" [ngClass]="pedido.AUTORIZAVTAS === 1 
+                                                ? 'text-green-700 dark:text-green-400' 
+                                                : 'text-red-700 dark:text-red-400'">
                                             {{ pedido.AUTORIZAVTAS === 1 ? 'Autorizada' : 'No autorizada' }}
                                         </div>
                                     </div>
@@ -117,165 +118,168 @@
 
                             </div>
 
-
-
                             <!-- Divider -->
-                            <div class="border-t"></div>
+                            <div class="border-t border-gray-200 dark:border-gray-700"></div>
 
-                            <!-- Artículos Section -->
-                            <div class="space-y-3 sm:space-y-4">
-                                <div class="flex items-center gap-2">
-                                    <mat-icon class="icon-size-5 text-hint"
-                                        [svgIcon]="'heroicons_solid:cube'"></mat-icon>
-                                    <span
-                                        class="text-sm sm:text-base font-semibold text-black dark:text-white">Artículos</span>
-                                </div>
+                            <!-- Artículos y Cardigan - Grid en desktop -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
 
-                                <!-- Tabla para PC (visible en md y arriba) -->
-                                <div class="hidden md:block overflow-x-auto">
-                                    <table
-                                        class="w-full border-separate border-spacing-0 rounded-2xl overflow-hidden shadow-md dark:shadow-gray-800">
-                                        <thead class="bg-gray-100 dark:bg-gray-700">
-                                            <tr>
-                                                <th
-                                                    class="p-4 text-sm font-semibold text-gray-600 dark:text-gray-200 text-left rounded-tl-2xl">
-                                                    Artículo</th>
-                                                <th
-                                                    class="p-4 text-sm font-semibold text-gray-600 dark:text-gray-200 text-right rounded-tr-2xl">
-                                                    Cantidad</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr *ngFor="let art of pedido.articulos"
-                                                class="transition-all hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
-                                                <td
-                                                    class="p-4 text-sm font-medium text-gray-800 dark:text-gray-100 break-words">
-                                                    {{ art.ARTICULO }}
-                                                </td>
-                                                <td class="p-4 text-sm font-semibold text-right">
-                                                    <span
-                                                        class="inline-block px-2 py-1 bg-blue-100 text-blue-700 font-medium rounded-full dark:bg-blue-600 dark:text-white">
-                                                        {{ art.CANTIDAD }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            <tr *ngIf="!pedido.articulos?.length">
-                                                <td colspan="2"
-                                                    class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                                                    Sin artículos
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-
-                                <!-- Lista para móvil (visible solo en < md) -->
-                                <div class="md:hidden space-y-2">
-                                    <div *ngFor="let art of pedido.articulos"
-                                        class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-1.5">
-                                        <div class="text-sm font-medium break-words leading-snug">
-                                            {{ art.ARTICULO }}
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-sm text-secondary">Cantidad:</span>
-                                            <span class="text-sm font-semibold text-primary">{{ art.CANTIDAD }}</span>
-                                        </div>
+                                <!-- Artículos Section -->
+                                <div class="space-y-3 sm:space-y-4">
+                                    <div class="flex items-center gap-2 p-3 bg-blue-50 dark:bg-gray-800 rounded-lg">
+                                        <mat-icon class="icon-size-6 text-blue-600 dark:text-blue-400"
+                                            [svgIcon]="'heroicons_solid:cube'"></mat-icon>
+                                        <span
+                                            class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Artículos</span>
                                     </div>
 
-                                    <div *ngIf="!pedido.articulos?.length"
-                                        class="p-4 text-center text-sm text-secondary bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                        Sin artículos
+                                    <!-- Tabla para PC (visible en md y arriba) -->
+                                    <div class="hidden md:block overflow-x-auto">
+                                        <table
+                                            class="w-full border-separate border-spacing-0 rounded-xl overflow-hidden shadow-sm">
+                                            <thead class="bg-gray-100 dark:bg-gray-700">
+                                                <tr>
+                                                    <th
+                                                        class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-200 text-left">
+                                                        Artículo</th>
+                                                    <th
+                                                        class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-200 text-right">
+                                                        Cantidad</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white dark:bg-gray-800">
+                                                <tr *ngFor="let art of pedido.articulos; let last = last"
+                                                    class="transition-all hover:bg-blue-50 dark:hover:bg-gray-700"
+                                                    [ngClass]="{'border-b border-gray-200 dark:border-gray-600': !last}">
+                                                    <td
+                                                        class="p-3 text-sm font-medium text-gray-800 dark:text-gray-100 break-words">
+                                                        {{ art.ARTICULO }}
+                                                    </td>
+                                                    <td class="p-3 text-sm font-semibold text-right">
+                                                        <span
+                                                            class="inline-block px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-full dark:bg-blue-600 dark:text-white text-sm">
+                                                            {{ art.CANTIDAD }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr *ngIf="!pedido.articulos?.length">
+                                                    <td colspan="2"
+                                                        class="p-6 text-center text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800">
+                                                        Sin artículos
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Lista para móvil (visible solo en < md) -->
+                                    <div class="md:hidden space-y-2">
+                                        <div *ngFor="let art of pedido.articulos"
+                                            class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-1.5">
+                                            <div class="text-sm font-medium break-words leading-snug">
+                                                {{ art.ARTICULO }}
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm text-secondary">Cantidad:</span>
+                                                <span class="text-sm font-semibold text-primary">{{ art.CANTIDAD
+                                                    }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div *ngIf="!pedido.articulos?.length"
+                                            class="p-4 text-center text-sm text-secondary bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                            Sin artículos
+                                        </div>
                                     </div>
                                 </div>
+
+                                <!-- Cardigan Section -->
+                                <div class="space-y-3 sm:space-y-4">
+                                    <div class="flex items-center gap-2 p-3 bg-purple-50 dark:bg-gray-800 rounded-lg">
+                                        <mat-icon class="icon-size-6 text-purple-600 dark:text-purple-400"
+                                            [svgIcon]="'heroicons_solid:cube'"></mat-icon>
+                                        <span
+                                            class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Cardigan</span>
+                                    </div>
+
+                                    <!-- Tabla para PC (visible en md y arriba) -->
+                                    <div class="hidden md:block overflow-x-auto">
+                                        <table
+                                            class="w-full border-separate border-spacing-0 rounded-xl overflow-hidden shadow-sm">
+                                            <thead class="bg-gray-100 dark:bg-gray-700">
+                                                <tr>
+                                                    <th
+                                                        class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-200 text-left">
+                                                        Descripción
+                                                    </th>
+                                                    <th
+                                                        class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-200 text-right">
+                                                        Cantidad
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white dark:bg-gray-800">
+                                                <tr *ngFor="let card of pedido.cardigan; let last = last"
+                                                    class="transition-all hover:bg-purple-50 dark:hover:bg-gray-700"
+                                                    [ngClass]="{'border-b border-gray-200 dark:border-gray-600': !last}">
+                                                    <td
+                                                        class="p-3 text-sm font-medium text-gray-800 dark:text-gray-100 break-words">
+                                                        {{ card.DESCRIPCION }}
+                                                    </td>
+                                                    <td class="p-3 text-sm font-semibold text-right">
+                                                        <span
+                                                            class="inline-block px-3 py-1 bg-purple-100 text-purple-700 font-bold rounded-full dark:bg-purple-600 dark:text-white text-sm">
+                                                            {{ card.CANTIDAD }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr *ngIf="!pedido.cardigan?.length">
+                                                    <td colspan="2"
+                                                        class="p-6 text-center text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800">
+                                                        Sin cardigan
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Lista para móvil (visible solo en < md) -->
+                                    <div class="md:hidden space-y-2">
+                                        <div *ngFor="let card of pedido.cardigan"
+                                            class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-1.5">
+                                            <div class="text-sm font-medium break-words leading-snug">
+                                                {{ card.DESCRIPCION }}
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs text-secondary">Cantidad:</span>
+                                                <span class="text-sm font-semibold text-primary">{{ card.CANTIDAD
+                                                    }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div *ngIf="!pedido.cardigan?.length"
+                                            class="p-4 text-center text-sm text-secondary bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                            Sin cardigan
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
 
                             <!-- Divider -->
-                            <div class="border-t"></div>
-
-                            <!-- Cardigan Section -->
-                            <div class="space-y-3 sm:space-y-4">
-                                <div class="flex items-center gap-2">
-                                    <mat-icon class="icon-size-5 text-hint"
-                                        [svgIcon]="'heroicons_solid:cube'"></mat-icon>
-                                    <span
-                                        class="text-sm sm:text-base font-semibold text-black dark:text-white">Cardigan</span>
-                                </div>
-
-                                <!-- Tabla para PC (visible en md y arriba) -->
-                                <div class="hidden md:block overflow-x-auto">
-                                    <table
-                                        class="w-full border-separate border-spacing-0 rounded-2xl overflow-hidden shadow-md dark:shadow-gray-800">
-                                        <thead class="bg-gray-100 dark:bg-gray-700">
-                                            <tr>
-                                                <th
-                                                    class="p-4 text-sm font-semibold text-gray-600 dark:text-gray-200 text-left rounded-tl-2xl">
-                                                    Descripción
-                                                </th>
-                                                <th
-                                                    class="p-4 text-sm font-semibold text-gray-600 dark:text-gray-200 text-right rounded-tr-2xl">
-                                                    Cantidad
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr *ngFor="let card of pedido.cardigan"
-                                                class="transition-all hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
-                                                <td
-                                                    class="p-4 text-sm font-medium text-gray-800 dark:text-gray-100 break-words">
-                                                    {{ card.DESCRIPCION }}
-                                                </td>
-                                                <td class="p-4 text-sm font-semibold text-right">
-                                                    <span
-                                                        class="inline-block px-2 py-1 bg-purple-100 text-purple-700 font-medium rounded-full dark:bg-purple-600 dark:text-white">
-                                                        {{ card.CANTIDAD }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            <tr *ngIf="!pedido.cardigan?.length">
-                                                <td colspan="2"
-                                                    class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                                                    Sin cardigan
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-
-                                <!-- Lista para móvil (visible solo en < md) -->
-                                <div class="md:hidden space-y-2">
-                                    <div *ngFor="let card of pedido.cardigan"
-                                        class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-1.5">
-                                        <div class="text-sm font-medium break-words leading-snug">
-                                            {{ card.DESCRIPCION }}
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs text-secondary">Cantidad:</span>
-                                            <span class="text-sm font-semibold text-primary">{{ card.CANTIDAD }}</span>
-                                        </div>
-                                    </div>
-
-                                    <div *ngIf="!pedido.cardigan?.length"
-                                        class="p-4 text-center text-sm text-secondary bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                        Sin cardigan
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Divider -->
-                            <div *ngIf="pedido.TOTAL" class="border-t"></div>
+                            <div *ngIf="pedido.TOTAL" class="border-t border-gray-200 dark:border-gray-700"></div>
 
                             <!-- Total Section -->
-                            <div *ngIf="pedido.TOTAL" class="space-y-2">
+                            <div *ngIf="pedido.TOTAL"
+                                class="space-y-2 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl">
                                 <div class="flex items-center gap-2">
-                                    <mat-icon class="icon-size-5 text-hint"
+                                    <mat-icon class="icon-size-6 text-green-600 dark:text-green-400"
                                         [svgIcon]="'heroicons_solid:currency-dollar'"></mat-icon>
                                     <span
-                                        class="text-sm sm:text-base font-semibold text-black dark:text-white">Total</span>
+                                        class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Total</span>
                                 </div>
-                                <div class="pl-0 sm:pl-7">
-                                    <div class="text-xl sm:text-2xl font-bold text-primary">
+                                <div class="pl-0 lg:pl-2">
+                                    <div class="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-400">
                                         {{ pedido.TOTAL | currency }}
                                     </div>
                                 </div>

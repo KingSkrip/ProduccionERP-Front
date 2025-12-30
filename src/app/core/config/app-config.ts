@@ -1,8 +1,8 @@
 import { AppConfig } from './app-config.model';
 
 export const APP_CONFIG: AppConfig = {
-  apiUrl: 'https://feat-celebs-lawyer-moss.trycloudflare.com/api/',
-  apiBase:'https://feat-celebs-lawyer-moss.trycloudflare.com',
+  apiUrl: 'http://localhost:8000/api/',
+  apiBase:'http://localhost:8000',
   appName: 'Fibrasan',
   environment: 'dev',
   featureFlagX: true,
