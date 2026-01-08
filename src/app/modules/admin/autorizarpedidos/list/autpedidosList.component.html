@@ -93,25 +93,28 @@
                                 </div>
 
                                 <!-- Autorización Ventas -->
-                                <div class="space-y-3 p-4 rounded-xl" [ngClass]="pedido.AUTORIZAVTAS === 1 
-                                        ? 'bg-gray-50 dark:bg-gray-800' 
-                                        : 'bg-gray-50 dark:bg-gray-800'">
+                                <div class="space-y-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
                                     <div class="flex items-center gap-2">
                                         <mat-icon class="icon-size-6"
-                                            [ngClass]="pedido.AUTORIZAVTAS === 1 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
-                                            [svgIcon]="pedido.AUTORIZAVTAS === 1 
-                                                ? 'heroicons_solid:check-circle' 
-                                                : 'heroicons_solid:x-circle'">
+                                            [ngClass]="pedido.AUTORIZA === 1 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                                            [svgIcon]="pedido.AUTORIZA === 1 
+                ? 'heroicons_solid:check-circle' 
+                : 'heroicons_solid:x-circle'">
                                         </mat-icon>
                                         <span class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
                                             Autorización ventas
                                         </span>
                                     </div>
                                     <div class="pl-0 lg:pl-2">
-                                        <div class="text-base sm:text-lg font-bold" [ngClass]="pedido.AUTORIZAVTAS === 1 
-                                                ? 'text-green-700 dark:text-green-400' 
-                                                : 'text-red-700 dark:text-red-400'">
-                                            {{ pedido.AUTORIZAVTAS === 1 ? 'Autorizada' : 'No autorizada' }}
+                                        <div class="text-base sm:text-lg font-bold" [ngClass]="pedido.AUTORIZA === 1 
+                ? 'text-green-700 dark:text-green-400' 
+                : 'text-red-700 dark:text-red-400'">
+                                            {{ pedido.AUTORIZA === 1 ? 'Autorizada' : 'Pendiente de autorización' }}
+                                        </div>
+                                        <!-- Opcional: Mostrar fecha si existe -->
+                                        <div *ngIf="pedido['FECHA AUT. VTAS.']"
+                                            class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                            Autorizada el {{ pedido['FECHA AUT. VTAS.'] | date:'dd/MM/yyyy HH:mm' }}
                                         </div>
                                     </div>
                                 </div>
