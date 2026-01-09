@@ -1,9 +1,5 @@
-<div
-    class="flex min-w-0 flex-auto flex-col items-center sm:justify-center md:p-8"
->
-    <div
-        class="flex overflow-hidden sm:bg-card sm:rounded-2xl sm:shadow md:w-full md:max-w-6xl"
-    >
+<div class="flex min-w-0 flex-auto flex-col items-center sm:justify-center md:p-8">
+    <div class="flex overflow-hidden sm:bg-card sm:rounded-2xl sm:shadow md:w-full md:max-w-6xl">
         <div class="w-full px-4 py-8 sm:w-auto sm:p-12 md:p-16">
             <div class="mx-auto w-full max-w-80 sm:mx-0 sm:w-80">
                 <!-- Logo -->
@@ -12,9 +8,7 @@
                 </div>
 
                 <!-- Title -->
-                <div
-                    class="mt-8 text-4xl font-extrabold leading-tight tracking-tight"
-                >
+                <div class="mt-8 text-4xl font-extrabold leading-tight tracking-tight">
                     Unlock your session
                 </div>
                 <div class="mt-0.5 font-medium">
@@ -23,23 +17,14 @@
 
                 <!-- Alert -->
                 @if (showAlert) {
-                    <fuse-alert
-                        class="-mb-4 mt-8"
-                        [appearance]="'outline'"
-                        [showIcon]="false"
-                        [type]="alert.type"
-                        [@shake]="alert.type === 'error'"
-                    >
-                        {{ alert.message }}
-                    </fuse-alert>
+                <fuse-alert class="-mb-4 mt-8" [appearance]="'outline'" [showIcon]="false" [type]="alert.type"
+                    [@shake]="alert.type === 'error'">
+                    {{ alert.message }}
+                </fuse-alert>
                 }
 
                 <!-- Unlock form -->
-                <form
-                    class="mt-8"
-                    [formGroup]="unlockSessionForm"
-                    #unlockSessionNgForm="ngForm"
-                >
+                <form class="mt-8" [formGroup]="unlockSessionForm" #unlockSessionNgForm="ngForm">
                     <!-- Name field -->
                     <mat-form-field class="w-full">
                         <mat-label>Nombre completo</mat-label>
@@ -49,78 +34,48 @@
                     <!-- Password field -->
                     <mat-form-field class="w-full">
                         <mat-label>Contraseña</mat-label>
-                        <input
-                            id="password"
-                            matInput
-                            type="password"
-                            [formControlName]="'password'"
-                            #passwordField
-                        />
-                        <button
-                            mat-icon-button
-                            type="button"
-                            (click)="
+                        <input id="password" matInput type="password" [formControlName]="'password'" #passwordField />
+                        <button mat-icon-button type="button" (click)="
                                 passwordField.type === 'password'
                                     ? (passwordField.type = 'text')
                                     : (passwordField.type = 'password')
-                            "
-                            matSuffix
-                        >
+                            " matSuffix>
                             @if (passwordField.type === 'password') {
-                                <mat-icon
-                                    class="icon-size-5"
-                                    [svgIcon]="'heroicons_solid:eye'"
-                                ></mat-icon>
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:eye'"></mat-icon>
                             }
                             @if (passwordField.type === 'text') {
-                                <mat-icon
-                                    class="icon-size-5"
-                                    [svgIcon]="'heroicons_solid:eye-slash'"
-                                ></mat-icon>
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:eye-slash'"></mat-icon>
                             }
                         </button>
                         <mat-error> Password es requerido </mat-error>
                     </mat-form-field>
 
                     <!-- Submit button -->
-                    <button
-                        class="fuse-mat-button-large mt-3 w-full"
-                        mat-flat-button
-                        [color]="'primary'"
-                        [disabled]="unlockSessionForm.disabled"
-                        (click)="unlock()"
-                    >
+                    <button class="fuse-mat-button-large mt-3 w-full" mat-flat-button [color]="'primary'"
+                        [disabled]="unlockSessionForm.disabled" (click)="unlock()">
                         @if (!unlockSessionForm.disabled) {
-                            <span> Unlock your session </span>
+                        <span> Unlock your session </span>
                         }
                         @if (unlockSessionForm.disabled) {
-                            <mat-progress-spinner
-                                [diameter]="24"
-                                [mode]="'indeterminate'"
-                            ></mat-progress-spinner>
+                        <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
                         }
                     </button>
 
                     <!-- Form footer -->
                     <div class="text-secondary mt-8 text-md font-medium">
                         <span>I'm not</span>
-                        <a
-                            class="ml-1 text-primary-500 hover:underline"
-                            [routerLink]="['/sign-out']"
-                            >{{ name }}</a
-                        >
+                        <a class="ml-1 text-primary-500 hover:underline" [routerLink]="['/sign-out']">{{ name }}</a>
                     </div>
                 </form>
             </div>
         </div>
         <div
-            class="relative hidden h-full flex-auto items-center justify-center overflow-hidden bg-gray-800 p-16 dark:border-l md:flex lg:px-28"
-        >
+            class="relative hidden h-full flex-auto items-center justify-center overflow-hidden bg-gray-800 p-16 dark:border-l md:flex lg:px-28">
             <!-- Background -->
             <!-- Rings -->
             <!-- prettier-ignore -->
-            <svg class="absolute inset-0 pointer-events-none"
-                 viewBox="0 0 960 540" width="100%" height="100%" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+            <svg class="absolute inset-0 pointer-events-none" viewBox="0 0 960 540" width="100%" height="100%"
+                preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
                 <g class="text-gray-700 opacity-25" fill="none" stroke="currentColor" stroke-width="100">
                     <circle r="234" cx="196" cy="23"></circle>
                     <circle r="234" cx="790" cy="491"></circle>
@@ -128,10 +83,11 @@
             </svg>
             <!-- Dots -->
             <!-- prettier-ignore -->
-            <svg class="absolute -top-16 -right-16 text-gray-700"
-                 viewBox="0 0 220 192" width="220" height="192" fill="none">
+            <svg class="absolute -top-16 -right-16 text-gray-700" viewBox="0 0 220 192" width="220" height="192"
+                fill="none">
                 <defs>
-                    <pattern id="837c3e70-6c3a-44e6-8854-cc48c737b659" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <pattern id="837c3e70-6c3a-44e6-8854-cc48c737b659" x="0" y="0" width="20" height="20"
+                        patternUnits="userSpaceOnUse">
                         <rect x="0" y="0" width="4" height="4" fill="currentColor"></rect>
                     </pattern>
                 </defs>
@@ -141,16 +97,20 @@
             <div class="relative z-10 w-full max-w-2xl">
                 <div class="text-7xl font-bold leading-none text-gray-100">
                     <div>Bienvenido a</div>
-                    <div>nuestra comunidad</div>
+                    <div>Comercializadora Fibrasan</div>
                 </div>
-                <div
-                    class="mt-6 text-lg leading-6 tracking-tight text-gray-400"
-                >
-                    Fuse helps developers to build organized and well coded
-                    dashboards full of beautiful and rich modules. Join us and
-                    start building your application today.
+                <div class="mt-6 text-lg leading-7 tracking-tight text-gray-400">
+                    <span class="block">
+                        Sistema integral para la gestión de telas y operaciones comerciales.
+                    </span>
+                    <span class="block mt-2">
+                        Especialistas en telas de tejido de punto de alta calidad.
+                    </span>
+                    <span class="block mt-2">
+                        Hecho en México · Fabricación nacional.
+                    </span>
                 </div>
-                <div class="mt-8 flex items-center">
+                <!-- <div class="mt-8 flex items-center">
                     <div class="flex flex-0 items-center -space-x-1.5">
                         <img
                             class="h-10 w-10 flex-0 rounded-full object-cover ring-4 ring-gray-800 ring-offset-1 ring-offset-gray-800"
@@ -172,7 +132,7 @@
                     <div class="ml-4 font-medium tracking-tight text-gray-400">
                         Más de 17 000 personas se unieron a nosotros… ¡es tu turno!
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
