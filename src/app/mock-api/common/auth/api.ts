@@ -60,7 +60,7 @@ export class AuthMockApi {
                         200,
                         {
                             user: cloneDeep(this._user),
-                            accessToken: this._generateJWTToken(),
+                            encrypt: this._generateJWTToken(),
                             tokenType: 'bearer',
                         },
                     ];
@@ -77,15 +77,15 @@ export class AuthMockApi {
             .onPost('api/auth/sign-in-with-token')
             .reply(({ request }) => {
                 // Get the access token
-                const accessToken = request.body.accessToken;
+                const encrypt = request.body.encrypt;
 
                 // Verify the token
-                if (this._verifyJWTToken(accessToken)) {
+                if (this._verifyJWTToken(encrypt)) {
                     return [
                         200,
                         {
                             user: cloneDeep(this._user),
-                            accessToken: this._generateJWTToken(),
+                            encrypt: this._generateJWTToken(),
                             tokenType: 'bearer',
                         },
                     ];
@@ -123,7 +123,7 @@ export class AuthMockApi {
                         200,
                         {
                             user: cloneDeep(this._user),
-                            accessToken: this._generateJWTToken(),
+                            encrypt: this._generateJWTToken(),
                             tokenType: 'bearer',
                         },
                     ];

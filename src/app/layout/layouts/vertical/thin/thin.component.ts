@@ -10,6 +10,8 @@ import {
     FuseNavigationItem,
 } from '@fuse/components/navigation';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
+import { APP_CONFIG } from 'app/core/config/app-config';
+import { AppConfig } from 'app/core/config/app-config.model';
 import { LanguagesComponent } from 'app/layout/common/languages/languages.component';
 import { MessagesComponent } from 'app/layout/common/messages/messages.component';
 import { NotificationsComponent } from 'app/layout/common/notifications/notifications.component';
@@ -29,9 +31,9 @@ import { Subject, takeUntil } from 'rxjs';
         MatButtonModule,
         MatIconModule,
         FuseFullscreenComponent,
-        SearchComponent,
-        MessagesComponent,
-        NotificationsComponent,
+        // SearchComponent,
+        // MessagesComponent,
+        // NotificationsComponent,
         UserComponent,
         RouterOutlet,
         QuickChatComponent,
@@ -41,6 +43,7 @@ export class ThinLayoutComponent implements OnInit, OnDestroy {
     isScreenSmall: boolean;
     navigation: FuseNavigationItem[] = []; // Cambio: inicializar como array vacío
     private _unsubscribeAll: Subject<any> = new Subject<any>();
+    appName = APP_CONFIG.appName;
 
     /**
      * Constructor
@@ -49,8 +52,10 @@ export class ThinLayoutComponent implements OnInit, OnDestroy {
         private _activatedRoute: ActivatedRoute,
         private _router: Router,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _fuseNavigationService: FuseNavigationService
-    ) { }
+        private _fuseNavigationService: FuseNavigationService,
+
+    ) {
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors

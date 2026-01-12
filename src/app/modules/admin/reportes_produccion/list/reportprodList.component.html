@@ -350,10 +350,38 @@
             <!-- Contenido con datos -->
             <ng-container *ngIf="!isLoading && datosFiltrados.length > 0">
 
-                <!-- Tabla con Tabs -->
+                <!-- Tabs -->
                 <div class="overflow-x-auto px-1 md:px-8 pb-6">
                     <mat-tab-group animationDuration="300ms" [disableRipple]="true" [(selectedIndex)]="selectedTabIndex"
                         (selectedIndexChange)="onTabChange($event)">
+
+
+                        <!-- ========== TAB -1: ESTAMPADOS ========== -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <mat-icon class="icon-size-5 mr-2"
+                                    [svgIcon]="'heroicons_solid:building-office'"></mat-icon>
+                                <span class="font-medium">Estampados</span>
+                            </ng-template>
+
+                            <ng-template matTabContent>
+                                <tabs-estampados-tab></tabs-estampados-tab>
+                            </ng-template>
+                        </mat-tab>
+
+                        <!-- ========== TAB 0: TINTORERIA ========== -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <mat-icon class="icon-size-5 mr-2"
+                                    [svgIcon]="'heroicons_solid:building-office'"></mat-icon>
+                                <span class="font-medium">Tintoreria</span>
+                            </ng-template>
+
+                            <ng-template matTabContent>
+                                <tabs-tintoreria-tab></tabs-tintoreria-tab>
+                            </ng-template>
+                        </mat-tab>
+
 
                         <!-- ========== TAB 1: PROCESOS ========== -->
                         <mat-tab>
@@ -371,9 +399,8 @@
                         <!-- ========== TAB 2: PRODUCCIÓN DE TEJIDO ========== -->
                         <mat-tab>
                             <ng-template mat-tab-label>
-                                <mat-icon class="icon-size-5 mr-2" 
-                                [svgIcon]="'heroicons_solid:cog-8-tooth'"></mat-icon>
-                                <span class="font-medium">Producción de Tejido</span>
+                                <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:cog-8-tooth'"></mat-icon>
+                                <span class="font-medium">Producción de tejido</span>
                             </ng-template>
 
                             <ng-template matTabContent>
@@ -386,7 +413,7 @@
                             <ng-template mat-tab-label>
                                 <mat-icon class="icon-size-5 mr-2"
                                     [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
-                                <span class="font-medium">Revisado de Tejido</span>
+                                <span class="font-medium">Revisado de tejido</span>
                             </ng-template>
 
                             <ng-template matTabContent>
@@ -423,7 +450,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:truck'"></mat-icon>
-                                <span class="font-medium">Entregado a Embarques</span>
+                                <span class="font-medium">Entregado a embarques</span>
                             </ng-template>
 
                             <ng-template matTabContent>
@@ -433,6 +460,7 @@
 
                     </mat-tab-group>
                 </div>
+                
             </ng-container>
         </div>
     </div>

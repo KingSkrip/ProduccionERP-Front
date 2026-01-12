@@ -34,6 +34,8 @@ import { TejidoRevisadoTabComponent } from './tabs/revisado/tejido-revisado.comp
 import { PorRevisarTabComponent } from './tabs/por revisar/porrevisar-tab.component';
 import { SaldosTabComponent } from './tabs/saldos/saldos.component';
 import { EmbarquesTabComponent } from './tabs/embarques/embarques.component';
+import { EstampadosTabComponent } from './tabs/estampados/estampados-tab.compoonent';
+import { TintoreriaTabComponent } from './tabs/tintoreria/tintoreria-tab.compoonent';
 
 
 interface DatoAgrupado {
@@ -69,7 +71,10 @@ interface DatoAgrupado {
         TejidoRevisadoTabComponent,
         PorRevisarTabComponent,
         SaldosTabComponent,
-        EmbarquesTabComponent
+        EmbarquesTabComponent,
+        EstampadosTabComponent,
+        TintoreriaTabComponent
+
     ],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -133,19 +138,19 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-    const fechaInicio = new Date();
-    fechaInicio.setDate(1);
-    const fechaFin = new Date();
+        const fechaInicio = new Date();
+        fechaInicio.setDate(1);
+        const fechaFin = new Date();
 
-    this._sharedDataService.actualizarFiltros({
-        rangoFecha: 'mes_actual',
-        fechaInicio: fechaInicio,
-        fechaFin: fechaFin
-    });
+        this._sharedDataService.actualizarFiltros({
+            rangoFecha: 'mes_actual',
+            fechaInicio: fechaInicio,
+            fechaFin: fechaFin
+        });
 
-    this.cargarDatosProcesos();
-    this.configurarFiltros();
-}
+        this.cargarDatosProcesos();
+        this.configurarFiltros();
+    }
 
 
     // 🔥 NUEVO MÉTODO: Solo carga datos para el tab de procesos
@@ -200,32 +205,32 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
     }
 
     // 🔥 NUEVO MÉTODO: Aplicar solo filtros de procesos
-   private aplicarFiltrosProcesos(): void {
-    const filtros = this._sharedDataService.obtenerFiltros();
-    const busqueda = filtros.busqueda.toLowerCase();
-    const deptoSeleccionado = filtros.departamento;
-    const procesoSeleccionado = filtros.proceso;
+    private aplicarFiltrosProcesos(): void {
+        const filtros = this._sharedDataService.obtenerFiltros();
+        const busqueda = filtros.busqueda.toLowerCase();
+        const deptoSeleccionado = filtros.departamento;
+        const procesoSeleccionado = filtros.proceso;
 
-    this.datosFiltrados = this.datos.filter(item => {
-        // 🔥 NUEVA LÓGICA: Buscar en departamento, proceso Y artículo
-        const coincideBusqueda = !busqueda ||
-            item.departamento?.toLowerCase().includes(busqueda) ||
-            item.proceso?.toLowerCase().includes(busqueda) ||
-            item.ARTICULO?.toString().toLowerCase().includes(busqueda) ||
-            item.CVE_ART?.toString().toLowerCase().includes(busqueda);
-        
-        const coincideDepto = !deptoSeleccionado || item.departamento === deptoSeleccionado;
-        const coincideProceso = !procesoSeleccionado || item.proceso === procesoSeleccionado;
-        return coincideBusqueda && coincideDepto && coincideProceso;
-    });
+        this.datosFiltrados = this.datos.filter(item => {
+            // 🔥 NUEVA LÓGICA: Buscar en departamento, proceso Y artículo
+            const coincideBusqueda = !busqueda ||
+                item.departamento?.toLowerCase().includes(busqueda) ||
+                item.proceso?.toLowerCase().includes(busqueda) ||
+                item.ARTICULO?.toString().toLowerCase().includes(busqueda) ||
+                item.CVE_ART?.toString().toLowerCase().includes(busqueda);
 
-    this._sharedDataService.actualizarDatos(
-        this.datos,
-        this.datosFiltrados
-    );
+            const coincideDepto = !deptoSeleccionado || item.departamento === deptoSeleccionado;
+            const coincideProceso = !procesoSeleccionado || item.proceso === procesoSeleccionado;
+            return coincideBusqueda && coincideDepto && coincideProceso;
+        });
 
-    // 🔥 NO LLAMAR _cd.markForCheck() aquí para evitar recargar vista
-}
+        this._sharedDataService.actualizarDatos(
+            this.datos,
+            this.datosFiltrados
+        );
+
+        // 🔥 NO LLAMAR _cd.markForCheck() aquí para evitar recargar vista
+    }
 
     ngOnDestroy(): void {
         this._unsubscribeAll.next();
@@ -245,243 +250,84 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
     }
 
-    // cargarDatos(fechaInicio?: Date, fechaFin?: Date): void {
-    //     this.isLoading = true;
-    //     this._cd.markForCheck();
-
-    //     this._reportService.getReportesProduccion(fechaInicio, fechaFin)
-    //         .pipe(takeUntil(this._unsubscribeAll))
-    //         .subscribe({
-    //             next: response => {
-    //                 this.datos = response;
-    //                 this.datosFiltrados = [...response];
-    //                 this.extraerDatosUnicos();
-    //                 this.aplicarFiltros();
-
-    //                 // 👇 ACTUALIZAR SERVICIO
-    //                 this._sharedDataService.actualizarDatos(
-    //                     this.datos,
-    //                     this.datosFiltrados
-    //                 );
-
-
-    //                 this.isLoading = false;
-    //                 this._cd.markForCheck();
-    //             },
-    //             error: err => {
-    //                 console.error('Error al cargar datos:', err);
-    //                 this._snackBar.open('Error al cargar datos de producción', 'Cerrar', { duration: 5000 });
-    //                 this.isLoading = false;
-    //                 this._cd.markForCheck();
-    //             }
-    //         });
-    // }
-
-    // cargarProduccionTejido(fechaInicio?: Date, fechaFin?: Date): void {
-    //     this.isLoadingTejido = true;
-    //     this._cd.markForCheck();
-
-    //     this._reportService.getProduccionTejido(fechaInicio, fechaFin)
-    //         .pipe(takeUntil(this._unsubscribeAll))
-    //         .subscribe({
-    //             next: response => {
-    //                 this.datosTejido = response;
-    //                 this.datosTejidoFiltrados = [...response];
-    //                 this.aplicarFiltros();
-    //                 this.isLoadingTejido = false;
-    //                 this._cd.markForCheck();
-    //             },
-    //             error: err => {
-    //                 console.error('Error al cargar producción de tejido:', err);
-    //                 this._snackBar.open('Error al cargar producción de tejido', 'Cerrar', { duration: 5000 });
-    //                 this.isLoadingTejido = false;
-    //                 this._cd.markForCheck();
-    //             }
-    //         });
-    // }
-
-    // cargarRevisadoTejido(fechaInicio?: Date, fechaFin?: Date): void {
-    //     this.isLoadingRevisado = true;
-    //     this._cd.markForCheck();
-
-    //     this._reportService.getRevisadoTejido(fechaInicio, fechaFin)
-    //         .pipe(takeUntil(this._unsubscribeAll))
-    //         .subscribe({
-    //             next: response => {
-    //                 this.datosRevisado = response;
-    //                 this.datosRevisadoFiltrados = [...response];
-    //                 this.aplicarFiltros();
-    //                 this.isLoadingRevisado = false;
-    //                 this._cd.markForCheck();
-    //             },
-    //             error: err => {
-    //                 console.error('Error al cargar revisado de tejido:', err);
-    //                 this._snackBar.open('Error al cargar revisado de tejido', 'Cerrar', { duration: 5000 });
-    //                 this.isLoadingRevisado = false;
-    //                 this._cd.markForCheck();
-    //             }
-    //         });
-    // }
-
-    // cargarPorRevisarTejido(fechaInicio?: Date, fechaFin?: Date): void {
-    //     this.isLoadingPorRevisar = true;
-    //     this._cd.markForCheck();
-
-    //     this._reportService.getPorRevisarTejido(fechaInicio, fechaFin)
-    //         .pipe(takeUntil(this._unsubscribeAll))
-    //         .subscribe({
-    //             next: response => {
-    //                 this.datosPorRevisar = response;
-    //                 this.datosPorRevisarFiltrados = [...response];
-    //                 this.aplicarFiltros();
-    //                 this.isLoadingPorRevisar = false;
-    //                 this._cd.markForCheck();
-    //             },
-    //             error: err => {
-    //                 console.error('Error al cargar por revisar:', err);
-    //                 this._snackBar.open('Error al cargar datos por revisar', 'Cerrar', { duration: 5000 });
-    //                 this.isLoadingPorRevisar = false;
-    //                 this._cd.markForCheck();
-    //             }
-    //         });
-    // }
-
-    // cargarSaldosTejido(fechaInicio?: Date, fechaFin?: Date): void {
-    //     this.isLoadingSaldos = true;
-    //     this._cd.markForCheck();
-
-    //     this._reportService.getSaldosTejido(fechaInicio, fechaFin)
-    //         .pipe(takeUntil(this._unsubscribeAll))
-    //         .subscribe({
-    //             next: response => {
-    //                 this.datosSaldos = response;
-    //                 this.datosSaldosFiltrados = [...response];
-    //                 this.aplicarFiltros();
-    //                 this.isLoadingSaldos = false;
-    //                 this._cd.markForCheck();
-    //             },
-    //             error: err => {
-    //                 console.error('Error al cargar saldos:', err);
-    //                 this._snackBar.open('Error al cargar saldos', 'Cerrar', { duration: 5000 });
-    //                 this.isLoadingSaldos = false;
-    //                 this._cd.markForCheck();
-    //             }
-    //         });
-    // }
-
-    // // 🔥 NUEVO: CARGAR EMBARQUES
-    // cargarEmbarques(fechaInicio?: Date, fechaFin?: Date): void {
-    //     this.isLoadingEmbarques = true;
-    //     this._cd.markForCheck();
-    //     this._reportService.getEntregadoaEmbarques(fechaInicio, fechaFin)
-    //         .pipe(takeUntil(this._unsubscribeAll))
-    //         .subscribe({
-    //             next: response => {
-    //                 this.datosEmbarques = response || [];
-    //                 this.datosEmbarquesFiltrados = [...(response || [])];
-    //                 this.extraerTiposEmbarque();
-    //                 this.aplicarFiltros();
-    //                 this.isLoadingEmbarques = false;
-    //                 this._cd.detectChanges(); // Usar detectChanges para forzar actualización
-
-    //                 const total = this.calcularTotalEmbarques();
-    //             },
-    //             error: err => {
-    //                 console.error('❌ === ERROR EN CARGA ===');
-    //                 console.error('Error completo:', err);
-    //                 console.error('Mensaje:', err.message);
-    //                 console.error('Status:', err.status);
-
-    //                 this._snackBar.open(
-    //                     'Error al cargar datos de embarques: ' + (err.message || 'Error desconocido'),
-    //                     'Cerrar',
-    //                     { duration: 5000 }
-    //                 );
-
-    //                 this.isLoadingEmbarques = false;
-    //                 this._cd.markForCheck();
-    //             }
-    //         });
-    // }
-
     seleccionarRangoFecha(rango: 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo'): void {
-    this.rangoFechaSeleccionado = rango;
+        this.rangoFechaSeleccionado = rango;
 
-    if (rango === 'fecha_especifica' || rango === 'periodo') {
-        return; // 🔥 Sin markForCheck
-    }
-
-    let fechaInicio: Date | undefined;
-    let fechaFin: Date | undefined;
-
-    if (rango !== 'todos') {
-        fechaFin = new Date();
-        switch (rango) {
-            case 'hoy':
-                fechaInicio = new Date();
-                break;
-            case 'ayer':
-                fechaInicio = new Date();
-                fechaInicio.setDate(fechaInicio.getDate() - 1);
-                fechaFin = new Date(fechaInicio);
-                break;
-            case 'mes_actual':
-                fechaInicio = new Date();
-                fechaInicio.setDate(1);
-                break;
-            case 'mes_anterior':
-                fechaInicio = new Date();
-                fechaInicio.setMonth(fechaInicio.getMonth() - 1);
-                fechaInicio.setDate(1);
-                fechaFin = new Date();
-                fechaFin.setDate(0);
-                break;
+        if (rango === 'fecha_especifica' || rango === 'periodo') {
+            return; // 🔥 Sin markForCheck
         }
+
+        let fechaInicio: Date | undefined;
+        let fechaFin: Date | undefined;
+
+        if (rango !== 'todos') {
+            fechaFin = new Date();
+            switch (rango) {
+                case 'hoy':
+                    fechaInicio = new Date();
+                    break;
+                case 'ayer':
+                    fechaInicio = new Date();
+                    fechaInicio.setDate(fechaInicio.getDate() - 1);
+                    fechaFin = new Date(fechaInicio);
+                    break;
+                case 'mes_actual':
+                    fechaInicio = new Date();
+                    fechaInicio.setDate(1);
+                    break;
+                case 'mes_anterior':
+                    fechaInicio = new Date();
+                    fechaInicio.setMonth(fechaInicio.getMonth() - 1);
+                    fechaInicio.setDate(1);
+                    fechaFin = new Date();
+                    fechaFin.setDate(0);
+                    break;
+            }
+        }
+
+        this._sharedDataService.actualizarFiltros({
+            rangoFecha: rango,
+            fechaInicio: fechaInicio || null,
+            fechaFin: fechaFin || null
+        });
+
+        this.cargarDatosProcesos();
+        this.mostrarPanelFechas = false;
+        // 🔥 SIN _cd.markForCheck() para no forzar re-render
     }
-
-    this._sharedDataService.actualizarFiltros({
-        rangoFecha: rango,
-        fechaInicio: fechaInicio || null,
-        fechaFin: fechaFin || null
-    });
-
-    this.cargarDatosProcesos();
-    this.mostrarPanelFechas = false;
-    // 🔥 SIN _cd.markForCheck() para no forzar re-render
-}
 
 
 
     aplicarFiltroFechas(): void {
-    const fechaInicio = this.fechaInicioControl.value;
-    const fechaFin = this.rangoFechaSeleccionado === 'periodo'
-        ? this.fechaFinControl.value
-        : this.fechaInicioControl.value;
+        const fechaInicio = this.fechaInicioControl.value;
+        const fechaFin = this.rangoFechaSeleccionado === 'periodo'
+            ? this.fechaFinControl.value
+            : this.fechaInicioControl.value;
 
-    if (!fechaInicio) {
-        this._snackBar.open('Selecciona una fecha válida', 'Cerrar', { duration: 3000 });
-        return;
+        if (!fechaInicio) {
+            this._snackBar.open('Selecciona una fecha válida', 'Cerrar', { duration: 3000 });
+            return;
+        }
+
+        if (this.rangoFechaSeleccionado === 'periodo' && !fechaFin) {
+            this._snackBar.open('Selecciona una fecha fin válida', 'Cerrar', { duration: 3000 });
+            return;
+        }
+
+        if (this.rangoFechaSeleccionado === 'periodo' && fechaInicio > fechaFin) {
+            this._snackBar.open('La fecha de inicio no puede ser mayor a la fecha fin', 'Cerrar', { duration: 3000 });
+            return;
+        }
+
+        this._sharedDataService.actualizarFiltros({
+            rangoFecha: this.rangoFechaSeleccionado,
+            fechaInicio: fechaInicio,
+            fechaFin: fechaFin
+        });
+
+        this.mostrarPanelFechas = false;
+        // 🔥 SIN _cd.markForCheck()
     }
-
-    if (this.rangoFechaSeleccionado === 'periodo' && !fechaFin) {
-        this._snackBar.open('Selecciona una fecha fin válida', 'Cerrar', { duration: 3000 });
-        return;
-    }
-
-    if (this.rangoFechaSeleccionado === 'periodo' && fechaInicio > fechaFin) {
-        this._snackBar.open('La fecha de inicio no puede ser mayor a la fecha fin', 'Cerrar', { duration: 3000 });
-        return;
-    }
-
-    this._sharedDataService.actualizarFiltros({
-        rangoFecha: this.rangoFechaSeleccionado,
-        fechaInicio: fechaInicio,
-        fechaFin: fechaFin
-    });
-
-    this.mostrarPanelFechas = false;
-    // 🔥 SIN _cd.markForCheck()
-}
 
 
     limpiarFiltroFechas(): void {
@@ -552,36 +398,36 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
     }
 
     configurarFiltros(): void {
-    this.searchControl.valueChanges
-        .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
-        .subscribe(valor => {
-            this._sharedDataService.actualizarFiltros({ busqueda: valor || '' });
-            this.aplicarFiltrosProcesos();
-            // 🔥 SIN _cd.markForCheck()
-        });
+        this.searchControl.valueChanges
+            .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
+            .subscribe(valor => {
+                this._sharedDataService.actualizarFiltros({ busqueda: valor || '' });
+                this.aplicarFiltrosProcesos();
+                // 🔥 SIN _cd.markForCheck()
+            });
 
-    this.deptoControl.valueChanges
-        .pipe(takeUntil(this._unsubscribeAll))
-        .subscribe(valor => {
-            this._sharedDataService.actualizarFiltros({ departamento: valor || '' });
-            this.aplicarFiltrosProcesos();
-            // 🔥 SIN _cd.markForCheck()
-        });
+        this.deptoControl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(valor => {
+                this._sharedDataService.actualizarFiltros({ departamento: valor || '' });
+                this.aplicarFiltrosProcesos();
+                // 🔥 SIN _cd.markForCheck()
+            });
 
-    this.procesoControl.valueChanges
-        .pipe(takeUntil(this._unsubscribeAll))
-        .subscribe(valor => {
-            this._sharedDataService.actualizarFiltros({ proceso: valor || '' });
-            this.aplicarFiltrosProcesos();
-            // 🔥 SIN _cd.markForCheck()
-        });
+        this.procesoControl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(valor => {
+                this._sharedDataService.actualizarFiltros({ proceso: valor || '' });
+                this.aplicarFiltrosProcesos();
+                // 🔥 SIN _cd.markForCheck()
+            });
 
-    this.tipoEmbarqueControl.valueChanges
-        .pipe(takeUntil(this._unsubscribeAll))
-        .subscribe(valor => {
-            this._sharedDataService.actualizarFiltros({ tipoEmbarque: valor || '' });
-        });
-}
+        this.tipoEmbarqueControl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(valor => {
+                this._sharedDataService.actualizarFiltros({ tipoEmbarque: valor || '' });
+            });
+    }
 
     aplicarFiltros(): void {
         const busqueda = this.searchControl.value?.toLowerCase().trim() || '';
@@ -911,6 +757,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
 
 
     onTabChange(index: number): void {
-    this.selectedTabIndex = index;
-}
+        this.selectedTabIndex = index;
+    }
 }

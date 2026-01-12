@@ -4,17 +4,24 @@ body fuse-splash-screen {
     align-items: center;
     justify-content: center;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #111827;
-    color: #F9FAFB;
+    inset: 0;
     z-index: 999999;
     pointer-events: none;
     opacity: 1;
     visibility: visible;
     transition: opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 🌞 LIGHT THEME */
+body.light fuse-splash-screen {
+    background-color: #ffff;  /* Fondo claro */
+    color: #111827;              /* Texto oscuro */
+}
+
+/* 🌙 DARK THEME */
+body.dark fuse-splash-screen {
+    background-color: #111827;   /* Fondo oscuro */
+    color: #ffff;              /* Texto claro */
 }
 
 body fuse-splash-screen img {
