@@ -187,6 +187,7 @@ export class FuseNavigationService {
                 break;
 
             case RoleEnum.SUADMIN:
+                console.log(subRoleId);
                 navigation = menuSuAdmin;
                 break;
 
@@ -205,7 +206,7 @@ export class FuseNavigationService {
 
         // 2️⃣ Sobrescribir por SUBROL
         if (subRoleId) {
-
+console.log(subRoleId);
             switch (subRoleId) {
                 case SubRoleEnum.JEFE:
                     navigation = menuJefe;
