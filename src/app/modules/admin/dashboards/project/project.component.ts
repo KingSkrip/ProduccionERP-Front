@@ -65,7 +65,7 @@ export class ProjectComponent implements OnInit, AfterViewInit, OnDestroy {
     tabIndexActual = 0;
     retardosCount = 0;
     vacacionesCount = 0;
-showChart = true;
+    showChart = true;
     @ViewChild('periodoSelector') periodoSelector!: MatButtonToggleGroup;
     periodoSeleccionado: 'actual' | 'anterior' | 'historico' = 'actual';
 
@@ -73,13 +73,13 @@ showChart = true;
     private _chartsReady = false;
 
     constructor(
-       private _projectService: ProjectService,
-    private _router: Router,
-    private _userService: UserService,
-    private _asistenciasService: AsistenciasService,
-    private _vacacionesService: VacacionesService,
-    private _cdr: ChangeDetectorRef,
-    private _dialog: MatDialog
+        private _projectService: ProjectService,
+        private _router: Router,
+        private _userService: UserService,
+        private _asistenciasService: AsistenciasService,
+        private _vacacionesService: VacacionesService,
+        private _cdr: ChangeDetectorRef,
+        private _dialog: MatDialog
     ) { }
 
     ngOnInit(): void {
@@ -98,7 +98,7 @@ showChart = true;
             .subscribe((user) => {
                 if (user) {
                     this._user.next(user);
-                    
+
                     this._prepareChartData();
                     this._cdr.markForCheck();
                 }
@@ -517,11 +517,11 @@ showChart = true;
         // Ocultar el chart inmediatamente
         this.showChart = false;
         this._cdr.detectChanges();
-        
+
         // Actualizar el índice del tab
         this.tabIndexActual = event.index;
         this._cdr.detectChanges();
-        
+
         // Si volvemos al tab de asistencias (index 0), mostrar el chart después de un delay
         if (event.index === 0) {
             setTimeout(() => {
@@ -533,20 +533,20 @@ showChart = true;
 
 
     abrirSolicitudVacaciones(): void {
-    const dialogRef = this._dialog.open(SolicitudesVacacionesComponent, {
-        width: '100%',
-        maxWidth: '640px',
-        autoFocus: false,
-        disableClose: false,
-        panelClass: 'fuse-confirmation-dialog-panel' // Opcional: usa estilos de Fuse
-    });
+        const dialogRef = this._dialog.open(SolicitudesVacacionesComponent, {
+            width: '100%',
+            maxWidth: '640px',
+            autoFocus: false,
+            disableClose: false,
+            panelClass: 'fuse-confirmation-dialog-panel' // Opcional: usa estilos de Fuse
+        });
 
-    dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-           
-            // this._userService.reloadUser(); // Si tienes un método para refrescar
-            this._prepareChartData();
-        }
-    });
-}
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+
+                // this._userService.reloadUser(); // Si tienes un método para refrescar
+                this._prepareChartData();
+            }
+        })
+    }
 }

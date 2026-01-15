@@ -3,11 +3,116 @@
 /* @ Los estilos de este archivo anularán los estilos base de 'vendors.scss' y Fuse.
 /* ----------------------------------------------------------------------------------------------------- */
 .success-snackbar {
-  background-color: #4caf50; /* verde */
+  background-color: #4caf50;
+  /* verde */
   color: #fff;
 }
 
 .error-snackbar {
-  background-color: #d32f2f; /* rojo */
+  background-color: #d32f2f;
+  /* rojo */
   color: #fff;
+}
+
+
+/* ===== Tabs estilo "pestañas" ===== */
+.tabs-pestanas {
+
+  /* quita la línea/indicador */
+  .mat-mdc-tab-indicator {
+    display: none;
+  }
+
+  /* separa un poco el header del contenido */
+  .mat-mdc-tab-header {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  /* cada tab como "pestaña" */
+  .mat-mdc-tab {
+    margin-right: 6px;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    background: transparent;
+    opacity: 1;
+    /* Material baja opacidades, lo normalizamos */
+  }
+
+  /* el tab activo (la pestaña seleccionada) */
+  .mat-mdc-tab.mdc-tab--active {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    position: relative;
+    top: 1px;
+    border-bottom: 0;
+    /* para que "monte" sobre el borde del contenido */
+  }
+
+  /* texto del tab */
+  .mdc-tab__text-label {
+    font-weight: 600;
+    border-bottom: 0;
+  }
+
+  /* Quitar línea verde del tab */
+  .mat-mdc-tab-indicator {
+    display: none !important;
+    border-bottom: 0;
+  }
+
+  .mat-tab-group .mat-ink-bar {
+    display: none !important;
+    border-bottom: 0;
+  }
+
+
+
+  /* === FIX: quitar underline/inkbar en Angular Material MDC === */
+  .tabs-pestanas .mat-mdc-tab-indicator,
+  .tabs-pestanas .mat-mdc-tab-indicator__content,
+  .tabs-pestanas .mat-mdc-tab-indicator__content--underline {
+    display: none !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    border: 0 !important;
+  }
+
+  /* Por si el underline viene como ::after */
+  .tabs-pestanas .mat-mdc-tab .mdc-tab-indicator__content::after {
+    display: none !important;
+    content: none !important;
+    border: 0 !important;
+  }
+
+
+
+
+
+  .search-compact {
+    --mat-form-field-container-height: 44px;
+
+    .mat-mdc-text-field-wrapper {
+      height: 44px;
+    }
+
+    .mat-mdc-form-field-flex {
+      height: 44px;
+      align-items: center;
+    }
+
+    .mat-mdc-form-field-infix {
+      padding-top: 8px !important;
+      padding-bottom: 8px !important;
+      min-height: unset;
+    }
+
+    input.mat-mdc-input-element {
+      font-size: 14px;
+    }
+  }
+
+
 }

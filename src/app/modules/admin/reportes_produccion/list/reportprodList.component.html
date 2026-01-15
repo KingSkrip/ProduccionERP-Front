@@ -1,199 +1,470 @@
-<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden bg-card dark:bg-transparent">
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden bg-gray-50 dark:bg-gray-900">
 
-    <!-- ===== HEADER ===== -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 px-6 sm:px-8 border-b">
-        <div class="flex items-center gap-4">
-            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                <mat-icon class="text-primary icon-size-6" [svgIcon]="'heroicons_solid:chart-bar'"></mat-icon>
-            </div>
-            <div>
-                <div class="text-3xl font-extrabold tracking-tight leading-none">Reportes de producción</div>
-                <div class="text-sm text-secondary mt-1">Analiza la producción por departamento y proceso</div>
+    <!-- ===== HEADER MEJORADO ===== -->
+    <div class="relative bg-gray-50 dark:bg-gray-900">
+        <div class="relative py-2 md:py-6 px-6 md:px-8">
+            <div class="flex items-start gap-4 max-w-7xl mx-auto">
+                <div
+                    class="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary backdrop-blur-sm shadow-lg ring-1 ring-white/20">
+                    <mat-icon class="text-white icon-size-7" [svgIcon]="'heroicons_solid:chart-bar'"></mat-icon>
+                </div>
+                <div class="flex-1">
+                    <h1 class="text-2xl md:text-4xl font-bold text-black dark:text-white/80 tracking-tight">
+                        Reportes de Producción
+                    </h1>
+                    <p class=" text-black dark:text-white/80 mt-1.5 text-sm md:text-base">
+                        Analiza la producción por departamento y proceso
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== FILTROS MÓVIL ===== -->
-    <div class="md:hidden">
-        <div class="sticky top-0 z-40 bg-card border-b shadow-sm">
-            <div class="flex items-center gap-3 pr-4">
-                <mat-form-field class="fuse-mat-dense fuse-mat-rounded-lg flex-1 border-none" appearance="outline"
-                    [subscriptSizing]="'dynamic'">
-                    <mat-icon matPrefix class="text-hint" [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
-                    <input matInput [formControl]="searchControl" [autocomplete]="'off'" placeholder="Buscar...">
-                </mat-form-field>
+    <!-- ===== BARRA DE FILTROS MÓVIL (STICKY) ===== -->
+    <div class="md:hidden sticky top-0 z-40 bg-gray-50 dark:bg-gray-900">
+        <div class="flex items-center px-3 gap-2">
+            <mat-form-field class="fuse-mat-dense flex-1" appearance="outline" [subscriptSizing]="'dynamic'">
+                <mat-icon matPrefix class="text-gray-400 icon-size-5"
+                    [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [formControl]="searchControl" [autocomplete]="'off'" placeholder="Buscar...">
+            </mat-form-field>
 
-                <button mat-icon-button color="primary" class="relative" (click)="togglePanelFiltros()"
-                    [matBadge]="filtrosActivosCount()" matBadgeSize="small" matBadgeColor="accent"
-                    [matBadgeHidden]="filtrosActivosCount() === 0">
-                    <mat-icon [svgIcon]="'heroicons_solid:adjustments-horizontal'"></mat-icon>
-                </button>
+            <button mat-mini-fab color="primary" class="shadow-md relative" (click)="togglePanelFiltros()"
+                [matBadge]="filtrosActivosCount()" matBadgeSize="small" matBadgeColor="accent"
+                [matBadgeHidden]="filtrosActivosCount() === 0">
+                <mat-icon [svgIcon]="'heroicons_solid:adjustments-horizontal'"></mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Overlay oscuro móvil -->
+    <div *ngIf="mostrarPanelFiltros" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+        (click)="togglePanelFiltros()" [@fadeIn]>
+    </div>
+
+    <!-- Panel de filtros - ventana chica desde abajo -->
+    <div *ngIf="mostrarPanelFiltros"
+     class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4 border-b">
+            <h2 class="text-lg font-semibold">Filtros Avanzados</h2>
+            <button mat-icon-button (click)="togglePanelFiltros()">
+                <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+            </button>
+        </div>
+
+        <!-- Contenido scrolleable -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-5">
+
+            <!-- SECCIÓN: RANGO DE FECHA -->
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <mat-icon class="text-primary icon-size-5" [svgIcon]="'heroicons_solid:calendar-days'"></mat-icon>
+                    <h3 class="font-medium text-sm">Rango de Fecha</h3>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button mat-stroked-button class="h-10 rounded-full text-sm"
+                        [ngClass]="{'!bg-primary !border-primary !text-white': rangoFechaSeleccionado === 'todos'}"
+                        (click)="seleccionarRangoFecha('todos')">
+                        Todos
+                    </button>
+
+                    <button mat-stroked-button class="h-10 rounded-full text-sm"
+                        [ngClass]="{'!bg-primary !border-primary !text-white': rangoFechaSeleccionado === 'hoy'}"
+                        (click)="seleccionarRangoFecha('hoy')">
+                        Hoy
+                    </button>
+
+                    <button mat-stroked-button class="h-10 rounded-full text-sm"
+                        [ngClass]="{'!bg-primary !border-primary !text-white': rangoFechaSeleccionado === 'ayer'}"
+                        (click)="seleccionarRangoFecha('ayer')">
+                        Ayer
+                    </button>
+
+                    <button mat-stroked-button class="h-10 rounded-full text-sm"
+                        [ngClass]="{'!bg-primary !border-primary !text-white': rangoFechaSeleccionado === 'mes_actual'}"
+                        (click)="seleccionarRangoFecha('mes_actual')">
+                        Este mes
+                    </button>
+
+                    <button mat-stroked-button class="h-10 rounded-full text-sm"
+                        [ngClass]="{'!bg-primary !border-primary !text-white': rangoFechaSeleccionado === 'mes_anterior'}"
+                        (click)="seleccionarRangoFecha('mes_anterior')">
+                        Mes ant.
+                    </button>
+
+                    <button mat-stroked-button class="h-10 rounded-full text-sm"
+                        [ngClass]="{'!bg-primary !border-primary !text-white': rangoFechaSeleccionado === 'fecha_especifica'}"
+                        (click)="seleccionarRangoFecha('fecha_especifica')">
+                        Fecha específica
+                    </button>
+
+                    <button mat-stroked-button class="h-10 rounded-full text-sm col-span-2"
+                        [ngClass]="{'!bg-primary !border-primary !text-white': rangoFechaSeleccionado === 'periodo'}"
+                        (click)="seleccionarRangoFecha('periodo')">
+                        Periodo personalizado
+                    </button>
+                </div>
+
+                <!-- Panel de fecha específica -->
+                <div *ngIf="rangoFechaSeleccionado === 'fecha_especifica'"
+                    class="mt-4 p-4 bg-primary/5 rounded-xl space-y-3">
+                    <h4 class="font-semibold text-sm">Selecciona una fecha</h4>
+                    <mat-form-field class="w-full" appearance="outline">
+                        <input matInput [matDatepicker]="pickerMovilUnica" [formControl]="fechaInicioControl">
+                        <mat-datepicker-toggle matIconSuffix [for]="pickerMovilUnica"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerMovilUnica touchUi></mat-datepicker>
+                    </mat-form-field>
+                </div>
+
+                <!-- Panel de periodo personalizado -->
+                <div *ngIf="rangoFechaSeleccionado === 'periodo'" class="mt-4 p-4 bg-primary/5 rounded-xl space-y-3">
+                    <h4 class="font-semibold text-sm">Rango personalizado</h4>
+                    <mat-form-field class="w-full" appearance="outline">
+                        <mat-label>Fecha Desde</mat-label>
+                        <input matInput [matDatepicker]="pickerMovilInicio" [formControl]="fechaInicioControl">
+                        <mat-datepicker-toggle matIconSuffix [for]="pickerMovilInicio"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerMovilInicio touchUi></mat-datepicker>
+                    </mat-form-field>
+                    <mat-form-field class="w-full" appearance="outline">
+                        <mat-label>Fecha Hasta</mat-label>
+                        <input matInput [matDatepicker]="pickerMovilFin" [formControl]="fechaFinControl">
+                        <mat-datepicker-toggle matIconSuffix [for]="pickerMovilFin"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerMovilFin touchUi></mat-datepicker>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: DEPARTAMENTO -->
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <mat-icon class="text-primary icon-size-5"
+                        [svgIcon]="'heroicons_solid:building-office-2'"></mat-icon>
+                    <h3 class="font-medium text-sm">Departamento</h3>
+                </div>
+
+                <mat-form-field class="w-full" appearance="outline">
+                    <mat-select [formControl]="deptoControl" placeholder="Todos los departamentos">
+                        <mat-option [value]="''">Todos los departamentos</mat-option>
+                        <mat-option *ngFor="let depto of departamentosUnicos" [value]="depto">
+                            {{ depto }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
             </div>
         </div>
 
-        <!-- Panel completo de filtros móvil -->
-        <div *ngIf="mostrarPanelFiltros" class="fixed inset-0 z-50 flex flex-col bg-card">
-            <div class="flex items-center justify-between p-5 border-b sticky top-0 bg-card z-10 shadow-sm">
-                <h2 class="text-xl font-bold">Filtros avanzados</h2>
-                <button mat-icon-button (click)="togglePanelFiltros()">
-                    <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+        <!-- Footer con botones -->
+        <div class="p-4 border-t bg-card">
+            <div class="flex gap-2">
+                <button mat-stroked-button class="flex-1 h-11 rounded-full" (click)="limpiarTodosFiltros()">
+                    Limpiar
+                </button>
+                <button mat-flat-button color="primary" class="flex-1 h-11 rounded-full"
+                    (click)="aplicarFiltrosMovil()">
+                    Aplicar
                 </button>
             </div>
+        </div>
+    </div>
 
-            <div class="flex-1 overflow-y-auto p-5 space-y-6">
-                <div>
-                    <button mat-stroked-button class="w-full mt-15 h-14 px-5 justify-between rounded-xl border-2 
-                               hover:border-primary transition-all font-medium" (click)="toggleDatePanel()">
-                        <div class="flex items-center gap-3">
-                            <mat-icon class="text-primary" [svgIcon]="'heroicons_solid:calendar-days'"></mat-icon>
-                            <span class="truncate">{{ obtenerTextoFechaSeleccionada() }}</span>
-                        </div>
-                        <mat-icon [svgIcon]="'heroicons_solid:chevron-down'" class="transition-transform duration-200"
-                            [ngClass]="{'rotate-180': mostrarPanelFechas}"></mat-icon>
+    <!-- ===== FILTROS PC - MENÚ DESPLEGABLE ===== -->
+    <div class="hidden md:block">
+        <div class="max-w-7xl mx-auto w-full md:px-6">
+            <div class="flex  gap-3">
+                <mat-form-field class="fuse-mat-dense fuse-mat-rounded flex-1">
+                    <mat-icon matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                    <input matInput [formControl]="searchControl" placeholder="Buscar...">
+                </mat-form-field>
+
+
+                <!-- Botón de filtros -->
+                <div class="relative">
+                    <button mat-stroked-button
+                        class="h-11 px-5 rounded-3xl border-2 hover:border-primary/40 transition-all bg-primary-500"
+                        [class.border-primary]="filtrosActivosCount() > 0" (click)="togglePanelFiltrosPc()">
+
+                        <span class="flex items-center gap-2 w-full">
+                            <!-- Icono filtros -->
+                            <mat-icon class="icon-size-5 text-white" [class.text-primary]="filtrosActivosCount() > 0"
+                                [svgIcon]="'heroicons_solid:adjustments-horizontal'">
+                            </mat-icon>
+
+                            <!-- Texto -->
+                            <span class="text-sm font-medium text-white">
+                                Filtros
+                            </span>
+
+                            <!-- Badge -->
+                            <span *ngIf="filtrosActivosCount() > 0"
+                                class="ml-1 px-2 py-0.5 bg-primary text-white rounded-full text-xs font-semibold leading-none">
+                                {{ filtrosActivosCount() }}
+                            </span>
+
+                            <!-- Chevron (SIEMPRE al final) -->
+                            <mat-icon class="icon-size-4 text-white transition-transform ml-auto"
+                                [class.rotate-180]="mostrarPanelFiltrosPc" [svgIcon]="'heroicons_solid:chevron-down'">
+                            </mat-icon>
+                        </span>
+
                     </button>
 
-                    <div *ngIf="mostrarPanelFechas"
-                        class="fixed inset-4 top-20 bg-card rounded-2xl shadow-2xl border z-50 overflow-hidden flex flex-col">
-                        <div class="p-5 border-b bg-card">
+                    <!-- Panel desplegable de filtros -->
+                    <div *ngIf="mostrarPanelFiltrosPc" class="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-2 z-50
+         w-[480px] flex flex-col max-h-[calc(70vh-70px)] min-h-0" [@slideDown]>
+
+
+                        <!-- Header del panel -->
+                        <div class="p-2 border-b bg-gradient-to-r from-primary/5 to-transparent flex-shrink-0">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <mat-icon class="text-primary"
-                                        [svgIcon]="'heroicons_solid:calendar-days'"></mat-icon>
-                                    <h3 class="text-lg font-bold">Filtrar por fechas</h3>
+                                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                        <mat-icon class="text-primary-500 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:funnel'"></mat-icon>
+                                    </div>
+                                    <h3 class="font-semibold text-lg">Filtros Avanzados</h3>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <button mat-button color="primary" (click)="limpiarFiltroFechas()">Limpiar</button>
-                                    <button mat-icon-button (click)="toggleDatePanel()">
-                                        <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
-                                    </button>
-                                </div>
+                                <button mat-icon-button (click)="togglePanelFiltrosPc()"
+                                    class="hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="flex-1 overflow-y-auto p-5">
-                            <div class="grid grid-cols-2 gap-3">
-                                <button mat-flat-button class="h-12 rounded-xl justify-between col-span-2 border-2"
-                                    [ngClass]="{
-                                        'bg-primary border-primary text-white': rangoFechaSeleccionado === 'todos',
-                                        'border-default': rangoFechaSeleccionado !== 'todos'
-                                    }" (click)="seleccionarRangoFecha('todos')">
-                                    Ver todos
-                                    <mat-icon *ngIf="rangoFechaSeleccionado === 'todos'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
-                                </button>
+                        <!-- Contenido scrolleable -->
+                        <div class="flex-1 min-h-0 overflow-y-auto p-5 space-y-5">
 
-                                <button mat-flat-button class="h-12 rounded-xl justify-between border-2" [ngClass]="{
-                                        'bg-primary border-primary text-white': rangoFechaSeleccionado === 'hoy',
-                                        'border-default': rangoFechaSeleccionado !== 'hoy'
-                                    }" (click)="seleccionarRangoFecha('hoy')">
-                                    Hoy
-                                    <mat-icon *ngIf="rangoFechaSeleccionado === 'hoy'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
-                                </button>
+                            <!-- SECCIÓN: RANGO DE FECHA -->
+                            <div>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <mat-icon class="text-primary icon-size-5"
+                                        [svgIcon]="'heroicons_solid:calendar-days'"></mat-icon>
+                                    <h4 class="font-semibold">Rango de Fecha</h4>
+                                </div>
 
-                                <button mat-flat-button class="h-12 rounded-xl justify-between border-2" [ngClass]="{
-                                        'bg-primary border-primary text-white': rangoFechaSeleccionado === 'ayer',
-                                        'border-default': rangoFechaSeleccionado !== 'ayer'
-                                    }" (click)="seleccionarRangoFecha('ayer')">
-                                    Ayer
-                                    <mat-icon *ngIf="rangoFechaSeleccionado === 'ayer'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
-                                </button>
+                                <div class="space-y-2">
 
-                                <button mat-flat-button class="h-12 rounded-xl justify-between border-2" [ngClass]="{
-                                        'bg-primary border-primary text-white': rangoFechaSeleccionado === 'mes_actual',
-                                        'border-default': rangoFechaSeleccionado !== 'mes_actual'
-                                    }" (click)="seleccionarRangoFecha('mes_actual')">
-                                    Mes actual
-                                    <mat-icon *ngIf="rangoFechaSeleccionado === 'mes_actual'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
-                                </button>
+                                    <button mat-button
+                                        class="w-full h-11 rounded-xl justify-center px-4 text-left transition-all flex items-center"
+                                        [ngClass]="rangoFechaSeleccionado === 'todos'
+                                        ? 'bg-primary text-white shadow-md': 'hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                        (click)="seleccionarRangoFecha('todos')">
+                                        <mat-icon class="icon-size-5 mr-3" [ngClass]="rangoFechaSeleccionado === 'todos'
+                                        ? 'text-white': 'text-gray-400'" [svgIcon]="'heroicons_solid:queue-list'">
+                                        </mat-icon>
+                                        <span class="flex-1 font-medium">
+                                            Todos los registros
+                                        </span>
 
-                                <button mat-flat-button class="h-12 rounded-xl justify-between border-2" [ngClass]="{
-                                        'bg-primary border-primary text-white': rangoFechaSeleccionado === 'mes_anterior',
-                                        'border-default': rangoFechaSeleccionado !== 'mes_anterior'
-                                    }" (click)="seleccionarRangoFecha('mes_anterior')">
-                                    Mes anterior
-                                    <mat-icon *ngIf="rangoFechaSeleccionado === 'mes_anterior'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
-                                </button>
+                                        <!-- Check -->
+                                        <mat-icon *ngIf="rangoFechaSeleccionado === 'todos'"
+                                            class="icon-size-5 text-white" [svgIcon]="'heroicons_solid:check'">
+                                        </mat-icon>
 
-                                <button mat-stroked-button class="h-12 rounded-xl border-2" [ngClass]="{
-                                        'border-primary text-primary bg-primary/10': rangoFechaSeleccionado === 'fecha_especifica'
-                                    }" (click)="seleccionarRangoFecha('fecha_especifica')">
-                                    Fecha específica
-                                </button>
+                                    </button>
 
-                                <button mat-stroked-button class="h-12 rounded-xl border-2" [ngClass]="{
-                                        'border-primary text-primary bg-primary/10': rangoFechaSeleccionado === 'periodo'
-                                    }" (click)="seleccionarRangoFecha('periodo')">
-                                    Periodo
-                                </button>
+
+                                    <div class="grid grid-cols-3 gap-3 items-center">
+                                        <button mat-button
+                                            class="h-10 rounded-xl justify-center px-3 transition-all flex items-center"
+                                            [ngClass]="rangoFechaSeleccionado === 'hoy'
+                                            ? 'bg-primary text-white shadow-md'
+                                            : 'hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                            (click)="seleccionarRangoFecha('hoy')">
+                                            <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'hoy'
+                                            ? 'text-white'
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:sun'">
+                                            </mat-icon>
+                                            <span class="font-medium ">
+                                                Hoy
+                                            </span>
+                                        </button>
+
+                                        <button mat-button
+                                            class="h-10 rounded-xl justify-center px-3 transition-all flex items-center"
+                                            [ngClass]="rangoFechaSeleccionado === 'ayer'
+                                            ? 'bg-primary text-white shadow-md'
+                                            : 'hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                            (click)="seleccionarRangoFecha('ayer')">
+
+                                            <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'ayer'
+                                            ? 'text-white'
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:moon'">
+                                            </mat-icon>
+
+                                            <span class="font-medium">Ayer</span>
+                                        </button>
+
+                                        <button mat-button
+                                            class="h-10 rounded-xl justify-center px-3 transition-all flex items-center"
+                                            [ngClass]="rangoFechaSeleccionado === 'mes_actual'
+                                            ? 'bg-primary text-white shadow-md'
+                                            : 'hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                            (click)="seleccionarRangoFecha('mes_actual')">
+
+                                            <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'mes_actual'
+                                            ? 'text-white'
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:calendar-days'">
+                                            </mat-icon>
+
+                                            <span class="font-medium">Este mes</span>
+                                        </button>
+
+
+                                        <button mat-button
+                                            class="h-10 rounded-xl justify-center px-3 transition-all flex items-center"
+                                            [ngClass]="rangoFechaSeleccionado === 'mes_anterior'
+                                            ? 'bg-primary text-white shadow-md'
+                                            : 'hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                            (click)="seleccionarRangoFecha('mes_anterior')">
+
+                                            <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'mes_anterior'
+                                            ? 'text-white'
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:arrow-uturn-left'">
+                                            </mat-icon>
+
+                                            <span class="font-medium">Mes ant.</span>
+                                        </button>
+
+                                        <button mat-stroked-button
+                                            class="h-10 rounded-xl border-2 transition-all flex items-center" [ngClass]="rangoFechaSeleccionado === 'fecha_especifica'
+                                            ? 'border-primary bg-primary/5': ''"
+                                            (click)="seleccionarRangoFecha('fecha_especifica')">
+                                            <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'fecha_especifica'
+                                            ? 'text-primary': 'text-gray-400'" [svgIcon]="'heroicons_solid:calendar'">
+                                            </mat-icon>
+                                            <span class="font-medium" [ngClass]="rangoFechaSeleccionado === 'fecha_especifica'
+                                            ? 'text-primary': ''">
+                                                Fecha específica
+                                            </span>
+                                        </button>
+
+                                        <button mat-stroked-button
+                                            class="h-10 rounded-xl border-2 transition-all flex items-center" [ngClass]="rangoFechaSeleccionado === 'periodo'
+                                            ? 'border-primary bg-primary/5'
+                                            : ''" (click)="seleccionarRangoFecha('periodo')">
+
+                                            <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'periodo'
+                                            ? 'text-primary'
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:arrow-trending-up'">
+                                            </mat-icon>
+
+                                            <span class="font-medium" [ngClass]="rangoFechaSeleccionado === 'periodo'
+                                            ? 'text-primary'
+                                            : ''">
+                                                Periodo
+                                            </span>
+                                        </button>
+
+                                    </div>
+                                </div>
+
+                                <!-- Panel de fecha específica -->
+                                <div *ngIf="rangoFechaSeleccionado === 'fecha_especifica'"
+                                    class="mt-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl space-y-3">
+                                    <h5 class="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                                        Selecciona una fecha
+                                    </h5>
+                                    <mat-form-field class="w-full" appearance="outline">
+                                        <input matInput readonly [matDatepicker]="pickerPcUnica"
+                                            [formControl]="fechaInicioControl">
+                                        <mat-datepicker-toggle matIconSuffix [for]="pickerPcUnica">
+                                        </mat-datepicker-toggle>
+                                        <mat-datepicker #pickerPcUnica></mat-datepicker>
+                                    </mat-form-field>
+
+                                </div>
+
+                                <!-- Panel de periodo personalizado -->
+                                <div *ngIf="rangoFechaSeleccionado === 'periodo'"
+                                    class="mt-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl space-y-3">
+                                    <h5 class="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                                        Rango personalizado
+                                    </h5>
+                                    <mat-form-field class="w-full" appearance="outline">
+                                        <mat-label>Fecha Desde</mat-label>
+                                        <input matInput readonly [matDatepicker]="pickerPcInicio"
+                                            [formControl]="fechaInicioControl">
+                                        <mat-datepicker-toggle matIconSuffix [for]="pickerPcInicio">
+                                        </mat-datepicker-toggle>
+                                        <mat-datepicker #pickerPcInicio></mat-datepicker>
+                                    </mat-form-field>
+
+                                    <mat-form-field class="w-full" appearance="outline">
+                                        <mat-label>Fecha Hasta</mat-label>
+                                        <input matInput readonly [matDatepicker]="pickerPcFin"
+                                            [formControl]="fechaFinControl">
+                                        <mat-datepicker-toggle matIconSuffix [for]="pickerPcFin">
+                                        </mat-datepicker-toggle>
+                                        <mat-datepicker #pickerPcFin></mat-datepicker>
+                                    </mat-form-field>
+
+
+                                </div>
                             </div>
 
-                            <div *ngIf="rangoFechaSeleccionado === 'fecha_especifica'" class="mt-6 space-y-4">
-                                <h4 class="font-semibold text-primary">Selecciona una fecha</h4>
-                                <mat-form-field class="w-full" appearance="outline">
-                                    <input matInput [matDatepicker]="pickerMovilUnica"
-                                        [formControl]="fechaInicioControl">
-                                    <mat-datepicker-toggle matIconSuffix
-                                        [for]="pickerMovilUnica"></mat-datepicker-toggle>
-                                    <mat-datepicker #pickerMovilUnica touchUi></mat-datepicker>
-                                </mat-form-field>
-                                <button mat-flat-button color="primary" class="w-full h-14 rounded-full text-lg"
-                                    (click)="aplicarFiltroFechas()">
-                                    <mat-icon class="mr-2" [svgIcon]="'heroicons_solid:check'"></mat-icon>
-                                    Aplicar
-                                </button>
-                            </div>
+                            <!-- SECCIÓN: DEPARTAMENTO -->
+                            <div class="pt-3 border-t">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <mat-icon class="text-primary icon-size-5"
+                                        [svgIcon]="'heroicons_solid:building-office-2'"></mat-icon>
+                                    <h4 class="font-semibold">Departamento</h4>
+                                </div>
 
-                            <div *ngIf="rangoFechaSeleccionado === 'periodo'" class="mt-6 space-y-4">
-                                <h4 class="font-semibold text-primary">Rango personalizado</h4>
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Fecha Desde</mat-label>
-                                    <input matInput [matDatepicker]="pickerMovilInicio"
-                                        [formControl]="fechaInicioControl">
-                                    <mat-datepicker-toggle matIconSuffix
-                                        [for]="pickerMovilInicio"></mat-datepicker-toggle>
-                                    <mat-datepicker #pickerMovilInicio touchUi></mat-datepicker>
+                                    <mat-select [formControl]="deptoControl" placeholder="Todos los departamentos">
+                                        <mat-option [value]="''">
+                                            <span class="font-medium">Todos los departamentos</span>
+                                        </mat-option>
+                                        <mat-option *ngFor="let depto of departamentosUnicos" [value]="depto">
+                                            {{ depto }}
+                                        </mat-option>
+                                    </mat-select>
                                 </mat-form-field>
-                                <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Fecha Hasta</mat-label>
-                                    <input matInput [matDatepicker]="pickerMovilFin" [formControl]="fechaFinControl">
-                                    <mat-datepicker-toggle matIconSuffix [for]="pickerMovilFin"></mat-datepicker-toggle>
-                                    <mat-datepicker #pickerMovilFin touchUi></mat-datepicker>
-                                </mat-form-field>
-                                <button mat-flat-button color="primary" class="w-full h-14 rounded-full text-lg"
-                                    (click)="aplicarFiltroFechas()">
-                                    <mat-icon class="mr-2" [svgIcon]="'heroicons_solid:check'"></mat-icon>
-                                    Aplicar rango
+                            </div>
+                        </div>
+
+                        <!-- Footer con botones -->
+                        <div class="p-4 border-t bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
+                            <div class="flex gap-3">
+                                <button mat-button
+                                    class="flex-1 h-11 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    (click)="limpiarTodosFiltros()">
+                                    <mat-icon class="icon-size-5 mr-2"
+                                        [svgIcon]="'heroicons_solid:x-circle'"></mat-icon>
+                                    Limpiar
+                                </button>
+                                <button mat-flat-button color="primary" class="flex-1 h-11 rounded-xl shadow-lg"
+                                    (click)="aplicarFiltrosPc(); togglePanelFiltrosPc()">
+                                    <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                                    Aplicar filtros
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <mat-form-field class="w-full" appearance="outline">
-                    <mat-icon matPrefix class="text-primary" [svgIcon]="'heroicons_solid:building-office-2'"></mat-icon>
-                    <mat-label>Departamento</mat-label>
-                    <mat-select [formControl]="deptoControl">
-                        <mat-option [value]="''">Todos los departamentos</mat-option>
-                        <mat-option *ngFor="let depto of departamentosUnicos" [value]="depto">{{ depto }}</mat-option>
-                    </mat-select>
-                </mat-form-field>
             </div>
 
-            <div class="p-5 border-t bg-card space-y-3">
-                <button mat-stroked-button class="w-full h-12 rounded-xl"
-                    (click)="limpiarTodosFiltros(); togglePanelFiltros()">
-                    Limpiar filtros
+            <!-- Indicador de filtros activos -->
+            <div *ngIf="filtrosActivosCount() > 0" class="flex items-center gap-2 text-sm mt-3">
+                <mat-icon class="icon-size-4 text-primary" [svgIcon]="'heroicons_solid:funnel'"></mat-icon>
+                <span class="text-gray-600 dark:text-gray-400">
+                    <span class="font-semibold text-primary">{{ filtrosActivosCount() }}</span> filtro(s) activo(s)
+                </span>
+                <button mat-button class="text-xs h-7 rounded-lg ml-2" (click)="limpiarTodosFiltros()">
+                    Limpiar todos
                 </button>
             </div>
         </div>
+
+        <!-- Overlay para cerrar panel -->
+        <div *ngIf="mostrarPanelFiltrosPc" class="fixed inset-0 z-40" (click)="togglePanelFiltrosPc()"></div>
     </div>
 
     <!-- ===== FILTROS PC ===== -->
-    <div class="hidden md:block">
+    <!-- <div class="hidden md:block">
         <div class="flex flex-col gap-3 p-6 md:px-8 border-b bg-gray-50 dark:bg-gray-900/50">
             <div class="flex gap-3">
                 <div class="relative">
@@ -327,113 +598,194 @@
         </div>
 
         <div *ngIf="mostrarPanelFechas" class="fixed inset-0 bg-black/30 z-40" (click)="toggleDatePanel()"></div>
-    </div>
+    </div> -->
+
 
     <!-- ===== CONTENIDO PRINCIPAL ===== -->
     <div class="flex flex-auto overflow-hidden">
         <div class="flex flex-col flex-auto overflow-y-auto">
 
-            <!-- Empty state -->
+            <!-- Empty state mejorado -->
             <ng-container *ngIf="!isLoading && datosFiltrados.length === 0">
                 <div class="flex flex-col items-center justify-center flex-auto p-8">
-                    <div
-                        class="flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 mb-6">
-                        <mat-icon class="icon-size-16 text-hint" [svgIcon]="'heroicons_outline:inbox'"></mat-icon>
+                    <div class="relative">
+                        <div class="w-32 h-32 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-6
+                            shadow-inner ring-1 ring-primary/10">
+                            <mat-icon class="icon-size-20 text-primary/40"
+                                [svgIcon]="'heroicons_outline:inbox'"></mat-icon>
+                        </div>
+                        <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary/20 animate-pulse"></div>
                     </div>
-                    <div class="text-2xl font-semibold tracking-tight mb-2">Sin datos de producción</div>
-                    <div class="text-md text-secondary text-center max-w-md">
-                        No se encontraron registros con los filtros seleccionados.
-                    </div>
+                    <h3 class="text-2xl font-bold tracking-tight mb-2">No hay datos disponibles</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-center max-w-md">
+                        No se encontraron registros con los filtros seleccionados. Intenta ajustar tus criterios de
+                        búsqueda.
+                    </p>
+                    <button mat-stroked-button class="mt-6 rounded-xl" (click)="limpiarTodosFiltros()">
+                        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:arrow-path'"></mat-icon>
+                        Restablecer filtros
+                    </button>
                 </div>
             </ng-container>
 
             <!-- Contenido con datos -->
             <ng-container *ngIf="!isLoading && datosFiltrados.length > 0">
+                <div class="max-w-7xl mx-auto w-full md:px-6 pb-2">
 
-                <!-- Tabla con Tabs -->
-                <div class="overflow-x-auto px-1 md:px-8 pb-6">
-                    <mat-tab-group animationDuration="300ms" [disableRipple]="true" [(selectedIndex)]="selectedTabIndex"
-                        (selectedIndexChange)="onTabChange($event)">
+                    <!-- Tabs -->
+                    <mat-tab-group class="tabs-pestanas" animationDuration="300ms" [disableRipple]="true"
+                        [(selectedIndex)]="selectedTabIndex" (selectedIndexChange)="onTabChange($event)">
 
-                        <!-- ========== TAB 1: PROCESOS ========== -->
+                        <!-- TAB: FACTURADO -->
                         <mat-tab>
-                            <ng-template mat-tab-label>
-                                <mat-icon class="icon-size-5 mr-2"
-                                    [svgIcon]="'heroicons_solid:building-office'"></mat-icon>
-                                <span class="font-medium">Procesos</span>
+                            <ng-template mat-tab-label class="bg-white">
+                                <div class="flex items-center gap-2 px-1 py-1">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:document-check'"
+                                        [ngClass]="selectedTabIndex === 0 ? 'text-black' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Facturado</span>
+                                </div>
                             </ng-template>
-
                             <ng-template matTabContent>
-                                <tabs-procesos-tab></tabs-procesos-tab>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-facturado-tab></tabs-facturado-tab>
+                                </div>
                             </ng-template>
                         </mat-tab>
 
-                        <!-- ========== TAB 2: PRODUCCIÓN DE TEJIDO ========== -->
+                        <!-- TAB: ESTAMPADOS -->
                         <mat-tab>
                             <ng-template mat-tab-label>
-                                <mat-icon class="icon-size-5 mr-2" 
-                                [svgIcon]="'heroicons_solid:cog-8-tooth'"></mat-icon>
-                                <span class="font-medium">Producción de Tejido</span>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:paint-brush'"
+                                        [ngClass]="selectedTabIndex === 1 ? 'text-red-500' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Estampados</span>
+                                </div>
                             </ng-template>
-
                             <ng-template matTabContent>
-                                <tabs-produccion-tejido></tabs-produccion-tejido>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-estampados-tab></tabs-estampados-tab>
+                                </div>
                             </ng-template>
                         </mat-tab>
 
-                        <!-- ========== TAB 3: REVISADO DE TEJIDO ========== -->
+                        <!-- TAB: TINTORERIA -->
                         <mat-tab>
                             <ng-template mat-tab-label>
-                                <mat-icon class="icon-size-5 mr-2"
-                                    [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
-                                <span class="font-medium">Revisado de Tejido</span>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:beaker'"
+                                        [ngClass]="selectedTabIndex === 2 ? 'text-orange-500' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Tintorería</span>
+                                </div>
                             </ng-template>
-
                             <ng-template matTabContent>
-                                <tabs-tejido-revisado></tabs-tejido-revisado>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-tintoreria-tab></tabs-tintoreria-tab>
+                                </div>
                             </ng-template>
                         </mat-tab>
 
-                        <!-- ========== TAB 4: POR REVISAR ========== -->
+                        <!-- TAB: PROCESOS -->
                         <mat-tab>
                             <ng-template mat-tab-label>
-                                <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:x-circle'"></mat-icon>
-                                <span class="font-medium">Por revisar</span>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:cog-6-tooth'"
+                                        [ngClass]="selectedTabIndex === 3 ? 'text-yellow-500' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Procesos</span>
+                                </div>
                             </ng-template>
-
                             <ng-template matTabContent>
-                                <tabs-por-revisar></tabs-por-revisar>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-procesos-tab></tabs-procesos-tab>
+                                </div>
                             </ng-template>
                         </mat-tab>
 
-                        <!-- ========== TAB 5: SALDOS ========== -->
+                        <!-- TAB: PRODUCCIÓN DE TEJIDO -->
                         <mat-tab>
                             <ng-template mat-tab-label>
-                                <mat-icon class="icon-size-5 mr-2"
-                                    [svgIcon]="'heroicons_solid:currency-dollar'"></mat-icon>
-                                <span class="font-medium">Saldos</span>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:building-office-2'"
+                                        [ngClass]="selectedTabIndex === 4 ? 'text-fuchsia-500' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Producción de tejido</span>
+                                </div>
                             </ng-template>
-
                             <ng-template matTabContent>
-                                <tabs-saldos></tabs-saldos>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-produccion-tejido></tabs-produccion-tejido>
+                                </div>
                             </ng-template>
                         </mat-tab>
 
-                        <!-- ========== TAB 6: EMBARQUES ========== -->
+                        <!-- TAB: REVISADO DE TEJIDO -->
                         <mat-tab>
                             <ng-template mat-tab-label>
-                                <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:truck'"></mat-icon>
-                                <span class="font-medium">Entregado a Embarques</span>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:clipboard-document-check'"
+                                        [ngClass]="selectedTabIndex === 5 ? 'text-green-500' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Revisado de tejido</span>
+                                </div>
                             </ng-template>
-
                             <ng-template matTabContent>
-                                <tabs-embarques></tabs-embarques>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-tejido-revisado></tabs-tejido-revisado>
+                                </div>
+                            </ng-template>
+                        </mat-tab>
+
+                        <!-- TAB: POR REVISAR -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:clock'"
+                                        [ngClass]="selectedTabIndex === 6 ? 'text-violet-500' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Por revisar</span>
+                                </div>
+                            </ng-template>
+                            <ng-template matTabContent>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-por-revisar></tabs-por-revisar>
+                                </div>
+                            </ng-template>
+                        </mat-tab>
+
+                        <!-- TAB: SALDOS -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:archive-box'"
+                                        [ngClass]="selectedTabIndex === 7 ? 'text-cyan-400' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Saldos</span>
+                                </div>
+                            </ng-template>
+                            <ng-template matTabContent>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-saldos></tabs-saldos>
+                                </div>
+                            </ng-template>
+                        </mat-tab>
+
+                        <!-- TAB: EMBARQUES -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:truck'"
+                                        [ngClass]="selectedTabIndex === 8 ? 'text-pink-500' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Entregado a embarques</span>
+                                </div>
+                            </ng-template>
+                            <ng-template matTabContent>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-embarques></tabs-embarques>
+                                </div>
                             </ng-template>
                         </mat-tab>
 
                     </mat-tab-group>
+
                 </div>
             </ng-container>
         </div>
     </div>
 </div>
+
+<!-- padre -->

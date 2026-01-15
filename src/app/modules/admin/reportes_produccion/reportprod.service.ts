@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { APP_CONFIG } from 'app/core/config/app-config';
 
+
 export interface ReporteProduccion {
     depto: number;
     departamento: string;
@@ -41,6 +42,18 @@ export interface EntregadoEmbarques {
     ARTICULO: string;
     CANTIDAD: number;
 }
+
+
+export interface FacturadoDetallePartida {
+    PARTIDA: number;
+    PNETO: number;
+}
+
+export interface FacturadoResumenResponse {
+    total: { pneto: number };
+    detalle: FacturadoDetallePartida[] | null;
+}
+
 
 @Injectable({ providedIn: 'root' })
 export class ReportProdService {
@@ -266,4 +279,121 @@ export class ReportProdService {
                 })
             );
     }
+
+
+
+    getEstampados(fechaInicio?: Date, fechaFin?: Date): Observable<ReporteProduccion[]> {
+        let params = new HttpParams();
+
+        const formatoFirebird = (fecha: Date, esInicio: boolean): string => {
+            const dia = fecha.getDate().toString().padStart(2, '0');
+            const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+            const anio = fecha.getFullYear();
+            const hora = esInicio ? '00:00:00' : '23:59:59';
+            return `${dia}.${mes}.${anio} ${hora}`;
+        };
+
+        if (fechaInicio) {
+            params = params.set('fecha_inicio', formatoFirebird(fechaInicio, true));
+        }
+
+        if (fechaFin) {
+            params = params.set('fecha_fin', formatoFirebird(fechaFin, false));
+        }
+
+        return this._httpClient
+            .get<{ success: boolean; data: ReporteProduccion[] }>(
+                `${this.apiUrl}reportes-produccion/estampados`,
+                { params }
+            )
+            .pipe(
+                map(resp => resp.data),
+                catchError(err => {
+                    console.error('Error al obtener estampados', err);
+                    return throwError(() => new Error(err.message || 'Error desconocido'));
+                })
+            );
+    }
+
+
+
+
+
+
+    getTintoreria(fechaInicio?: Date, fechaFin?: Date): Observable<ReporteProduccion[]> {
+        let params = new HttpParams();
+
+        const formatoFirebird = (fecha: Date, esInicio: boolean): string => {
+            const dia = fecha.getDate().toString().padStart(2, '0');
+            const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+            const anio = fecha.getFullYear();
+            const hora = esInicio ? '00:00:00' : '23:59:59';
+            return `${dia}.${mes}.${anio} ${hora}`;
+        };
+
+        if (fechaInicio) {
+            params = params.set('fecha_inicio', formatoFirebird(fechaInicio, true));
+        }
+
+        if (fechaFin) {
+            params = params.set('fecha_fin', formatoFirebird(fechaFin, false));
+        }
+
+        return this._httpClient
+            .get<{ success: boolean; data: ReporteProduccion[] }>(
+                `${this.apiUrl}reportes-produccion/tintoreria`,
+                { params }
+            )
+            .pipe(
+                map(resp => resp.data),
+                catchError(err => {
+                    console.error('Error al obtener tintorería', err);
+                    return throwError(() => new Error(err.message || 'Error desconocido'));
+                })
+            );
+    }
+
+
+
+
+    /**
+ * 🔥 GET → Obtener FACTURADO (total + desglose por partida)
+ * - desglosar=true: trae detalle por partida
+ * - desglosar=false: solo total
+ */
+    getFacturado(fechaInicio: Date, fechaFin: Date, desglosar: boolean = true): Observable<FacturadoResumenResponse> {
+        let params = new HttpParams();
+
+        const toIso = (d: Date): string => {
+            const dd = d.getDate().toString().padStart(2, '0');
+            const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+            const yyyy = d.getFullYear();
+            return `${yyyy}-${mm}-${dd}`;
+        };
+
+        // fin exclusivo: +1 día
+        const finExclusivo = new Date(fechaFin);
+        finExclusivo.setDate(finExclusivo.getDate() + 1);
+
+        params = params
+            .set('fecha_inicio', `${toIso(fechaInicio)} 00:00:00`)
+            .set('fecha_fin', `${toIso(finExclusivo)} 00:00:00`)
+            .set('desglosar', desglosar ? '1' : '0');
+
+
+        return this._httpClient
+            .get<{ success: boolean; data: FacturadoResumenResponse }>(
+                `${this.apiUrl}reportes-produccion/factuado`,
+                { params }
+            )
+            .pipe(
+                map(r => r.data),
+                catchError(err => {
+                    console.error('Error al obtener facturado', err);
+                    return throwError(() => new Error(err.message || 'Error desconocido'));
+                })
+            );
+    }
+
+
 }
