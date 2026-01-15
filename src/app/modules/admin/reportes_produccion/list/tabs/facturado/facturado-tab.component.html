@@ -1,0 +1,140 @@
+<!-- Tarjetas de resumen - Solo mostrar si hay datos -->
+<div class="md:px-8 md:py-4" *ngIf="!isLoading && detalle.length > 0">
+    <!-- Card móvil - Simple y limpio -->
+    <div class="md:hidden">
+        <div class="bg-card shadow-sm rounded-xl px-5 py-4 border-l-4 border-blue-500">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-secondary mb-2">
+                        Total Facturado
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <div class="text-3xl font-bold">
+                            {{ totalFacturado | number:'1.2-2' }}
+                        </div>
+                        <div class="text-sm text-secondary">MXN</div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <mat-icon class="text-blue-500 icon-size-6"
+                            [svgIcon]="'heroicons_solid:currency-dollar'"></mat-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards desktop -->
+    <div class="hidden md:grid grid-cols-3 gap-3">
+        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-blue-500">
+            <div class="flex items-center justify-between mb-1">
+                <div class="text-base text-secondary">Total Facturado</div>
+                <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_solid:currency-dollar'"></mat-icon>
+            </div>
+            <div class="text-2xl font-bold">{{ totalFacturado | number:'1.2-2' }}</div>
+            <div class="text-sm text-secondary">Pesos mexicanos</div>
+        </div>
+
+        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-green-500">
+            <div class="flex items-center justify-between mb-1">
+                <div class="text-base font-medium text-secondary">Total partidas</div>
+                <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:document-text'"></mat-icon>
+            </div>
+            <div class="text-2xl font-bold">{{ detalle.length }}</div>
+            <div class="text-sm text-secondary">Partidas facturadas</div>
+        </div>
+
+        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-purple-500">
+            <div class="flex items-center justify-between mb-1">
+                <div class="text-base font-medium text-secondary">Promedio</div>
+                <mat-icon class="text-purple-500 icon-size-5" [svgIcon]="'heroicons_solid:calculator'"></mat-icon>
+            </div>
+            <div class="text-2xl font-bold">
+                {{ detalle.length ? (totalFacturado / detalle.length) : 0 | number:'1.2-2' }}
+            </div>
+            <div class="text-sm text-secondary">Por partida</div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="isLoading" class="flex flex-col items-center justify-center py-16 px-4">
+    <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p class="text-secondary">Cargando datos de facturado...</p>
+</div>
+
+<!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
+<div *ngIf="!isLoading && detalle.length === 0 && cargaInicial"
+    class="flex flex-col items-center justify-center py-16 px-4">
+    <div class="relative mb-6">
+        <div class="w-24 h-24 rounded-2xl bg-black/10 flex items-center justify-center">
+            <mat-icon class="icon-size-12 text-black/40"
+                [svgIcon]="'heroicons_outline:document-check'"></mat-icon>
+        </div>
+    </div>
+
+    <h3 class="text-xl font-bold mb-2">No hay partidas facturadas</h3>
+    <p class="text-secondary text-center max-w-md mb-4">
+        No se encontraron registros con los filtros seleccionados.
+        <br>Intenta ajustar tus criterios de búsqueda o seleccionar otro periodo.
+    </p>
+
+    <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
+        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:arrow-path'"></mat-icon>
+        Limpiar filtros
+    </button>
+</div>
+
+<!-- Tabla -->
+<div class="mt-6 overflow-hidden md:px-8" *ngIf="!isLoading && detalle.length > 0">
+    <div class="bg-card shadow-sm rounded-2xl overflow-hidden">
+
+        <!-- Header fijo -->
+        <div class="bg-gray-50 dark:bg-gray-800 px-3 py-3 md:px-6 md:py-4 flex border-b">
+            <div class="flex-1 text-left text-sm md:text-base font-semibold tracking-wider">
+                Partida
+            </div>
+            <div class="w-32 text-right text-sm md:text-base font-semibold tracking-wider">
+                PNETO (MXN)
+            </div>
+        </div>
+
+        <!-- 🔥 CDK Virtual Scroll Container -->
+        <cdk-virtual-scroll-viewport [itemSize]="56" class="h-[calc(100vh-400px)] min-h-[400px]">
+
+            <div *cdkVirtualFor="let row of detalle; trackBy: trackByPartida"
+                class="px-3 py-3 md:px-6 md:py-4 border-b hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center">
+
+                <!-- Columna Partida -->
+                <div class="flex-1 flex items-center gap-3">
+                    <mat-icon class="icon-size-5 text-blue-500 flex-shrink-0"
+                        [svgIcon]="'heroicons_solid:document-check'"></mat-icon>
+                    <div class="font-semibold truncate">
+                        Partida {{ row.partida }}
+                    </div>
+                </div>
+
+                <!-- Columna PNETO -->
+                <div class="w-32 text-right">
+                    <span class="font-bold text-green-600 dark:text-green-400 text-lg">
+                        {{ row.pneto | number:'1.2-2' }}
+                    </span>
+                </div>
+            </div>
+        </cdk-virtual-scroll-viewport>
+
+        <!-- Footer con total -->
+        <div class="bg-gray-50 dark:bg-gray-800 font-bold border-t-2 px-3 py-3 md:px-6 md:py-4 flex">
+            <div class="flex-1 text-right text-base">
+                Total general:
+            </div>
+            <div class="w-32 text-right">
+                <span class="text-lg text-blue-600 dark:text-blue-400">
+                    {{ totalFacturado | number:'1.2-2' }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- hijo facturado -->

@@ -1,3 +1,197 @@
+// import { CommonModule } from '@angular/common';
+// import {
+//     ChangeDetectionStrategy,
+//     ChangeDetectorRef,
+//     Component,
+//     OnDestroy,
+//     OnInit,
+//     ViewEncapsulation
+// } from '@angular/core';
+// import { FormControl } from '@angular/forms';
+// import { MatIconModule } from '@angular/material/icon';
+// import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+// import { fuseAnimations } from '@fuse/animations';
+// import { MatSnackBar } from '@angular/material/snack-bar';
+// import { Subject } from 'rxjs';
+// import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+// import { ReportProdService } from '../../../reportprod.service';
+// import { SharedDataService } from '../../shared-data.service';
+
+// @Component({
+//     selector: 'tabs-saldos',
+//     templateUrl: './saldos.component.html',
+//     standalone: true,
+//     imports: [
+//         CommonModule,
+//         MatProgressSpinnerModule,
+//         MatIconModule,
+//     ],
+//     encapsulation: ViewEncapsulation.None,
+//     changeDetection: ChangeDetectionStrategy.OnPush,
+//     animations: fuseAnimations
+// })
+// export class SaldosTabComponent implements OnInit, OnDestroy {
+
+//     datosSaldos: any[] = [];
+//     datosSaldosFiltrados: any[] = [];
+//     isLoadingSaldos = false;
+
+//     searchControl = new FormControl('');
+//     rangoFechaSeleccionado: 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo' = 'mes_actual';
+
+//     private _unsubscribeAll = new Subject<void>();
+
+//     constructor(
+//         private _cd: ChangeDetectorRef,
+//         private _reportService: ReportProdService,
+//         private _snackBar: MatSnackBar,
+//         private _sharedDataService: SharedDataService
+//     ) { }
+
+//     ngOnInit(): void {
+//         // Cargar datos con el rango por defecto (mes_actual)
+//         const fechaInicio = new Date();
+//         fechaInicio.setDate(1);
+//         const fechaFin = new Date();
+
+//         this.cargarSaldosTejido(fechaInicio, fechaFin);
+
+//         // Suscribirse a cambios en filtros globales
+//         this._sharedDataService.filtrosGlobales$
+//             .pipe(
+//                 takeUntil(this._unsubscribeAll),
+//                 debounceTime(100)
+//             )
+//             .subscribe(filtros => {
+//                 // Actualizar búsqueda sin recargar datos
+//                 if (this.searchControl.value !== filtros.busqueda) {
+//                     this.searchControl.setValue(filtros.busqueda, { emitEvent: false });
+//                 }
+
+//                 // Solo recargar si las fechas cambiaron
+//                 if (filtros.rangoFecha !== this.rangoFechaSeleccionado) {
+//                     this.rangoFechaSeleccionado = filtros.rangoFecha;
+//                     const fechas = this.calcularFechasPorRango(filtros.rangoFecha, filtros.fechaInicio, filtros.fechaFin);
+//                     this.cargarSaldosTejido(fechas.inicio, fechas.fin);
+//                 }
+//             });
+
+//         // Configurar filtro de búsqueda
+//         this.searchControl.valueChanges
+//             .pipe(
+//                 debounceTime(300),
+//                 distinctUntilChanged(),
+//                 takeUntil(this._unsubscribeAll)
+//             )
+//             .subscribe(() => this.aplicarFiltros());
+//     }
+
+//     ngOnDestroy(): void {
+//         this._unsubscribeAll.next();
+//         this._unsubscribeAll.complete();
+//     }
+
+//     private calcularFechasPorRango(
+//         rango: string,
+//         fechaInicio: Date | null,
+//         fechaFin: Date | null
+//     ): { inicio: Date; fin: Date } {
+
+//         if (fechaInicio && fechaFin) {
+//             return { inicio: fechaInicio, fin: fechaFin };
+//         }
+
+//         let inicio: Date;
+//         let fin: Date = new Date();
+
+//         switch (rango) {
+//             case 'hoy':
+//                 inicio = new Date();
+//                 break;
+//             case 'ayer':
+//                 inicio = new Date();
+//                 inicio.setDate(inicio.getDate() - 1);
+//                 fin = new Date(inicio);
+//                 break;
+//             case 'mes_actual':
+//                 inicio = new Date();
+//                 inicio.setDate(1);
+//                 break;
+//             case 'mes_anterior':
+//                 inicio = new Date();
+//                 inicio.setMonth(inicio.getMonth() - 1);
+//                 inicio.setDate(1);
+//                 fin = new Date();
+//                 fin.setDate(0);
+//                 break;
+//             case 'todos':
+//                 inicio = new Date();
+//                 inicio.setFullYear(inicio.getFullYear() - 1);
+//                 break;
+//             default:
+//                 inicio = new Date();
+//                 inicio.setDate(1);
+//                 break;
+//         }
+
+//         return { inicio, fin };
+//     }
+
+//     cargarSaldosTejido(fechaInicio?: Date, fechaFin?: Date): void {
+//         this.isLoadingSaldos = true;
+//         this._cd.markForCheck();
+
+//         this._reportService.getSaldosTejido(fechaInicio, fechaFin)
+//             .pipe(takeUntil(this._unsubscribeAll))
+//             .subscribe({
+//                 next: response => {
+//                     this.datosSaldos = response;
+//                     this.datosSaldosFiltrados = [...response];
+//                     this.aplicarFiltros();
+//                     this.isLoadingSaldos = false;
+//                     this._cd.markForCheck();
+//                 },
+//                 error: err => {
+//                     console.error('Error al cargar saldos:', err);
+//                     this._snackBar.open('Error al cargar saldos', 'Cerrar', { duration: 5000 });
+//                     this.isLoadingSaldos = false;
+//                     this._cd.markForCheck();
+//                 }
+//             });
+//     }
+
+//     aplicarFiltros(): void {
+//         const busqueda = this.searchControl.value?.toLowerCase().trim() || '';
+
+//         this.datosSaldosFiltrados = this.datosSaldos.filter(item =>
+//             !busqueda || item.ARTICULO?.toLowerCase().includes(busqueda)
+//         );
+
+//         this._sharedDataService.actualizarSaldos(
+//             this.datosSaldos,
+//             this.datosSaldosFiltrados
+//         );
+
+//         this._cd.markForCheck();
+//     }
+
+//     calcularTotalPesoSaldos(): number {
+//         return this.datosSaldosFiltrados.reduce((total, item) =>
+//             total + (parseFloat(item.TOTAL_SALDO) || 0), 0
+//         );
+//     }
+
+//     calcularTotalPiezasSaldos(): number {
+//         return this.datosSaldosFiltrados.reduce((total, item) =>
+//             total + (parseFloat(item.PIEZAS) || 0), 0
+//         );
+//     }
+
+//     contarArticulosSaldos(): number {
+//         return this.datosSaldosFiltrados.length;
+//     }
+// }
+
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -5,34 +199,17 @@ import {
     Component,
     OnDestroy,
     OnInit,
-    ViewEncapsulation,
-    HostListener
+    ViewEncapsulation
 } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatBadgeModule } from '@angular/material/badge';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
 import { fuseAnimations } from '@fuse/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import { ReportProdService } from '../../../reportprod.service';
 import { SharedDataService } from '../../shared-data.service';
-
-interface DatoAgrupado {
-    cantidadTotal: number;
-    expandido?: boolean;
-}
 
 @Component({
     selector: 'tabs-saldos',
@@ -40,372 +217,153 @@ interface DatoAgrupado {
     standalone: true,
     imports: [
         CommonModule,
-        ReactiveFormsModule,
-        MatProgressBarModule,
         MatProgressSpinnerModule,
         MatIconModule,
         MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatTooltipModule,
-        MatBottomSheetModule,
-        MatBadgeModule,
-        MatTabsModule,
     ],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     animations: fuseAnimations
 })
 export class SaldosTabComponent implements OnInit, OnDestroy {
+
+    // Datos originales y filtrados
     datos: any[] = [];
     datosFiltrados: any[] = [];
-    datosAgrupados: DatoAgrupado[] = [];
+    
+    // Estados
     isLoading = false;
-    mostrarPanelFiltros = false;
-    mostrarPanelFechas = false;
+    cargaInicial = false;
 
-    // DATOS ORIGINALES Y FILTRADOS PARA TODOS LOS TABS
-    datosSaldos: any[] = [];
-    datosSaldosFiltrados: any[] = [];
-    isLoadingSaldos = false;
-
-    // Controles de filtros
-    searchControl = new FormControl('');
-    rangoFechaControl = new FormControl('mes_actual');
-    fechaInicioControl = new FormControl(null);
-    fechaFinControl = new FormControl(null);
-    verTodosControl = new FormControl(true);
-    rangoFechaSeleccionado: 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo' = 'mes_actual';
-    ordenActual: { campo: string; direccion: 'asc' | 'desc' } = { campo: '', direccion: 'asc' };
     private _unsubscribeAll = new Subject<void>();
 
     constructor(
         private _cd: ChangeDetectorRef,
         private _reportService: ReportProdService,
         private _snackBar: MatSnackBar,
-        private _bottomSheet: MatBottomSheet,
         private _sharedDataService: SharedDataService
     ) { }
 
-   ngOnInit(): void {
-    // 🔥 PRIMERO: Cargar datos con el rango por defecto (mes_actual)
-    const fechaInicio = new Date();
-    fechaInicio.setDate(1); // Primer día del mes actual
-    const fechaFin = new Date(); // Hoy
+    ngOnInit(): void {
+        // Escuchar cambios en filtros globales (búsqueda, departamento)
+        this._sharedDataService.filtrosGlobales$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(filtros => {
+                // Solo aplicar filtros si ya hemos cargado datos
+                if (this.cargaInicial) {
+                    this.aplicarFiltrosLocales(filtros);
+                }
+            });
 
-    // Cargar datos iniciales
-    this.cargarSaldosTejido(fechaInicio, fechaFin);
+        // Escuchar cambios en fechas para recargar datos
+        this._sharedDataService.recargarDatos$
+            .pipe(
+                takeUntil(this._unsubscribeAll),
+                filter(recargar => recargar === true)
+            )
+            .subscribe(() => {
+                const filtros = this._sharedDataService.obtenerFiltros();
+                this.cargarSaldosTejido(filtros.fechaInicio, filtros.fechaFin);
+                this._sharedDataService.confirmarRecargaConsumida();
+            });
 
-    // 🔥 SEGUNDO: Suscribirse a cambios en filtros globales
-    this._sharedDataService.filtrosGlobales$
-        .pipe(
-            takeUntil(this._unsubscribeAll),
-            debounceTime(100) // Evitar múltiples llamadas simultáneas
-        )
-        .subscribe(filtros => {
-            // Actualizar búsqueda sin recargar datos
-            if (this.searchControl.value !== filtros.busqueda) {
-                this.searchControl.setValue(filtros.busqueda, { emitEvent: false });
-            }
-
-            // 🔥 CRÍTICO: Solo recargar si las fechas cambiaron
-            if (filtros.rangoFecha !== this.rangoFechaSeleccionado) {
-                this.rangoFechaSeleccionado = filtros.rangoFecha;
-                
-                // Calcular fechas según el rango
-                const fechas = this.calcularFechasPorRango(filtros.rangoFecha, filtros.fechaInicio, filtros.fechaFin);
-                
-                this.cargarSaldosTejido(fechas.inicio, fechas.fin);
-            }
-        });
-
-    // Configurar filtros locales (búsqueda)
-    this.searchControl.valueChanges
-        .pipe(
-            debounceTime(300),
-            distinctUntilChanged(),
-            takeUntil(this._unsubscribeAll)
-        )
-        .subscribe(() => this.aplicarFiltros());
-}
-
-// 🔥 NUEVO MÉTODO: Calcular fechas según rango
-private calcularFechasPorRango(
-    rango: string,
-    fechaInicio: Date | null,
-    fechaFin: Date | null
-): { inicio: Date; fin: Date } {
-    
-    // Si ya hay fechas específicas, usarlas
-    if (fechaInicio && fechaFin) {
-        return { inicio: fechaInicio, fin: fechaFin };
+        // Carga inicial con fechas por defecto
+        const filtros = this._sharedDataService.obtenerFiltros();
+        this.cargarSaldosTejido(filtros.fechaInicio, filtros.fechaFin);
     }
-
-    const hoy = new Date();
-    let inicio: Date;
-    let fin: Date = new Date();
-
-    switch (rango) {
-        case 'hoy':
-            inicio = new Date();
-            fin = new Date();
-            break;
-        case 'ayer':
-            inicio = new Date();
-            inicio.setDate(inicio.getDate() - 1);
-            fin = new Date(inicio);
-            break;
-        case 'mes_actual':
-            inicio = new Date();
-            inicio.setDate(1);
-            break;
-        case 'mes_anterior':
-            inicio = new Date();
-            inicio.setMonth(inicio.getMonth() - 1);
-            inicio.setDate(1);
-            fin = new Date();
-            fin.setDate(0);
-            break;
-        case 'todos':
-            // ⚠️ IMPORTANTE: Definir una fecha límite para "todos"
-            // Para evitar cargar millones de registros
-            inicio = new Date();
-            inicio.setFullYear(inicio.getFullYear() - 1); // Último año
-            break;
-        default:
-            inicio = new Date();
-            inicio.setDate(1);
-            break;
-    }
-
-    return { inicio, fin };
-}
 
     ngOnDestroy(): void {
         this._unsubscribeAll.next();
         this._unsubscribeAll.complete();
     }
 
-    toggleDatePanel(): void {
-        this.mostrarPanelFechas = !this.mostrarPanelFechas;
-        this._cd.markForCheck();
-    }
-
-    @HostListener('document:keydown.escape')
-    onEscapeKey(): void {
-        if (this.mostrarPanelFechas) {
-            this.mostrarPanelFechas = false;
+    private aplicarFiltrosLocales(filtros: any): void {
+        if (this.datos.length === 0) {
+            this.datosFiltrados = [];
             this._cd.markForCheck();
+            return;
         }
+
+        const busqueda = filtros.busqueda?.toLowerCase() || '';
+        const deptoSeleccionado = filtros.departamento || '';
+
+        this.datosFiltrados = this.datos.filter(item => {
+            const coincideBusqueda = !busqueda ||
+                item.ARTICULO?.toString().toLowerCase().includes(busqueda) ||
+                item.CVE_ART?.toString().toLowerCase().includes(busqueda);
+
+            // Si el item tiene departamento, verificar coincidencia
+            const coincideDepto = !deptoSeleccionado || 
+                (item.departamento && item.departamento === deptoSeleccionado);
+            
+            return coincideBusqueda && coincideDepto;
+        });
+
+        // Actualizar servicio compartido
+        this._sharedDataService.actualizarSaldos(this.datos, this.datosFiltrados);
+
+        this._cd.markForCheck();
     }
 
-
-    cargarSaldosTejido(fechaInicio?: Date, fechaFin?: Date): void {
-        this.isLoadingSaldos = true;
+    cargarSaldosTejido(fechaInicio?: Date | null, fechaFin?: Date | null): void {
+        this.isLoading = true;
         this._cd.markForCheck();
 
-        this._reportService.getSaldosTejido(fechaInicio, fechaFin)
-            .pipe(takeUntil(this._unsubscribeAll))
+        this._reportService.getSaldosTejido(
+            fechaInicio || undefined,
+            fechaFin || undefined
+        ).pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
-                next: response => {
-                    this.datosSaldos = response;
-                    this.datosSaldosFiltrados = [...response];
-                    this.aplicarFiltros();
-                    this.isLoadingSaldos = false;
+                next: (response) => {
+                    this.datos = response;
+                    this.cargaInicial = true;
+                    
+                    // Aplicar filtros actuales después de cargar datos
+                    const filtros = this._sharedDataService.obtenerFiltros();
+                    this.aplicarFiltrosLocales(filtros);
+
+                    this.isLoading = false;
                     this._cd.markForCheck();
                 },
-                error: err => {
+                error: (err) => {
                     console.error('Error al cargar saldos:', err);
-                    this._snackBar.open('Error al cargar saldos', 'Cerrar', { duration: 5000 });
-                    this.isLoadingSaldos = false;
+                    this._snackBar.open('Error al cargar saldos', 'Cerrar', { duration: 3000 });
+                    this.isLoading = false;
                     this._cd.markForCheck();
                 }
             });
     }
 
-
-
-    seleccionarRangoFecha(
-        rango: 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo'
-    ): void {
-        this.rangoFechaSeleccionado = rango;
-
-        if (rango === 'todos') {
-            this.fechaInicioControl.setValue(null);
-            this.fechaFinControl.setValue(null);
-            this.cargarSaldosTejido(undefined, undefined);
-            this.mostrarPanelFechas = false;
-            this._cd.markForCheck();
-            return;
-        }
-
-        if (rango === 'fecha_especifica' || rango === 'periodo') {
-            this._cd.markForCheck();
-            return;
-        }
-
-        let fechaInicio: Date;
-        let fechaFin: Date = new Date();
-
-        switch (rango) {
-            case 'hoy':
-                fechaInicio = new Date();
-                fechaFin = new Date();
-                break;
-            case 'ayer':
-                fechaInicio = new Date();
-                fechaInicio.setDate(fechaInicio.getDate() - 1);
-                fechaFin = new Date(fechaInicio);
-                break;
-            case 'mes_actual':
-                fechaInicio = new Date();
-                fechaInicio.setDate(1);
-                fechaFin = new Date();
-                break;
-            case 'mes_anterior':
-                fechaInicio = new Date();
-                fechaInicio.setMonth(fechaInicio.getMonth() - 1);
-                fechaInicio.setDate(1);
-                fechaFin = new Date();
-                fechaFin.setDate(0);
-                break;
-        }
-        this.cargarSaldosTejido(fechaInicio, fechaFin);
-        this.mostrarPanelFechas = false;
-        this._cd.markForCheck();
-    }
-
-    aplicarFiltroFechas(): void {
-        const fechaInicio = this.fechaInicioControl.value;
-        const fechaFin = this.rangoFechaSeleccionado === 'periodo'
-            ? this.fechaFinControl.value
-            : this.fechaInicioControl.value;
-
-        if (!fechaInicio) {
-            this._snackBar.open('Selecciona una fecha válida', 'Cerrar', { duration: 3000 });
-            return;
-        }
-
-        if (this.rangoFechaSeleccionado === 'periodo' && !fechaFin) {
-            this._snackBar.open('Selecciona una fecha fin válida', 'Cerrar', { duration: 3000 });
-            return;
-        }
-
-        if (this.rangoFechaSeleccionado === 'periodo' && fechaInicio > fechaFin) {
-            this._snackBar.open('La fecha de inicio no puede ser mayor a la fecha fin', 'Cerrar', { duration: 3000 });
-            return;
-        }
-
-        this.cargarSaldosTejido(fechaInicio, fechaFin);
-        this.mostrarPanelFechas = false;
-        this._cd.markForCheck();
-    }
-
-    limpiarFiltroFechas(): void {
-        this.rangoFechaControl.setValue('mes_actual');
-        this.rangoFechaSeleccionado = 'mes_actual';
-        this.fechaInicioControl.setValue(null);
-        this.fechaFinControl.setValue(null);
-        this.seleccionarRangoFecha('mes_actual');
-        this.mostrarPanelFechas = false;
-        this._cd.markForCheck();
-    }
-
-    obtenerTextoFechaSeleccionada(): string {
-        const opciones: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
-        const hoy = new Date();
-
-        switch (this.rangoFechaSeleccionado) {
-            case 'todos': return 'Todos los registros';
-            case 'hoy': return `Hoy - ${hoy.toLocaleDateString('es-MX', opciones)}`;
-            case 'ayer':
-                const ayer = new Date();
-                ayer.setDate(ayer.getDate() - 1);
-                return `Ayer - ${ayer.toLocaleDateString('es-MX', opciones)}`;
-            case 'mes_actual':
-                const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-                return `${inicioMes.toLocaleDateString('es-MX', opciones)} - ${hoy.toLocaleDateString('es-MX', opciones)}`;
-            case 'mes_anterior':
-                const inicioMesAnt = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-                const finMesAnt = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
-                return `${inicioMesAnt.toLocaleDateString('es-MX', opciones)} - ${finMesAnt.toLocaleDateString('es-MX', opciones)}`;
-            case 'fecha_especifica':
-                const fecha = this.fechaInicioControl.value;
-                return fecha ? `Fecha: ${fecha.toLocaleDateString('es-MX', opciones)}` : 'Seleccionar fecha';
-            case 'periodo':
-                const inicio = this.fechaInicioControl.value;
-                const fin = this.fechaFinControl.value;
-                if (inicio && fin) {
-                    return `${inicio.toLocaleDateString('es-MX', opciones)} - ${fin.toLocaleDateString('es-MX', opciones)}`;
-                }
-                return 'Periodo de fechas';
-            default: return 'Mes actual';
-        }
-    }
-
-
-    configurarFiltros(): void {
-        this.searchControl.valueChanges
-            .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
-            .subscribe(() => this.aplicarFiltros());
-    }
-
-    aplicarFiltros(): void {
-        const busqueda = this.searchControl.value?.toLowerCase().trim() || '';
-
-        // FILTRAR SALDOS
-        this.datosSaldosFiltrados = this.datosSaldos.filter(item => {
-            return !busqueda || item.ARTICULO?.toLowerCase().includes(busqueda);
+    limpiarFiltrosLocales(): void {
+        this._sharedDataService.actualizarFiltros({
+            busqueda: '',
+            departamento: '',
+            proceso: ''
         });
-
-        this._sharedDataService.actualizarSaldos(
-            this.datosSaldos,
-            this.datosSaldosFiltrados
-        );
-
-
-        this._cd.markForCheck();
     }
 
+    // Getters para el template
+    get datosSaldosFiltrados(): any[] {
+        return this.datosFiltrados;
+    }
 
-    // MÉTODOS DE CÁLCULO PARA SALDOS
+    get isLoadingSaldos(): boolean {
+        return this.isLoading;
+    }
+
     calcularTotalPesoSaldos(): number {
-        return this.datosSaldosFiltrados.reduce((total, item) => total + (parseFloat(item.TOTAL_SALDO) || 0), 0);
+        return this.datosFiltrados.reduce((total, item) =>
+            total + (parseFloat(item.TOTAL_SALDO) || 0), 0
+        );
     }
 
     calcularTotalPiezasSaldos(): number {
-        return this.datosSaldosFiltrados.reduce((total, item) => total + (parseFloat(item.PIEZAS) || 0), 0);
+        return this.datosFiltrados.reduce((total, item) =>
+            total + (parseFloat(item.PIEZAS) || 0), 0
+        );
     }
 
     contarArticulosSaldos(): number {
-        return this.datosSaldosFiltrados.length;
-    }
-
-    togglePanelFiltros(): void {
-        this.mostrarPanelFiltros = !this.mostrarPanelFiltros;
-        this._cd.markForCheck();
-    }
-
-    @HostListener('document:keydown.escape')
-    onEscape(): void {
-        if (this.mostrarPanelFiltros || this.mostrarPanelFechas) {
-            this.mostrarPanelFiltros = false;
-            this.mostrarPanelFechas = false;
-            this._cd.markForCheck();
-        }
-    }
-
-    filtrosActivosCount(): number {
-        let count = 0;
-        if (this.rangoFechaSeleccionado !== 'mes_actual') count++;
-        return count;
-    }
-    limpiarTodosFiltros(): void {
-        this.searchControl.setValue('');
-        this.limpiarFiltroFechas();
-        this.aplicarFiltros();
+        return this.datosFiltrados.length;
     }
 }

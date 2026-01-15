@@ -8,20 +8,17 @@ import {
     ViewEncapsulation,
     HostListener
 } from '@angular/core';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { fuseAnimations } from '@fuse/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
@@ -36,14 +33,17 @@ import { SaldosTabComponent } from './tabs/saldos/saldos.component';
 import { EmbarquesTabComponent } from './tabs/embarques/embarques.component';
 import { EstampadosTabComponent } from './tabs/estampados/estampados-tab.compoonent';
 import { TintoreriaTabComponent } from './tabs/tintoreria/tintoreria-tab.compoonent';
+import { FacturadoTabComponent } from './tabs/facturado/facturado-tab.compoonent';
 
-
-interface DatoAgrupado {
-    departamento: string;
-    procesos: { proceso: string; cantidad: number }[];
-    cantidadTotal: number;
-    expandido?: boolean;
-}
+export const slideDown = trigger('slideDown', [
+    transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-8px) scale(0.98)' }),
+        animate('150ms ease-out', style({ opacity: 1, transform: 'translateY(0) scale(1)' })),
+    ]),
+    transition(':leave', [
+        animate('120ms ease-in', style({ opacity: 0, transform: 'translateY(-8px) scale(0.98)' })),
+    ]),
+]);
 
 @Component({
     selector: 'reportprod-list',
@@ -53,8 +53,6 @@ interface DatoAgrupado {
     imports: [
         CommonModule,
         ReactiveFormsModule,
-        MatProgressBarModule,
-        MatProgressSpinnerModule,
         MatIconModule,
         MatButtonModule,
         MatFormFieldModule,
@@ -62,8 +60,6 @@ interface DatoAgrupado {
         MatSelectModule,
         MatDatepickerModule,
         MatNativeDateModule,
-        MatTooltipModule,
-        MatBottomSheetModule,
         MatBadgeModule,
         MatTabsModule,
         ProcesosTabComponent,
@@ -73,59 +69,36 @@ interface DatoAgrupado {
         SaldosTabComponent,
         EmbarquesTabComponent,
         EstampadosTabComponent,
-        TintoreriaTabComponent
-
+        TintoreriaTabComponent,
+        FacturadoTabComponent
     ],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    animations: fuseAnimations
+    animations: [...fuseAnimations, slideDown]
 })
 export class ReportProdListComponent implements OnInit, OnDestroy {
+
+    // Datos del tab de procesos (único que maneja el padre)
     datos: any[] = [];
     datosFiltrados: any[] = [];
-    datosAgrupados: DatoAgrupado[] = [];
     isLoading = false;
+
+    // UI States
     mostrarPanelFiltros = false;
-    mostrarPanelFechas = false;
-
-    // DATOS ORIGINALES Y FILTRADOS PARA TODOS LOS TABS
-    datosTejido: any[] = [];
-    datosTejidoFiltrados: any[] = [];
-    datosRevisado: any[] = [];
-    datosRevisadoFiltrados: any[] = [];
-    datosPorRevisar: any[] = [];
-    datosPorRevisarFiltrados: any[] = [];
-    datosSaldos: any[] = [];
-    datosSaldosFiltrados: any[] = [];
-    datosEmbarques: any[] = [];
-    datosEmbarquesFiltrados: any[] = [];
-
-    isLoadingTejido = false;
-    isLoadingRevisado = false;
-    isLoadingPorRevisar = false;
-    isLoadingSaldos = false;
-    isLoadingEmbarques = false;
-
-
+    mostrarPanelFiltrosPc = false;
     selectedTabIndex = 0;
 
     // Controles de filtros
     searchControl = new FormControl('');
     deptoControl = new FormControl('');
     procesoControl = new FormControl('');
-    rangoFechaControl = new FormControl('mes_actual');
     fechaInicioControl = new FormControl(null);
     fechaFinControl = new FormControl(null);
-    verTodosControl = new FormControl(true);
-    tipoEmbarqueControl = new FormControl('');
 
     rangoFechaSeleccionado: 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo' = 'mes_actual';
 
     departamentosUnicos: string[] = [];
     procesosUnicos: string[] = [];
-    tiposEmbarqueUnicos: string[] = [];
-
-    ordenActual: { campo: string; direccion: 'asc' | 'desc' } = { campo: '', direccion: 'asc' };
 
     private _unsubscribeAll = new Subject<void>();
 
@@ -133,7 +106,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         private _cd: ChangeDetectorRef,
         private _reportService: ReportProdService,
         private _snackBar: MatSnackBar,
-        private _bottomSheet: MatBottomSheet,
         private _sharedDataService: SharedDataService
     ) { }
 
@@ -152,8 +124,11 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this.configurarFiltros();
     }
 
+    ngOnDestroy(): void {
+        this._unsubscribeAll.next();
+        this._unsubscribeAll.complete();
+    }
 
-    // 🔥 NUEVO MÉTODO: Solo carga datos para el tab de procesos
     private cargarDatosProcesos(): void {
         const filtros = this._sharedDataService.obtenerFiltros();
         const fechaInicio = filtros.fechaInicio || this.calcularFechaInicio('mes_actual');
@@ -168,10 +143,7 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
                 next: response => {
                     this.datos = response;
                     this.extraerDatosUnicos();
-
-                    // Aplicar filtros y actualizar servicio
                     this.aplicarFiltrosProcesos();
-
                     this.isLoading = false;
                     this._cd.markForCheck();
                 },
@@ -184,8 +156,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
             });
     }
 
-
-    // 🔥 MÉTODO AUXILIAR: Calcular fecha inicio según rango
     private calcularFechaInicio(rango: string): Date {
         const fecha = new Date();
         switch (rango) {
@@ -204,7 +174,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         }
     }
 
-    // 🔥 NUEVO MÉTODO: Aplicar solo filtros de procesos
     private aplicarFiltrosProcesos(): void {
         const filtros = this._sharedDataService.obtenerFiltros();
         const busqueda = filtros.busqueda.toLowerCase();
@@ -212,7 +181,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         const procesoSeleccionado = filtros.proceso;
 
         this.datosFiltrados = this.datos.filter(item => {
-            // 🔥 NUEVA LÓGICA: Buscar en departamento, proceso Y artículo
             const coincideBusqueda = !busqueda ||
                 item.departamento?.toLowerCase().includes(busqueda) ||
                 item.proceso?.toLowerCase().includes(busqueda) ||
@@ -224,37 +192,14 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
             return coincideBusqueda && coincideDepto && coincideProceso;
         });
 
-        this._sharedDataService.actualizarDatos(
-            this.datos,
-            this.datosFiltrados
-        );
-
-        // 🔥 NO LLAMAR _cd.markForCheck() aquí para evitar recargar vista
-    }
-
-    ngOnDestroy(): void {
-        this._unsubscribeAll.next();
-        this._unsubscribeAll.complete();
-    }
-
-    toggleDatePanel(): void {
-        this.mostrarPanelFechas = !this.mostrarPanelFechas;
-        this._cd.markForCheck();
-    }
-
-    @HostListener('document:keydown.escape')
-    onEscapeKey(): void {
-        if (this.mostrarPanelFechas) {
-            this.mostrarPanelFechas = false;
-            this._cd.markForCheck();
-        }
+        this._sharedDataService.actualizarDatos(this.datos, this.datosFiltrados);
     }
 
     seleccionarRangoFecha(rango: 'todos' | 'hoy' | 'ayer' | 'mes_actual' | 'mes_anterior' | 'fecha_especifica' | 'periodo'): void {
         this.rangoFechaSeleccionado = rango;
 
         if (rango === 'fecha_especifica' || rango === 'periodo') {
-            return; // 🔥 Sin markForCheck
+            return;
         }
 
         let fechaInicio: Date | undefined;
@@ -292,11 +237,9 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         });
 
         this.cargarDatosProcesos();
-        this.mostrarPanelFechas = false;
-        // 🔥 SIN _cd.markForCheck() para no forzar re-render
+        this.mostrarPanelFiltros = false;
+        this.mostrarPanelFiltrosPc = false;
     }
-
-
 
     aplicarFiltroFechas(): void {
         const fechaInicio = this.fechaInicioControl.value;
@@ -325,19 +268,15 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
             fechaFin: fechaFin
         });
 
-        this.mostrarPanelFechas = false;
-        // 🔥 SIN _cd.markForCheck()
+        this.mostrarPanelFiltros = false;
+        this.mostrarPanelFiltrosPc = false;
     }
 
-
     limpiarFiltroFechas(): void {
-        this.rangoFechaControl.setValue('mes_actual');
         this.rangoFechaSeleccionado = 'mes_actual';
         this.fechaInicioControl.setValue(null);
         this.fechaFinControl.setValue(null);
         this.seleccionarRangoFecha('mes_actual');
-        this.mostrarPanelFechas = false;
-        this._cd.markForCheck();
     }
 
     obtenerTextoFechaSeleccionada(): string {
@@ -385,25 +324,12 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this.procesosUnicos = Array.from(procesosSet).sort();
     }
 
-    extraerTiposEmbarque(): void {
-        const tiposSet = new Set<string>();
-        this.datosEmbarques.forEach((item, index) => {
-            if (item.TIPO) {
-                tiposSet.add(item.TIPO);
-
-            }
-        });
-
-        this.tiposEmbarqueUnicos = Array.from(tiposSet).sort();
-    }
-
     configurarFiltros(): void {
         this.searchControl.valueChanges
             .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
             .subscribe(valor => {
                 this._sharedDataService.actualizarFiltros({ busqueda: valor || '' });
                 this.aplicarFiltrosProcesos();
-                // 🔥 SIN _cd.markForCheck()
             });
 
         this.deptoControl.valueChanges
@@ -411,7 +337,6 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
             .subscribe(valor => {
                 this._sharedDataService.actualizarFiltros({ departamento: valor || '' });
                 this.aplicarFiltrosProcesos();
-                // 🔥 SIN _cd.markForCheck()
             });
 
         this.procesoControl.valueChanges
@@ -419,311 +344,7 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
             .subscribe(valor => {
                 this._sharedDataService.actualizarFiltros({ proceso: valor || '' });
                 this.aplicarFiltrosProcesos();
-                // 🔥 SIN _cd.markForCheck()
             });
-
-        this.tipoEmbarqueControl.valueChanges
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(valor => {
-                this._sharedDataService.actualizarFiltros({ tipoEmbarque: valor || '' });
-            });
-    }
-
-    aplicarFiltros(): void {
-        const busqueda = this.searchControl.value?.toLowerCase().trim() || '';
-        const deptoSeleccionado = this.deptoControl.value || '';
-        const procesoSeleccionado = this.procesoControl.value || '';
-        const tipoSeleccionado = this.tipoEmbarqueControl.value || '';
-
-        // FILTRAR DATOS PRINCIPALES
-        this.datosFiltrados = this.datos.filter(item => {
-            const coincideBusqueda = !busqueda ||
-                item.departamento?.toLowerCase().includes(busqueda) ||
-                item.proceso?.toLowerCase().includes(busqueda);
-            const coincideDepto = !deptoSeleccionado || item.departamento === deptoSeleccionado;
-            const coincideProceso = !procesoSeleccionado || item.proceso === procesoSeleccionado;
-            return coincideBusqueda && coincideDepto && coincideProceso;
-        });
-
-        // FILTRAR TEJIDO
-        this.datosTejidoFiltrados = this.datosTejido.filter(item => {
-            return !busqueda || item.ARTICULO?.toString().toLowerCase().includes(busqueda);
-        });
-
-        // FILTRAR REVISADO
-        this.datosRevisadoFiltrados = this.datosRevisado.filter(item => {
-            return !busqueda || item.ARTICULO?.toString().toLowerCase().includes(busqueda);
-        });
-
-        // FILTRAR POR REVISAR
-        this.datosPorRevisarFiltrados = this.datosPorRevisar.filter(item => {
-            return !busqueda || item.ARTICULO?.toLowerCase().includes(busqueda);
-        });
-
-        // FILTRAR SALDOS
-        this.datosSaldosFiltrados = this.datosSaldos.filter(item => {
-            return !busqueda || item.ARTICULO?.toLowerCase().includes(busqueda);
-        });
-
-        // FILTRAR EMBARQUES
-        this.datosEmbarquesFiltrados = this.datosEmbarques.filter(item => {
-            const coincideBusqueda = !busqueda ||
-                item.ARTICULO?.toLowerCase().includes(busqueda) ||
-                item.TIPO?.toLowerCase().includes(busqueda);
-            const coincideTipo = !tipoSeleccionado || item.TIPO === tipoSeleccionado;
-            return coincideBusqueda && coincideTipo;
-        });
-
-        if (procesoSeleccionado) {
-            this.datosAgrupados = [];
-        } else {
-            this.agruparDatosPorDepartamento();
-        }
-
-        // 👇 ACTUALIZAR EL SERVICIO COMPARTIDO
-        this._sharedDataService.actualizarDatos(
-            this.datos,
-            this.datosFiltrados
-        );
-
-        this._sharedDataService.actualizarTejido(
-            this.datos,
-            this.datosTejidoFiltrados
-        );
-
-        this._sharedDataService.actualizarRevisado(
-            this.datosRevisado,
-            this.datosRevisadoFiltrados
-        );
-
-        this._sharedDataService.actualizarPorRevisar(
-            this.datosPorRevisar,
-            this.datosPorRevisarFiltrados
-        );
-
-        this._sharedDataService.actualizarSaldos(
-            this.datosSaldos,
-            this.datosSaldosFiltrados
-        );
-
-        this._sharedDataService.actualizarEmbarques(
-            this.datosEmbarques,
-            this.datosEmbarquesFiltrados
-        );
-
-        if (this.ordenActual.campo) {
-            this.aplicarOrdenamiento();
-        }
-
-        this._cd.markForCheck();
-    }
-
-
-    agruparDatosPorDepartamento(): void {
-        const grupos = new Map<string, DatoAgrupado>();
-
-        this.datosFiltrados.forEach(item => {
-            const depto = item.departamento;
-
-            if (!grupos.has(depto)) {
-                grupos.set(depto, {
-                    departamento: depto,
-                    procesos: [],
-                    cantidadTotal: 0,
-                    expandido: false
-                });
-            }
-
-            const grupo = grupos.get(depto)!;
-            const cantidad = parseFloat(item.CANTIDAD) || 0;
-
-            grupo.procesos.push({
-                proceso: item.proceso,
-                cantidad: cantidad
-            });
-
-            grupo.cantidadTotal += cantidad;
-        });
-
-        this.datosAgrupados = Array.from(grupos.values());
-    }
-
-    toggleDepartamento(index: number): void {
-        this.datosAgrupados[index].expandido = !this.datosAgrupados[index].expandido;
-        this._cd.markForCheck();
-    }
-
-    ordenar(campo: string): void {
-        if (this.ordenActual.campo === campo) {
-            this.ordenActual.direccion = this.ordenActual.direccion === 'asc' ? 'desc' : 'asc';
-        } else {
-            this.ordenActual.campo = campo;
-            this.ordenActual.direccion = 'asc';
-        }
-
-        this.aplicarOrdenamiento();
-        this._cd.markForCheck();
-    }
-
-    aplicarOrdenamiento(): void {
-        const campo = this.ordenActual.campo;
-        const direccion = this.ordenActual.direccion;
-
-        if (this.procesoControl.value) {
-            this.datosFiltrados.sort((a, b) => {
-                let valorA = a[campo];
-                let valorB = b[campo];
-
-                if (campo === 'CANTIDAD') {
-                    valorA = parseFloat(valorA) || 0;
-                    valorB = parseFloat(valorB) || 0;
-                }
-
-                if (valorA < valorB) return direccion === 'asc' ? -1 : 1;
-                if (valorA > valorB) return direccion === 'asc' ? 1 : -1;
-                return 0;
-            });
-        } else {
-            this.datosAgrupados.sort((a, b) => {
-                let valorA = campo === 'CANTIDAD' ? a.cantidadTotal : a.departamento;
-                let valorB = campo === 'CANTIDAD' ? b.cantidadTotal : b.departamento;
-
-                if (valorA < valorB) return direccion === 'asc' ? -1 : 1;
-                if (valorA > valorB) return direccion === 'asc' ? 1 : -1;
-                return 0;
-            });
-        }
-    }
-
-    calcularCantidadTotal(): number {
-        if (this.procesoControl.value) {
-            return this.datosFiltrados.reduce((total, item) => {
-                return total + (parseFloat(item.CANTIDAD) || 0);
-            }, 0);
-        } else {
-            return this.datosAgrupados.reduce((total, grupo) => {
-                return total + grupo.cantidadTotal;
-            }, 0);
-        }
-    }
-
-    contarDepartamentos(): number {
-        if (this.procesoControl.value) {
-            const departamentos = new Set(this.datosFiltrados.map(item => item.departamento));
-            return departamentos.size;
-        } else {
-            return this.datosAgrupados.length;
-        }
-    }
-
-    // MÉTODOS DE CÁLCULO PARA TEJIDO
-    calcularTotalPesoTejido(): number {
-        return this.datosTejidoFiltrados.reduce((total, item) => {
-            const valor = parseFloat(item.TOTAL_TJ) || 0;
-            return total + valor;
-        }, 0);
-    }
-
-    calcularTotalPiezasTejido(): number {
-        return this.datosTejidoFiltrados.reduce((total, item) => total + (parseFloat(item.PIEZAS) || 0), 0);
-    }
-
-    contarArticulosTejido(): number {
-        return this.datosTejidoFiltrados.length;
-    }
-
-    // MÉTODOS DE CÁLCULO PARA REVISADO
-    calcularTotalPesoRevisado(): number {
-        return this.datosRevisadoFiltrados.reduce((total, item) => {
-            const valor = parseFloat(item.TOTAL_RV) || 0;
-            return total + valor;
-        }, 0);
-    }
-
-    calcularTotalPiezasRevisado(): number {
-        return this.datosRevisadoFiltrados.reduce((total, item) => total + (parseFloat(item.PIEZAS) || 0), 0);
-    }
-
-    contarArticulosRevisado(): number {
-        return this.datosRevisadoFiltrados.length;
-    }
-
-    // MÉTODOS DE CÁLCULO PARA POR REVISAR
-    calcularTotalPesoPorRevisar(): number {
-        return this.datosPorRevisarFiltrados.reduce((total, item) => total + (parseFloat(item.TOTAL_POR_REVISAR) || 0), 0);
-    }
-
-    calcularTotalPiezasPorRevisar(): number {
-        return this.datosPorRevisarFiltrados.reduce((total, item) => total + (parseFloat(item.PIEZAS) || 0), 0);
-    }
-
-    contarArticulosPorRevisar(): number {
-        return this.datosPorRevisarFiltrados.length;
-    }
-
-    // MÉTODOS DE CÁLCULO PARA SALDOS
-    calcularTotalPesoSaldos(): number {
-        return this.datosSaldosFiltrados.reduce((total, item) => total + (parseFloat(item.TOTAL_SALDO) || 0), 0);
-    }
-
-    calcularTotalPiezasSaldos(): number {
-        return this.datosSaldosFiltrados.reduce((total, item) => total + (parseFloat(item.PIEZAS) || 0), 0);
-    }
-
-    contarArticulosSaldos(): number {
-        return this.datosSaldosFiltrados.length;
-    }
-
-    // 🔥 NUEVOS MÉTODOS DE CÁLCULO PARA EMBARQUES
-    calcularTotalEmbarques(): number {
-
-        if (this.datosEmbarquesFiltrados.length === 0) {
-            // console.warn('⚠️ No hay datos filtrados para calcular');
-            return 0;
-        }
-
-        let total = 0;
-        this.datosEmbarquesFiltrados.forEach((item, index) => {
-            // Limpiamos espacios y reemplazamos coma por punto
-            const cantidadStr = item.CANTIDAD.trim().replace(',', '.');
-            const cantidad = parseFloat(cantidadStr) || 0;
-
-            total += cantidad;
-
-        });
-
-        return total;
-    }
-
-    calcularPorTipo(tipo: string): number {
-
-        const itemsFiltrados = this.datosEmbarquesFiltrados.filter(
-            item => item.TIPO.trim() === tipo
-        );
-
-        const total = itemsFiltrados.reduce((sum, item) => {
-            const cantidad = parseFloat(item.CANTIDAD) || 0;
-            return sum + cantidad;
-        }, 0);
-
-        return total;
-    }
-
-
-    contarArticulosEmbarques(): number {
-        const articulos = new Set(this.datosEmbarquesFiltrados.map(item => item.ARTICULO));
-        return articulos.size;
-    }
-
-    contarTiposEmbarque(): number {
-        const tipos = new Set(this.datosEmbarquesFiltrados.map(item => item.TIPO));
-        return tipos.size;
-    }
-
-
-
-    trackByFn(index: number, item: any): string {
-        return item.departamento || item.CVE_ART || `${item.depto}-${item.proc}` || index.toString();
     }
 
     togglePanelFiltros(): void {
@@ -731,11 +352,15 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this._cd.markForCheck();
     }
 
+    togglePanelFiltrosPc(): void {
+        this.mostrarPanelFiltrosPc = !this.mostrarPanelFiltrosPc;
+    }
+
     @HostListener('document:keydown.escape')
     onEscape(): void {
-        if (this.mostrarPanelFiltros || this.mostrarPanelFechas) {
+        if (this.mostrarPanelFiltros || this.mostrarPanelFiltrosPc) {
             this.mostrarPanelFiltros = false;
-            this.mostrarPanelFechas = false;
+            this.mostrarPanelFiltrosPc = false;
             this._cd.markForCheck();
         }
     }
@@ -747,16 +372,45 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         if (this.procesoControl.value) count++;
         return count;
     }
+
     limpiarTodosFiltros(): void {
         this.searchControl.setValue('');
         this.deptoControl.setValue('');
         this.procesoControl.setValue('');
         this.limpiarFiltroFechas();
-        this.aplicarFiltros();
+        this._sharedDataService.actualizarFiltros({
+            busqueda: '',
+            departamento: '',
+            proceso: ''
+        });
     }
-
 
     onTabChange(index: number): void {
         this.selectedTabIndex = index;
+        this._cd.markForCheck();
     }
+
+    aplicarFiltrosPc(): void {
+        if (this.rangoFechaSeleccionado === 'fecha_especifica' ||
+            this.rangoFechaSeleccionado === 'periodo') {
+            this.aplicarFiltroFechas();   // esto también cierra ambos paneles
+            this.cargarDatosProcesos();   // para que sí recargue con el rango
+        } else {
+            // si NO es fecha específica/periodo, normalmente ya se aplicó al seleccionar rango
+            // solo cerramos el panel PC
+            this.mostrarPanelFiltrosPc = false;
+            this._cd.markForCheck();
+        }
+    }
+
+    aplicarFiltrosMovil(): void {
+        if (this.rangoFechaSeleccionado === 'fecha_especifica' ||
+            this.rangoFechaSeleccionado === 'periodo') {
+            this.aplicarFiltroFechas();
+            this.cargarDatosProcesos();
+        }
+        this.mostrarPanelFiltros = false;
+        this._cd.markForCheck();
+    }
+
 }

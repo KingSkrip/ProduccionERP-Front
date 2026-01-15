@@ -4,7 +4,7 @@ export interface User {
     email: string;
     avatar?: string;
     status?: string;
-
+    photo: string;
     usuario?: string;
     perfil?: number;
     permissions?: number[];

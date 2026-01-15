@@ -44,36 +44,61 @@ export class UserService {
      * Load user at startup using token
      * 🔥 CORRECCIÓN: Usar setTimeout para evitar NG0100
      */
-    init(): void {
-        const token = localStorage.getItem('accessToken');
+    //    init(): Observable<void> {
+    //         const token = localStorage.getItem('encrypt');
+
+    //         if (!token) {
+    //             // Usar setTimeout para evitar cambios durante detección de cambios
+    //             setTimeout(() => {
+    //                 this._user.next(null);
+    //             });
+    //             return;
+    //         }
+
+    //         this._httpClient.get(`${this.apiUrl}dash/me`, {
+    //             headers: { Authorization: `Bearer ${token}` }
+    //         }).subscribe({
+    //             next: (resp: any) => {
+    //                 // Usar setTimeout para evitar cambios durante detección de cambios
+    //                 setTimeout(() => {
+    //                     this._user.next(resp.user);
+    //                 });
+    //             },
+    //             error: (err) => {
+    //                 console.error('[UserService] Error al cargar usuario:', err);
+    //                 localStorage.removeItem('encrypt');
+    //                 // Usar setTimeout para evitar cambios durante detección de cambios
+    //                 setTimeout(() => {
+    //                     this._user.next(null);
+    //                 });
+    //             }
+    //         });
+    //     }
+
+
+    init(): Observable<void> {
+        const token = localStorage.getItem('encrypt');
 
         if (!token) {
-            // Usar setTimeout para evitar cambios durante detección de cambios
-            setTimeout(() => {
-                this._user.next(null);
+            this._user.next(null);
+            return new Observable<void>((observer) => {
+                observer.next();
+                observer.complete();
             });
-            return;
         }
 
-        this._httpClient.get(`${this.apiUrl}dash/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-        }).subscribe({
-            next: (resp: any) => {
-                // Usar setTimeout para evitar cambios durante detección de cambios
-                setTimeout(() => {
+        return this._httpClient
+            .get(`${this.apiUrl}dash/me`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            .pipe(
+                tap((resp: any) => {
                     this._user.next(resp.user);
-                });
-            },
-            error: (err) => {
-                console.error('[UserService] Error al cargar usuario:', err);
-                localStorage.removeItem('accessToken');
-                // Usar setTimeout para evitar cambios durante detección de cambios
-                setTimeout(() => {
-                    this._user.next(null);
-                });
-            }
-        });
+                }),
+                map(() => void 0)
+            );
     }
+
 
     /**
      * Update user info

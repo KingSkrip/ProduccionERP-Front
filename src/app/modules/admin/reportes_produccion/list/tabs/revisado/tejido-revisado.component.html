@@ -1,124 +1,144 @@
-   <!-- Cards de resumen para Revisado -->
-                            <div class="px-4 py-3 md:px-8 md:py-4 mt-3">
-                                <!-- Vista móvil -->
-                                <div class="md:hidden">
-                                    <div class="bg-card shadow-sm rounded-lg px-4 py-2 border-l-4 border-teal-500">
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <div class="text-sm font-medium text-secondary mb-1">Total Revisado
-                                                </div>
-                                                <div class="text-2xl font-bold">{{ calcularTotalPesoRevisado() |
-                                                    number:'1.0-0' }}</div>
-                                                <div class="text-xs text-secondary mt-1">kilogramos</div>
-                                            </div>
-                                            <mat-icon class="text-teal-500 icon-size-8"
-                                                [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
-                                        </div>
-                                    </div>
-                                </div>
+<!-- Cards de resumen - Solo mostrar si hay datos -->
+<div class="md:px-8 md:py-4" *ngIf="!isLoadingRevisado && datosRevisadoFiltrados.length > 0">
+    <!-- Vista móvil -->
+    <div class="md:hidden">
+        <div class="bg-card shadow-sm rounded-xl px-5 py-4 border-l-4 border-teal-500">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-secondary mb-2">
+                        Total Revisado
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <div class="text-3xl font-bold">
+                            {{ calcularTotalPesoRevisado() | number:'1.0-0' }}
+                        </div>
+                        <div class="text-sm text-secondary">kg</div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 rounded-lg bg-teal-500/10 flex items-center justify-center">
+                        <mat-icon class="text-teal-500 icon-size-6" 
+                            [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                                <!-- Vista desktop -->
-                                <div class="hidden md:grid grid-cols-3 gap-3">
-                                    <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-teal-500">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <div class="text-sm font-medium text-secondary">Total Revisado</div>
-                                            <mat-icon class="text-teal-500 icon-size-5"
-                                                [svgIcon]="'heroicons_solid:scale'"></mat-icon>
-                                        </div>
-                                        <div class="text-2xl font-bold">{{ calcularTotalPesoRevisado() | number:'1.0-0'
-                                            }}</div>
-                                        <div class="text-xs text-secondary">kilogramos</div>
-                                    </div>
+    <!-- Vista desktop -->
+    <div class="hidden md:grid grid-cols-3 gap-3">
+        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-teal-500">
+            <div class="flex items-center justify-between mb-1">
+                <div class="text-base text-secondary">Total Revisado</div>
+                <mat-icon class="text-teal-500 icon-size-5" [svgIcon]="'heroicons_solid:scale'"></mat-icon>
+            </div>
+            <div class="text-2xl font-bold">{{ calcularTotalPesoRevisado() | number:'1.0-0' }}</div>
+            <div class="text-sm text-secondary">Kilogramos</div>
+        </div>
 
-                                    <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-blue-500">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <div class="text-sm font-medium text-secondary">Total Artículos</div>
-                                            <mat-icon class="text-blue-500 icon-size-5"
-                                                [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
-                                        </div>
-                                        <div class="text-2xl font-bold">{{ contarArticulosRevisado() }}</div>
-                                        <div class="text-xs text-secondary">artículos revisados</div>
-                                    </div>
+        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-blue-500">
+            <div class="flex items-center justify-between mb-1">
+                <div class="text-base font-medium text-secondary">Total Artículos</div>
+                <mat-icon class="text-blue-500 icon-size-5" 
+                    [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
+            </div>
+            <div class="text-2xl font-bold">{{ contarArticulosRevisado() }}</div>
+            <div class="text-sm text-secondary">Artículos revisados</div>
+        </div>
 
-                                    <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-purple-500">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <div class="text-sm font-medium text-secondary">Total Piezas</div>
-                                            <mat-icon class="text-purple-500 icon-size-5"
-                                                [svgIcon]="'heroicons_solid:chart-bar'"></mat-icon>
-                                        </div>
-                                        <div class="text-2xl font-bold">{{ calcularTotalPiezasRevisado() |
-                                            number:'1.0-0' }}</div>
-                                        <div class="text-xs text-secondary">piezas revisadas</div>
-                                    </div>
-                                </div>
-                            </div>
+        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-purple-500">
+            <div class="flex items-center justify-between mb-1">
+                <div class="text-base font-medium text-secondary">Total Piezas</div>
+                <mat-icon class="text-purple-500 icon-size-5" [svgIcon]="'heroicons_solid:chart-bar'"></mat-icon>
+            </div>
+            <div class="text-2xl font-bold">{{ calcularTotalPiezasRevisado() | number:'1.0-0' }}</div>
+            <div class="text-sm text-secondary">Piezas revisadas</div>
+        </div>
+    </div>
+</div>
 
-                            <!-- Tabla de datos -->
-                            <div class="mt-6 overflow-x-auto px-4 md:px-8">
-                                <div *ngIf="isLoadingRevisado" class="p-8 text-center">
-                                    <mat-spinner diameter="40" class="mx-auto"></mat-spinner>
-                                    <p class="mt-4 text-secondary">Cargando datos de revisión...</p>
-                                </div>
+<!-- Loading State -->
+<div *ngIf="isLoadingRevisado" class="flex flex-col items-center justify-center py-16 px-4">
+    <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p class="text-secondary">Cargando datos de revisión de tejido...</p>
+</div>
 
-                                <table *ngIf="!isLoadingRevisado && datosRevisadoFiltrados.length > 0"
-                                    class="w-full bg-card shadow-sm rounded-2xl overflow-hidden">
-                                    <thead class="bg-gray-50 dark:bg-gray-800">
-                                        <tr>
-                                            <th
-                                                class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
-                                                Artículo
-                                            </th>
-                                            <th
-                                                class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider">
-                                                Piezas
-                                            </th>
-                                            <th
-                                                class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider">
-                                                Peso Revisado (kg)
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y">
-                                        <tr *ngFor="let item of datosRevisadoFiltrados"
-                                            class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                            <td class="px-6 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <mat-icon class="icon-size-5 text-teal-500"
-                                                        [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
-                                                    <span class="font-medium">{{ item.ARTICULO }}</span>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 text-right">
-                                                <span class="font-medium">{{ item.PIEZAS | number:'1.0-0' }}</span>
-                                            </td>
-                                            <td class="px-6 py-4 text-right">
-                                                <span class="font-semibold text-teal-600 dark:text-teal-400">
-                                                    {{ item.TOTAL_RV | number:'1.2-2' }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot class="bg-gray-50 dark:bg-gray-800 font-bold border-t-2">
-                                        <tr>
-                                            <td class="px-6 py-4 uppercase text-sm">Total:</td>
-                                            <td class="px-6 py-4 text-right">
-                                                <span class="text-lg text-purple-600 dark:text-purple-400">
-                                                    {{ calcularTotalPiezasRevisado() | number:'1.0-0' }}
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 text-right">
-                                                <span class="text-lg text-teal-600 dark:text-teal-400">
-                                                    {{ calcularTotalPesoRevisado() | number:'1.2-2' }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+<!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
+<div *ngIf="!isLoadingRevisado && datosRevisadoFiltrados.length === 0 && cargaInicial" 
+    class="flex flex-col items-center justify-center py-16 px-4">
+    <div class="relative mb-6">
+        <div class="w-24 h-24 rounded-2xl bg-teal-500/10 flex items-center justify-center">
+            <mat-icon class="icon-size-12 text-teal-500/40" 
+                [svgIcon]="'heroicons_outline:clipboard-document-check'"></mat-icon>
+        </div>
+    </div>
+    
+    <h3 class="text-xl font-bold mb-2">No hay datos de revisión de tejido</h3>
+    <p class="text-secondary text-center max-w-md mb-4">
+        No se encontraron registros con los filtros seleccionados.
+        <br>Intenta ajustar tus criterios de búsqueda o seleccionar otro periodo.
+    </p>
+    
+    <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
+        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:arrow-path'"></mat-icon>
+        Limpiar filtros
+    </button>
+</div>
 
-                                <div *ngIf="!isLoadingRevisado && datosRevisadoFiltrados.length === 0"
-                                    class="p-8 text-center text-secondary">
-                                    <mat-icon class="icon-size-16 mb-4"
-                                        [svgIcon]="'heroicons_outline:inbox'"></mat-icon>
-                                    <p class="text-lg">No hay datos de revisión de tejido</p>
-                                </div>
-                            </div>
+<!-- Tabla de datos -->
+<div class="mt-6 overflow-x-auto md:px-8" *ngIf="!isLoadingRevisado && datosRevisadoFiltrados.length > 0">
+    <table class="w-full bg-card shadow-sm rounded-2xl overflow-hidden">
+        <thead class="bg-gray-50 dark:bg-gray-800">
+            <tr>
+                <th class="px-3 py-2 md:px-6 md:py-4 text-left text-sm md:text-base font-semibold tracking-wider">
+                    Artículo
+                </th>
+                <th class="px-3 py-2 md:px-6 md:py-4 text-right text-sm md:text-base font-semibold tracking-wider">
+                    Piezas
+                </th>
+                <th class="px-3 py-2 md:px-6 md:py-4 text-right text-sm md:text-base font-semibold tracking-wider">
+                    Peso Revisado (kg)
+                </th>
+            </tr>
+        </thead>
+        <tbody class="divide-y">
+            <tr *ngFor="let item of datosRevisadoFiltrados"
+                class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <td class="px-3 py-2 md:px-6 md:py-4">
+                    <div class="flex items-center gap-3">
+                        <mat-icon class="icon-size-5 text-teal-500 flex-shrink-0" 
+                            [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
+                        <span class="font-semibold">{{ item.ARTICULO }}</span>
+                    </div>
+                </td>
+                <td class="px-3 py-2 md:px-6 md:py-4 text-right">
+                    <span class="font-bold text-purple-600 dark:text-purple-400 text-lg">
+                        {{ item.PIEZAS | number:'1.0-0' }}
+                    </span>
+                </td>
+                <td class="px-3 py-2 md:px-6 md:py-4 text-right">
+                    <span class="font-bold text-teal-600 dark:text-teal-400 text-lg">
+                        {{ item.TOTAL_RV | number:'1.2-2' }}
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot class="bg-gray-50 dark:bg-gray-800 font-bold border-t-2">
+            <tr>
+                <td class="px-3 py-2 md:px-6 md:py-4 text-right text-base">
+                    Total:
+                </td>
+                <td class="px-3 py-2 md:px-6 md:py-4 text-right">
+                    <span class="text-lg text-purple-600 dark:text-purple-400">
+                        {{ calcularTotalPiezasRevisado() | number:'1.0-0' }}
+                    </span>
+                </td>
+                <td class="px-3 py-2 md:px-6 md:py-4 text-right">
+                    <span class="text-lg text-teal-600 dark:text-teal-400">
+                        {{ calcularTotalPesoRevisado() | number:'1.2-2' }}
+                    </span>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

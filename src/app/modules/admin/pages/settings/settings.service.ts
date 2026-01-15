@@ -53,7 +53,7 @@ export class SettingsService {
 
     private getHeaders() {
         return {
-            Authorization: `Bearer ${this.authService.accessToken}`,
+            Authorization: `Bearer ${this.authService.encrypt}`,
         };
     }
 

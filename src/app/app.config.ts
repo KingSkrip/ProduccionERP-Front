@@ -72,7 +72,8 @@ export const appConfig: ApplicationConfig = {
         // 🔥 AQUÍ AGREGAS TU APP_INITIALIZER
         {
             provide: APP_INITIALIZER,
-            useFactory: (userService: UserService) => () => userService.init(),
+           useFactory: (userService: UserService) => () =>
+        firstValueFrom(userService.init()),
             deps: [UserService],
             multi: true,
         },

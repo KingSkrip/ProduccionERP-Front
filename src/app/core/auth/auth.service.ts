@@ -19,13 +19,12 @@ export class AuthService {
     }
 
     private checkStoredToken() {
-        const token = this.accessToken;
+        const token = this.encrypt;
         if (token && !AuthUtils.isTokenExpired(token)) {
-            // Si hay token y no ha expirado
             this._authenticated = true;
         } else {
             this._authenticated = false;
-            localStorage.removeItem('accessToken');
+            localStorage.removeItem('encrypt');
         }
     }
 
@@ -36,21 +35,20 @@ export class AuthService {
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
     // -----------------------------------------------------------------------------------------------------
-    set accessToken(token: string) {
-        localStorage.setItem('accessToken', token);
+    set encrypt(token: string) {
+        localStorage.setItem('encrypt', token);
     }
 
-    get accessToken(): string {
-        return localStorage.getItem('accessToken') ?? '';
+    get encrypt(): string {
+        return localStorage.getItem('encrypt') ?? '';
     }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
-    
+
     /**
      * Forgot Password
-     * 🔥 CORRECCIÓN: Usar comillas invertidas ` en lugar de comillas normales
      */
     forgotPassword(email: string): Observable<any> {
         return this._httpClient.post(`${this.apiUrl}auth/forgot-password`, { email });
@@ -58,7 +56,6 @@ export class AuthService {
 
     /**
      * Reset Password
-     * 🔥 CORRECCIÓN: Usar comillas invertidas `
      */
     resetPassword(data: { token: string; email: string; password: string }): Observable<any> {
         return this._httpClient.post(`${this.apiUrl}auth/reset-password`, data);
@@ -66,7 +63,6 @@ export class AuthService {
 
     /**
      * Sign In
-     * 🔥 CORRECCIÓN: Usar comillas invertidas `
      */
     signIn(credentials: { email: string; password: string }): Observable<any> {
         if (this._authenticated) {
@@ -75,7 +71,7 @@ export class AuthService {
 
         return this._httpClient.post(`${this.apiUrl}auth/sign-in`, credentials).pipe(
             switchMap((response: any) => {
-                this.accessToken = response.accessToken;
+                this.encrypt = response.encrypt;
                 this._authenticated = true;
                 this._userService.user = response.user;
                 return of(response);
@@ -85,22 +81,21 @@ export class AuthService {
 
     /**
      * Sign In Using Token (Refresh)
-     * 🔥 CORRECCIÓN: Usar comillas invertidas `
      */
     signInUsingToken(): Observable<any> {
-        if (!this.accessToken) return of(false);
+        if (!this.encrypt) return of(false);
 
         return this._httpClient.post(`${this.apiUrl}auth/sign-in-with-token`, {
-            accessToken: this.accessToken,
+            encrypt: this.encrypt,
         }).pipe(
             catchError(() => {
-                localStorage.removeItem('accessToken');
+                localStorage.removeItem('encrypt');
                 this._authenticated = false;
                 return of(false);
             }),
             switchMap((response: any) => {
-                if (response.accessToken) {
-                    this.accessToken = response.accessToken;
+                if (response.encrypt) {
+                    this.encrypt = response.encrypt;
                     this._authenticated = true;
                     this._userService.user = response.user;
                     return of(true);
@@ -114,14 +109,13 @@ export class AuthService {
      * Sign Out
      */
     signOut(): Observable<any> {
-        localStorage.removeItem('accessToken');
+        localStorage.removeItem('encrypt');
         this._authenticated = false;
         return of(true);
     }
 
     /**
      * Sign Up
-     * 🔥 CORRECCIÓN: Usar comillas invertidas `
      */
     signUp(user: { name: string; email: string; password: string; company: string }): Observable<any> {
         return this._httpClient.post(`${this.apiUrl}auth/sign-up`, user);
@@ -129,7 +123,6 @@ export class AuthService {
 
     /**
      * Unlock Session
-     * 🔥 CORRECCIÓN: Usar comillas invertidas `
      */
     unlockSession(credentials: { email: string; password: string }): Observable<any> {
         return this._httpClient.post(`${this.apiUrl}auth/unlock-session`, credentials);
@@ -140,49 +133,45 @@ export class AuthService {
      */
     check(): Observable<boolean> {
         if (this._authenticated) return of(true);
-        if (!this.accessToken) return of(false);
-        if (AuthUtils.isTokenExpired(this.accessToken)) return of(false);
+        if (!this.encrypt) return of(false);
+        if (AuthUtils.isTokenExpired(this.encrypt)) return of(false);
         return this.signInUsingToken();
     }
 
     /**
      * Get Menu by Role
      */
-getMenu(): string[] {
-    const user = this._userService.user;
+    getMenu(): string[] {
+        const user = this._userService.user;
 
-    if (!user?.permissions?.length) {
-        return [];
+        if (!user?.permissions?.length) {
+            return [];
+        }
+        const roleId = user.permissions[0] as RoleEnum;
+        const subRoleId = user.sub_permissions?.[0] ?? null;
+
+        return NavigationByRole[roleId] ?? [];
     }
-
-    const roleId = user.permissions[0] as RoleEnum;
-    const subRoleId = user.sub_permissions?.[0] ?? null;
-
- 
-
-    // Por ahora solo rol (puedes extender a subrol después)
-    return NavigationByRole[roleId] ?? [];
-}
 
 
 
     /**
      * Obtener el rol principal del usuario
      */
- getUserRole(): Observable<{ roleId: number; subRoleId: number | null }> {
-    return this._userService.user$.pipe(
-        map(user => {
-            if (!user || !user.permissions?.length) {
-                return { roleId: null, subRoleId: null };
-            }
+    getUserRole(): Observable<{ roleId: number; subRoleId: number | null }> {
+        return this._userService.user$.pipe(
+            map(user => {
+                if (!user || !user.permissions?.length) {
+                    return { roleId: null, subRoleId: null };
+                }
 
-            return {
-                roleId: user.permissions[0],
-                subRoleId: user.sub_permissions?.[0] ?? null
-            };
-        })
-    );
-}
+                return {
+                    roleId: user.permissions[0],
+                    subRoleId: user.sub_permissions?.[0] ?? null
+                };
+            })
+        );
+    }
 
 
     /**

@@ -18,6 +18,7 @@ import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.types';
 import { Subject, takeUntil } from 'rxjs';
 import { ChatService } from 'app/modules/admin/apps/chat/chat.service';
+import { APP_CONFIG } from 'app/core/config/app-config';
 
 @Component({
     selector: 'user',
@@ -37,6 +38,9 @@ export class UserComponent implements OnInit, OnDestroy {
     static ngAcceptInputType_showAvatar: BooleanInput;
     @Input() showAvatar: boolean = true;
     user: User;
+    apiBase = APP_CONFIG.apiBase;
+    private _photoVersion = Date.now();
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -53,15 +57,39 @@ export class UserComponent implements OnInit, OnDestroy {
     // @ Lifecycle hooks
     // -----------------------------------------------------------------------------------------------------
 
+
+
+    get photoUrl(): string {
+        if (!this.user?.photo) return '';
+
+        // Si ya viene full url (http...), úsala tal cual
+        if (this.user.photo.startsWith('http')) {
+            return `${this.user.photo}?v=${this._photoVersion}`;
+        }
+
+        const base = this.apiBase.endsWith('/') ? this.apiBase : this.apiBase + '/';
+        const photo = this.user.photo.startsWith('/') ? this.user.photo.substring(1) : this.user.photo;
+
+        return `${base}${photo}?v=${this._photoVersion}`;
+    }
+
+
+    private _lastPhoto = '';
+
+
     /**
      * On init
      */
     ngOnInit(): void {
-        // Subscribe to user changes
         this._userService.user$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((user: User) => {
                 this.user = user;
+
+                if (user?.photo && user.photo !== this._lastPhoto) {
+                    this._lastPhoto = user.photo;
+                    this._photoVersion = Date.now(); // cache-bust si cambió
+                }
 
                 this._changeDetectorRef.markForCheck();
             });
@@ -76,9 +104,11 @@ export class UserComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
+
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
 
     /**
      * Update the user status
@@ -105,7 +135,7 @@ export class UserComponent implements OnInit, OnDestroy {
         const redirectURL = '/pages/settings';
 
         this._router.navigateByUrl(redirectURL);
-     
+
     }
 
 
