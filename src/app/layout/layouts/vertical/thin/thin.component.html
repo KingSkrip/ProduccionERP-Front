@@ -2,7 +2,7 @@
 <fuse-loading-bar></fuse-loading-bar>
 
 <!-- Navigation -->
-<fuse-vertical-navigation class="bg-card dark:bg-gray-900 print:hidden"
+<fuse-vertical-navigation class="bg-card dark:bg-gray-900 print:hidden z-[300]"
     [appearance]="isScreenSmall ? 'futuristic' : 'dense'" [mode]="isScreenSmall ? 'over' : 'side'" name="mainNavigation"
     [navigation]="navigation" [opened]="!isScreenSmall">
 
@@ -15,10 +15,10 @@
 </fuse-vertical-navigation>
 
 <!-- Wrapper -->
-<div class="flex w-full min-w-0 flex-auto flex-col">
+<div class="flex w-full min-w-0 flex-auto flex-col z-[100]">
     <!-- Header -->
     <div
-        class="bg-card relative z-49 flex h-11 md:h-16 w-full flex-0 items-center px-4 shadow dark:border-b dark:bg-transparent dark:shadow-none md:px-6 print:hidden">
+        class="bg-card relative z-[250] flex h-11 md:h-16 w-full flex-0 items-center px-4 shadow dark:border-b dark:bg-transparent dark:shadow-none md:px-6 print:hidden">
         <!-- Navigation toggle button -->
         <button class="mr-2" mat-icon-button (click)="toggleNavigation('mainNavigation')">
             <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
@@ -55,7 +55,7 @@
 
     <!-- Footer -->
     <div
-        class="bg-card relative z-49 flex h-10 md:h-14 w-full flex-0 items-center justify-start border-t px-4 dark:bg-transparent md:px-6 print:hidden">
+        class="bg-card relative z-[200] flex h-10 md:h-14 w-full flex-0 items-center justify-start border-t px-4 dark:bg-transparent md:px-6 print:hidden">
         <span class="text-secondary font-medium">
             {{ appName }} &copy; {{ currentYear }}
         </span>

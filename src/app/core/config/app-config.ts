@@ -11,8 +11,8 @@ export const APP_CONFIG: AppConfig = {
   // apiBase: 'https://fibrasan.ddns.net/api/public',
 
   //TUNNEL
-  // apiUrl: 'https://uri-courier-opposition-memo.trycloudflare.com/api/',
-  // apiBase:'https://uri-courier-opposition-memo.trycloudflare.com',
+  // apiUrl: 'https://duplicate-appliances-commit-stage.trycloudflare.com/api/',
+  // apiBase:'https://duplicate-appliances-commit-stage.trycloudflare.com',
 
   appName: 'Fibrasan',
   environment: 'dev',

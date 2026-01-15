@@ -21,7 +21,7 @@
     </div>
 
     <!-- ===== BARRA DE FILTROS MÓVIL (STICKY) ===== -->
-    <div class="md:hidden sticky top-0 z-40 bg-gray-50 dark:bg-gray-900">
+    <div class="md:hidden sticky top-0 bg-gray-50 dark:bg-gray-900">
         <div class="flex items-center px-3 gap-2">
             <mat-form-field class="fuse-mat-dense flex-1" appearance="outline" [subscriptSizing]="'dynamic'">
                 <mat-icon matPrefix class="text-gray-400 icon-size-5"
@@ -639,6 +639,20 @@
 
 
                         <!-- TAB: TEJIDO -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:aguja'"
+                                        [ngClass]="selectedTabIndex === 0 ? 'text-sky-500' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Tejido</span>
+                                </div>
+                            </ng-template>
+                            <ng-template matTabContent>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-tejido-tab></tabs-tejido-tab>
+                                </div>
+                            </ng-template>
+                        </mat-tab>
 
 
 
@@ -653,7 +667,7 @@
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
                                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:beaker'"
-                                        [ngClass]="selectedTabIndex === 2 ? 'text-orange-500' : 'text-gray-400'"></mat-icon>
+                                        [ngClass]="selectedTabIndex === 1 ? 'text-orange-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Tintorería</span>
                                 </div>
                             </ng-template>
@@ -670,7 +684,7 @@
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
                                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:paint-brush'"
-                                        [ngClass]="selectedTabIndex === 1 ? 'text-red-500' : 'text-gray-400'"></mat-icon>
+                                        [ngClass]="selectedTabIndex === 2 ? 'text-red-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Estampado</span>
                                 </div>
                             </ng-template>
@@ -689,7 +703,7 @@
                             <ng-template mat-tab-label class="bg-white">
                                 <div class="flex items-center gap-2 px-1 py-1">
                                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:document-check'"
-                                        [ngClass]="selectedTabIndex === 0 ? 'text-black' : 'text-gray-400'"></mat-icon>
+                                        [ngClass]="selectedTabIndex === 3 ? 'text-black' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Facturado</span>
                                 </div>
                             </ng-template>
@@ -706,7 +720,7 @@
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
                                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:cog-6-tooth'"
-                                        [ngClass]="selectedTabIndex === 3 ? 'text-yellow-500' : 'text-gray-400'"></mat-icon>
+                                        [ngClass]="selectedTabIndex === 4 ? 'text-yellow-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Procesos</span>
                                 </div>
                             </ng-template>
@@ -722,7 +736,7 @@
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
                                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:building-office-2'"
-                                        [ngClass]="selectedTabIndex === 4 ? 'text-fuchsia-500' : 'text-gray-400'"></mat-icon>
+                                        [ngClass]="selectedTabIndex === 5 ? 'text-fuchsia-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Producción de tejido</span>
                                 </div>
                             </ng-template>
@@ -738,7 +752,7 @@
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
                                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:clipboard-document-check'"
-                                        [ngClass]="selectedTabIndex === 5 ? 'text-green-500' : 'text-gray-400'"></mat-icon>
+                                        [ngClass]="selectedTabIndex === 6 ? 'text-green-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Revisado de tejido</span>
                                 </div>
                             </ng-template>
@@ -754,7 +768,7 @@
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
                                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:clock'"
-                                        [ngClass]="selectedTabIndex === 6 ? 'text-violet-500' : 'text-gray-400'"></mat-icon>
+                                        [ngClass]="selectedTabIndex === 7 ? 'text-violet-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Por revisar</span>
                                 </div>
                             </ng-template>
@@ -770,7 +784,7 @@
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
                                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:archive-box'"
-                                        [ngClass]="selectedTabIndex === 7 ? 'text-cyan-400' : 'text-gray-400'"></mat-icon>
+                                        [ngClass]="selectedTabIndex === 8 ? 'text-cyan-400' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Saldos</span>
                                 </div>
                             </ng-template>
@@ -786,7 +800,7 @@
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
                                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:truck'"
-                                        [ngClass]="selectedTabIndex === 8 ? 'text-pink-500' : 'text-gray-400'"></mat-icon>
+                                        [ngClass]="selectedTabIndex === 9 ? 'text-pink-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Entregado a embarques</span>
                                 </div>
                             </ng-template>

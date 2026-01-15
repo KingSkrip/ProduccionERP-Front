@@ -34,6 +34,9 @@ import { EmbarquesTabComponent } from './tabs/embarques/embarques.component';
 import { EstampadosTabComponent } from './tabs/estampados/estampados-tab.compoonent';
 import { TintoreriaTabComponent } from './tabs/tintoreria/tintoreria-tab.compoonent';
 import { FacturadoTabComponent } from './tabs/facturado/facturado-tab.compoonent';
+import { TejidoTabComponent } from './tabs/tejido/tejido-tab.component';
+
+
 
 export const slideDown = trigger('slideDown', [
     transition(':enter', [
@@ -70,7 +73,8 @@ export const slideDown = trigger('slideDown', [
         EmbarquesTabComponent,
         EstampadosTabComponent,
         TintoreriaTabComponent,
-        FacturadoTabComponent
+        FacturadoTabComponent,
+        TejidoTabComponent
     ],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,

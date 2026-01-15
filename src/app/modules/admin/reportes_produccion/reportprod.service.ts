@@ -4,6 +4,12 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { APP_CONFIG } from 'app/core/config/app-config';
 
+export interface TejidoResumen {
+    departamento: string;
+    proceso: string;
+    CANTIDAD: number | string;
+    PIEZAS: number | string;
+}
 
 export interface ReporteProduccion {
     depto: number;
@@ -383,7 +389,7 @@ export class ReportProdService {
 
         return this._httpClient
             .get<{ success: boolean; data: FacturadoResumenResponse }>(
-                `${this.apiUrl}reportes-produccion/factuado`,
+                `${this.apiUrl}reportes-produccion/facturado`,
                 { params }
             )
             .pipe(
@@ -395,5 +401,41 @@ export class ReportProdService {
             );
     }
 
+    /**
+     * 🔥 GET → Obtener resumen de TEJIDO (ORDENESPROC) con filtros de fecha
+     * Ruta: /reportes-produccion/tejido-resumen
+     */
+    getTejidoResumen(fechaInicio?: Date, fechaFin?: Date): Observable<TejidoResumen[]> {
+        let params = new HttpParams();
+
+        const formatoFirebird = (fecha: Date, esInicio: boolean): string => {
+            const dia = fecha.getDate().toString().padStart(2, '0');
+            const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+            const anio = fecha.getFullYear();
+            const hora = esInicio ? '00:00:00' : '23:59:59';
+            return `${dia}.${mes}.${anio} ${hora}`;
+        };
+
+        if (fechaInicio) {
+            params = params.set('fecha_inicio', formatoFirebird(fechaInicio, true));
+        }
+
+        if (fechaFin) {
+            params = params.set('fecha_fin', formatoFirebird(fechaFin, false));
+        }
+
+        return this._httpClient
+            .get<{ success: boolean; data: TejidoResumen[] }>(
+                `${this.apiUrl}reportes-produccion/tejido-resumen`,
+                { params }
+            )
+            .pipe(
+                map(resp => resp.data),
+                catchError(err => {
+                    console.error('Error al obtener resumen de TEJIDO', err);
+                    return throwError(() => new Error(err.message || 'Error desconocido'));
+                })
+            );
+    }
 
 }

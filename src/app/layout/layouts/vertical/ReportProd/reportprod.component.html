@@ -1,0 +1,21 @@
+<!-- mio custom -->
+
+<fuse-vertical-navigation #reportProdNav class="dark:bg-gray-900 print:hidden bg-card z-[200]" [appearance]="'compact'"
+  [mode]="isScreenSmall ? 'over' : 'side'" [navigation]="navigation" [opened]="!isScreenSmall">
+  <ng-container fuseVerticalNavigationContentHeader>
+    <div class="mb-4 mt-3 flex h-20 items-center justify-center"></div>
+  </ng-container>
+</fuse-vertical-navigation>
+
+
+<!-- CONTENIDO -->
+<div class="flex w-full min-w-0 flex-auto flex-col">
+  <div class="bg-card relative flex h-11 md:h-16 w-full flex-0 items-center px-4 shadow print:hidden">
+    <button mat-icon-button (click)="toggleReportProdNav()" class="md:ml-2">
+      <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
+    </button>
+  </div>
+  <div class="flex min-w-0 flex-auto flex-col overflow-auto">
+    <router-outlet></router-outlet>
+  </div>
+</div>

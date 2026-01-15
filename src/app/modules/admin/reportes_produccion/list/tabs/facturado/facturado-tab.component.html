@@ -36,7 +36,7 @@
             <div class="text-sm text-secondary">Pesos mexicanos</div>
         </div>
 
-        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-green-500">
+        <!-- <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-green-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base font-medium text-secondary">Total partidas</div>
                 <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:document-text'"></mat-icon>
@@ -54,7 +54,7 @@
                 {{ detalle.length ? (totalFacturado / detalle.length) : 0 | number:'1.2-2' }}
             </div>
             <div class="text-sm text-secondary">Por partida</div>
-        </div>
+        </div> -->
     </div>
 </div>
 
@@ -69,8 +69,7 @@
     class="flex flex-col items-center justify-center py-16 px-4">
     <div class="relative mb-6">
         <div class="w-24 h-24 rounded-2xl bg-black/10 flex items-center justify-center">
-            <mat-icon class="icon-size-12 text-black/40"
-                [svgIcon]="'heroicons_outline:document-check'"></mat-icon>
+            <mat-icon class="icon-size-12 text-black/40" [svgIcon]="'heroicons_outline:document-check'"></mat-icon>
         </div>
     </div>
 
@@ -96,7 +95,7 @@
                 Partida
             </div>
             <div class="w-32 text-right text-sm md:text-base font-semibold tracking-wider">
-                PNETO (MXN)
+                Peso neto (Kg)
             </div>
         </div>
 
@@ -108,8 +107,8 @@
 
                 <!-- Columna Partida -->
                 <div class="flex-1 flex items-center gap-3">
-                    <mat-icon class="icon-size-5 text-blue-500 flex-shrink-0"
-                        [svgIcon]="'heroicons_solid:document-check'"></mat-icon>
+                    <!-- <mat-icon class="icon-size-5 text-blue-500 flex-shrink-0"
+                        [svgIcon]="'heroicons_solid:document-check'"></mat-icon> -->
                     <div class="font-semibold truncate">
                         Partida {{ row.partida }}
                     </div>

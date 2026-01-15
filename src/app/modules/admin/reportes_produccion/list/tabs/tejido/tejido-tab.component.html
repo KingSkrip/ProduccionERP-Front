@@ -23,7 +23,7 @@
                 <!-- Icono -->
                 <div class="flex-shrink-0">
                     <div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center">
-                        <mat-icon class="text-green-500 icon-size-6" [svgIcon]="'heroicons_solid:scale'">
+                        <mat-icon class="text-green-500 icon-size-6" [svgIcon]="'heroicons_solid:clipboard-document-list'">
                         </mat-icon>
                     </div>
                 </div>
@@ -36,48 +36,30 @@
         <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-green-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base text-secondary">Cantidad total</div>
-                <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:scale'"></mat-icon>
+                <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:clipboard-document-list'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number:'1.0-0' }}
             </div>
             <div class="text-sm text-secondary">Kilogramos</div>
         </div>
-
-        <!-- <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-blue-500">
-            <div class="flex items-center justify-between mb-1">
-                <div class="text-base font-medium text-secondary">Total procesos</div>
-                <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_solid:document-text'"></mat-icon>
-            </div>
-            <div class="text-2xl font-bold">{{ datosFiltrados.length }}</div>
-            <div class="text-sm text-secondary">Procesos activos</div>
-        </div>
-
-        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-purple-500">
-            <div class="flex items-center justify-between mb-1">
-                <div class="text-base font-medium text-secondary">Departamentos</div>
-                <mat-icon class="text-purple-500 icon-size-5" [svgIcon]="'heroicons_solid:building-office'"></mat-icon>
-            </div>
-            <div class="text-2xl font-bold">{{ contarDepartamentos() }}</div>
-            <div class="text-sm text-secondary">Áreas activas</div>
-        </div> -->
     </div>
 </div>
 
 <!-- Loading State -->
 <div *ngIf="loading" class="flex flex-col items-center justify-center py-16 px-4">
     <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-    <p class="text-secondary">Cargando datos de tintorería...</p>
+    <p class="text-secondary">Cargando datos de tejido...</p>
 </div>
 
 <!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
 <div *ngIf="!loading && datosFiltrados.length === 0 && cargaInicial" class="flex flex-col items-center justify-center py-16 px-4">
     <div class="relative mb-6">
-        <div class="w-24 h-24 rounded-2xl bg-orange-500/10 flex items-center justify-center">
-            <mat-icon class="icon-size-12 text-orange-500/40" [svgIcon]="'heroicons_outline:beaker'"></mat-icon>
+        <div class="w-24 h-24 rounded-2xl bg-sky-500/10 flex items-center justify-center">
+            <mat-icon class="icon-size-12 text-sky-500/40" [svgIcon]="'heroicons_outline:clipboard-document-list'"></mat-icon>
         </div>
     </div>
     
-    <h3 class="text-xl font-bold mb-2">No hay datos de tintorería</h3>
+    <h3 class="text-xl font-bold mb-2">No hay datos de tejido</h3>
     <p class="text-secondary text-center max-w-md mb-4">
         No se encontraron registros con los filtros seleccionados.
         <br>Intenta ajustar tus criterios de búsqueda o seleccionar otro departamento.
@@ -185,7 +167,7 @@
 
                 <!-- Total hasta la derecha (última columna) -->
                 <td class="px-3 py-2 md:px-6 md:py-4 text-right">
-                    <span class="text-lg text-green-600 dark:text-green-400">
+                    <span class="text-lg text-blue-600 dark:text-blue-400">
                         {{ calcularCantidadTotal() | number:'1.2-2' }}
                     </span>
                 </td>
