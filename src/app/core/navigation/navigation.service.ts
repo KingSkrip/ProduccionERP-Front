@@ -221,7 +221,7 @@ export class NavigationService {
 
         // 2️⃣ Sobrescribir por SUBROL
         if (subRoleId) {
-
+console.log(subRoleId);
             switch (subRoleId) {
                 case SubRoleEnum.JEFE:
                     navigation = menuJefe;
