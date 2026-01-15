@@ -44,7 +44,7 @@
 
     <!-- Panel de filtros - ventana chica desde abajo -->
     <div *ngIf="mostrarPanelFiltros"
-     class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col">
+        class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col">
 
         <!-- Header -->
         <div class="flex items-center justify-between p-4 border-b">
@@ -636,37 +636,17 @@
                     <mat-tab-group class="tabs-pestanas" animationDuration="300ms" [disableRipple]="true"
                         [(selectedIndex)]="selectedTabIndex" (selectedIndexChange)="onTabChange($event)">
 
-                        <!-- TAB: FACTURADO -->
-                        <mat-tab>
-                            <ng-template mat-tab-label class="bg-white">
-                                <div class="flex items-center gap-2 px-1 py-1">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:document-check'"
-                                        [ngClass]="selectedTabIndex === 0 ? 'text-black' : 'text-gray-400'"></mat-icon>
-                                    <span class="font-medium">Facturado</span>
-                                </div>
-                            </ng-template>
-                            <ng-template matTabContent>
-                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
-                                    <tabs-facturado-tab></tabs-facturado-tab>
-                                </div>
-                            </ng-template>
-                        </mat-tab>
 
-                        <!-- TAB: ESTAMPADOS -->
-                        <mat-tab>
-                            <ng-template mat-tab-label>
-                                <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:paint-brush'"
-                                        [ngClass]="selectedTabIndex === 1 ? 'text-red-500' : 'text-gray-400'"></mat-icon>
-                                    <span class="font-medium">Estampados</span>
-                                </div>
-                            </ng-template>
-                            <ng-template matTabContent>
-                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
-                                    <tabs-estampados-tab></tabs-estampados-tab>
-                                </div>
-                            </ng-template>
-                        </mat-tab>
+
+                        <!-- TAB: TEJIDO -->
+
+
+
+
+
+
+
+
 
                         <!-- TAB: TINTORERIA -->
                         <mat-tab>
@@ -683,6 +663,43 @@
                                 </div>
                             </ng-template>
                         </mat-tab>
+
+
+                        <!-- TAB: ESTAMPADOS -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <div class="flex items-center gap-2 px-3 py-2">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:paint-brush'"
+                                        [ngClass]="selectedTabIndex === 1 ? 'text-red-500' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Estampado</span>
+                                </div>
+                            </ng-template>
+                            <ng-template matTabContent>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-estampados-tab></tabs-estampados-tab>
+                                </div>
+                            </ng-template>
+                        </mat-tab>
+
+
+
+
+                        <!-- TAB: FACTURADO -->
+                        <mat-tab>
+                            <ng-template mat-tab-label class="bg-white">
+                                <div class="flex items-center gap-2 px-1 py-1">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:document-check'"
+                                        [ngClass]="selectedTabIndex === 0 ? 'text-black' : 'text-gray-400'"></mat-icon>
+                                    <span class="font-medium">Facturado</span>
+                                </div>
+                            </ng-template>
+                            <ng-template matTabContent>
+                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                    <tabs-facturado-tab></tabs-facturado-tab>
+                                </div>
+                            </ng-template>
+                        </mat-tab>
+
 
                         <!-- TAB: PROCESOS -->
                         <mat-tab>
