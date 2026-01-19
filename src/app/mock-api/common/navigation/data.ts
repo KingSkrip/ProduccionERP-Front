@@ -3983,45 +3983,50 @@ export const menuJefe: FuseNavigationItem[] = [
 
 
 export const menuReporteProd_Jefe: FuseNavigationItem[] = [
-  {
-    id: 'rp-facturado',
-    title: 'Facturado',
-    type: 'basic',
-    icon: 'heroicons_outline:document-check', // igual a TAB Facturado
-    link: '/reportprod/list',
-    queryParams: { section: 'facturado' },
-  },
-  {
-    id: 'rp-tejido',
-    title: 'Tejido',
-    type: 'basic',
-    icon: 'heroicons_outline:aguja', // igual a TAB Tejido
-    link: '/reportprod/list',
-    queryParams: { section: 'tejido' },
-  },
-  {
-    id: 'rp-tintoreria',
-    title: 'Tintorería',
-    type: 'basic',
-    icon: 'heroicons_outline:beaker', // igual a TAB Tintorería
-    link: '/reportprod/list',
-    queryParams: { section: 'tintoreria' },
-  },
-  {
-    id: 'rp-acabado-real',
-    title: 'Acabado real',
-    type: 'basic',
-    icon: 'heroicons_outline:cog-6-tooth', // asignado (no tab directa)
-    link: '/reportprod/list',
-    queryParams: { section: 'acabado-real' },
-  },
-  {
-    id: 'rp-estampado',
-    title: 'Estampado',
-    type: 'basic',
-    icon: 'heroicons_outline:paint-brush', // igual a TAB Estampado
-    link: '/reportprod/list',
-    queryParams: { section: 'estampado' },
-  },
+
+    {
+        id: 'rp-Inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/apps/ReportProd/list/inicio',
+    },
+
+
+    {
+        id: 'rp-facturado',
+        title: 'Facturado',
+        type: 'basic',
+        icon: 'heroicons_outline:document-check',
+        link: '/apps/ReportProd/list/facturado',
+    },
+    {
+        id: 'rp-tejido',
+        title: 'Tejido',
+        type: 'basic',
+        icon: 'heroicons_outline:aguja',
+        link: '/apps/ReportProd/list/tejido',
+    },
+    {
+        id: 'rp-tintoreria',
+        title: 'Tintorería',
+        type: 'basic',
+        icon: 'heroicons_outline:beaker',
+        link: '/apps/ReportProd/list/tintoreria',
+    },
+    {
+        id: 'rp-acabado-real',
+        title: 'Acabado real',
+        type: 'basic',
+        icon: 'heroicons_outline:cog-6-tooth',
+        link: '/apps/ReportProd/list/acabado-real',
+    },
+    {
+        id: 'rp-estampado',
+        title: 'Estampado',
+        type: 'basic',
+        icon: 'heroicons_outline:paint-brush',
+        link: '/apps/ReportProd/list/estampado',
+    },
 ];
 

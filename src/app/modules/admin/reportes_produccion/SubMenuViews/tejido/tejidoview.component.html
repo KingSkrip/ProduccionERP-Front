@@ -1,0 +1,69 @@
+<div class="flex flex-col min-w-0 flex-auto overflow-hidden bg-gray-50 dark:bg-gray-900">
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-col flex-auto overflow-y-auto">
+            <div class="max-w-7xl mx-auto w-full px-4 md:px-6 pb-6">
+
+                <!-- TABS DE TEJIDO -->
+                <mat-tab-group class="tabs-pestanas" animationDuration="300ms" [disableRipple]="true"
+                    [(selectedIndex)]="selectedTabIndex" (selectedIndexChange)="onTabChange($event)">
+
+                    <!-- TAB: TEJIDO PRINCIPAL -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <div class="flex items-center gap-2 px-3 py-2">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:aguja'"
+                                    [ngClass]="selectedTabIndex === 0 ? 'text-sky-500' : 'text-gray-400'">
+                                </mat-icon>
+                                <span class="font-medium">Tejido</span>
+                            </div>
+                        </ng-template>
+                        <ng-template matTabContent>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+                                <tabs-tejido-tab></tabs-tejido-tab>
+                            </div>
+                        </ng-template>
+                    </mat-tab>
+
+                    <!-- TAB: PRODUCCIÓN DE TEJIDO -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <div class="flex items-center gap-2 px-3 py-2">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:building-office-2'"
+                                    [ngClass]="selectedTabIndex === 1 ? 'text-fuchsia-500' : 'text-gray-400'">
+                                </mat-icon>
+                                <span class="font-medium">Producción de tejido</span>
+                            </div>
+                        </ng-template>
+                        <ng-template matTabContent>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+                                <tabs-produccion-tejido></tabs-produccion-tejido>
+                            </div>
+                        </ng-template>
+                    </mat-tab>
+
+                    <!-- TAB: REVISADO DE TEJIDO -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <div class="flex items-center gap-2 px-3 py-2">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:clipboard-document-check'"
+                                    [ngClass]="selectedTabIndex === 2 ? 'text-green-500' : 'text-gray-400'">
+                                </mat-icon>
+                                <span class="font-medium">Revisado de tejido</span>
+                            </div>
+                        </ng-template>
+                        <ng-template matTabContent>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+                                <tabs-tejido-revisado></tabs-tejido-revisado>
+                            </div>
+                        </ng-template>
+                    </mat-tab>
+
+                </mat-tab-group>
+
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -22,7 +22,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { fuseAnimations } from '@fuse/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, takeUntil } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { ReportProdService } from '../reportprod.service';
 import { ProcesosTabComponent } from './tabs/procesos/procesos-tab.compoonent';
 import { SharedDataService } from './shared-data.service';
@@ -35,7 +35,7 @@ import { EstampadosTabComponent } from './tabs/estampados/estampados-tab.compoon
 import { TintoreriaTabComponent } from './tabs/tintoreria/tintoreria-tab.compoonent';
 import { FacturadoTabComponent } from './tabs/facturado/facturado-tab.compoonent';
 import { TejidoTabComponent } from './tabs/tejido/tejido-tab.component';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 
 
@@ -66,17 +66,16 @@ export const slideDown = trigger('slideDown', [
         MatNativeDateModule,
         MatBadgeModule,
         MatTabsModule,
-        // ProcesosTabComponent,
-        // ProduccionTabComponent,
-        // TejidoRevisadoTabComponent,
-        // PorRevisarTabComponent,
-        // SaldosTabComponent,
-        // EmbarquesTabComponent,
-        // EstampadosTabComponent,
-        // TintoreriaTabComponent,
-        // FacturadoTabComponent,
-        // TejidoTabComponent,
-        RouterOutlet,
+        ProcesosTabComponent,
+        ProduccionTabComponent,
+        TejidoRevisadoTabComponent,
+        PorRevisarTabComponent,
+        SaldosTabComponent,
+        EmbarquesTabComponent,
+        EstampadosTabComponent,
+        TintoreriaTabComponent,
+        FacturadoTabComponent,
+        TejidoTabComponent
     ],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -107,25 +106,24 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
     procesosUnicos: string[] = [];
 
     private _unsubscribeAll = new Subject<void>();
+    private sectionToTabIndex: Record<string, number> = {
+        tejido: 0,
+        tintoreria: 1,
+        estampado: 2,
+        facturado: 3,
+        'acabado-real': 4,
+    };
 
     constructor(
         private _cd: ChangeDetectorRef,
         private _reportService: ReportProdService,
         private _snackBar: MatSnackBar,
         private _sharedDataService: SharedDataService,
-        private router: Router,
+        private _route: ActivatedRoute,
+        private _router: Router
     ) { }
 
     ngOnInit(): void {
-
-        this.router.events
-            .pipe(filter(e => e instanceof NavigationEnd))
-            .subscribe(() => {
-                //   console.log('URL:', this.router.url);
-                //   console.log('CONFIG ROUTES:', this.router.config);
-            });
-
-
         const fechaInicio = new Date();
         fechaInicio.setDate(1);
         const fechaFin = new Date();
@@ -140,7 +138,17 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this.configurarFiltros();
 
 
+        this._route.queryParamMap
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(params => {
+                const section = (params.get('section') || '').toLowerCase();
+                const idx = this.sectionToTabIndex[section];
 
+                if (idx !== undefined && idx !== this.selectedTabIndex) {
+                    this.selectedTabIndex = idx;
+                    this._cd.markForCheck();
+                }
+            });
     }
 
     ngOnDestroy(): void {

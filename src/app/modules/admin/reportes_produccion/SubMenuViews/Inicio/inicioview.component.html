@@ -1,0 +1,85 @@
+<div class="flex flex-col min-w-0 flex-auto overflow-hidden bg-gray-50 dark:bg-gray-900">
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-col flex-auto overflow-y-auto">
+            <div class="max-w-7xl mx-auto w-full px-4 md:px-6 pb-6">
+
+                <!-- TABS DE INICIO -->
+                <mat-tab-group class="tabs-pestanas" animationDuration="300ms" [disableRipple]="true"
+                    [(selectedIndex)]="selectedTabIndex" (selectedIndexChange)="onTabChange($event)">
+
+                    <!-- TAB: PROCESOS -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <div class="flex items-center gap-2 px-3 py-2">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:cog-6-tooth'"
+                                    [ngClass]="selectedTabIndex === 0 ? 'text-yellow-500' : 'text-gray-400'">
+                                </mat-icon>
+                                <span class="font-medium">Procesos</span>
+                            </div>
+                        </ng-template>
+                        <ng-template matTabContent>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+                                <tabs-procesos-tab></tabs-procesos-tab>
+                            </div>
+                        </ng-template>
+                    </mat-tab>
+
+                    <!-- TAB: POR REVISAR -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <div class="flex items-center gap-2 px-3 py-2">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:clock'"
+                                    [ngClass]="selectedTabIndex === 1 ? 'text-violet-500' : 'text-gray-400'">
+                                </mat-icon>
+                                <span class="font-medium">Por revisar</span>
+                            </div>
+                        </ng-template>
+                        <ng-template matTabContent>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+                                <tabs-por-revisar></tabs-por-revisar>
+                            </div>
+                        </ng-template>
+                    </mat-tab>
+
+                    <!-- TAB: SALDOS -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <div class="flex items-center gap-2 px-3 py-2">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:archive-box'"
+                                    [ngClass]="selectedTabIndex === 2 ? 'text-cyan-400' : 'text-gray-400'">
+                                </mat-icon>
+                                <span class="font-medium">Saldos</span>
+                            </div>
+                        </ng-template>
+                        <ng-template matTabContent>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+                                <tabs-saldos></tabs-saldos>
+                            </div>
+                        </ng-template>
+                    </mat-tab>
+
+                    <!-- TAB: EMBARQUES -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <div class="flex items-center gap-2 px-3 py-2">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:truck'"
+                                    [ngClass]="selectedTabIndex === 3 ? 'text-pink-500' : 'text-gray-400'">
+                                </mat-icon>
+                                <span class="font-medium">Entregado a embarques</span>
+                            </div>
+                        </ng-template>
+                        <ng-template matTabContent>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+                                <tabs-embarques></tabs-embarques>
+                            </div>
+                        </ng-template>
+                    </mat-tab>
+
+                </mat-tab-group>
+
+            </div>
+        </div>
+    </div>
+
+</div>

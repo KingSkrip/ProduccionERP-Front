@@ -34,7 +34,7 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
     navigation: FuseNavigationItem[] = [];
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     appName = APP_CONFIG.appName;
-
+    navOpened = false;
     @ViewChild('reportProdNav', { static: true })
     reportProdNav!: FuseVerticalNavigationComponent;
 
@@ -104,7 +104,8 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }
-    navOpened = false;
+
+
     toggleReportProdNav(): void {
         this.navOpened = !this.navOpened;
         // En móvil, cerrar el nav padre antes de abrir el hijo
