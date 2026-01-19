@@ -20,7 +20,10 @@
                         "outputPath": "dist/fuse",
                         "index": "src/index.html",
                         "browser": "src/main.ts",
-                        "polyfills": ["zone.js"],
+                        "baseHref": "/frontend/dist/fuse/browser/",
+                        "polyfills": [
+                            "zone.js"
+                        ],
                         "tsConfig": "tsconfig.app.json",
                         "inlineStyleLanguage": "scss",
                         "allowedCommonJsDependencies": [
@@ -39,10 +42,17 @@
                                 "glob": "_redirects",
                                 "input": "src",
                                 "output": "/"
+                            },
+                            {
+                                "glob": ".htaccess",
+                                "input": "src",
+                                "output": "/"
                             }
                         ],
                         "stylePreprocessorOptions": {
-                            "includePaths": ["src/@fuse/styles"]
+                            "includePaths": [
+                                "src/@fuse/styles"
+                            ]
                         },
                         "styles": [
                             "src/styles/splash-screen.css",
@@ -98,7 +108,10 @@
                 "test": {
                     "builder": "@angular-devkit/build-angular:karma",
                     "options": {
-                        "polyfills": ["zone.js", "zone.js/testing"],
+                        "polyfills": [
+                            "zone.js",
+                            "zone.js/testing"
+                        ],
                         "tsConfig": "tsconfig.spec.json",
                         "inlineStyleLanguage": "scss",
                         "assets": [
@@ -107,7 +120,9 @@
                                 "input": "public"
                             }
                         ],
-                        "styles": ["src/styles/styles.scss"],
+                        "styles": [
+                            "src/styles/styles.scss"
+                        ],
                         "scripts": []
                     }
                 }
@@ -115,6 +130,6 @@
         }
     },
     "cli": {
-      "analytics": "9258f8e0-ec93-4016-a484-4647fae752cc"
+        "analytics": "9258f8e0-ec93-4016-a484-4647fae752cc"
     }
 }
