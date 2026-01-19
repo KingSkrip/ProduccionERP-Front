@@ -18,6 +18,7 @@ import { AsistenciasService } from './asistencias/asistencias.service';
 import { VacacionesService } from './vacaciones/vacaciones.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SolicitudesVacacionesComponent } from 'app/modules/modals/SolicitudesVacaciones/solicitudes-vacaciones.component';
+import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
 
 @Component({
     selector: 'project',
@@ -51,7 +52,8 @@ export class ProjectComponent implements OnInit, AfterViewInit, OnDestroy {
     chartAsistenciasSeries: { [key: string]: ApexAxisChartSeries } = {};
     chartVacaciones: ApexOptions = {};
     chartVacacionesSeries: { [key: string]: number[] } = {};
-
+    userRole: number | null = null;
+    userSubRole: number | null = null;
     private timer: any;
     data: any;
     selectedProject: string = 'ACME Corp. Backend App';
@@ -98,7 +100,10 @@ export class ProjectComponent implements OnInit, AfterViewInit, OnDestroy {
             .subscribe((user) => {
                 if (user) {
                     this._user.next(user);
-
+                    this.userRole = user.permissions?.[0] || null;
+                    this.userSubRole = user.sub_permissions?.[0] || null;
+                    // console.log(this.userRole = user.permissions?.[0] || null);
+                    // console.log(this.userSubRole = user.sub_permissions?.[0] || null);
                     this._prepareChartData();
                     this._cdr.markForCheck();
                 }
@@ -548,5 +553,19 @@ export class ProjectComponent implements OnInit, AfterViewInit, OnDestroy {
                 this._prepareChartData();
             }
         })
+    }
+
+    /**
+      * APARIENCIA POR ROL
+      */
+
+    // Getter para verificar si es JEFE o SUADMIN
+    get isJefeOrSuadmin(): boolean {
+        return this.userSubRole === SubRoleEnum.JEFE &&
+            this.userRole === RoleEnum.SUADMIN;
+    }
+
+    get isAllUsers(): boolean {
+        return !this.isJefeOrSuadmin;
     }
 }

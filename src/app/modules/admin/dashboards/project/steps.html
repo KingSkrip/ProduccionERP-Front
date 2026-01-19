@@ -21,7 +21,7 @@
                             </div>
                         </ng-container>
                         <div class="flex items-center">
-                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:bell'"></mat-icon>
                             <div class="text-secondary ml-1.5 truncate leading-6">
                                 {{ (user$ | async)?.seguridad_social?.numero_imss?.split(' ')[0] }}!
                             </div>
@@ -799,7 +799,7 @@
                                                 @if (scheduleItem.time) {
                                                 <div class="flex items-center">
                                                     <mat-icon class="text-hint icon-size-5" [svgIcon]="
-                                                                    'heroicons_solid:clock'
+                                                                    'heroicons_outline:clock'
                                                                 "></mat-icon>
                                                     <div class="text-secondary ml-1.5 text-md">
                                                         {{
@@ -813,7 +813,7 @@
                                                 ) {
                                                 <div class="flex items-center">
                                                     <mat-icon class="text-hint icon-size-5" [svgIcon]="
-                                                                    'heroicons_solid:map-pin'
+                                                                    'heroicons_outline:map-pin'
                                                                 "></mat-icon>
                                                     <div class="text-secondary ml-1.5 text-md">
                                                         {{

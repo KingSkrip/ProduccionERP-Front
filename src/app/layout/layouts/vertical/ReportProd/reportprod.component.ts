@@ -11,6 +11,10 @@ import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { Subject, takeUntil } from 'rxjs';
 import { AppNavigationStoreService } from '@fuse/components/navigation/appnavigationstore.service';
+import { AuthService } from 'app/core/auth/auth.service';
+import { CommonModule, NgIf } from '@angular/common';
+import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
+import { Roles } from 'app/core/auth/roles/dataroles';
 
 @Component({
     selector: 'reportprod-layout',
@@ -22,6 +26,7 @@ import { AppNavigationStoreService } from '@fuse/components/navigation/appnaviga
         MatButtonModule,
         MatIconModule,
         RouterOutlet,
+        CommonModule,
     ],
 })
 export class ReportProdLayoutComponent implements OnInit, OnDestroy {
@@ -38,7 +43,8 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
         private _router: Router,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _fuseVerticalNavigationService: AppNavigationStoreService,
-        private _fuseNavigationService: FuseNavigationService, // Agregado para acceder al nav padre
+        private _fuseNavigationService: FuseNavigationService,
+        private _authService: AuthService,
     ) { }
 
     get currentYear(): number {
@@ -46,26 +52,53 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.navigation = this._fuseVerticalNavigationService.getNavigation('main');
 
-        this._fuseVerticalNavigationService.onNavigationChanged$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(({ key }) => {
-                if (key === 'main') {
-                    this.navigation = this._fuseVerticalNavigationService.getNavigation('main');
-                }
-            });
-
-        if (!this.navigation || !Array.isArray(this.navigation)) {
-            this.navigation = [];
-        }
-
+        // 1️⃣ Detectar tamaño de pantalla (esto se queda)
         this._fuseMediaWatcherService.onMediaChange$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(({ matchingAliases }) => {
                 this.isScreenSmall = !matchingAliases.includes('md');
             });
+
+        // 2️⃣ Obtener rol y subrol del usuario
+        this._authService.getUserRole()
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(({ roleId, subRoleId }) => {
+
+                // console.log('rol', roleId);
+                // console.log('subrol', subRoleId);
+
+                const canSeeChildMenu =
+                    subRoleId === SubRoleEnum.JEFE || roleId === RoleEnum.SUADMIN;
+
+                if (canSeeChildMenu) {
+                    const reportProdNav =
+                        this._fuseVerticalNavigationService.getReportProdNavigation(roleId, subRoleId);
+
+                    this._fuseVerticalNavigationService.storeNavigation('reportprod', reportProdNav);
+
+                    this.navigation =
+                        this._fuseVerticalNavigationService.getNavigation('reportprod');
+
+                } else {
+                    this._fuseVerticalNavigationService.storeNavigation('reportprod', []);
+                    this.navigation = [];
+                }
+            });
+
+
+
+        // 3️⃣ Escuchar cambios del menú hijo (por si se actualiza)
+        this._fuseVerticalNavigationService.onNavigationChanged$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(({ key }) => {
+                if (key === 'reportprod') {
+                    this.navigation =
+                        this._fuseVerticalNavigationService.getNavigation('reportprod');
+                }
+            });
     }
+
 
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);

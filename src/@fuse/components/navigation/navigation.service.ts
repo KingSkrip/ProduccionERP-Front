@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
 import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
-import { menuSuAdmin, menuColaborador, menuRh, menuAdmin, menuJefe } from 'app/mock-api/common/navigation/data';
+import { menuSuAdmin, menuColaborador, menuRh, menuAdmin, menuJefe, menuReporteProd_Jefe } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -187,7 +187,7 @@ export class FuseNavigationService {
                 break;
 
             case RoleEnum.SUADMIN:
-                console.log(subRoleId);
+                 // console.log(subRoleId);
                 navigation = menuSuAdmin;
                 break;
 
@@ -206,7 +206,7 @@ export class FuseNavigationService {
 
         // 2️⃣ Sobrescribir por SUBROL
         if (subRoleId) {
-console.log(subRoleId);
+             // console.log(subRoleId);
             switch (subRoleId) {
                 case SubRoleEnum.JEFE:
                     navigation = menuJefe;
@@ -224,5 +224,16 @@ console.log(subRoleId);
         return [...navigation];
     }
 
+
+    getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
+
+        // ✅ SOLO JEFE tiene este menú hijo
+        if (subRoleId === SubRoleEnum.JEFE) {
+            return [...menuReporteProd_Jefe];
+        }
+
+        // otros subroles/roles: sin menú hijo
+        return [];
+    }
 
 }

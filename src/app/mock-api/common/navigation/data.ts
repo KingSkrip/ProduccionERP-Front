@@ -3979,3 +3979,49 @@ export const menuJefe: FuseNavigationItem[] = [
     },
 ];
 
+
+
+
+export const menuReporteProd_Jefe: FuseNavigationItem[] = [
+  {
+    id: 'rp-facturado',
+    title: 'Facturado',
+    type: 'basic',
+    icon: 'heroicons_outline:document-check', // igual a TAB Facturado
+    link: '/reportprod/list',
+    queryParams: { section: 'facturado' },
+  },
+  {
+    id: 'rp-tejido',
+    title: 'Tejido',
+    type: 'basic',
+    icon: 'heroicons_outline:aguja', // igual a TAB Tejido
+    link: '/reportprod/list',
+    queryParams: { section: 'tejido' },
+  },
+  {
+    id: 'rp-tintoreria',
+    title: 'Tintorería',
+    type: 'basic',
+    icon: 'heroicons_outline:beaker', // igual a TAB Tintorería
+    link: '/reportprod/list',
+    queryParams: { section: 'tintoreria' },
+  },
+  {
+    id: 'rp-acabado-real',
+    title: 'Acabado real',
+    type: 'basic',
+    icon: 'heroicons_outline:cog-6-tooth', // asignado (no tab directa)
+    link: '/reportprod/list',
+    queryParams: { section: 'acabado-real' },
+  },
+  {
+    id: 'rp-estampado',
+    title: 'Estampado',
+    type: 'basic',
+    icon: 'heroicons_outline:paint-brush', // igual a TAB Estampado
+    link: '/reportprod/list',
+    queryParams: { section: 'estampado' },
+  },
+];
+

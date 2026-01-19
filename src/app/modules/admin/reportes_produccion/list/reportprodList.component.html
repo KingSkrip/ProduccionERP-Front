@@ -6,7 +6,7 @@
             <div class="flex items-start gap-4 max-w-7xl mx-auto">
                 <div
                     class="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary backdrop-blur-sm shadow-lg ring-1 ring-white/20">
-                    <mat-icon class="text-white icon-size-7" [svgIcon]="'heroicons_solid:chart-bar'"></mat-icon>
+                    <mat-icon class="text-white icon-size-7" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
                 </div>
                 <div class="flex-1">
                     <h1 class="text-2xl md:text-4xl font-bold text-black dark:text-white/80 tracking-tight">
@@ -25,14 +25,14 @@
         <div class="flex items-center px-3 gap-2">
             <mat-form-field class="fuse-mat-dense flex-1" appearance="outline" [subscriptSizing]="'dynamic'">
                 <mat-icon matPrefix class="text-gray-400 icon-size-5"
-                    [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                    [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
                 <input matInput [formControl]="searchControl" [autocomplete]="'off'" placeholder="Buscar...">
             </mat-form-field>
 
             <button mat-mini-fab color="primary" class="shadow-md relative" (click)="togglePanelFiltros()"
                 [matBadge]="filtrosActivosCount()" matBadgeSize="small" matBadgeColor="accent"
                 [matBadgeHidden]="filtrosActivosCount() === 0">
-                <mat-icon [svgIcon]="'heroicons_solid:adjustments-horizontal'"></mat-icon>
+                <mat-icon [svgIcon]="'heroicons_outline:adjustments-horizontal'"></mat-icon>
             </button>
         </div>
     </div>
@@ -50,7 +50,7 @@
         <div class="flex items-center justify-between p-4 border-b">
             <h2 class="text-lg font-semibold">Filtros Avanzados</h2>
             <button mat-icon-button (click)="togglePanelFiltros()">
-                <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
             </button>
         </div>
 
@@ -60,7 +60,7 @@
             <!-- SECCIÓN: RANGO DE FECHA -->
             <div>
                 <div class="flex items-center gap-2 mb-3">
-                    <mat-icon class="text-primary icon-size-5" [svgIcon]="'heroicons_solid:calendar-days'"></mat-icon>
+                    <mat-icon class="text-primary icon-size-5" [svgIcon]="'heroicons_outline:calendar-days'"></mat-icon>
                     <h3 class="font-medium text-sm">Rango de Fecha</h3>
                 </div>
 
@@ -141,7 +141,7 @@
             <div>
                 <div class="flex items-center gap-2 mb-3">
                     <mat-icon class="text-primary icon-size-5"
-                        [svgIcon]="'heroicons_solid:building-office-2'"></mat-icon>
+                        [svgIcon]="'heroicons_outline:building-office-2'"></mat-icon>
                     <h3 class="font-medium text-sm">Departamento</h3>
                 </div>
 
@@ -175,7 +175,7 @@
         <div class="max-w-7xl mx-auto w-full md:px-6">
             <div class="flex  gap-3">
                 <mat-form-field class="fuse-mat-dense fuse-mat-rounded flex-1">
-                    <mat-icon matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                    <mat-icon matPrefix [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
                     <input matInput [formControl]="searchControl" placeholder="Buscar...">
                 </mat-form-field>
 
@@ -189,7 +189,7 @@
                         <span class="flex items-center gap-2 w-full">
                             <!-- Icono filtros -->
                             <mat-icon class="icon-size-5 text-white" [class.text-primary]="filtrosActivosCount() > 0"
-                                [svgIcon]="'heroicons_solid:adjustments-horizontal'">
+                                [svgIcon]="'heroicons_outline:adjustments-horizontal'">
                             </mat-icon>
 
                             <!-- Texto -->
@@ -205,7 +205,7 @@
 
                             <!-- Chevron (SIEMPRE al final) -->
                             <mat-icon class="icon-size-4 text-white transition-transform ml-auto"
-                                [class.rotate-180]="mostrarPanelFiltrosPc" [svgIcon]="'heroicons_solid:chevron-down'">
+                                [class.rotate-180]="mostrarPanelFiltrosPc" [svgIcon]="'heroicons_outline:chevron-down'">
                             </mat-icon>
                         </span>
 
@@ -222,13 +222,13 @@
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                                         <mat-icon class="text-primary-500 icon-size-5"
-                                            [svgIcon]="'heroicons_solid:funnel'"></mat-icon>
+                                            [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
                                     </div>
                                     <h3 class="font-semibold text-lg">Filtros Avanzados</h3>
                                 </div>
                                 <button mat-icon-button (click)="togglePanelFiltrosPc()"
                                     class="hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
                                 </button>
                             </div>
                         </div>
@@ -240,7 +240,7 @@
                             <div>
                                 <div class="flex items-center gap-2 mb-3">
                                     <mat-icon class="text-primary icon-size-5"
-                                        [svgIcon]="'heroicons_solid:calendar-days'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:calendar-days'"></mat-icon>
                                     <h4 class="font-semibold">Rango de Fecha</h4>
                                 </div>
 
@@ -252,7 +252,7 @@
                                         ? 'bg-primary text-white shadow-md': 'hover:bg-gray-50 dark:hover:bg-gray-700'"
                                         (click)="seleccionarRangoFecha('todos')">
                                         <mat-icon class="icon-size-5 mr-3" [ngClass]="rangoFechaSeleccionado === 'todos'
-                                        ? 'text-white': 'text-gray-400'" [svgIcon]="'heroicons_solid:queue-list'">
+                                        ? 'text-white': 'text-gray-400'" [svgIcon]="'heroicons_outline:queue-list'">
                                         </mat-icon>
                                         <span class="flex-1 font-medium">
                                             Todos los registros
@@ -260,7 +260,7 @@
 
                                         <!-- Check -->
                                         <mat-icon *ngIf="rangoFechaSeleccionado === 'todos'"
-                                            class="icon-size-5 text-white" [svgIcon]="'heroicons_solid:check'">
+                                            class="icon-size-5 text-white" [svgIcon]="'heroicons_outline:check'">
                                         </mat-icon>
 
                                     </button>
@@ -275,7 +275,7 @@
                                             (click)="seleccionarRangoFecha('hoy')">
                                             <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'hoy'
                                             ? 'text-white'
-                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:sun'">
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_outline:sun'">
                                             </mat-icon>
                                             <span class="font-medium ">
                                                 Hoy
@@ -291,7 +291,7 @@
 
                                             <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'ayer'
                                             ? 'text-white'
-                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:moon'">
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_outline:moon'">
                                             </mat-icon>
 
                                             <span class="font-medium">Ayer</span>
@@ -306,7 +306,7 @@
 
                                             <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'mes_actual'
                                             ? 'text-white'
-                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:calendar-days'">
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_outline:calendar-days'">
                                             </mat-icon>
 
                                             <span class="font-medium">Este mes</span>
@@ -322,7 +322,7 @@
 
                                             <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'mes_anterior'
                                             ? 'text-white'
-                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:arrow-uturn-left'">
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_outline:arrow-uturn-left'">
                                             </mat-icon>
 
                                             <span class="font-medium">Mes ant.</span>
@@ -333,7 +333,7 @@
                                             ? 'border-primary bg-primary/5': ''"
                                             (click)="seleccionarRangoFecha('fecha_especifica')">
                                             <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'fecha_especifica'
-                                            ? 'text-primary': 'text-gray-400'" [svgIcon]="'heroicons_solid:calendar'">
+                                            ? 'text-primary': 'text-gray-400'" [svgIcon]="'heroicons_outline:calendar'">
                                             </mat-icon>
                                             <span class="font-medium" [ngClass]="rangoFechaSeleccionado === 'fecha_especifica'
                                             ? 'text-primary': ''">
@@ -348,7 +348,7 @@
 
                                             <mat-icon class="icon-size-4 mr-2" [ngClass]="rangoFechaSeleccionado === 'periodo'
                                             ? 'text-primary'
-                                            : 'text-gray-400'" [svgIcon]="'heroicons_solid:arrow-trending-up'">
+                                            : 'text-gray-400'" [svgIcon]="'heroicons_outline:arrow-trending-up'">
                                             </mat-icon>
 
                                             <span class="font-medium" [ngClass]="rangoFechaSeleccionado === 'periodo'
@@ -409,7 +409,7 @@
                             <div class="pt-3 border-t">
                                 <div class="flex items-center gap-2 mb-3">
                                     <mat-icon class="text-primary icon-size-5"
-                                        [svgIcon]="'heroicons_solid:building-office-2'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:building-office-2'"></mat-icon>
                                     <h4 class="font-semibold">Departamento</h4>
                                 </div>
 
@@ -433,12 +433,12 @@
                                     class="flex-1 h-11 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                     (click)="limpiarTodosFiltros()">
                                     <mat-icon class="icon-size-5 mr-2"
-                                        [svgIcon]="'heroicons_solid:x-circle'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:x-circle'"></mat-icon>
                                     Limpiar
                                 </button>
                                 <button mat-flat-button color="primary" class="flex-1 h-11 rounded-xl shadow-lg"
                                     (click)="aplicarFiltrosPc(); togglePanelFiltrosPc()">
-                                    <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                                    <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:check'"></mat-icon>
                                     Aplicar filtros
                                 </button>
                             </div>
@@ -449,7 +449,7 @@
 
             <!-- Indicador de filtros activos -->
             <div *ngIf="filtrosActivosCount() > 0" class="flex items-center gap-2 text-sm mt-3">
-                <mat-icon class="icon-size-4 text-primary" [svgIcon]="'heroicons_solid:funnel'"></mat-icon>
+                <mat-icon class="icon-size-4 text-primary" [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
                 <span class="text-gray-600 dark:text-gray-400">
                     <span class="font-semibold text-primary">{{ filtrosActivosCount() }}</span> filtro(s) activo(s)
                 </span>
@@ -469,22 +469,22 @@
             <div class="flex gap-3">
                 <div class="relative">
                     <button mat-stroked-button class="h-10 px-4 min-w-64" (click)="toggleDatePanel()">
-                        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:calendar'"></mat-icon>
+                        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
                         <span class="text-sm truncate">{{ obtenerTextoFechaSeleccionada() }}</span>
-                        <mat-icon class="icon-size-4 ml-auto" [svgIcon]="'heroicons_solid:chevron-down'"></mat-icon>
+                        <mat-icon class="icon-size-4 ml-auto" [svgIcon]="'heroicons_outline:chevron-down'"></mat-icon>
                     </button>
 
                     <div *ngIf="mostrarPanelFechas"
                         class="absolute top-full left-0 mt-2 bg-card rounded-lg shadow-2xl border z-50 w-96 overflow-hidden">
                         <div class="p-4 border-b flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <mat-icon class="text-primary" [svgIcon]="'heroicons_solid:calendar'"></mat-icon>
+                                <mat-icon class="text-primary" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
                                 <h3 class="font-semibold">Filtrar por fechas</h3>
                             </div>
                             <div class="flex gap-2">
                                 <button mat-button class="text-primary" (click)="limpiarFiltroFechas()">Limpiar</button>
                                 <button mat-icon-button (click)="toggleDatePanel()">
-                                    <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                    <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
                                 </button>
                             </div>
                         </div>
@@ -496,7 +496,7 @@
                                     }" (click)="seleccionarRangoFecha('todos')">
                                     <span class="flex-1 text-left">Ver todos</span>
                                     <mat-icon *ngIf="rangoFechaSeleccionado === 'todos'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:check'"></mat-icon>
                                 </button>
 
                                 <button mat-button class="h-12 rounded-lg border-2" [ngClass]="{
@@ -504,7 +504,7 @@
                                     }" (click)="seleccionarRangoFecha('hoy')">
                                     <span class="flex-1 text-left">Hoy</span>
                                     <mat-icon *ngIf="rangoFechaSeleccionado === 'hoy'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:check'"></mat-icon>
                                 </button>
 
                                 <button mat-button class="h-12 rounded-lg border-2" [ngClass]="{
@@ -512,7 +512,7 @@
                                     }" (click)="seleccionarRangoFecha('ayer')">
                                     <span class="flex-1 text-left">Ayer</span>
                                     <mat-icon *ngIf="rangoFechaSeleccionado === 'ayer'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:check'"></mat-icon>
                                 </button>
 
                                 <button mat-button class="h-12 rounded-lg border-2" [ngClass]="{
@@ -520,7 +520,7 @@
                                     }" (click)="seleccionarRangoFecha('mes_actual')">
                                     <span class="flex-1 text-left">Mes actual</span>
                                     <mat-icon *ngIf="rangoFechaSeleccionado === 'mes_actual'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:check'"></mat-icon>
                                 </button>
 
                                 <button mat-button class="h-12 rounded-lg border-2" [ngClass]="{
@@ -528,7 +528,7 @@
                                     }" (click)="seleccionarRangoFecha('mes_anterior')">
                                     <span class="flex-1 text-left">Mes anterior</span>
                                     <mat-icon *ngIf="rangoFechaSeleccionado === 'mes_anterior'"
-                                        [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:check'"></mat-icon>
                                 </button>
 
                                 <button mat-button class="h-12 rounded-lg border-2" [ngClass]="{
@@ -581,14 +581,14 @@
                 </div>
 
                 <mat-form-field class="fuse-mat-dense fuse-mat-rounded flex-1">
-                    <mat-icon matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                    <mat-icon matPrefix [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
                     <input matInput [formControl]="searchControl" placeholder="Buscar...">
                 </mat-form-field>
             </div>
 
             <div class="flex gap-3">
                 <mat-form-field class="fuse-mat-dense fuse-mat-rounded flex-1">
-                    <mat-icon matPrefix [svgIcon]="'heroicons_solid:building-office'"></mat-icon>
+                    <mat-icon matPrefix [svgIcon]="'heroicons_outline:building-office'"></mat-icon>
                     <mat-select [formControl]="deptoControl" placeholder="Departamento">
                         <mat-option [value]="''">Todos</mat-option>
                         <mat-option *ngFor="let depto of departamentosUnicos" [value]="depto">{{ depto }}</mat-option>
@@ -622,7 +622,7 @@
                         búsqueda.
                     </p>
                     <button mat-stroked-button class="mt-6 rounded-xl" (click)="limpiarTodosFiltros()">
-                        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:arrow-path'"></mat-icon>
+                        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
                         Restablecer filtros
                     </button>
                 </div>
@@ -642,7 +642,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:aguja'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:aguja'"
                                         [ngClass]="selectedTabIndex === 0 ? 'text-sky-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Tejido</span>
                                 </div>
@@ -666,7 +666,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:beaker'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:beaker'"
                                         [ngClass]="selectedTabIndex === 1 ? 'text-orange-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Tintorería</span>
                                 </div>
@@ -683,7 +683,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:paint-brush'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:paint-brush'"
                                         [ngClass]="selectedTabIndex === 2 ? 'text-red-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Estampado</span>
                                 </div>
@@ -702,7 +702,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label class="bg-white">
                                 <div class="flex items-center gap-2 px-1 py-1">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:document-check'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:document-check'"
                                         [ngClass]="selectedTabIndex === 3 ? 'text-black' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Facturado</span>
                                 </div>
@@ -719,7 +719,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:cog-6-tooth'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:cog-6-tooth'"
                                         [ngClass]="selectedTabIndex === 4 ? 'text-yellow-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Procesos</span>
                                 </div>
@@ -735,7 +735,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:building-office-2'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:building-office-2'"
                                         [ngClass]="selectedTabIndex === 5 ? 'text-fuchsia-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Producción de tejido</span>
                                 </div>
@@ -751,7 +751,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:clipboard-document-check'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:clipboard-document-check'"
                                         [ngClass]="selectedTabIndex === 6 ? 'text-green-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Revisado de tejido</span>
                                 </div>
@@ -767,7 +767,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:clock'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:clock'"
                                         [ngClass]="selectedTabIndex === 7 ? 'text-violet-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Por revisar</span>
                                 </div>
@@ -783,7 +783,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:archive-box'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:archive-box'"
                                         [ngClass]="selectedTabIndex === 8 ? 'text-cyan-400' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Saldos</span>
                                 </div>
@@ -799,7 +799,7 @@
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center gap-2 px-3 py-2">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:truck'"
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:truck'"
                                         [ngClass]="selectedTabIndex === 9 ? 'text-pink-500' : 'text-gray-400'"></mat-icon>
                                     <span class="font-medium">Entregado a embarques</span>
                                 </div>

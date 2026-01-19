@@ -117,8 +117,25 @@
 
 
 
+  /* Solo el nav hijo */
+  fuse-vertical-navigation[name="reportProdNav"] {
+
+    /* Reduce ancho total del nav */
+    width: 64px !important;
+
+    .fuse-vertical-navigation-item {
+      padding: 6px 0 !important;
+    }
+
+    
+
+    /* Texto debajo del icono */
+    .fuse-vertical-navigation-item-title {
+      font-size: 10px !important;
+      margin-top: 2px;
+    }
+  }
 
 
 
-  
 }

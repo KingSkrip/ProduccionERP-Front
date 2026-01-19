@@ -25,7 +25,7 @@
                         <div class="mt-2 inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 dark:bg-blue-950/40 dark:ring-1 dark:ring-blue-800/50"
                             *ngIf="(user$ | async)?.IMSS as IMSS">
                             <mat-icon class="icon-size-4 text-blue-600 dark:text-blue-400"
-                                [svgIcon]="'heroicons_solid:identification'">
+                                [svgIcon]="'heroicons_outline:identification'">
                             </mat-icon>
 
                             <div class="flex items-center gap-1.5">
@@ -45,8 +45,8 @@
         </div>
     </div>
 
-    <!-- Main -->
-    <div class="-mt-px flex-auto border-t pt-4 sm:pt-6">
+    <!-- ALL USERS -->
+    <div class="-mt-px flex-auto border-t pt-4 sm:pt-6" *ngIf="isAllUsers">
         <div class="mx-auto w-full max-w-screen-xl">
             <!-- Tabs -->
             <mat-tab-group class="sm:px-2" mat-stretch-tabs="false" [animationDuration]="'0'">
@@ -810,7 +810,7 @@
                                                 @if (scheduleItem.time) {
                                                 <div class="flex items-center">
                                                     <mat-icon class="text-hint icon-size-5" [svgIcon]="
-                                                                    'heroicons_solid:clock'
+                                                                    'heroicons_outline:clock'
                                                                 "></mat-icon>
                                                     <div class="text-secondary ml-1.5 text-md">
                                                         {{
@@ -824,7 +824,7 @@
                                                 ) {
                                                 <div class="flex items-center">
                                                     <mat-icon class="text-hint icon-size-5" [svgIcon]="
-                                                                    'heroicons_solid:map-pin'
+                                                                    'heroicons_outline:map-pin'
                                                                 "></mat-icon>
                                                     <div class="text-secondary ml-1.5 text-md">
                                                         {{
@@ -849,6 +849,264 @@
                 </mat-tab>
 
             </mat-tab-group>
+        </div>
+    </div>
+
+    <!-- SU ADMIN / JEFE -->
+    <div class="-mt-px mb-5 flex-auto border-t pt-4 sm:pt-6" *ngIf="isJefeOrSuadmin">
+        <div class="mx-auto w-full max-w-screen-xl px-6 sm:px-8">
+
+            <!-- Header Ejecutivo -->
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    Panel de Control
+                </h2>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    Vista general del sistema
+                </p>
+            </div>
+
+            <!-- KPIs Principales -->
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+
+                <!-- Card 1 -->
+                <div
+                    class="bg-card rounded-2xl p-6 shadow hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+                            <mat-icon class="text-gray-600 dark:text-gray-400"
+                                svgIcon="heroicons_outline:users"></mat-icon>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                            Colaboradores
+                        </p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                            —
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div
+                    class="bg-card rounded-2xl p-6 shadow hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+                            <mat-icon class="text-gray-600 dark:text-gray-400"
+                                svgIcon="heroicons_outline:chart-bar"></mat-icon>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                            Actividad
+                        </p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                            —
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div
+                    class="bg-card rounded-2xl p-6 shadow hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+                            <mat-icon class="text-gray-600 dark:text-gray-400"
+                                svgIcon="heroicons_outline:check-circle"></mat-icon>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                            Estado
+                        </p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                            —
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div
+                    class="bg-card rounded-2xl p-6 shadow hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+                            <mat-icon class="text-gray-600 dark:text-gray-400"
+                                svgIcon="heroicons_outline:document-text"></mat-icon>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                            Pendientes
+                        </p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                            —
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sección Central -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+                <!-- Gráfico Placeholder -->
+                <div class="bg-card rounded-2xl p-6 shadow border border-gray-100 dark:border-gray-800">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Información General
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Resumen del sistema</p>
+                    </div>
+
+                    <div
+                        class="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
+                        <div class="text-center">
+                            <mat-icon class="icon-size-16 text-gray-400 mb-4"
+                                svgIcon="heroicons_outline:chart-bar"></mat-icon>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Sin datos disponibles</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Métricas Placeholder -->
+                <div class="bg-card rounded-2xl p-6 shadow border border-gray-100 dark:border-gray-800">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Métricas
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Indicadores principales</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Métrica 1 -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Categoría A</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">—</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gray-300 dark:bg-gray-700" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Métrica 2 -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Categoría B</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">—</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gray-300 dark:bg-gray-700" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Métrica 3 -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Categoría C</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">—</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gray-300 dark:bg-gray-700" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Métrica 4 -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Categoría D</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">—</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gray-300 dark:bg-gray-700" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Acciones y Notificaciones -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Acciones Rápidas -->
+                <div class="lg:col-span-2 bg-card rounded-2xl p-6 shadow border border-gray-100 dark:border-gray-800">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                        Acciones Rápidas
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button mat-stroked-button class="h-20 flex items-center justify-start px-4">
+                            <div class="flex items-center">
+                                <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 mr-3">
+                                    <mat-icon class="text-gray-600 dark:text-gray-400 icon-size-5"
+                                        svgIcon="heroicons_outline:user-group"></mat-icon>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Gestión</div>
+                                    <div class="text-xs text-gray-500">Ver información</div>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button mat-stroked-button class="h-20 flex items-center justify-start px-4">
+                            <div class="flex items-center">
+                                <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 mr-3">
+                                    <mat-icon class="text-gray-600 dark:text-gray-400 icon-size-5"
+                                        svgIcon="heroicons_outline:clipboard-document-check"></mat-icon>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Revisión</div>
+                                    <div class="text-xs text-gray-500">Pendientes</div>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button mat-stroked-button class="h-20 flex items-center justify-start px-4">
+                            <div class="flex items-center">
+                                <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 mr-3">
+                                    <mat-icon class="text-gray-600 dark:text-gray-400 icon-size-5"
+                                        svgIcon="heroicons_outline:chart-pie"></mat-icon>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Reportes</div>
+                                    <div class="text-xs text-gray-500">Ver análisis</div>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button mat-stroked-button class="h-20 flex items-center justify-start px-4">
+                            <div class="flex items-center">
+                                <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 mr-3">
+                                    <mat-icon class="text-gray-600 dark:text-gray-400 icon-size-5"
+                                        svgIcon="heroicons_outline:cog-6-tooth"></mat-icon>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Configuración
+                                    </div>
+                                    <div class="text-xs text-gray-500">Ajustes</div>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notificaciones -->
+                <div class="bg-card rounded-2xl p-6 shadow border border-gray-100 dark:border-gray-800">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                        Notificaciones
+                    </h3>
+                    <div class="flex items-center justify-center h-48">
+                        <div class="text-center">
+                            <mat-icon class="icon-size-12 text-gray-300 dark:text-gray-700 mb-2"
+                                svgIcon="heroicons_outline:bell"></mat-icon>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Sin notificaciones</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
         </div>
     </div>
 </div>

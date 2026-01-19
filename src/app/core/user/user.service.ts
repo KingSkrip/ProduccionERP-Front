@@ -40,41 +40,6 @@ export class UserService {
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
 
-    /**
-     * Load user at startup using token
-     * 🔥 CORRECCIÓN: Usar setTimeout para evitar NG0100
-     */
-    //    init(): Observable<void> {
-    //         const token = localStorage.getItem('encrypt');
-
-    //         if (!token) {
-    //             // Usar setTimeout para evitar cambios durante detección de cambios
-    //             setTimeout(() => {
-    //                 this._user.next(null);
-    //             });
-    //             return;
-    //         }
-
-    //         this._httpClient.get(`${this.apiUrl}dash/me`, {
-    //             headers: { Authorization: `Bearer ${token}` }
-    //         }).subscribe({
-    //             next: (resp: any) => {
-    //                 // Usar setTimeout para evitar cambios durante detección de cambios
-    //                 setTimeout(() => {
-    //                     this._user.next(resp.user);
-    //                 });
-    //             },
-    //             error: (err) => {
-    //                 console.error('[UserService] Error al cargar usuario:', err);
-    //                 localStorage.removeItem('encrypt');
-    //                 // Usar setTimeout para evitar cambios durante detección de cambios
-    //                 setTimeout(() => {
-    //                     this._user.next(null);
-    //                 });
-    //             }
-    //         });
-    //     }
-
 
     init(): Observable<void> {
         const token = localStorage.getItem('encrypt');

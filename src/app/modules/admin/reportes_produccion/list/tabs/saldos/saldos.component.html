@@ -18,7 +18,7 @@
                 <div class="flex-shrink-0">
                     <div class="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                         <mat-icon class="text-emerald-500 icon-size-6" 
-                            [svgIcon]="'heroicons_solid:archive-box'"></mat-icon>
+                            [svgIcon]="'heroicons_outline:archive-box'"></mat-icon>
                     </div>
                 </div>
             </div>
@@ -30,7 +30,7 @@
         <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-emerald-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base text-secondary">Total Saldos</div>
-                <mat-icon class="text-emerald-500 icon-size-5" [svgIcon]="'heroicons_solid:scale'"></mat-icon>
+                <mat-icon class="text-emerald-500 icon-size-5" [svgIcon]="'heroicons_outline:scale'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ calcularTotalPesoSaldos() | number:'1.0-0' }}</div>
             <div class="text-sm text-secondary">Kilogramos</div>
@@ -39,7 +39,7 @@
         <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-blue-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base font-medium text-secondary">Total Artículos</div>
-                <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_solid:cube'"></mat-icon>
+                <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_outline:cube'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ contarArticulosSaldos() }}</div>
             <div class="text-sm text-secondary">Artículos con saldo</div>
@@ -48,7 +48,7 @@
         <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-purple-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base font-medium text-secondary">Total Piezas</div>
-                <mat-icon class="text-purple-500 icon-size-5" [svgIcon]="'heroicons_solid:chart-bar'"></mat-icon>
+                <mat-icon class="text-purple-500 icon-size-5" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ calcularTotalPiezasSaldos() | number:'1.0-0' }}</div>
             <div class="text-sm text-secondary">Piezas en saldo</div>
@@ -79,7 +79,7 @@
     </p>
     
     <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
-        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_solid:arrow-path'"></mat-icon>
+        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
         Limpiar filtros
     </button>
 </div>
@@ -106,7 +106,7 @@
                 <td class="px-3 py-2 md:px-6 md:py-4">
                     <div class="flex items-center gap-3">
                         <mat-icon class="icon-size-5 text-emerald-500 flex-shrink-0"
-                            [svgIcon]="'heroicons_solid:archive-box'"></mat-icon>
+                            [svgIcon]="'heroicons_outline:archive-box'"></mat-icon>
                         <span class="font-semibold">{{ item.ARTICULO }}</span>
                     </div>
                 </td>

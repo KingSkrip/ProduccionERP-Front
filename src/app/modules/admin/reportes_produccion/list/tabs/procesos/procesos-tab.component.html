@@ -11,7 +11,7 @@
                         number:'1.0-0' }}</div>
                     <div class="text-xs text-secondary mt-1">kilogramos</div>
                 </div>
-                <mat-icon class="text-green-500 icon-size-8" [svgIcon]="'heroicons_solid:scale'"></mat-icon>
+                <mat-icon class="text-green-500 icon-size-8" [svgIcon]="'heroicons_outline:scale'"></mat-icon>
             </div>
         </div>
     </div>
@@ -21,7 +21,7 @@
         <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-green-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base font-medium text-secondary">Cantidad total</div>
-                <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:scale'"></mat-icon>
+                <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_outline:scale'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number:'1.0-0' }}
             </div>
@@ -31,7 +31,7 @@
         <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-blue-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base font-medium text-secondary">Total procesos</div>
-                <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_solid:document-text'"></mat-icon>
+                <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ datosFiltrados.length }}</div>
             <div class="text-sm text-secondary">Procesos activos</div>
@@ -40,7 +40,7 @@
         <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-purple-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base font-medium text-secondary">Departamentos</div>
-                <mat-icon class="text-purple-500 icon-size-5" [svgIcon]="'heroicons_solid:building-office'"></mat-icon>
+                <mat-icon class="text-purple-500 icon-size-5" [svgIcon]="'heroicons_outline:building-office'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ contarDepartamentos() }}</div>
             <div class="text-sm text-secondary">Áreas activas</div>
@@ -69,9 +69,9 @@
                         <div class="flex items-center gap-3">
                             <mat-icon class="icon-size-4 transition-transform"
                                 [ngClass]="{'rotate-90': grupo.expandido}"
-                                [svgIcon]="'heroicons_solid:chevron-right'"></mat-icon>
+                                [svgIcon]="'heroicons_outline:chevron-right'"></mat-icon>
                             <mat-icon class="icon-size-5 text-blue-500"
-                                [svgIcon]="'heroicons_solid:building-office'"></mat-icon>
+                                [svgIcon]="'heroicons_outline:building-office'"></mat-icon>
                             <div>
                                 <div class="font-semibold capitalize">
                                     {{ grupo.departamento | lowercase }}
@@ -94,7 +94,7 @@
                     <td class="px-6 py-3 pl-20">
                         <div class="flex items-center gap-3">
                             <mat-icon class="icon-size-4 text-gray-400"
-                                [svgIcon]="'heroicons_solid:cog-8-tooth'"></mat-icon>
+                                [svgIcon]="'heroicons_outline:cog-8-tooth'"></mat-icon>
                             <span class="text-sm text-secondary capitalize">
                                 {{ proceso.proceso | lowercase }}
                             </span>
