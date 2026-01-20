@@ -12,7 +12,7 @@
         <div class="flex shrink-0 items-center mt-3 sm:mt-0 sm:ml-4">
             <!-- Search -->
             <mat-form-field class="fuse-mat-dense fuse-mat-rounded w-full sm:min-w-64" [subscriptSizing]="'dynamic'">
-                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:magnifying-glass'" matPrefix></mat-icon>
+                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:magnifying-glass'" matPrefix></mat-icon>
                 <input matInput [formControl]="searchControl" [autocomplete]="'off'"
                     [placeholder]="'Buscar pedidos...'">
             </mat-form-field>
@@ -55,7 +55,7 @@
                                 </div>
                                 <!-- <div
                                     class="flex items-center justify-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-600 dark:text-black">
-                                    <mat-icon class="icon-size-4 mr-1.5" [svgIcon]="'heroicons_solid:clock'"></mat-icon>
+                                    <mat-icon class="icon-size-4 mr-1.5" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
                                     Pendiente
                                 </div> -->
                             </div>
@@ -64,7 +64,7 @@
                             <div class="hidden sm:block">
                                 <button mat-flat-button [color]="'primary'" class="text-white px-6 py-2"
                                     [disabled]="isLoading" (click)="autorizarPedido(pedido)">
-                                    <mat-icon class="icon-size-5" svgIcon="heroicons_solid:check"></mat-icon>
+                                    <mat-icon class="icon-size-5" svgIcon="heroicons_outline:check"></mat-icon>
                                     <span class="ml-2 text-white font-semibold">Autorizar</span>
                                 </button>
                             </div>
@@ -80,7 +80,7 @@
                                 <div class="space-y-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                     <div class="flex items-center gap-2">
                                         <mat-icon class="icon-size-6 text-blue-600 dark:text-blue-400"
-                                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                                            [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
                                         <span class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
                                             Cliente
                                         </span>
@@ -98,8 +98,8 @@
                                         <mat-icon class="icon-size-6"
                                             [ngClass]="pedido.AUTORIZA === 1 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
                                             [svgIcon]="pedido.AUTORIZA === 1 
-                ? 'heroicons_solid:check-circle' 
-                : 'heroicons_solid:x-circle'">
+                ? 'heroicons_outline:check-circle' 
+                : 'heroicons_outline:x-circle'">
                                         </mat-icon>
                                         <span class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
                                             Autorización ventas
@@ -131,7 +131,7 @@
                                 <div class="space-y-3 sm:space-y-4">
                                     <div class="flex items-center gap-2 p-3 bg-blue-50 dark:bg-gray-800 rounded-lg">
                                         <mat-icon class="icon-size-6 text-blue-600 dark:text-blue-400"
-                                            [svgIcon]="'heroicons_solid:cube'"></mat-icon>
+                                            [svgIcon]="'heroicons_outline:cube'"></mat-icon>
                                         <span
                                             class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Artículos</span>
                                     </div>
@@ -200,7 +200,7 @@
                                 <div class="space-y-3 sm:space-y-4">
                                     <div class="flex items-center gap-2 p-3 bg-purple-50 dark:bg-gray-800 rounded-lg">
                                         <mat-icon class="icon-size-6 text-purple-600 dark:text-purple-400"
-                                            [svgIcon]="'heroicons_solid:cube'"></mat-icon>
+                                            [svgIcon]="'heroicons_outline:cube'"></mat-icon>
                                         <span
                                             class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Cardigan</span>
                                     </div>
@@ -277,7 +277,7 @@
                                 class="space-y-2 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl">
                                 <div class="flex items-center gap-2">
                                     <mat-icon class="icon-size-6 text-green-600 dark:text-green-400"
-                                        [svgIcon]="'heroicons_solid:currency-dollar'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
                                     <span
                                         class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Total</span>
                                 </div>
@@ -294,7 +294,7 @@
                         <div class="p-4 sm:p-6 pt-0">
                             <button mat-flat-button [color]="'primary'" class="w-full text-white sm:hidden"
                                 [disabled]="isLoading" (click)="autorizarPedido(pedido)">
-                                <mat-icon class="icon-size-5" svgIcon="heroicons_solid:check"></mat-icon>
+                                <mat-icon class="icon-size-5" svgIcon="heroicons_outline:check"></mat-icon>
                                 <span class="ml-2 text-white">Autorizar</span>
                             </button>
                         </div>

@@ -7,7 +7,7 @@ const now = DateTime.now();
 export const activities = [
     {
         id: '493190c9-5b61-4912-afe5-78c21f1044d7',
-        icon: 'heroicons_solid:star',
+        icon: 'heroicons_outline:star',
         description: 'Your submission has been accepted',
         date: now.minus({ minutes: 25 }).toISO(), // 25 minutes ago
         extraContent: `<div class="font-bold">Congratulations for your acceptance!</div><br>
@@ -25,7 +25,7 @@ export const activities = [
     },
     {
         id: 'b91ccb58-b06c-413b-b389-87010e03a120',
-        icon: 'heroicons_solid:envelope',
+        icon: 'heroicons_outline:envelope',
         description: 'You have 15 unread mails across 3 mailboxes',
         date: now.minus({ hours: 3 }).toISO(), // 3 hours ago
         linkedContent: 'Mailbox',
@@ -34,7 +34,7 @@ export const activities = [
     },
     {
         id: '541416c9-84a7-408a-8d74-27a43c38d797',
-        icon: 'heroicons_solid:arrow-path',
+        icon: 'heroicons_outline:arrow-path',
         description:
             'Your <strong>Docker container</strong> is ready to publish',
         date: now.minus({ hours: 5 }).toISO(), // 5 hours ago
@@ -58,7 +58,7 @@ export const activities = [
     },
     {
         id: 'b85c2338-cc98-4140-bbf8-c226ce4e395e',
-        icon: 'heroicons_solid:envelope',
+        icon: 'heroicons_outline:envelope',
         description: 'You have 3 new mails',
         date: now.minus({ day: 1 }).toISO(), // 1 day ago
         extraContent: `<ol class="list-decimal list-inside space-y-2">
@@ -81,14 +81,14 @@ export const activities = [
     },
     {
         id: '8f8e1bf9-4661-4939-9e43-390957b60f42',
-        icon: 'heroicons_solid:star',
+        icon: 'heroicons_outline:star',
         description:
             'Your submission has been accepted and you are ready to sign-up for the final assigment which will be ready in 2 days',
         date: now.minus({ days: 3 }).toISO(), // 3 days ago
     },
     {
         id: '30af917b-7a6a-45d1-822f-9e7ad7f8bf69',
-        icon: 'heroicons_solid:arrow-path',
+        icon: 'heroicons_outline:arrow-path',
         description: 'Your Vagrant container is ready to download',
         date: now.minus({ day: 4 }).toISO(), // 4 days ago
     },

@@ -13,7 +13,7 @@
 
         <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
             <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
-                <mat-icon class="icon-size-5" matPrefix svgIcon="heroicons_solid:magnifying-glass"></mat-icon>
+                <mat-icon class="icon-size-5" matPrefix svgIcon="heroicons_outline:magnifying-glass"></mat-icon>
                 <input matInput [formControl]="searchInputControl" autocomplete="off"
                     placeholder="Buscar colaboradores" />
             </mat-form-field>
@@ -103,7 +103,7 @@
                             <div class="flex justify-center gap-2">
                                 <button mat-icon-button matTooltip="Ver detalles" (click)="toggleDetails(usuario)">
                                     <mat-icon class="icon-size-5"
-                                        [svgIcon]="selectedUsuario?.id === usuario.id ? 'heroicons_solid:chevron-up' : 'heroicons_solid:chevron-down'">
+                                        [svgIcon]="selectedUsuario?.id === usuario.id ? 'heroicons_outline:chevron-up' : 'heroicons_outline:chevron-down'">
                                     </mat-icon>
                                 </button>
                             </div>

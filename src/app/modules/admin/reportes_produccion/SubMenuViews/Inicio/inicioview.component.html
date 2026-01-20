@@ -1,85 +1,269 @@
 <div class="flex flex-col min-w-0 flex-auto overflow-hidden bg-gray-50 dark:bg-gray-900">
-    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+
+    <!-- CONTENIDO -->
     <div class="flex flex-auto overflow-hidden">
         <div class="flex flex-col flex-auto overflow-y-auto">
-            <div class="max-w-7xl mx-auto w-full px-4 md:px-6 pb-6">
+            <div class="max-w-7xl mx-auto w-full px-4 md:px-6 py-4">
 
-                <!-- TABS DE INICIO -->
-                <mat-tab-group class="tabs-pestanas" animationDuration="300ms" [disableRipple]="true"
-                    [(selectedIndex)]="selectedTabIndex" (selectedIndexChange)="onTabChange($event)">
-
-                    <!-- TAB: PROCESOS -->
-                    <mat-tab>
-                        <ng-template mat-tab-label>
-                            <div class="flex items-center gap-2 px-3 py-2">
-                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:cog-6-tooth'"
-                                    [ngClass]="selectedTabIndex === 0 ? 'text-yellow-500' : 'text-gray-400'">
+                <!-- MÉTRICAS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <ng-container *ngFor="let metric of metrics; let i = index">
+                        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl p-4" [ngClass]="{
+                                 'border-l-4 border-blue-500': i === 0,
+                                 'border-l-4 border-green-500': i === 1,
+                                 'border-l-4 border-amber-500': i === 2,
+                                 'border-l-4 border-purple-500': i === 3,
+                                 'border-l-4 border-indigo-500': i === 4,
+                                 'border-l-4 border-pink-500': i === 5
+                             }">
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="text-base text-gray-600 dark:text-gray-400">
+                                    {{ metric.title }}
+                                </div>
+                                <mat-icon class="icon-size-5" [ngClass]="{
+                                        'text-blue-500': i === 0,
+                                        'text-green-500': i === 1,
+                                        'text-amber-500': i === 2,
+                                        'text-purple-500': i === 3,
+                                        'text-indigo-500': i === 4,
+                                        'text-pink-500': i === 5
+                                    }">
+                                    {{ metric.icon }}
                                 </mat-icon>
-                                <span class="font-medium">Procesos</span>
                             </div>
-                        </ng-template>
-                        <ng-template matTabContent>
-                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
-                                <tabs-procesos-tab></tabs-procesos-tab>
-                            </div>
-                        </ng-template>
-                    </mat-tab>
 
-                    <!-- TAB: POR REVISAR -->
-                    <mat-tab>
-                        <ng-template mat-tab-label>
-                            <div class="flex items-center gap-2 px-3 py-2">
-                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:clock'"
-                                    [ngClass]="selectedTabIndex === 1 ? 'text-violet-500' : 'text-gray-400'">
-                                </mat-icon>
-                                <span class="font-medium">Por revisar</span>
-                            </div>
-                        </ng-template>
-                        <ng-template matTabContent>
-                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
-                                <tabs-por-revisar></tabs-por-revisar>
-                            </div>
-                        </ng-template>
-                    </mat-tab>
+                            <ng-container *ngIf="!metric.loading; else loading">
+                                <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                                    {{ formatNumber(metric.value) }}
+                                </div>
+                            </ng-container>
+                            <ng-template #loading>
+                                <div class="h-8 flex items-center">
+                                    <mat-spinner diameter="20"></mat-spinner>
+                                </div>
+                            </ng-template>
 
-                    <!-- TAB: SALDOS -->
-                    <mat-tab>
-                        <ng-template mat-tab-label>
-                            <div class="flex items-center gap-2 px-3 py-2">
-                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:archive-box'"
-                                    [ngClass]="selectedTabIndex === 2 ? 'text-cyan-400' : 'text-gray-400'">
-                                </mat-icon>
-                                <span class="font-medium">Saldos</span>
+                            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <ng-container [ngSwitch]="i">
+                                    <ng-container *ngSwitchCase="0">Kilogramos producidos</ng-container>
+                                    <ng-container *ngSwitchCase="1">Kilogramos revisados</ng-container>
+                                    <ng-container *ngSwitchCase="2">Pendiente de revisión</ng-container>
+                                    <ng-container *ngSwitchCase="3">En inventario</ng-container>
+                                    <ng-container *ngSwitchCase="4">Kilogramos entregados</ng-container>
+                                    <ng-container *ngSwitchCase="5">Pesos mexicanos</ng-container>
+                                </ng-container>
                             </div>
-                        </ng-template>
-                        <ng-template matTabContent>
-                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
-                                <tabs-saldos></tabs-saldos>
-                            </div>
-                        </ng-template>
-                    </mat-tab>
+                        </div>
+                    </ng-container>
+                </div>
 
-                    <!-- TAB: EMBARQUES -->
-                    <mat-tab>
-                        <ng-template mat-tab-label>
-                            <div class="flex items-center gap-2 px-3 py-2">
-                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:truck'"
-                                    [ngClass]="selectedTabIndex === 3 ? 'text-pink-500' : 'text-gray-400'">
-                                </mat-icon>
-                                <span class="font-medium">Entregado a embarques</span>
-                            </div>
-                        </ng-template>
-                        <ng-template matTabContent>
-                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
-                                <tabs-embarques></tabs-embarques>
-                            </div>
-                        </ng-template>
-                    </mat-tab>
+                <!-- TABLAS -->
+                <div class="space-y-6">
 
-                </mat-tab-group>
+                    <!-- TEJIDO -->
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                                    <mat-icon class="text-blue-600 dark:text-blue-400 text-lg">texture</mat-icon>
+                                </div>
+                                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Resumen de tejido</h2>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-hidden">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                                        <th class="px-3 py-3 text-left text-sm text-black dark:text-white ">
+                                            Departamento
+                                        </th>
+                                        <th class="px-3 py-3 text-left text-sm text-black dark:text-white ">
+                                            Proceso
+                                        </th>
+                                        <th class="px-3 py-3 text-right text-sm text-black dark:text-white ">
+                                            Piezas
+                                        </th>
+                                        <th class="px-3 py-3 text-right text-sm text-black dark:text-white ">
+                                            Cantidad
+                                        </th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let item of tejidoResumen; let isLast = last"
+                                        class="hover:bg-gray-50 dark:hover:bg-gray-700/30" [class.border-b]="!isLast"
+                                        [class.border-gray-100]="!isLast" [class.dark:border-gray-700]="!isLast">
+                                        <td class="px-3 py-4 text-sm text-gray-900 dark:text-white font-medium">
+                                            {{ item.departamento }}
+                                        </td>
+                                        <td class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300">
+                                            {{ item.proceso }}
+                                        </td>
+                                        <td class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300 text-right">
+                                            {{ formatNumber(+item.PIEZAS) }}
+                                        </td>
+                                        <td
+                                            class="px-3 py-4 text-sm text-gray-900 dark:text-white text-right font-medium">
+                                            {{ formatNumber(+item.CANTIDAD) }}
+                                        </td>
+
+                                    </tr>
+                                    <tr *ngIf="tejidoResumen.length === 0">
+                                        <td colspan="4" class="px-6 py-12 text-center">
+                                            <mat-icon
+                                                class="text-gray-300 dark:text-gray-600 text-4xl mb-2">inbox</mat-icon>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">No hay datos disponibles
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ACABADO -->
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
+                                    <mat-icon
+                                        class="text-purple-600 dark:text-purple-400 text-lg">auto_fix_high</mat-icon>
+                                </div>
+                                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Resumen de acabado
+                                </h2>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-hidden">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                                        <th class="px-2 md:px-3 py-3 text-left text-sm text-black dark:text-white ">
+                                            Departamento
+                                        </th>
+                                        <th class="px-2 py-3 text-left text-sm text-black dark:text-white ">
+                                            Proceso
+                                        </th>
+                                        <th class="px-2 py-3 text-right text-sm text-black dark:text-white ">
+                                            Piezas
+                                        </th>
+                                        <th class="px-2 py-3 text-right text-sm text-black dark:text-white ">
+                                            Cantidad
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let item of acabadoResumen; let isLast = last"
+                                        class="hover:bg-gray-50 dark:hover:bg-gray-700/30" [class.border-b]="!isLast"
+                                        [class.border-gray-100]="!isLast" [class.dark:border-gray-700]="!isLast">
+                                        <td class="px-3 py-4 text-sm text-gray-900 dark:text-white font-medium">
+                                            {{ item.departamento }}
+                                        </td>
+                                        <td class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300">
+                                            {{ item.proceso }}
+                                        </td>
+                                        <td class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300 text-right">
+                                            {{ formatNumber(+item.PIEZAS) }}
+                                        </td>
+                                        <td
+                                            class="px-6 py-4 text-sm text-gray-900 dark:text-white text-right font-medium">
+                                            {{ formatNumber(+item.CANTIDAD) }}
+                                        </td>
+                                    </tr>
+                                    <tr *ngIf="acabadoResumen.length === 0">
+                                        <td colspan="4" class="px-6 py-12 text-center">
+                                            <mat-icon
+                                                class="text-gray-300 dark:text-gray-600 text-4xl mb-2">inbox</mat-icon>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">No hay datos disponibles
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- PROCESOS GRID -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                        <!-- ESTAMPADOS -->
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
+                                        <mat-icon
+                                            class="text-orange-600 dark:text-orange-400 text-lg">palette</mat-icon>
+                                    </div>
+                                    <h2 class="text-base font-semibold text-gray-900 dark:text-white">Estampados</h2>
+                                </div>
+                            </div>
+
+                            <div class="p-6">
+                                <div class="space-y-0">
+                                    <div *ngFor="let item of estampadosResumen; let isLast = last"
+                                        class="flex justify-between items-center py-3" [class.border-b]="!isLast"
+                                        [class.border-gray-100]="!isLast" [class.dark:border-gray-700]="!isLast">
+                                        <span class="text-sm text-gray-600 dark:text-gray-300">
+                                            {{ item.proceso }}
+                                        </span>
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                            {{ formatNumber(+item.CANTIDAD) }}
+                                        </span>
+                                    </div>
+                                    <div *ngIf="estampadosResumen.length === 0" class="text-center py-8">
+                                        <mat-icon
+                                            class="text-gray-300 dark:text-gray-600 text-4xl mb-2">inbox</mat-icon>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">No hay datos disponibles</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TINTORERÍA -->
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center">
+                                        <mat-icon class="text-cyan-600 dark:text-cyan-400 text-lg">water_drop</mat-icon>
+                                    </div>
+                                    <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tintorería</h2>
+                                </div>
+                            </div>
+
+                            <div class="p-6">
+                                <div class="space-y-0">
+                                    <div *ngFor="let item of tintoreriaResumen; let isLast = last"
+                                        class="flex justify-between items-center py-3" [class.border-b]="!isLast"
+                                        [class.border-gray-100]="!isLast" [class.dark:border-gray-700]="!isLast">
+                                        <span class="text-sm text-gray-600 dark:text-gray-300">
+                                            {{ item.proceso }}
+                                        </span>
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                            {{ formatNumber(+item.CANTIDAD) }}
+                                        </span>
+                                    </div>
+                                    <div *ngIf="tintoreriaResumen.length === 0" class="text-center py-8">
+                                        <mat-icon
+                                            class="text-gray-300 dark:text-gray-600 text-4xl mb-2">inbox</mat-icon>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">No hay datos disponibles</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
 
             </div>
         </div>
     </div>
-
 </div>

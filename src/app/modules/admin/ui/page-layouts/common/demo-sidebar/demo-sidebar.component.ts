@@ -31,7 +31,7 @@ import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types
                 <div class="flex items-center">
                     <mat-icon
                         class="mr-2 icon-size-5"
-                        [svgIcon]="'heroicons_solid:circle-stack'"
+                        [svgIcon]="'heroicons_outline:circle-stack'"
                     ></mat-icon>
                     <div class="text-lg font-semibold">Storage</div>
                 </div>
@@ -52,7 +52,7 @@ import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types
                 <div class="flex items-center">
                     <mat-icon
                         class="mr-2 icon-size-5"
-                        [svgIcon]="'heroicons_solid:users'"
+                        [svgIcon]="'heroicons_outline:users'"
                     ></mat-icon>
                     <div class="text-lg font-semibold">Users</div>
                 </div>

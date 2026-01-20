@@ -51,7 +51,7 @@
             <div class="w-full">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Nombre de usuario</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:user'" matPrefix></mat-icon>
                     <input [formControlName]="'username'" maxlength="18" matInput />
 
                     <mat-error *ngIf="accountForm.get('username')?.hasError('required')">
@@ -71,7 +71,7 @@
             <div class="w-full">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Nombre</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:user'" matPrefix></mat-icon>
                     <input [formControlName]="'name'" maxlength="35" matInput />
 
                     <mat-error *ngIf="accountForm.get('name')?.hasError('required')">
@@ -91,7 +91,7 @@
             <div class="w-full">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Correo electrónico</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:envelope'" matPrefix></mat-icon>
                     <input [formControlName]="'email'" maxlength="40" matInput />
 
                     <mat-error *ngIf="accountForm.get('email')?.hasError('required')">
@@ -111,7 +111,7 @@
             <div class="w-full">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Teléfono</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:phone'" matPrefix></mat-icon>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:phone'" matPrefix></mat-icon>
                     <input [formControlName]="'phone'" maxlength="10" matInput />
 
                     <mat-error *ngIf="accountForm.get('phone')?.hasError('required')">
@@ -206,14 +206,14 @@
         <!-- Mensajes -->
         <div *ngIf="mensajeExito"
             class="mb-4 flex items-start gap-3 rounded-lg border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-3 shadow-sm">
-            <mat-icon class="mt-0.5 text-green-600 icon-size-5" [svgIcon]="'heroicons_solid:check-circle'"></mat-icon>
+            <mat-icon class="mt-0.5 text-green-600 icon-size-5" [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
             <span class="flex-1 text-sm font-medium text-green-800">{{ mensajeExito }}</span>
         </div>
 
         <div *ngIf="mensajeError"
             class="mb-4 flex items-start gap-3 rounded-lg border border-red-300 bg-gradient-to-r from-red-50 to-rose-50 px-4 py-3 shadow-sm">
             <mat-icon class="mt-0.5 text-red-600 icon-size-5"
-                [svgIcon]="'heroicons_solid:exclamation-circle'"></mat-icon>
+                [svgIcon]="'heroicons_outline:exclamation-circle'"></mat-icon>
             <span class="flex-1 text-sm font-medium text-red-800">{{ mensajeError }}</span>
         </div>
 

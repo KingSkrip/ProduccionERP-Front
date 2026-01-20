@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { ProcesosTabComponent } from '../../list/tabs/procesos/procesos-tab.compoonent';
+import { AcabadoRealTabComponent } from '../../list/tabs/acabadoreal/acabadoreal-tab.component';
 
 @Component({
     selector: 'acabado-real-view',
@@ -11,7 +12,8 @@ import { ProcesosTabComponent } from '../../list/tabs/procesos/procesos-tab.comp
     imports: [
         CommonModule,
         MatIconModule,
-        ProcesosTabComponent
+        AcabadoRealTabComponent
+      
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })

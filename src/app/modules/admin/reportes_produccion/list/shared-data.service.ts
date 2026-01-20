@@ -102,7 +102,7 @@ export class SharedDataService {
         this.datosTejidoResumenSource.next(datos);
         this.datosTejidoResumenFiltradosSource.next(datosFiltrados);
     }
-    
+
     // =======================
     // TEJIDO
     // =======================
@@ -188,6 +188,24 @@ export class SharedDataService {
         this.recargarDatosSource.next(false);
     }
 
+
+
+    // =======================
+    // ACABADO
+    // =======================
+    private datosAcabadoSource = new BehaviorSubject<any[]>([]);
+    private datosAcabadoFiltradosSource = new BehaviorSubject<any[]>([]);
+
+    datosAcabado$ = this.datosAcabadoSource.asObservable();
+    datosAcabadoFiltrados$ = this.datosAcabadoFiltradosSource.asObservable();
+
+    actualizarAcabado(datos: any[], datosFiltrados: any[]): void {
+        this.datosAcabadoSource.next(datos);
+        this.datosAcabadoFiltradosSource.next(datosFiltrados);
+    }
+
+
+
     // =======================
     // LIMPIEZA OPCIONAL
     // =======================
@@ -196,6 +214,13 @@ export class SharedDataService {
         this.datosFiltradosSource.next([]);
         this.datosEstampadosSource.next([]);
         this.datosTintoreriaSource.next([]);
+
+
+        this.datosAcabadoSource.next([]);
+        this.datosAcabadoFiltradosSource.next([]);
+
+
+
         this.datosTejidoSource.next([]);
         this.datosTejidoFiltradosSource.next([]);
         this.datosRevisadoSource.next([]);
@@ -207,7 +232,10 @@ export class SharedDataService {
         this.datosSaldosSource.next([]);
         this.datosSaldosFiltradosSource.next([]);
         this.datosFacturadoSource.next(null);
+
+
     }
+
 
     limpiarFiltros(): void {
         this.filtrosGlobalesSource.next({

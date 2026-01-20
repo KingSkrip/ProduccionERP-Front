@@ -68,7 +68,7 @@
                     <mat-icon
                         matPrefix
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:magnifying-glass'"
+                        [svgIcon]="'heroicons_outline:magnifying-glass'"
                     ></mat-icon>
                     <input
                         (input)="filterByQuery(query.value)"
@@ -131,7 +131,7 @@
                                             <mat-icon
                                                 class="text-green-600 icon-size-5"
                                                 [svgIcon]="
-                                                    'heroicons_solid:check-badge'
+                                                    'heroicons_outline:check-badge'
                                                 "
                                                 [matTooltip]="
                                                     'You completed this course at least once'
@@ -154,7 +154,7 @@
                                 >
                                     <mat-icon
                                         class="text-hint icon-size-5"
-                                        [svgIcon]="'heroicons_solid:clock'"
+                                        [svgIcon]="'heroicons_outline:clock'"
                                     ></mat-icon>
                                     <div class="ml-1.5">
                                         {{ course.duration }} minutes
@@ -167,7 +167,7 @@
                                     <mat-icon
                                         class="text-hint icon-size-5"
                                         [svgIcon]="
-                                            'heroicons_solid:academic-cap'
+                                            'heroicons_outline:academic-cap'
                                         "
                                     ></mat-icon>
                                     @if (course.progress.completed === 0) {
@@ -281,7 +281,7 @@
                                             <mat-icon
                                                 class="ml-1.5 icon-size-5"
                                                 [svgIcon]="
-                                                    'heroicons_solid:arrow-small-right'
+                                                    'heroicons_outline:arrow-small-right'
                                                 "
                                             ></mat-icon>
                                         </span>

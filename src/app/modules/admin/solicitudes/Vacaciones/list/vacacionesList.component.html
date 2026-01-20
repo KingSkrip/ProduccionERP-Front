@@ -16,7 +16,7 @@
             <mat-form-field *ngIf="tabActiva !== 'pendientes'" 
                 class="fuse-mat-dense fuse-mat-rounded min-w-48" 
                 [subscriptSizing]="'dynamic'">
-                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:calendar'"></mat-icon>
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
                 <mat-select [formControl]="filtroFechaControl" placeholder="Filtrar por fecha">
                     <mat-option *ngFor="let opcion of opcionesFecha" [value]="opcion.value">
                         {{ opcion.label }}
@@ -26,7 +26,7 @@
 
             <!-- Search -->
             <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
-                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
                 <input matInput [formControl]="searchControl" [autocomplete]="'off'"
                     [placeholder]="'Buscar solicitudes...'" #searchInput>
             </mat-form-field>
@@ -124,9 +124,9 @@
                                     [class.bg-yellow-500]="tabActiva === 'pendientes'"
                                     [class.bg-green-500]="tabActiva === 'aprobadas'"
                                     [class.bg-red-500]="tabActiva === 'rechazadas'">
-                                    <mat-icon class="icon-size-4 text-white" [svgIcon]="tabActiva === 'pendientes' ? 'heroicons_solid:clock' : 
-                                                         tabActiva === 'aprobadas' ? 'heroicons_solid:check' : 
-                                                         'heroicons_solid:x-mark'">
+                                    <mat-icon class="icon-size-4 text-white" [svgIcon]="tabActiva === 'pendientes' ? 'heroicons_outline:clock' : 
+                                                         tabActiva === 'aprobadas' ? 'heroicons_outline:check' : 
+                                                         'heroicons_outline:x-mark'">
                                     </mat-icon>
                                 </div>
                             </div>
@@ -162,21 +162,21 @@
                             <div class="flex flex-wrap gap-4 text-sm" *ngIf="getHistorial(solicitud) as h">
                                 <div class="flex items-center space-x-1">
                                     <mat-icon class="icon-size-4 text-secondary"
-                                        svgIcon="heroicons_solid:calendar"></mat-icon>
+                                        svgIcon="heroicons_outline:calendar"></mat-icon>
                                     <span class="text-secondary">Del:</span>
                                     <span class="font-medium">{{ h.fecha_inicio }}</span>
                                 </div>
 
                                 <div class="flex items-center space-x-1">
                                     <mat-icon class="icon-size-4 text-secondary"
-                                        svgIcon="heroicons_solid:calendar"></mat-icon>
+                                        svgIcon="heroicons_outline:calendar"></mat-icon>
                                     <span class="text-secondary">Al:</span>
                                     <span class="font-medium">{{h.fecha_fin }}</span>
                                 </div>
 
                                 <div class="flex items-center space-x-1">
                                     <mat-icon class="icon-size-4 text-secondary"
-                                        svgIcon="heroicons_solid:clock"></mat-icon>
+                                        svgIcon="heroicons_outline:clock"></mat-icon>
                                     <span class="font-medium text-primary">{{ h.dias || 0 }} días</span>
                                 </div>
                             </div>
@@ -186,7 +186,7 @@
                                 *ngIf="solicitud.historial?.comentarios || solicitud.workorder?.comentarios_solicitante">
                                 <p class="text-sm text-secondary flex items-start">
                                     <mat-icon class="icon-size-4 mr-2 mt-0.5"
-                                        [svgIcon]="'heroicons_solid:chat-bubble-left-ellipsis'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:chat-bubble-left-ellipsis'"></mat-icon>
                                     <span>
                                         <strong>Motivo:</strong>
                                         {{ solicitud.historial?.comentarios ||
@@ -197,13 +197,13 @@
 
                             <div class="mt-2 flex items-center justify-between">
                                 <div class="flex items-center text-xs text-secondary">
-                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_solid:clock'"></mat-icon>
+                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
                                     {{ getTiempoDesde(solicitud.workorder?.fecha_solicitud ) }}
                                 </div>
                                 <div *ngIf="tabActiva === 'pendientes' && tienePocosDias(solicitud)"
                                     class="flex items-center text-xs text-amber-600 dark:text-amber-400">
                                     <mat-icon class="icon-size-4 mr-1"
-                                        [svgIcon]="'heroicons_solid:exclamation-triangle'"></mat-icon>
+                                        [svgIcon]="'heroicons_outline:exclamation-triangle'"></mat-icon>
                                     Días disponibles: {{ (solicitud.historial?.dias_disponibles || 0) -
                                     (solicitud.historial?.dias_disfrutados || 0) }}
                                     de {{ solicitud.historial?.dias_disponibles || 0 }}
@@ -217,13 +217,13 @@
                         <button (click)="aprobarSolicitud(solicitud)"
                             class="flex-1 sm:flex-initial px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
                             mat-flat-button type="button" [disabled]="isLoading">
-                            <mat-icon class="icon-size-5 mr-1" [svgIcon]="'heroicons_solid:check'"></mat-icon>
+                            <mat-icon class="icon-size-5 mr-1" [svgIcon]="'heroicons_outline:check'"></mat-icon>
                             Aprobar
                         </button>
                         <button (click)="rechazarSolicitud(solicitud)"
                             class="flex-1 sm:flex-initial px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
                             mat-flat-button type="button" [disabled]="isLoading">
-                            <mat-icon class="icon-size-5 mr-1" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                            <mat-icon class="icon-size-5 mr-1" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
                             Rechazar
                         </button>
                     </div>

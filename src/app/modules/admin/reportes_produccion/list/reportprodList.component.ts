@@ -34,7 +34,7 @@ import { EmbarquesTabComponent } from './tabs/embarques/embarques.component';
 import { EstampadosTabComponent } from './tabs/estampados/estampados-tab.compoonent';
 import { TintoreriaTabComponent } from './tabs/tintoreria/tintoreria-tab.compoonent';
 import { FacturadoTabComponent } from './tabs/facturado/facturado-tab.compoonent';
-import { TejidoTabComponent } from './tabs/tejido/tejido-tab.component';
+
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 
 
@@ -108,6 +108,8 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
 
     private _unsubscribeAll = new Subject<void>();
 
+    mostrarPanelFechas = false;
+    
     constructor(
         private _cd: ChangeDetectorRef,
         private _reportService: ReportProdService,
@@ -147,6 +149,13 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.next();
         this._unsubscribeAll.complete();
     }
+
+    
+    toggleDatePanel(): void {
+        this.mostrarPanelFechas = !this.mostrarPanelFechas;
+        this._cd.markForCheck();
+    }
+
 
     private cargarDatosProcesos(): void {
         const filtros = this._sharedDataService.obtenerFiltros();

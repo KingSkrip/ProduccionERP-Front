@@ -61,6 +61,16 @@ export interface FacturadoResumenResponse {
 }
 
 
+
+export interface AcabadoResumen {
+    departamento: string;
+    proceso: string;
+    CANTIDAD: number | string;
+    PIEZAS: number | string;
+}
+
+
+
 @Injectable({ providedIn: 'root' })
 export class ReportProdService {
     private readonly apiUrl = APP_CONFIG.apiUrl;
@@ -433,6 +443,45 @@ export class ReportProdService {
                 map(resp => resp.data),
                 catchError(err => {
                     console.error('Error al obtener resumen de TEJIDO', err);
+                    return throwError(() => new Error(err.message || 'Error desconocido'));
+                })
+            );
+    }
+
+
+
+
+
+
+
+    getAcabado(fechaInicio?: Date, fechaFin?: Date): Observable<AcabadoResumen[]> {
+        let params = new HttpParams();
+
+        const formatoFirebird = (fecha: Date, esInicio: boolean): string => {
+            const dia = fecha.getDate().toString().padStart(2, '0');
+            const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+            const anio = fecha.getFullYear();
+            const hora = esInicio ? '00:00:00' : '23:59:59';
+            return `${dia}.${mes}.${anio} ${hora}`;
+        };
+
+        if (fechaInicio) {
+            params = params.set('fecha_inicio', formatoFirebird(fechaInicio, true));
+        }
+
+        if (fechaFin) {
+            params = params.set('fecha_fin', formatoFirebird(fechaFin, false));
+        }
+
+        return this._httpClient
+            .get<{ success: boolean; data: AcabadoResumen[] }>(
+                `${this.apiUrl}reportes-produccion/acabado`,
+                { params }
+            )
+            .pipe(
+                map(resp => resp.data || []),
+                catchError(err => {
+                    console.error('Error al obtener acabado', err);
                     return throwError(() => new Error(err.message || 'Error desconocido'));
                 })
             );
