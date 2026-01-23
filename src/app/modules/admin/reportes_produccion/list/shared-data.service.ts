@@ -51,6 +51,8 @@ export class SharedDataService {
         }
     }
 
+
+
     obtenerFiltros(): FiltrosGlobales {
         return this.filtrosGlobalesSource.value;
     }
@@ -180,6 +182,11 @@ export class SharedDataService {
     private datosFacturadoSource = new BehaviorSubject<any>(null);
     datosFacturado$ = this.datosFacturadoSource.asObservable();
 
+
+    setDatosFacturado(v: any): void {
+        this.datosFacturadoSource.next(v);
+    }
+
     actualizarFacturado(data: any): void {
         this.datosFacturadoSource.next(data);
     }
@@ -187,8 +194,6 @@ export class SharedDataService {
     confirmarRecargaConsumida(): void {
         this.recargarDatosSource.next(false);
     }
-
-
 
     // =======================
     // ACABADO
@@ -203,8 +208,6 @@ export class SharedDataService {
         this.datosAcabadoSource.next(datos);
         this.datosAcabadoFiltradosSource.next(datosFiltrados);
     }
-
-
 
     // =======================
     // LIMPIEZA OPCIONAL

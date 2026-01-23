@@ -44,8 +44,7 @@ export class FinanceComponent implements OnInit, AfterViewInit, OnDestroy {
 
     data: any;
     accountBalanceOptions: ApexOptions;
-    recentTransactionsDataSource: MatTableDataSource<any> =
-        new MatTableDataSource();
+    recentTransactionsDataSource: MatTableDataSource<any> =new MatTableDataSource();
     recentTransactionsTableColumns: string[] = [
         'transactionId',
         'date',

@@ -70,19 +70,20 @@
 </div>
 
 <!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
-<div *ngIf="!loading && datosFiltrados.length === 0 && cargaInicial" class="flex flex-col items-center justify-center py-16 px-4">
+<div *ngIf="!loading && datosFiltrados.length === 0 && cargaInicial"
+    class="flex flex-col items-center justify-center py-16 px-4">
     <div class="relative mb-6">
         <div class="w-24 h-24 rounded-2xl bg-red-500/10 flex items-center justify-center">
             <mat-icon class="icon-size-12 text-red-500/40" [svgIcon]="'heroicons_outline:paint-brush'"></mat-icon>
         </div>
     </div>
-    
+
     <h3 class="text-xl font-bold mb-2">No hay datos de estampados</h3>
     <p class="text-secondary text-center max-w-md mb-4">
         No se encontraron registros con los filtros seleccionados.
         <br>Intenta ajustar tus criterios de búsqueda o seleccionar otro departamento.
     </p>
-    
+
     <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
         <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
         Limpiar filtros
@@ -90,7 +91,7 @@
 </div>
 
 <!-- Tabla -->
-<div class="mt-6 overflow-x-hidden md:overflow-x-auto md:px-8" *ngIf="!loading && datosFiltrados.length > 0">
+<div class="mt-6 overflow-x-hidden md:overflow-x-auto md:pb-8 md:px-8" *ngIf="!loading && datosFiltrados.length > 0">
 
     <table class="w-full bg-card shadow-sm rounded-2xl overflow-hidden">
         <thead class="bg-gray-50 dark:bg-gray-800">

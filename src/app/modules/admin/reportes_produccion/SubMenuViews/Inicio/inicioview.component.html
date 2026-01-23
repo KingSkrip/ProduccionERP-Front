@@ -1,269 +1,613 @@
-<div class="flex flex-col min-w-0 flex-auto overflow-hidden bg-gray-50 dark:bg-gray-900">
+<!-- INICIO - VISTA RESUMEN -->
+<div class="p-4 md:p-6 max-w-[1600px] mx-auto">
 
-    <!-- CONTENIDO -->
-    <div class="flex flex-auto overflow-hidden">
-        <div class="flex flex-col flex-auto overflow-y-auto">
-            <div class="max-w-7xl mx-auto w-full px-4 md:px-6 py-4">
+    <!-- Header -->
+    <div class="mb-6 md:mb-8">
 
-                <!-- MÉTRICAS -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                    <ng-container *ngFor="let metric of metrics; let i = index">
-                        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl p-4" [ngClass]="{
-                                 'border-l-4 border-blue-500': i === 0,
-                                 'border-l-4 border-green-500': i === 1,
-                                 'border-l-4 border-amber-500': i === 2,
-                                 'border-l-4 border-purple-500': i === 3,
-                                 'border-l-4 border-indigo-500': i === 4,
-                                 'border-l-4 border-pink-500': i === 5
-                             }">
-                            <div class="flex items-center justify-between mb-1">
-                                <div class="text-base text-gray-600 dark:text-gray-400">
-                                    {{ metric.title }}
-                                </div>
-                                <mat-icon class="icon-size-5" [ngClass]="{
-                                        'text-blue-500': i === 0,
-                                        'text-green-500': i === 1,
-                                        'text-amber-500': i === 2,
-                                        'text-purple-500': i === 3,
-                                        'text-indigo-500': i === 4,
-                                        'text-pink-500': i === 5
-                                    }">
-                                    {{ metric.icon }}
-                                </mat-icon>
+        <!-- Toggle Vista -->
+        <div class="flex gap-2 p-1 bg-gray-100 rounded-lg w-fit">
+            <button (click)="cambiarVista('general')" [class.bg-white]="vistaActual === 'general'"
+                [class.shadow]="vistaActual === 'general'" [class.text-blue-600]="vistaActual === 'general'"
+                [class.text-gray-600]="vistaActual !== 'general'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2">
+                <mat-icon class="text-lg w-5 h-5">grid_view</mat-icon>
+                General
+            </button>
+            <button (click)="cambiarVista('detalle')" [class.bg-white]="vistaActual === 'detalle'"
+                [class.shadow]="vistaActual === 'detalle'" [class.text-blue-600]="vistaActual === 'detalle'"
+                [class.text-gray-600]="vistaActual !== 'detalle'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2">
+                <mat-icon class="text-lg w-5 h-5">format_list_bulleted</mat-icon>
+                Detalle
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- VISTA GENERAL -->
+    <!-- ========================================= -->
+    <div *ngIf="vistaActual === 'general'">
+
+        <!-- Métricas Principales - 6 tarjetas -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-5 mb-6 md:mb-8">
+            <div *ngFor="let metric of metricsGenerales"
+                class="relative bg-white rounded-2xl p-4 md:p-5 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden group">
+
+                <!-- Contenido -->
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-3">
+                        <mat-icon [style.color]="metric.color" class="text-xl md:text-2xl w-6 h-6 md:w-7 md:h-7">
+                            {{ metric.icon }}
+                        </mat-icon>
+                        <span
+                            class="text-[10px] md:text-xs font-semibold text-gray-600 uppercase tracking-wide line-clamp-1">
+                            {{ metric.title }}
+                        </span>
+                    </div>
+
+                    <div class="min-h-[45px] flex items-center">
+                        <mat-spinner *ngIf="metric.loading" diameter="28" class="mx-auto"></mat-spinner>
+
+                        <div *ngIf="!metric.loading" class="w-full">
+                            <div class="text-xl md:text-2xl font-bold text-gray-900 truncate">
+                                {{ formatValue(metric.value, metric.format) }}
                             </div>
-
-                            <ng-container *ngIf="!metric.loading; else loading">
-                                <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {{ formatNumber(metric.value) }}
-                                </div>
-                            </ng-container>
-                            <ng-template #loading>
-                                <div class="h-8 flex items-center">
-                                    <mat-spinner diameter="20"></mat-spinner>
-                                </div>
-                            </ng-template>
-
-                            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                <ng-container [ngSwitch]="i">
-                                    <ng-container *ngSwitchCase="0">Kilogramos producidos</ng-container>
-                                    <ng-container *ngSwitchCase="1">Kilogramos revisados</ng-container>
-                                    <ng-container *ngSwitchCase="2">Pendiente de revisión</ng-container>
-                                    <ng-container *ngSwitchCase="3">En inventario</ng-container>
-                                    <ng-container *ngSwitchCase="4">Kilogramos entregados</ng-container>
-                                    <ng-container *ngSwitchCase="5">Pesos mexicanos</ng-container>
-                                </ng-container>
+                            <div *ngIf="metric.subtitle" class="text-[10px] md:text-xs text-gray-500 mt-1">
+                                {{ metric.subtitle }}
                             </div>
                         </div>
-                    </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- GRAFICA FACTURACION -->
+        <div class="mt-8 grid w-full grid-cols-1 gap-8 xl:grid-cols-2">
+            <!-- COLUMNA IZQUIERDA: 3 cards apiladas -->
+            <div class="grid gap-8 grid-cols-1">
+
+                <!-- MONTO SIN IVA -->
+                <div class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow">
+                    <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
+                        <mat-icon class="text-orange-500 opacity-25 icon-size-24 dark:text-orange-400"
+                            [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="flex flex-col">
+                            <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                                Monto sin IVA
+                            </div>
+                            <div class="text-sm font-medium text-orange-600">
+                                Periodo: {{ (filtros$ | async)?.fechaInicio | date:'dd/MM/yyyy' }} - {{ (filtros$ |
+                                async)?.fechaFin | date:'dd/MM/yyyy' }}
+                            </div>
+                        </div>
+                        <div class="-mt-2 ml-auto">
+                            <button mat-icon-button [matMenuTriggerFor]="previousStatementMenu">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                            </button>
+                            <mat-menu #previousStatementMenu="matMenu">
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                        <span>Imprimir</span>
+                                    </span>
+                                </button>
+                            </mat-menu>
+                        </div>
+                    </div>
+                    <div class="-mx-6 mt-4 flex flex-row flex-wrap">
+                        <div class="mx-6 my-3 flex flex-col">
+                            <div class="text-secondary text-sm font-medium leading-none">
+                                Total sin IVA
+                            </div>
+                            <div class="mt-2 text-3xl font-medium leading-none">
+                                {{ importeTotalSinIva | currency:'MXN' }}
+                            </div>
+                        </div>
+                        <div class="mx-6 my-3 flex flex-col">
+                            <div class="text-secondary text-sm font-medium leading-none">
+                                Facturas sin IVA
+                            </div>
+                            <div class="mt-2 text-3xl font-medium leading-none">
+                                {{ facturasSinIva }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- TABLAS -->
-                <div class="space-y-6">
-
-                    <!-- TEJIDO -->
-                    <div
-                        class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-                            <div class="flex items-center space-x-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                                    <mat-icon class="text-blue-600 dark:text-blue-400 text-lg">texture</mat-icon>
-                                </div>
-                                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Resumen de tejido</h2>
+                <!-- MONTO CON IVA -->
+                <div class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow">
+                    <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
+                        <mat-icon class="text-sky-500 opacity-25 icon-size-24 dark:text-sky-400"
+                            [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="flex flex-col">
+                            <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                                Monto con IVA
+                            </div>
+                            <div class="text-sm font-medium text-sky-600">
+                                Periodo: {{ (filtros$ | async)?.fechaInicio | date:'dd/MM/yyyy' }} - {{ (filtros$ |
+                                async)?.fechaFin | date:'dd/MM/yyyy' }}
                             </div>
                         </div>
+                        <div class="-mt-2 ml-auto">
+                            <button mat-icon-button [matMenuTriggerFor]="currentStatementMenu">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'">
+                                </mat-icon>
+                            </button>
+                            <mat-menu #currentStatementMenu="matMenu">
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                        <span>Imprimir</span>
+                                    </span>
+                                </button>
+                            </mat-menu>
+                        </div>
+                    </div>
+                    <div class="-mx-6 mt-4 flex flex-row flex-wrap">
+                        <div class="mx-6 my-3 flex flex-col">
+                            <div class="text-secondary text-sm font-medium leading-none">
+                                Total con IVA
+                            </div>
+                            <div class="mt-2 text-3xl font-medium leading-none">
+                                {{ totalConIva | currency:'MXN' }}
+                            </div>
+                        </div>
+                        <div class="mx-6 my-3 flex flex-col">
+                            <div class="text-secondary text-sm font-medium leading-none">
+                                Facturas con IVA
+                            </div>
+                            <div class="mt-2 text-3xl font-medium leading-none">
+                                {{ facturasConIva }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="overflow-x-hidden">
-                            <table class="min-w-full">
-                                <thead>
-                                    <tr class="border-b border-gray-200 dark:border-gray-700">
-                                        <th class="px-3 py-3 text-left text-sm text-black dark:text-white ">
-                                            Departamento
-                                        </th>
-                                        <th class="px-3 py-3 text-left text-sm text-black dark:text-white ">
-                                            Proceso
-                                        </th>
-                                        <th class="px-3 py-3 text-right text-sm text-black dark:text-white ">
-                                            Piezas
-                                        </th>
-                                        <th class="px-3 py-3 text-right text-sm text-black dark:text-white ">
-                                            Cantidad
-                                        </th>
+            <!-- COLUMNA DERECHA: Gráfica -->
+            <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl shadow">
+                <div class="flex flex-col p-6 pb-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <div class="mr-4 truncate text-lg font-medium leading-6 tracking-tight">
+                                Monto por factura
+                            </div>
+                            <div class="text-secondary font-medium">
+                                Periodo: {{ (filtros$ | async)?.fechaInicio | date:'dd/MM/yyyy' }} - {{ (filtros$ |
+                                async)?.fechaFin | date:'dd/MM/yyyy' }}
+                            </div>
+                        </div>
+                        <div class="ml-2">
+                            <div class="flex flex-col leading-tight">
+                                <span class="text-secondary text-sm font-medium">
+                                    Total:
+                                </span>
+                                <span class="text-secondary text-sm font-medium">
+                                    {{ totalConIva | currency:'MXN' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="accountBalanceOptions?.series?.[0]?.data?.length; else noData">
+                    <apx-chart class="h-full w-full flex-auto" [chart]="accountBalanceOptions.chart"
+                        [fill]="accountBalanceOptions.fill" [series]="accountBalanceOptions.series"
+                        [stroke]="accountBalanceOptions.stroke" [tooltip]="accountBalanceOptions.tooltip"
+                        [xaxis]="accountBalanceOptions.xaxis" [legend]="accountBalanceOptions.legend">
+                    </apx-chart>
+                </div>
+                <ng-template #noData>
+                    <div class="p-6 text-secondary">Sin datos para graficar en el rango seleccionado.</div>
+                </ng-template>
+            </div>
+        </div>
 
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let item of tejidoResumen; let isLast = last"
-                                        class="hover:bg-gray-50 dark:hover:bg-gray-700/30" [class.border-b]="!isLast"
-                                        [class.border-gray-100]="!isLast" [class.dark:border-gray-700]="!isLast">
-                                        <td class="px-3 py-4 text-sm text-gray-900 dark:text-white font-medium">
-                                            {{ item.departamento }}
-                                        </td>
-                                        <td class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300">
-                                            {{ item.proceso }}
-                                        </td>
-                                        <td class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300 text-right">
-                                            {{ formatNumber(+item.PIEZAS) }}
-                                        </td>
-                                        <td
-                                            class="px-3 py-4 text-sm text-gray-900 dark:text-white text-right font-medium">
-                                            {{ formatNumber(+item.CANTIDAD) }}
-                                        </td>
+        <!-- GRAFICA TRIDENTE Detalles de Tintorería, Estampados y Acabado -->
+        <div class="mt-8 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-6">
 
-                                    </tr>
-                                    <tr *ngIf="tejidoResumen.length === 0">
-                                        <td colspan="4" class="px-6 py-12 text-center">
-                                            <mat-icon
-                                                class="text-gray-300 dark:text-gray-600 text-4xl mb-2">inbox</mat-icon>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400">No hay datos disponibles
-                                            </p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+            <!-- COLUMNA PRINCIPAL: Gráfica grande (ocupa 4 columnas) -->
+            <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-3 lg:col-span-4">
+                <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                    Distribución de Procesos
+                </div>
+                <div class="text-secondary font-medium">
+                                Periodo: {{ (filtros$ | async)?.fechaInicio | date:'dd/MM/yyyy' }} - {{ (filtros$ |
+                                async)?.fechaFin | date:'dd/MM/yyyy' }}
+                            </div>
+                <div class="flex flex-auto flex-col">
+                    <apx-chart *ngIf="chartDistribucionProcesos" class="h-80 w-full flex-auto"
+                        [series]="chartDistribucionProcesos.series" [chart]="chartDistribucionProcesos.chart"
+                        [plotOptions]="chartDistribucionProcesos.plotOptions"
+                        [colors]="chartDistribucionProcesos.colors" [dataLabels]="chartDistribucionProcesos.dataLabels"
+                        [stroke]="chartDistribucionProcesos.stroke" [xaxis]="chartDistribucionProcesos.xaxis"
+                        [yaxis]="chartDistribucionProcesos.yaxis" [fill]="chartDistribucionProcesos.fill"
+                        [tooltip]="chartDistribucionProcesos.tooltip" [legend]="chartDistribucionProcesos.legend">
+                    </apx-chart>
+
+                    <div *ngIf="!chartDistribucionProcesos"
+                        class="h-80 w-full flex items-center justify-center text-gray-400">
+                        <div class="text-center">
+                            <mat-icon class="text-6xl mb-2">insights</mat-icon>
+                            <p>Sin datos para graficar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: 3 Cards apiladas (ocupa 2 columnas) -->
+            <div class="grid grid-cols-1 gap-y-6 sm:col-span-3 lg:col-span-2">
+
+                <!-- TINTORERÍA -->
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2">
+                    <div class="flex items-start justify-between">
+                        <div
+                            class="truncate text-lg font-medium leading-6 tracking-tight flex flex-wrap items-start gap-1">
+                            <span>Tintorería </span>
+                            <div class="text-xs text-gray-500 flex flex-wrap gap-1"
+                                *ngFor="let detalle of detallesTintoreria"> - {{ detalle.proceso }} </div>
+                        </div>
+                        <div class="-mr-3 -mt-2 ml-2">
+                            <button mat-icon-button [matMenuTriggerFor]="tintoreriaMenu">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                            </button>
+                            <mat-menu #tintoreriaMenu="matMenu">
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                        <span>Imprimir</span>
+                                    </span>
+                                </button>
+                            </mat-menu>
                         </div>
                     </div>
 
-                    <!-- ACABADO -->
-                    <div
-                        class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-                            <div class="flex items-center space-x-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                                    <mat-icon
-                                        class="text-purple-600 dark:text-purple-400 text-lg">auto_fix_high</mat-icon>
+                    <div class=" flex flex-col" *ngFor="let detalle of detallesTintoreria">
+
+                        <div class="-mx-6 flex flex-row flex-wrap">
+                            <div class="mx-6 my-3 flex flex-col">
+                                <div class="text-secondary text-sm font-medium leading-none">
+                                    Cantidad
                                 </div>
-                                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Resumen de acabado
-                                </h2>
+                                <div class="mt-2 text-3xl font-medium leading-none">
+                                    {{ formatValue(detalle.cantidad, 'decimal') }} kg
+                                </div>
+                            </div>
+                            <div class="mx-6 my-3 flex flex-col">
+                                <div class="text-secondary text-sm font-medium leading-none">
+                                    Piezas
+                                </div>
+                                <div class="mt-2 text-3xl font-medium leading-none">
+                                    {{ formatValue(detalle.piezas, 'number') }}
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="overflow-x-hidden">
-                            <table class="min-w-full">
-                                <thead>
-                                    <tr class="border-b border-gray-200 dark:border-gray-700">
-                                        <th class="px-2 md:px-3 py-3 text-left text-sm text-black dark:text-white ">
-                                            Departamento
-                                        </th>
-                                        <th class="px-2 py-3 text-left text-sm text-black dark:text-white ">
-                                            Proceso
-                                        </th>
-                                        <th class="px-2 py-3 text-right text-sm text-black dark:text-white ">
-                                            Piezas
-                                        </th>
-                                        <th class="px-2 py-3 text-right text-sm text-black dark:text-white ">
-                                            Cantidad
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let item of acabadoResumen; let isLast = last"
-                                        class="hover:bg-gray-50 dark:hover:bg-gray-700/30" [class.border-b]="!isLast"
-                                        [class.border-gray-100]="!isLast" [class.dark:border-gray-700]="!isLast">
-                                        <td class="px-3 py-4 text-sm text-gray-900 dark:text-white font-medium">
-                                            {{ item.departamento }}
-                                        </td>
-                                        <td class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300">
-                                            {{ item.proceso }}
-                                        </td>
-                                        <td class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300 text-right">
-                                            {{ formatNumber(+item.PIEZAS) }}
-                                        </td>
-                                        <td
-                                            class="px-6 py-4 text-sm text-gray-900 dark:text-white text-right font-medium">
-                                            {{ formatNumber(+item.CANTIDAD) }}
-                                        </td>
-                                    </tr>
-                                    <tr *ngIf="acabadoResumen.length === 0">
-                                        <td colspan="4" class="px-6 py-12 text-center">
-                                            <mat-icon
-                                                class="text-gray-300 dark:text-gray-600 text-4xl mb-2">inbox</mat-icon>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400">No hay datos disponibles
-                                            </p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                <!-- ESTAMPADOS -->
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2">
+                    <div class="flex items-start justify-between">
+                        <div
+                            class="truncate text-lg font-medium leading-6 tracking-tight flex flex-wrap items-start gap-1">
+                            <span>Estampado</span>
+                            <div class="text-xs text-gray-500 flex flex-wrap gap-1"
+                                *ngFor="let detalle of detallesEstampados"> - {{ detalle.proceso }} </div>
+                        </div>
+                        <div class="-mr-3 -mt-2 ml-2">
+                            <button mat-icon-button [matMenuTriggerFor]="estampadosMenu">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                            </button>
+                            <mat-menu #estampadosMenu="matMenu">
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                        <span>Imprimir</span>
+                                    </span>
+                                </button>
+                            </mat-menu>
                         </div>
                     </div>
 
-                    <!-- PROCESOS GRID -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                        <!-- ESTAMPADOS -->
-                        <div
-                            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                            <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center space-x-3">
-                                    <div
-                                        class="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
-                                        <mat-icon
-                                            class="text-orange-600 dark:text-orange-400 text-lg">palette</mat-icon>
-                                    </div>
-                                    <h2 class="text-base font-semibold text-gray-900 dark:text-white">Estampados</h2>
+                    <div class=" flex flex-col" *ngFor="let detalle of detallesEstampados">
+                        <div class="-mx-6 flex flex-row flex-wrap">
+                            <div class="mx-6 my-3 flex flex-col">
+                                <div class="text-secondary text-sm font-medium leading-none">
+                                    Cantidad
+                                </div>
+                                <div class="mt-2 text-3xl font-medium leading-none">
+                                    {{ formatValue(detalle.cantidad, 'decimal') }} kg
                                 </div>
                             </div>
-
-                            <div class="p-6">
-                                <div class="space-y-0">
-                                    <div *ngFor="let item of estampadosResumen; let isLast = last"
-                                        class="flex justify-between items-center py-3" [class.border-b]="!isLast"
-                                        [class.border-gray-100]="!isLast" [class.dark:border-gray-700]="!isLast">
-                                        <span class="text-sm text-gray-600 dark:text-gray-300">
-                                            {{ item.proceso }}
-                                        </span>
-                                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                            {{ formatNumber(+item.CANTIDAD) }}
-                                        </span>
-                                    </div>
-                                    <div *ngIf="estampadosResumen.length === 0" class="text-center py-8">
-                                        <mat-icon
-                                            class="text-gray-300 dark:text-gray-600 text-4xl mb-2">inbox</mat-icon>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">No hay datos disponibles</p>
-                                    </div>
+                            <div class="mx-6 my-3 flex flex-col">
+                                <div class="text-secondary text-sm font-medium leading-none">
+                                    Piezas
+                                </div>
+                                <div class="mt-2 text-3xl font-medium leading-none">
+                                    {{ formatValue(detalle.piezas, 'number') }}
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- TINTORERÍA -->
+                <!-- ACABADO REAL -->
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2">
+                    <div class="flex items-start justify-between">
                         <div
-                            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                            <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center space-x-3">
-                                    <div
-                                        class="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center">
-                                        <mat-icon class="text-cyan-600 dark:text-cyan-400 text-lg">water_drop</mat-icon>
-                                    </div>
-                                    <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tintorería</h2>
+                            class="truncate text-lg font-medium leading-6 tracking-tight flex flex-wrap items-start gap-1">
+                            <span>Acabado real</span>
+                            <div class="text-xs text-gray-500 flex flex-wrap gap-1"
+                               *ngFor="let detalle of detallesAcabado"> - {{ detalle.proceso }} </div>
+                        </div>
+                        <div class="-mr-3 -mt-2 ml-2">
+                            <button mat-icon-button [matMenuTriggerFor]="acabadoMenu">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                            </button>
+                            <mat-menu #acabadoMenu="matMenu">
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                        <span>Imprimir</span>
+                                    </span>
+                                </button>
+                            </mat-menu>
+                        </div>
+                    </div>
+
+                    <div class=" flex flex-col" *ngFor="let detalle of detallesAcabado">
+                        <div class="-mx-6 flex flex-row flex-wrap">
+                            <div class="mx-6 my-3 flex flex-col">
+                                <div class="text-secondary text-sm font-medium leading-none">
+                                    Cantidad
+                                </div>
+                                <div class="mt-2 text-3xl font-medium leading-none">
+                                    {{ formatValue(detalle.cantidad, 'decimal') }} kg
                                 </div>
                             </div>
-
-                            <div class="p-6">
-                                <div class="space-y-0">
-                                    <div *ngFor="let item of tintoreriaResumen; let isLast = last"
-                                        class="flex justify-between items-center py-3" [class.border-b]="!isLast"
-                                        [class.border-gray-100]="!isLast" [class.dark:border-gray-700]="!isLast">
-                                        <span class="text-sm text-gray-600 dark:text-gray-300">
-                                            {{ item.proceso }}
-                                        </span>
-                                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                            {{ formatNumber(+item.CANTIDAD) }}
-                                        </span>
-                                    </div>
-                                    <div *ngIf="tintoreriaResumen.length === 0" class="text-center py-8">
-                                        <mat-icon
-                                            class="text-gray-300 dark:text-gray-600 text-4xl mb-2">inbox</mat-icon>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">No hay datos disponibles</p>
-                                    </div>
+                            <div class="mx-6 my-3 flex flex-col">
+                                <div class="text-secondary text-sm font-medium leading-none">
+                                    Piezas
+                                </div>
+                                <div class="mt-2 text-3xl font-medium leading-none">
+                                    {{ formatValue(detalle.piezas, 'number') }}
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
             </div>
+        </div>
+
+
+        <!-- Grid de Gráficas - 2x2 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 mb-6">
+
+            <!-- Gráfica 1: Facturación por Cliente -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm">
+                <div class="flex items-center gap-3 mb-5 pb-4 border-b-2 border-gray-100">
+                    <mat-icon class="text-green-500 text-xl md:text-2xl w-6 h-6">pie_chart</mat-icon>
+                    <h2 class="text-base md:text-lg font-semibold text-gray-900">Top 5 Clientes</h2>
+                </div>
+
+                <div class="min-h-[250px] md:min-h-[300px] flex items-center justify-center">
+                    <apx-chart *ngIf="chartFacturacion" [series]="chartFacturacion.series"
+                        [chart]="chartFacturacion.chart" [labels]="chartFacturacion.labels"
+                        [colors]="chartFacturacion.colors" [legend]="chartFacturacion.legend"
+                        [dataLabels]="chartFacturacion.dataLabels" [plotOptions]="chartFacturacion.plotOptions">
+                    </apx-chart>
+
+                    <div *ngIf="!chartFacturacion && !metricsGenerales[0].loading" class="text-center text-gray-400">
+                        <mat-icon class="text-5xl w-12 h-12 mb-3 opacity-50">analytics</mat-icon>
+                        <p class="text-sm">No hay datos disponibles</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfica 2: Procesos por Departamento -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm">
+                <div class="flex items-center gap-3 mb-5 pb-4 border-b-2 border-gray-100">
+                    <mat-icon class="text-blue-500 text-xl md:text-2xl w-6 h-6">bar_chart</mat-icon>
+                    <h2 class="text-base md:text-lg font-semibold text-gray-900">Procesos por Departamento</h2>
+                </div>
+
+                <div class="min-h-[250px] md:min-h-[300px] flex items-center justify-center">
+                    <apx-chart *ngIf="chartProduccion" [series]="chartProduccion.series" [chart]="chartProduccion.chart"
+                        [xaxis]="chartProduccion.xaxis" [colors]="chartProduccion.colors"
+                        [dataLabels]="chartProduccion.dataLabels" [plotOptions]="chartProduccion.plotOptions">
+                    </apx-chart>
+
+                    <div *ngIf="!chartProduccion && !metricsGenerales[1].loading" class="text-center text-gray-400">
+                        <mat-icon class="text-5xl w-12 h-12 mb-3 opacity-50">analytics</mat-icon>
+                        <p class="text-sm">No hay datos disponibles</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfica 3: Embarques por Tipo -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm">
+                <div class="flex items-center gap-3 mb-5 pb-4 border-b-2 border-gray-100">
+                    <mat-icon class="text-teal-500 text-xl md:text-2xl w-6 h-6">local_shipping</mat-icon>
+                    <h2 class="text-base md:text-lg font-semibold text-gray-900">Distribución de Embarques</h2>
+                </div>
+
+                <div class="min-h-[250px] md:min-h-[300px] flex items-center justify-center">
+                    <apx-chart *ngIf="chartEmbarques" [series]="chartEmbarques.series" [chart]="chartEmbarques.chart"
+                        [labels]="chartEmbarques.labels" [colors]="chartEmbarques.colors"
+                        [legend]="chartEmbarques.legend" [dataLabels]="chartEmbarques.dataLabels">
+                    </apx-chart>
+
+                    <div *ngIf="!chartEmbarques && !metricsGenerales[0].loading" class="text-center text-gray-400">
+                        <mat-icon class="text-5xl w-12 h-12 mb-3 opacity-50">analytics</mat-icon>
+                        <p class="text-sm">No hay datos disponibles</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfica 4: Comparativa de Producción -->
+            <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm">
+                <div class="flex items-center gap-3 mb-5 pb-4 border-b-2 border-gray-100">
+                    <mat-icon class="text-indigo-500 text-xl md:text-2xl w-6 h-6">trending_up</mat-icon>
+                    <h2 class="text-base md:text-lg font-semibold text-gray-900">Comparativa por Área</h2>
+                </div>
+
+                <div class="min-h-[250px] md:min-h-[300px] flex items-center justify-center">
+                    <apx-chart *ngIf="chartComparativa" [series]="chartComparativa.series"
+                        [chart]="chartComparativa.chart" [xaxis]="chartComparativa.xaxis"
+                        [colors]="chartComparativa.colors" [dataLabels]="chartComparativa.dataLabels"
+                        [plotOptions]="chartComparativa.plotOptions" [legend]="chartComparativa.legend">
+                    </apx-chart>
+
+                    <div *ngIf="!chartComparativa && !metricsGenerales[0].loading" class="text-center text-gray-400">
+                        <mat-icon class="text-5xl w-12 h-12 mb-3 opacity-50">analytics</mat-icon>
+                        <p class="text-sm">No hay datos disponibles</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen Rápido en Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- Card: Total Artículos -->
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                <div class="flex items-center gap-2 mb-2">
+                    <mat-icon class="text-blue-600 text-lg w-5 h-5">inventory_2</mat-icon>
+                    <span class="text-xs font-medium text-blue-700">Artículos Totales</span>
+                </div>
+                <div class="text-2xl font-bold text-blue-900">
+                    {{ totalArticulos }}
+                </div>
+            </div>
+
+            <!-- Card: Total Piezas -->
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+                <div class="flex items-center gap-2 mb-2">
+                    <mat-icon class="text-purple-600 text-lg w-5 h-5">category</mat-icon>
+                    <span class="text-xs font-medium text-purple-700">Piezas Totales</span>
+                </div>
+                <div class="text-2xl font-bold text-purple-900">
+                    {{ formatValue(totalPiezas, 'number') }}
+                </div>
+            </div>
+
+            <!-- Card: En Proceso -->
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+                <div class="flex items-center gap-2 mb-2">
+                    <mat-icon class="text-orange-600 text-lg w-5 h-5">pending</mat-icon>
+                    <span class="text-xs font-medium text-orange-700">Por Revisar (kg)</span>
+                </div>
+                <div class="text-2xl font-bold text-orange-900">
+                    {{ formatValue(totalPorRevisar, 'decimal') }}
+                </div>
+            </div>
+
+            <!-- Card: Saldos -->
+            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 border border-yellow-200">
+                <div class="flex items-center gap-2 mb-2">
+                    <mat-icon class="text-yellow-600 text-lg w-5 h-5">inventory</mat-icon>
+                    <span class="text-xs font-medium text-yellow-700">Saldos (kg)</span>
+                </div>
+                <div class="text-2xl font-bold text-yellow-900">
+                    {{ formatValue(totalSaldos, 'decimal') }}
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+
+
+    <!-- ========================================= -->
+    <!-- VISTA DETALLE -->
+    <!-- ========================================= -->
+    <div *ngIf="vistaActual === 'detalle'">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+
+            <div *ngFor="let area of areasResumen"
+                class="bg-white rounded-2xl p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+
+                <!-- Header del área -->
+                <div class="flex items-center gap-3 mb-5 pb-4 border-b-2 border-gray-100">
+                    <div [style.background]="area.color"
+                        class="w-11 h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <mat-icon class="text-white text-xl md:text-2xl w-5 h-5 md:w-6 md:h-6">{{ area.icon
+                            }}</mat-icon>
+                    </div>
+                    <h2 class="text-base md:text-lg font-bold text-gray-900 line-clamp-2">{{ area.nombre }}</h2>
+                </div>
+
+                <!-- Métricas del área -->
+                <div class="space-y-3 md:space-y-4">
+                    <div *ngFor="let metric of area.metrics"
+                        class="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <span class="text-xs md:text-sm font-medium text-gray-600">{{ metric.label }}</span>
+
+                        <div class="text-right">
+                            <mat-spinner *ngIf="area.loading" diameter="24"></mat-spinner>
+                            <span *ngIf="!area.loading" class="text-base md:text-lg font-bold text-gray-900">
+                                {{ formatValue(metric.value, metric.format) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Detalles específicos para Tintorería, Estampados y Acabado Real -->
+                    <div *ngIf="area.detalles && area.detalles.length > 0" class="mt-4 pt-4 border-t-2 border-gray-100">
+                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                            Detalles por proceso
+                        </div>
+
+                        <div *ngFor="let detalle of area.detalles"
+                            class="mb-3 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-100">
+                            <!-- Departamento y Proceso -->
+                            <div class="flex items-start gap-2 mb-2">
+                                <mat-icon class="text-gray-400 text-sm w-4 h-4">business</mat-icon>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs font-semibold text-gray-700 truncate">
+                                        {{ detalle.departamento }}
+                                    </div>
+                                    <div class="text-[10px] text-gray-500 truncate">
+                                        {{ detalle.proceso }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cantidad y Piezas -->
+                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                <div class="bg-white p-2 rounded border border-gray-100">
+                                    <div class="text-[10px] text-gray-500 mb-1">Cantidad</div>
+                                    <div class="text-sm font-bold text-gray-900">
+                                        {{ formatValue(detalle.cantidad, 'decimal') }} kg
+                                    </div>
+                                </div>
+                                <div class="bg-white p-2 rounded border border-gray-100">
+                                    <div class="text-[10px] text-gray-500 mb-1">Piezas</div>
+                                    <div class="text-sm font-bold text-gray-900">
+                                        {{ formatValue(detalle.piezas, 'number') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+            </div>
+
         </div>
     </div>
 </div>
