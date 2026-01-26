@@ -9,6 +9,7 @@ import { EstampadoViewComponent } from './SubMenuViews/estampado/estampadoview.c
 import { InicioViewComponent } from './SubMenuViews/Inicio/inicioview.component';
 import { FacturadoViewComponent } from './SubMenuViews/facturado/facturadoview.component';
 import { AcabadoRealViewComponent } from './SubMenuViews/acabadoreal/acabadorealview.component';
+import { ProcesosViewComponent } from './SubMenuViews/procesos/procesosview.component';
 
 export default [
   {
@@ -38,6 +39,7 @@ export default [
           { path: 'tintoreria', component: TintoreriaViewComponent },
           { path: 'estampado', component: EstampadoViewComponent },
           { path: 'acabado-real', component: AcabadoRealViewComponent },
+           { path: 'procesos', component: ProcesosViewComponent },
         ],
       },
     ],

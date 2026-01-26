@@ -8,9 +8,9 @@ import { SaldosTabComponent } from '../../list/tabs/saldos/saldos.component';
 import { EmbarquesTabComponent } from '../../list/tabs/embarques/embarques.component';
 
 @Component({
-    selector: 'inicio-view',
-    templateUrl: './inicioview.component.html',
-    styleUrls: ['./inicioview.component.scss'],
+    selector: 'Procesos-view',
+    templateUrl: './procesosview.component.html',
+    styleUrls: ['./procesosview.component.scss'],
     standalone: true,
     imports: [
         CommonModule,
@@ -23,11 +23,11 @@ import { EmbarquesTabComponent } from '../../list/tabs/embarques/embarques.compo
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InicioViewComponent {
+export class ProcesosViewComponent {
     selectedTabIndex = 0;
 
     constructor() {
-        // console.log('✅ InicioViewComponent cargado');
+       
     }
 
     onTabChange(index: number): void {
