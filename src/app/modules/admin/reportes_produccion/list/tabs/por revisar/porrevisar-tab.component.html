@@ -42,7 +42,10 @@
     <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
       <div class="mb-1 flex items-center justify-between">
         <div class="text-secondary text-base font-medium">Total Artículos</div>
-        <mat-icon class="text-yellow-500 icon-size-5" [svgIcon]="'heroicons_outline:cube'"></mat-icon>
+        <mat-icon
+          class="text-yellow-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:cube'"
+        ></mat-icon>
       </div>
       <div class="text-2xl font-bold">{{ contarArticulosPorRevisar() }}</div>
       <div class="text-secondary text-sm">Artículos pendientes</div>
@@ -102,7 +105,7 @@
   *ngIf="!isLoadingPorRevisar && datosPorRevisarFiltrados.length > 0"
 >
   <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">
-    <thead class="bg-gray-50 dark:bg-gray-800">
+    <thead class="bg-gray-50 dark:bg-gray-700">
       <tr>
         <th
           class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
@@ -147,7 +150,7 @@
         </td>
       </tr>
     </tbody>
-    <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-800">
+    <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-700">
       <tr>
         <td class="px-3 py-2 text-right text-base md:px-6 md:py-4">Total:</td>
         <td class="px-3 py-2 text-right md:px-6 md:py-4">
