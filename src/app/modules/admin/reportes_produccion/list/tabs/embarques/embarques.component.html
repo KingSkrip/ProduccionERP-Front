@@ -8,7 +8,7 @@
           <div class="text-secondary mb-2 text-sm font-medium">Total Embarques</div>
           <div class="flex items-baseline gap-2">
             <div class="text-3xl font-bold">
-              {{ calcularTotalEmbarques() | number: '1.0-0' }}
+              {{ calcularTotalEmbarques() | number: '1.2-2' }}
             </div>
             <div class="text-secondary text-sm">kg</div>
           </div>
@@ -38,7 +38,7 @@
             [svgIcon]="'heroicons_outline:star'"
           ></mat-icon>
         </div>
-        <div class="text-2xl font-bold">{{ calcularPorTipo('PRIMERA') | number: '1.0-0' }}</div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('PRIMERA') | number: '1.2-2' }}</div>
         <div class="text-secondary text-xs">kg</div>
       </div>
       <!-- PREFERIDA -->
@@ -50,7 +50,7 @@
             [svgIcon]="'heroicons_outline:heart'"
           ></mat-icon>
         </div>
-        <div class="text-2xl font-bold">{{ calcularPorTipo('PREFERIDA') | number: '1.0-0' }}</div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('PREFERIDA') | number: '1.2-2' }}</div>
         <div class="text-secondary text-xs">kg</div>
       </div>
       <!-- SEGUNDA -->
@@ -62,7 +62,7 @@
             [svgIcon]="'heroicons_outline:chevron-double-down'"
           ></mat-icon>
         </div>
-        <div class="text-2xl font-bold">{{ calcularPorTipo('SEGUNDA') | number: '1.0-0' }}</div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('SEGUNDA') | number: '1.2-2' }}</div>
         <div class="text-secondary text-xs">kg</div>
       </div>
       <!-- ORILLAS -->
@@ -74,7 +74,7 @@
             [svgIcon]="'heroicons_outline:arrows-pointing-out'"
           ></mat-icon>
         </div>
-        <div class="text-2xl font-bold">{{ calcularPorTipo('ORILLAS') | number: '1.0-0' }}</div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('ORILLAS') | number: '1.2-2' }}</div>
         <div class="text-secondary text-xs">kg</div>
       </div>
     </div>
@@ -89,7 +89,7 @@
             [svgIcon]="'heroicons_outline:scissors'"
           ></mat-icon>
         </div>
-        <div class="text-2xl font-bold">{{ calcularPorTipo('RETAZO') | number: '1.0-0' }}</div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('RETAZO') | number: '1.2-2' }}</div>
         <div class="text-secondary text-xs">kg</div>
       </div>
       <!-- MUESTRAS -->
@@ -101,7 +101,7 @@
             [svgIcon]="'heroicons_outline:beaker'"
           ></mat-icon>
         </div>
-        <div class="text-2xl font-bold">{{ calcularPorTipo('MUESTRAS') | number: '1.0-0' }}</div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('MUESTRAS') | number: '1.2-2' }}</div>
         <div class="text-secondary text-xs">kg</div>
       </div>
       <!-- TOTAL GENERAL -->
@@ -117,7 +117,7 @@
         </div>
 
         <div class="text-3xl font-semibold text-black dark:text-white">
-          {{ calcularTotalEmbarques() | number: '1.0-0' }}
+          {{ calcularTotalEmbarques() | number: '1.2-2' }}
         </div>
 
         <div class="text-xs uppercase tracking-wide opacity-80">kilogramos totales</div>

@@ -6,7 +6,7 @@
       <div class="flex items-center justify-between">
         <div>
           <div class="text-secondary mb-1 text-sm font-medium">Cantidad total</div>
-          <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number: '1.0-0' }}</div>
+          <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number: '1.2-2' }}</div>
           <div class="text-secondary mt-1 text-xs">kilogramos</div>
         </div>
         <mat-icon
@@ -19,6 +19,20 @@
 
   <!-- Cards desktop -->
   <div class="hidden grid-cols-3 gap-3 md:grid">
+    <!-- departamentos
+    <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base font-medium">Departamentos</div>
+        <mat-icon
+          class="text-yellow-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:building-office'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ contarDepartamentos() }}</div>
+      <div class="text-secondary text-sm">Áreas activas</div>
+    </div> -->
+
+    <!-- TOTAL -->
     <div class="bg-card rounded-xl border-l-4 border-green-500 p-4 shadow-sm">
       <div class="mb-1 flex items-center justify-between">
         <div class="text-secondary text-base font-medium">Cantidad total</div>
@@ -27,11 +41,11 @@
           [svgIcon]="'heroicons_outline:scale'"
         ></mat-icon>
       </div>
-      <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number: '1.0-0' }}</div>
+      <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number: '1.2-2' }}</div>
       <div class="text-secondary text-sm">Kilogramos</div>
     </div>
 
-    <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
+    <!-- <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
       <div class="mb-1 flex items-center justify-between">
         <div class="text-secondary text-base font-medium">Total procesos</div>
         <mat-icon
@@ -41,19 +55,7 @@
       </div>
       <div class="text-2xl font-bold">{{ datosFiltrados.length }}</div>
       <div class="text-secondary text-sm">Procesos activos</div>
-    </div>
-
-    <div class="bg-card rounded-xl border-l-4 border-sky-500 p-4 shadow-sm">
-      <div class="mb-1 flex items-center justify-between">
-        <div class="text-secondary text-base font-medium">Departamentos</div>
-        <mat-icon
-          class="text-sky-500 icon-size-5"
-          [svgIcon]="'heroicons_outline:building-office'"
-        ></mat-icon>
-      </div>
-      <div class="text-2xl font-bold">{{ contarDepartamentos() }}</div>
-      <div class="text-secondary text-sm">Áreas activas</div>
-    </div>
+    </div> -->
   </div>
 </div>
 

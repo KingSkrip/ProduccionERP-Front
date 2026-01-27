@@ -8,7 +8,7 @@
           <div class="text-secondary mb-2 text-sm font-medium">Total Saldos</div>
           <div class="flex items-baseline gap-2">
             <div class="text-3xl font-bold">
-              {{ calcularTotalPesoSaldos() | number: '1.0-0' }}
+              {{ calcularTotalPesoSaldos() | number: '1.2-2' }}
             </div>
             <div class="text-secondary text-sm">kg</div>
           </div>
@@ -27,18 +27,7 @@
 
   <!-- Vista desktop -->
   <div class="hidden grid-cols-3 gap-3 md:grid">
-    <div class="bg-card rounded-xl border-l-4 border-green-500 p-4 shadow-sm">
-      <div class="mb-1 flex items-center justify-between">
-        <div class="text-secondary text-base">Total Saldos</div>
-        <mat-icon
-          class="text-green-500 icon-size-5"
-          [svgIcon]="'heroicons_outline:scale'"
-        ></mat-icon>
-      </div>
-      <div class="text-2xl font-bold">{{ calcularTotalPesoSaldos() | number: '1.0-0' }}</div>
-      <div class="text-secondary text-sm">Kilogramos</div>
-    </div>
-
+    <!-- ARTICULOS -->
     <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
       <div class="mb-1 flex items-center justify-between">
         <div class="text-secondary text-base font-medium">Total Artículos</div>
@@ -51,6 +40,7 @@
       <div class="text-secondary text-sm">Artículos con saldo</div>
     </div>
 
+    <!-- PIEZAS -->
     <div class="bg-card rounded-xl border-l-4 border-sky-500 p-4 shadow-sm">
       <div class="mb-1 flex items-center justify-between">
         <div class="text-secondary text-base font-medium">Total Piezas</div>
@@ -59,8 +49,21 @@
           [svgIcon]="'heroicons_outline:chart-bar'"
         ></mat-icon>
       </div>
-      <div class="text-2xl font-bold">{{ calcularTotalPiezasSaldos() | number: '1.0-0' }}</div>
+      <div class="text-2xl font-bold">{{ calcularTotalPiezasSaldos() | number: '1.2-2' }}</div>
       <div class="text-secondary text-sm">Piezas en saldo</div>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="bg-card rounded-xl border-l-4 border-green-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base">Total Saldos</div>
+        <mat-icon
+          class="text-green-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:scale'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ calcularTotalPesoSaldos() | number: '1.2-2' }}</div>
+      <div class="text-secondary text-sm">Kilogramos</div>
     </div>
   </div>
 </div>
@@ -140,7 +143,7 @@
         </td>
         <td class="px-3 py-2 text-right md:px-6 md:py-4">
           <span class="text-lg font-bold text-sky-600 dark:text-sky-400">
-            {{ item.PIEZAS | number: '1.0-0' }}
+            {{ item.PIEZAS | number: '1.2-2' }}
           </span>
         </td>
         <td class="px-3 py-2 text-right md:px-6 md:py-4">
@@ -155,7 +158,7 @@
         <td class="px-3 py-2 text-right text-base md:px-6 md:py-4">Total:</td>
         <td class="px-3 py-2 text-right md:px-6 md:py-4">
           <span class="text-lg text-sky-600 dark:text-sky-400">
-            {{ calcularTotalPiezasSaldos() | number: '1.0-0' }}
+            {{ calcularTotalPiezasSaldos() | number: '1.2-2' }}
           </span>
         </td>
         <td class="px-3 py-2 text-right md:px-6 md:py-4">

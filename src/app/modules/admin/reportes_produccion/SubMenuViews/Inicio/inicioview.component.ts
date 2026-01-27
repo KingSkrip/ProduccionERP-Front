@@ -23,41 +23,8 @@ import {
   RevisadoTejido,
   SaldosTejido,
 } from '../../reportprod.service';
-
-interface FacturaDetalle {
-  cliente: string;
-  factura: string;
-  fecha: string;
-  cant: number;
-  um: string;
-  importe: number;
-  impuestos: number;
-  total: number;
-}
-
-interface ClienteAgrupado {
-  cliente: string;
-  facturas: FacturaDetalle[];
-  cantidadesPorUnidad: { [key: string]: number };
-  importeTotal: number;
-  impuestosTotal: number;
-  totalFacturado: number;
-  expandido: boolean;
-}
-
-interface AreaResumen {
-  nombre: string;
-  icon: string;
-  color: string;
-  metrics: { label: string; value: number; format?: string }[];
-  loading: boolean;
-  detalles?: Array<{
-    departamento: string;
-    proceso: string;
-    cantidad: number;
-    piezas: number;
-  }>;
-}
+import { AreaResumen } from './types/areas.types';
+import { ClienteAgrupado, FacturaDetalle } from './types/facturacion.types';
 
 @Component({
   selector: 'inicio-view',
@@ -80,29 +47,55 @@ interface AreaResumen {
   ],
 })
 export class InicioViewComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-  vistaActual: 'general' | 'detalle' = 'general';
+  ivaTotal = 0;
+  totalConIva = 0;
   isMobile = false;
+  totalFacturas = 0;
+  cantidadTotal = 0;
+  facturasConIva = 0;
+  facturasSinIva = 0;
+  impuestosTotal = 0;
+  importeTotalSinIva = 0;
+  loadingFacturacion = true;
+  loadingSaldosTejido = true;
+  loadingRevisadoTejido = true;
+  loadingEmbarquesTejido = true;
+  loadingPorRevisarTejido = true;
+  loadingDetallesProcesos = true;
+  loadingProduccionTejido = true;
+  loadingGraficaFacturacion = true;
+  loadingDistribucionProcesos = true;
+  datosEmbarquesCompletos: any[] = [];
+  accountBalanceOptions!: ApexOptions;
+  private destroy$ = new Subject<void>();
   datosAgrupados: ClienteAgrupado[] = [];
+  datosSaldosCompletos: SaldosTejido[] = [];
+  filtros$ = this.sharedData.filtrosGlobales$;
+  chartSaldosTejido: ApexOptions | null = null;
+  datosRevisadoCompletos: RevisadoTejido[] = [];
+  chartRevisadoTejido: ApexOptions | null = null;
   tipoEmbarqueSeleccionado: string | null = null;
+  vistaActual: 'general' | 'detalle' = 'general';
+  chartEmbarquesTejido: ApexOptions | null = null;
+  articuloSeleccionadoSaldos: string | null = null;
+  chartProduccionTejido: ApexOptions | null = null;
+  chartPorRevisarTejido: ApexOptions | null = null;
+  datosProduccionCompletos: ProduccionTejido[] = [];
+  datosPorRevisarCompletos: PorRevisarTejido[] = [];
+  articuloSeleccionadoRevisado: string | null = null;
+  cantidadesPorUnidad: { [key: string]: number } = {};
+  chartDistribucionProcesos: ApexOptions | null = null;
+  articuloSeleccionadoProduccion: string | null = null;
+  articuloSeleccionadoPorRevisar: string | null = null;
   @ViewChild(MatSort) recentTransactionsTableMatSort!: MatSort;
+
   data: any = {
     previousStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
     currentStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
     accountBalance: { growRate: 0, ami: 0, series: [] },
     recentTransactions: [],
   };
-  chartDistribucionProcesos: ApexOptions | null = null;
-  importeTotalSinIva = 0;
-  impuestosTotal = 0;
-  totalConIva = 0;
-  totalFacturas = 0;
-  cantidadTotal = 0;
-  cantidadesPorUnidad: { [key: string]: number } = {};
-  facturasConIva = 0;
-  facturasSinIva = 0;
-  accountBalanceOptions!: ApexOptions;
-  filtros$ = this.sharedData.filtrosGlobales$;
+
   rangoTexto$ = this.filtros$.pipe(
     map((f) => {
       const opts: Intl.DateTimeFormatOptions = {
@@ -144,19 +137,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       }
     }),
   );
-  ivaTotal = 0;
-
-  loadingFacturacion = true;
-  loadingGraficaFacturacion = true;
-  loadingDistribucionProcesos = true;
-  loadingDetallesProcesos = true;
-  loadingProduccionTejido = true;
-  loadingRevisadoTejido = true;
-  loadingPorRevisarTejido = true;
-  loadingSaldosTejido = true;
-  loadingEmbarquesTejido = true;
-  datosEmbarquesCompletos: any[] = [];
-  chartEmbarquesTejido: ApexOptions | null = null;
 
   areasResumen: AreaResumen[] = [
     {
@@ -164,8 +144,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       icon: 'receipt_long',
       color: '#10b981',
       metrics: [
-        { label: 'Total sin IVA', value: 0, format: 'currency' },
-        { label: 'Total con IVA', value: 0, format: 'number' },
+        { label: 'Subtotal', value: 0, format: 'currency' },
+        { label: 'Total IVA', value: 0, format: 'number' },
         { label: 'Cantidad total', value: 0, format: 'decimal' },
       ],
       loading: true,
@@ -274,18 +254,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       detalles: [],
     },
   ];
-  datosProduccionCompletos: ProduccionTejido[] = [];
-  datosRevisadoCompletos: RevisadoTejido[] = [];
-  datosPorRevisarCompletos: PorRevisarTejido[] = [];
-  datosSaldosCompletos: SaldosTejido[] = [];
-  articuloSeleccionadoProduccion: string | null = null;
-  articuloSeleccionadoRevisado: string | null = null;
-  articuloSeleccionadoPorRevisar: string | null = null;
-  articuloSeleccionadoSaldos: string | null = null;
-  chartProduccionTejido: ApexOptions | null = null;
-  chartRevisadoTejido: ApexOptions | null = null;
-  chartPorRevisarTejido: ApexOptions | null = null;
-  chartSaldosTejido: ApexOptions | null = null;
 
   constructor(
     private reportService: ReportProdService,
@@ -376,7 +344,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (datos) => {
-          // Procesar datos
           this.sharedData.setDatosFacturado(datos.facturado);
           this.procesarFacturado(datos.facturado);
           this.onFacturadoLoaded(datos.facturado);
@@ -420,20 +387,40 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  private procesarFacturado(resp: any): void {
-    const payload = resp?.data ?? resp;
-    if (!payload) return;
-    const tot = payload.totales ?? {};
-    const detalle = payload.detalle ?? [];
-    const importe = Number(tot.importe) || 0;
-    const impuestos = Number(tot.impuestos) || 0;
-    const facturas = Number(tot.facturas) || 0;
-    const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
-    if (area) {
-      area.metrics[0].value = importe;
-      area.metrics[1].value = impuestos;
-      area.metrics[2].value = facturas;
-    }
+  seleccionarArticulo(
+    tipo: 'produccion' | 'revisado' | 'porRevisar' | 'saldos',
+    articulo: string,
+  ): void {
+    const map = {
+      produccion: {
+        prop: 'articuloSeleccionadoProduccion',
+        area: 'Producción tejido',
+        datos: this.datosProduccionCompletos,
+        field: 'TOTAL_TJ',
+      },
+      revisado: {
+        prop: 'articuloSeleccionadoRevisado',
+        area: 'Tejido revisado',
+        datos: this.datosRevisadoCompletos,
+        field: 'TOTAL_RV',
+      },
+      porRevisar: {
+        prop: 'articuloSeleccionadoPorRevisar',
+        area: 'Por revisar',
+        datos: this.datosPorRevisarCompletos,
+        field: 'TOTAL_POR_REVISAR',
+      },
+      saldos: {
+        prop: 'articuloSeleccionadoSaldos',
+        area: 'Saldos',
+        datos: this.datosSaldosCompletos,
+        field: 'TOTAL_SALDO',
+      },
+    };
+
+    const config = map[tipo];
+    this[config.prop] = this[config.prop] === articulo ? null : articulo;
+    this.actualizarMetricas(config.area, config.datos, this[config.prop], config.field);
   }
 
   private procesarProduccion(data: any[]): void {
@@ -449,111 +436,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       area.metrics[2].value = articulos;
     }
     this.crearGraficaProduccionTejido(data);
-  }
-
-  private procesarRevisado(data: any[]): void {
-    if (!data || !Array.isArray(data)) return;
-    this.datosRevisadoCompletos = data;
-    const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_RV) || 0), 0);
-    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const articulos = data.length;
-    const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
-    if (area) {
-      area.metrics[0].value = pesoTotal;
-      area.metrics[1].value = piezasTotal;
-      area.metrics[2].value = articulos;
-    }
-    this.crearGraficaRevisadoTejido(data);
-  }
-
-  private procesarPorRevisar(data: any[]): void {
-    if (!data || !Array.isArray(data)) return;
-    this.datosPorRevisarCompletos = data;
-    const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_POR_REVISAR) || 0), 0);
-    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const articulos = data.length;
-    const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
-    if (area) {
-      area.metrics[0].value = pesoTotal;
-      area.metrics[1].value = piezasTotal;
-      area.metrics[2].value = articulos;
-    }
-    this.crearGraficaPorRevisarTejido(data);
-  }
-
-  private procesarSaldos(data: any[]): void {
-    if (!data || !Array.isArray(data)) return;
-    this.datosSaldosCompletos = data;
-    const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_SALDO) || 0), 0);
-    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const articulos = data.length;
-    const area = this.areasResumen.find((a) => a.nombre === 'Saldos');
-    if (area) {
-      area.metrics[0].value = pesoTotal;
-      area.metrics[1].value = piezasTotal;
-      area.metrics[2].value = articulos;
-    }
-    this.crearGraficaSaldosTejido(data);
-  }
-
-  private procesarTejido(data: any[]): void {
-    if (!data || !Array.isArray(data)) return;
-    const cantidadTotal = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
-    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const departamentos = new Set(data.map((item) => item.departamento)).size;
-    const area = this.areasResumen.find((a) => a.nombre === 'Tejido');
-    if (area) {
-      area.metrics[0].value = cantidadTotal;
-      area.metrics[1].value = piezasTotal;
-      area.metrics[2].value = departamentos;
-
-      // 🔥 AGREGANDO LOS DETALLES PARA TEJIDO
-      area.detalles = data.map((item) => ({
-        departamento: item.departamento || 'N/A',
-        proceso: item.proceso || 'N/A',
-        cantidad: Number(item.CANTIDAD) || 0,
-        piezas: Number(item.PIEZAS) || 0,
-      }));
-    }
-  }
-
-  private procesarTintoreria(data: any[]): void {
-    if (!data || !Array.isArray(data)) return;
-    const cantidadTotal = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
-    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const procesos = data.length;
-    const area = this.areasResumen.find((a) => a.nombre === 'Tintorería');
-    if (area) {
-      area.metrics[0].value = cantidadTotal;
-      area.metrics[1].value = piezasTotal;
-      area.metrics[2].value = procesos;
-
-      area.detalles = data.map((item) => ({
-        departamento: item.departamento || 'N/A',
-        proceso: item.proceso || 'N/A',
-        cantidad: Number(item.CANTIDAD) || 0,
-        piezas: Number(item.PIEZAS) || 0,
-      }));
-    }
-  }
-
-  private procesarEstampados(data: any[]): void {
-    if (!data || !Array.isArray(data)) return;
-    const cantidadTotal = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
-    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const procesos = data.length;
-    const area = this.areasResumen.find((a) => a.nombre === 'Estampados');
-    if (area) {
-      area.metrics[0].value = cantidadTotal;
-      area.metrics[1].value = piezasTotal;
-      area.metrics[2].value = procesos;
-      area.detalles = data.map((item) => ({
-        departamento: item.departamento || 'N/A',
-        proceso: item.proceso || 'N/A',
-        cantidad: Number(item.CANTIDAD) || 0,
-        piezas: Number(item.PIEZAS) || 0,
-      }));
-    }
   }
 
   private procesarAcabado(data: any[]): void {
@@ -591,7 +473,10 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         }).format(value);
       case 'number':
       default:
-        return new Intl.NumberFormat('es-MX').format(value);
+        return new Intl.NumberFormat('es-MX', {
+          minimumFractionDigits: 2, // ← AGREGAR ESTA LÍNEA
+          maximumFractionDigits: 2, // ← AGREGAR ESTA LÍNEA
+        }).format(value);
     }
   }
 
@@ -602,6 +487,472 @@ export class InicioViewComponent implements OnInit, OnDestroy {
 
   trackByFn(index: number, item: any): any {
     return item?.id ?? index;
+  }
+
+  private sumarPeriodo(detalle: any[], from: Date, to: Date) {
+    let total = 0;
+    let importe = 0;
+    let impuestos = 0;
+    let facturas = 0;
+
+    for (const item of detalle) {
+      const f = this.getFechaFactura(item);
+      if (!f) continue;
+
+      if (f >= from && f < to) {
+        total += this.toNum(item.total);
+        importe += this.toNum(item.importe);
+        impuestos += this.toNum(item.impuestos);
+        facturas += 1;
+      }
+    }
+
+    return { total, importe, impuestos, facturas };
+  }
+
+  private toNum(v: any): number {
+    if (v == null) return 0;
+    if (typeof v === 'number') return v;
+    const s = String(v).replace(/,/g, '').trim();
+    const n = Number(s);
+    return isNaN(n) ? 0 : n;
+  }
+
+  get detallesAcabado() {
+    return this.areasResumen.find((a) => a.nombre === 'Acabado real')?.detalles || [];
+  }
+
+  private crearGraficaDistribucionProcesos(datos: any): void {
+    const procesos = [
+      {
+        nombre: 'Tejido',
+        cantidad: datos.tejido.reduce((s: number, i: any) => s + (Number(i.CANTIDAD) || 0), 0),
+        piezas: datos.tejido.reduce((s: number, i: any) => s + (Number(i.PIEZAS) || 0), 0),
+        color: '#3b82f6',
+      },
+      {
+        nombre: 'Tintorería',
+        cantidad: datos.tintoreria.reduce((s: number, i: any) => s + (Number(i.CANTIDAD) || 0), 0),
+        piezas: datos.tintoreria.reduce((s: number, i: any) => s + (Number(i.PIEZAS) || 0), 0),
+        color: '#ec4899',
+      },
+      {
+        nombre: 'Estampados',
+        cantidad: datos.estampados.reduce((s: number, i: any) => s + (Number(i.CANTIDAD) || 0), 0),
+        piezas: datos.estampados.reduce((s: number, i: any) => s + (Number(i.PIEZAS) || 0), 0),
+        color: '#f59e0b',
+      },
+      {
+        nombre: 'Acabado Real',
+        cantidad: datos.acabado.reduce((s: number, i: any) => s + (Number(i.CANTIDAD) || 0), 0),
+        piezas: datos.acabado.reduce((s: number, i: any) => s + (Number(i.PIEZAS) || 0), 0),
+        color: '#06b6d4',
+      },
+    ];
+
+    const textColor = '#c4c4c4';
+    const mutedText = '#9ca3af';
+
+    this.chartDistribucionProcesos = {
+      series: [
+        { name: 'Cantidad (kg)', data: procesos.map((p) => p.cantidad) },
+        { name: 'Piezas', data: procesos.map((p) => p.piezas) },
+      ],
+      chart: {
+        type: 'bar',
+        height: this.isMobile ? 320 : 550,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: { show: false },
+        foreColor: textColor,
+      },
+      theme: { mode: 'dark' },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: this.isMobile ? '50%' : '60%',
+          borderRadius: 4,
+        },
+      },
+
+      colors: ['#10b981', '#3b82f6'],
+      dataLabels: { enabled: false },
+
+      stroke: { show: true, width: 2, colors: ['transparent'] },
+
+      xaxis: {
+        categories: procesos.map((p) => p.nombre),
+        labels: {
+          style: {
+            fontSize: this.isMobile ? '10px' : '12px',
+            colors: Array(procesos.length).fill(mutedText),
+          },
+          rotate: this.isMobile ? -45 : 0,
+          rotateAlways: this.isMobile,
+        },
+        axisBorder: { show: true, color: 'rgba(255,255,255,0.15)' },
+        axisTicks: { show: true, color: 'rgba(255,255,255,0.15)' },
+      },
+
+      yaxis: [
+        {
+          title: {
+            text: this.isMobile ? '' : 'Cantidad (kg)',
+            style: { fontSize: '11px', color: textColor },
+          },
+          labels: {
+            style: { fontSize: this.isMobile ? '9px' : '11px', colors: [mutedText] },
+            formatter: (val: number) =>
+              this.isMobile ? this.formatValue(val, 'number') : this.formatValue(val, 'decimal'),
+          },
+        },
+        {
+          opposite: true,
+          title: {
+            text: this.isMobile ? '' : 'Piezas',
+            style: { fontSize: '11px', color: textColor },
+          },
+          labels: {
+            style: { fontSize: this.isMobile ? '9px' : '11px', colors: [mutedText] },
+            formatter: (val: number) => this.formatValue(val, 'number'),
+          },
+        },
+      ],
+
+      fill: { opacity: 1 },
+
+      tooltip: {
+        theme: 'dark',
+        y: {
+          formatter: (val: number, opts: any) => {
+            if (opts.seriesIndex === 0) return this.formatValue(val, 'decimal') + ' kg';
+            return this.formatValue(val, 'number') + ' piezas';
+          },
+        },
+      },
+
+      legend: {
+        show: true,
+        position: this.isMobile ? 'bottom' : 'top',
+        horizontalAlign: this.isMobile ? 'center' : 'left',
+        fontSize: this.isMobile ? '10px' : '12px',
+        labels: {
+          colors: textColor,
+          useSeriesColors: false,
+        },
+        markers: { size: this.isMobile ? 5 : 7 },
+        itemMargin: {
+          horizontal: this.isMobile ? 6 : 10,
+          vertical: this.isMobile ? 4 : 6,
+        },
+      },
+
+      grid: {
+        borderColor: 'rgba(255,255,255,0.08)',
+        padding: {
+          left: this.isMobile ? 5 : 10,
+          right: this.isMobile ? 5 : 10,
+          bottom: this.isMobile ? 10 : 0,
+        },
+      },
+    };
+  }
+
+  private actualizarMetricas(
+    areaName: string,
+    datos: any[],
+    articuloSeleccionado: string | null,
+    pesoField: string,
+  ): void {
+    const area = this.areasResumen.find((a) => a.nombre === areaName);
+    if (!area) return;
+
+    const datosFiltrados = articuloSeleccionado
+      ? datos.filter((d) => d.ARTICULO === articuloSeleccionado)
+      : datos;
+
+    const peso = datosFiltrados.reduce((sum, item) => sum + (Number(item[pesoField]) || 0), 0);
+    const piezas = datosFiltrados.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
+
+    area.metrics[0].value = peso;
+    area.metrics[1].value = piezas;
+    area.metrics[2].value = datosFiltrados.length;
+    this.cdr.markForCheck();
+  }
+
+  private crearGraficaDonut(
+    data: any[],
+    chartProperty:
+      | 'chartProduccionTejido'
+      | 'chartRevisadoTejido'
+      | 'chartPorRevisarTejido'
+      | 'chartSaldosTejido',
+    valueField: string,
+    onClickCallback: (articulo: string) => void,
+  ): void {
+    if (!data?.length) {
+      this[chartProperty] = null;
+      return;
+    }
+
+    const COLORES = [
+      '#10b981',
+      '#3b82f6',
+      '#f59e0b',
+      '#ec4899',
+      '#06b6d4',
+      '#6366f1',
+      '#14b8a6',
+      '#f97316',
+      '#84cc16',
+      '#a855f7',
+    ];
+    const topN = 8;
+    const datosOrdenados = [...data].sort(
+      (a, b) => parseFloat(b[valueField]) - parseFloat(a[valueField]),
+    );
+    const topArticulos = datosOrdenados.slice(0, topN);
+    const otrosArticulos = datosOrdenados.slice(topN);
+
+    const series = topArticulos.map((item) => parseFloat(item[valueField]));
+    const labels = topArticulos.map((item) => item.ARTICULO);
+
+    if (otrosArticulos.length > 0) {
+      const otrosTotal = otrosArticulos.reduce(
+        (sum, item) => sum + parseFloat(item[valueField]),
+        0,
+      );
+      series.push(otrosTotal);
+      labels.push(`Otros (${otrosArticulos.length})`);
+    }
+
+    this[chartProperty] = {
+      series,
+      labels,
+      chart: {
+        type: 'donut',
+        height: 176,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: { show: false },
+        events: {
+          dataPointSelection: (event: any, chartContext: any, config: any) => {
+            const articulo = labels[config.dataPointIndex];
+            if (!articulo.startsWith('Otros')) onClickCallback(articulo);
+          },
+        },
+      },
+      colors: [...COLORES, '#9ca3af'],
+      plotOptions: { pie: { donut: { size: '70%' } } },
+      dataLabels: { enabled: false },
+      stroke: { show: true, width: 2, colors: ['#fff'] },
+      legend: { show: false },
+      tooltip: { y: { formatter: (val: number) => `${val.toFixed(2)} kg` } },
+    };
+  }
+
+  private crearGraficaProduccionTejido(data: any[]): void {
+    this.crearGraficaDonut(data, 'chartProduccionTejido', 'TOTAL_TJ', (articulo) =>
+      this.seleccionarArticulo('produccion', articulo),
+    );
+  }
+
+  private crearGraficaRevisadoTejido(data: any[]): void {
+    this.crearGraficaDonut(data, 'chartRevisadoTejido', 'TOTAL_RV', (articulo) =>
+      this.seleccionarArticulo('revisado', articulo),
+    );
+  }
+
+  private crearGraficaPorRevisarTejido(data: any[]): void {
+    this.crearGraficaDonut(data, 'chartPorRevisarTejido', 'TOTAL_POR_REVISAR', (articulo) =>
+      this.seleccionarArticulo('porRevisar', articulo),
+    );
+  }
+
+  private crearGraficaSaldosTejido(data: any[]): void {
+    this.crearGraficaDonut(data, 'chartSaldosTejido', 'TOTAL_SALDO', (articulo) =>
+      this.seleccionarArticulo('saldos', articulo),
+    );
+  }
+
+  private norm(v: any): string {
+    return String(v ?? '')
+      .trim()
+      .toUpperCase();
+  }
+
+  /*
+   * ESTAMPADO
+   */
+  private procesarEstampados(data: any[]): void {
+    if (!data || !Array.isArray(data)) return;
+    const cantidadTotal = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
+    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
+    const procesos = data.length;
+    const area = this.areasResumen.find((a) => a.nombre === 'Estampados');
+    if (area) {
+      area.metrics[0].value = cantidadTotal;
+      area.metrics[1].value = piezasTotal;
+      area.metrics[2].value = procesos;
+      area.detalles = data.map((item) => ({
+        departamento: item.departamento || 'N/A',
+        proceso: item.proceso || 'N/A',
+        cantidad: Number(item.CANTIDAD) || 0,
+        piezas: Number(item.PIEZAS) || 0,
+      }));
+    }
+  }
+  get detallesEstampados() {
+    return this.areasResumen.find((a) => a.nombre === 'Estampados')?.detalles || [];
+  }
+
+  /**
+   * REVISADO
+   */
+  private procesarRevisado(data: any[]): void {
+    if (!data || !Array.isArray(data)) return;
+    this.datosRevisadoCompletos = data;
+    const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_RV) || 0), 0);
+    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
+    const articulos = data.length;
+    const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
+    if (area) {
+      area.metrics[0].value = pesoTotal;
+      area.metrics[1].value = piezasTotal;
+      area.metrics[2].value = articulos;
+    }
+    this.crearGraficaRevisadoTejido(data);
+  }
+
+  calcularTotalPesoRevisado(): number {
+    const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
+    return area?.metrics[0]?.value || 0;
+  }
+
+  calcularTotalPiezasRevisado(): number {
+    const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
+    return area?.metrics[1]?.value || 0;
+  }
+
+  contarArticulosRevisado(): number {
+    const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
+    return area?.metrics[2]?.value || 0;
+  }
+
+  /*
+   * POR REVISAR
+   */
+  private procesarPorRevisar(data: any[]): void {
+    if (!data || !Array.isArray(data)) return;
+    this.datosPorRevisarCompletos = data;
+    const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_POR_REVISAR) || 0), 0);
+    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
+    const articulos = data.length;
+    const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
+    if (area) {
+      area.metrics[0].value = pesoTotal;
+      area.metrics[1].value = piezasTotal;
+      area.metrics[2].value = articulos;
+    }
+    this.crearGraficaPorRevisarTejido(data);
+  }
+
+  calcularTotalPesoPorRevisar(): number {
+    const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
+    return area?.metrics[0]?.value || 0;
+  }
+
+  calcularTotalPiezasPorRevisar(): number {
+    const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
+    return area?.metrics[1]?.value || 0;
+  }
+
+  calcularTotalArticulosPorRevisar(): number {
+    const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
+    return area?.metrics[2]?.value || 0;
+  }
+
+  /**
+   * TINTORERIA
+   */
+  private procesarTintoreria(data: any[]): void {
+    if (!data || !Array.isArray(data)) return;
+    const cantidadTotal = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
+    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
+    const procesos = data.length;
+    const area = this.areasResumen.find((a) => a.nombre === 'Tintorería');
+    if (area) {
+      area.metrics[0].value = cantidadTotal;
+      area.metrics[1].value = piezasTotal;
+      area.metrics[2].value = procesos;
+
+      area.detalles = data.map((item) => ({
+        departamento: item.departamento || 'N/A',
+        proceso: item.proceso || 'N/A',
+        cantidad: Number(item.CANTIDAD) || 0,
+        piezas: Number(item.PIEZAS) || 0,
+      }));
+    }
+  }
+
+  get detallesTintoreria() {
+    return this.areasResumen.find((a) => a.nombre === 'Tintorería')?.detalles || [];
+  }
+
+  /**
+   * TEJIDO
+   */
+
+  private procesarTejido(data: any[]): void {
+    if (!data || !Array.isArray(data)) return;
+    const cantidadTotal = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
+    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
+    const departamentos = new Set(data.map((item) => item.departamento)).size;
+    const area = this.areasResumen.find((a) => a.nombre === 'Tejido');
+    if (area) {
+      area.metrics[0].value = cantidadTotal;
+      area.metrics[1].value = piezasTotal;
+      area.metrics[2].value = departamentos;
+      area.detalles = data.map((item) => ({
+        departamento: item.departamento || 'N/A',
+        proceso: item.proceso || 'N/A',
+        cantidad: Number(item.CANTIDAD) || 0,
+        piezas: Number(item.PIEZAS) || 0,
+      }));
+    }
+  }
+
+  get detallesTejido() {
+    return this.areasResumen.find((a) => a.nombre === 'Tejido')?.detalles || [];
+  }
+
+  getMetric(area: string, index: number): number {
+    return this.areasResumen.find((a) => a.nombre === area)?.metrics[index]?.value || 0;
+  }
+
+  /**
+   * FACTURADO
+   */
+
+  private procesarFacturado(resp: any): void {
+    const payload = resp?.data ?? resp;
+    if (!payload) return;
+    const tot = payload.totales ?? {};
+    const detalle = payload.detalle ?? [];
+    const importe = Number(tot.importe) || 0;
+    const impuestos = Number(tot.impuestos) || 0;
+    const total = Number(tot.total) || 0;
+    const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
+    if (area) {
+      area.metrics[0].value = importe;
+      area.metrics[1].value = impuestos;
+      area.metrics[2].value = total;
+    }
+  }
+
+  private getFechaFactura(item: any): Date | null {
+    const raw = item.fecha || item.FECHA || item.fechaFactura || item.fecha_timbrado;
+    if (!raw) return null;
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? null : d;
   }
 
   private _prepareChartData(): void {
@@ -749,7 +1100,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       ami: days.length ? days.reduce((s, [, v]) => s + v.iva, 0) / days.length : 0,
       series: [
         { name: 'IVA', data: days.map(([ts, v]) => [ts, v.iva]) },
-        { name: 'Sin IVA', data: days.map(([ts, v]) => [ts, v.subtotal]) },
+        { name: 'Subtotal', data: days.map(([ts, v]) => [ts, v.subtotal]) },
       ],
     };
   }
@@ -769,42 +1120,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       spent: r.facturas,
       minimum: r.impuestos,
     };
-  }
-
-  private getFechaFactura(item: any): Date | null {
-    const raw = item.fecha || item.FECHA || item.fechaFactura || item.fecha_timbrado;
-    if (!raw) return null;
-    const d = new Date(raw);
-    return isNaN(d.getTime()) ? null : d;
-  }
-
-  private sumarPeriodo(detalle: any[], from: Date, to: Date) {
-    let total = 0;
-    let importe = 0;
-    let impuestos = 0;
-    let facturas = 0;
-
-    for (const item of detalle) {
-      const f = this.getFechaFactura(item);
-      if (!f) continue;
-
-      if (f >= from && f < to) {
-        total += this.toNum(item.total);
-        importe += this.toNum(item.importe);
-        impuestos += this.toNum(item.impuestos);
-        facturas += 1;
-      }
-    }
-
-    return { total, importe, impuestos, facturas };
-  }
-
-  private toNum(v: any): number {
-    if (v == null) return 0;
-    if (typeof v === 'number') return v;
-    const s = String(v).replace(/,/g, '').trim();
-    const n = Number(s);
-    return isNaN(n) ? 0 : n;
   }
 
   private onFacturadoLoaded(resp: any): void {
@@ -854,202 +1169,9 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  get detallesTintoreria() {
-    return this.areasResumen.find((a) => a.nombre === 'Tintorería')?.detalles || [];
-  }
-
-  get detallesEstampados() {
-    return this.areasResumen.find((a) => a.nombre === 'Estampados')?.detalles || [];
-  }
-
-  get detallesAcabado() {
-    return this.areasResumen.find((a) => a.nombre === 'Acabado real')?.detalles || [];
-  }
-
-  // 🔥 AGREGANDO GETTER PARA LOS DETALLES DE TEJIDO
-  get detallesTejido() {
-    return this.areasResumen.find((a) => a.nombre === 'Tejido')?.detalles || [];
-  }
-
-  private crearGraficaDistribucionProcesos(datos: any): void {
-    const procesos = [
-      {
-        nombre: 'Tejido',
-        cantidad: datos.tejido.reduce((s: number, i: any) => s + (Number(i.CANTIDAD) || 0), 0),
-        piezas: datos.tejido.reduce((s: number, i: any) => s + (Number(i.PIEZAS) || 0), 0),
-        color: '#3b82f6',
-      },
-      {
-        nombre: 'Tintorería',
-        cantidad: datos.tintoreria.reduce((s: number, i: any) => s + (Number(i.CANTIDAD) || 0), 0),
-        piezas: datos.tintoreria.reduce((s: number, i: any) => s + (Number(i.PIEZAS) || 0), 0),
-        color: '#ec4899',
-      },
-      {
-        nombre: 'Estampados',
-        cantidad: datos.estampados.reduce((s: number, i: any) => s + (Number(i.CANTIDAD) || 0), 0),
-        piezas: datos.estampados.reduce((s: number, i: any) => s + (Number(i.PIEZAS) || 0), 0),
-        color: '#f59e0b',
-      },
-      {
-        nombre: 'Acabado Real',
-        cantidad: datos.acabado.reduce((s: number, i: any) => s + (Number(i.CANTIDAD) || 0), 0),
-        piezas: datos.acabado.reduce((s: number, i: any) => s + (Number(i.PIEZAS) || 0), 0),
-        color: '#06b6d4',
-      },
-    ];
-
-    const textColor = '#e5e7eb';
-    const mutedText = '#9ca3af';
-
-    this.chartDistribucionProcesos = {
-      series: [
-        { name: 'Cantidad (kg)', data: procesos.map((p) => p.cantidad) },
-        { name: 'Piezas', data: procesos.map((p) => p.piezas) },
-      ],
-      chart: {
-        type: 'bar',
-        height: this.isMobile ? 320 : 550,
-        fontFamily: 'Inter, sans-serif',
-        toolbar: { show: false },
-
-        // 👇 dark
-        foreColor: textColor,
-      },
-
-      // 👇 dark
-      theme: { mode: 'dark' },
-
-      plotOptions: {
-        bar: {
-          horizontal: false,
-          columnWidth: this.isMobile ? '50%' : '60%',
-          borderRadius: 4,
-        },
-      },
-
-      colors: ['#10b981', '#3b82f6'],
-      dataLabels: { enabled: false },
-
-      stroke: { show: true, width: 2, colors: ['transparent'] },
-
-      xaxis: {
-        categories: procesos.map((p) => p.nombre),
-        labels: {
-          style: {
-            fontSize: this.isMobile ? '10px' : '12px',
-            colors: Array(procesos.length).fill(mutedText), // 👈 fuerza color
-          },
-          rotate: this.isMobile ? -45 : 0,
-          rotateAlways: this.isMobile,
-        },
-        axisBorder: { show: true, color: 'rgba(255,255,255,0.15)' },
-        axisTicks: { show: true, color: 'rgba(255,255,255,0.15)' },
-      },
-
-      yaxis: [
-        {
-          title: {
-            text: this.isMobile ? '' : 'Cantidad (kg)',
-            style: { fontSize: '11px', color: textColor }, // 👈
-          },
-          labels: {
-            style: { fontSize: this.isMobile ? '9px' : '11px', colors: [mutedText] }, // 👈
-            formatter: (val: number) =>
-              this.isMobile ? this.formatValue(val, 'number') : this.formatValue(val, 'decimal'),
-          },
-        },
-        {
-          opposite: true,
-          title: {
-            text: this.isMobile ? '' : 'Piezas',
-            style: { fontSize: '11px', color: textColor }, // 👈
-          },
-          labels: {
-            style: { fontSize: this.isMobile ? '9px' : '11px', colors: [mutedText] }, // 👈
-            formatter: (val: number) => this.formatValue(val, 'number'),
-          },
-        },
-      ],
-
-      fill: { opacity: 1 },
-
-      tooltip: {
-        theme: 'dark',
-        y: {
-          formatter: (val: number, opts: any) => {
-            if (opts.seriesIndex === 0) return this.formatValue(val, 'decimal') + ' kg';
-            return this.formatValue(val, 'number') + ' piezas';
-          },
-        },
-      },
-
-      legend: {
-        show: true,
-        position: this.isMobile ? 'bottom' : 'top',
-        horizontalAlign: this.isMobile ? 'center' : 'left',
-        fontSize: this.isMobile ? '10px' : '12px',
-        labels: {
-          colors: textColor, // 👈
-          useSeriesColors: false,
-        },
-        markers: { size: this.isMobile ? 5 : 7 },
-        itemMargin: {
-          horizontal: this.isMobile ? 6 : 10,
-          vertical: this.isMobile ? 4 : 6,
-        },
-      },
-
-      grid: {
-        borderColor: 'rgba(255,255,255,0.08)', // 👈 opcional pero se ve bien en dark
-        padding: {
-          left: this.isMobile ? 5 : 10,
-          right: this.isMobile ? 5 : 10,
-          bottom: this.isMobile ? 10 : 0,
-        },
-      },
-    };
-  }
-
-  calcularTotalPesoTejido(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Producción tejido');
-    return area?.metrics[0]?.value || 0;
-  }
-
-  calcularTotalPiezasTejido(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Producción tejido');
-    return area?.metrics[1]?.value || 0;
-  }
-
-  contarArticulosTejido(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Producción tejido');
-    return area?.metrics[2]?.value || 0;
-  }
-
-  calcularTotalPesoRevisado(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
-    return area?.metrics[0]?.value || 0;
-  }
-
-  calcularTotalPiezasRevisado(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
-    return area?.metrics[1]?.value || 0;
-  }
-
-  contarArticulosRevisado(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
-    return area?.metrics[2]?.value || 0;
-  }
-
-  calcularTotalPesoPorRevisar(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
-    return area?.metrics[0]?.value || 0;
-  }
-
-  calcularTotalPiezasPorRevisar(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
-    return area?.metrics[1]?.value || 0;
-  }
+  /**
+   * SALDOS
+   */
 
   calcularTotalPesoSaldos(): number {
     const area = this.areasResumen.find((a) => a.nombre === 'Saldos');
@@ -1066,453 +1188,19 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     return area?.metrics[2]?.value || 0;
   }
 
-  calcularTotalArticulosPorRevisar(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
-    return area?.metrics[2]?.value || 0;
-  }
-
-  private crearGraficaProduccionTejido(data: any[]): void {
-    if (!data || data.length === 0) {
-      this.chartProduccionTejido = null;
-      return;
-    }
-
-    const COLORES = [
-      '#10b981',
-      '#3b82f6',
-      '#f59e0b',
-      '#ec4899',
-      '#06b6d4',
-      '#6366f1',
-      '#14b8a6',
-      '#f97316',
-      '#84cc16',
-      '#a855f7',
-    ];
-    const topN = 8;
-
-    // Ordenar y tomar top N
-    const datosOrdenados = [...data].sort(
-      (a, b) => parseFloat(b.TOTAL_TJ) - parseFloat(a.TOTAL_TJ),
-    );
-
-    const topArticulos = datosOrdenados.slice(0, topN);
-    const otrosArticulos = datosOrdenados.slice(topN);
-
-    const series = topArticulos.map((item) => parseFloat(item.TOTAL_TJ));
-    const labels = topArticulos.map((item) => item.ARTICULO);
-
-    // Agregar "Otros" si hay más
-    if (otrosArticulos.length > 0) {
-      const otrosTotal = otrosArticulos.reduce((sum, item) => sum + parseFloat(item.TOTAL_TJ), 0);
-      series.push(otrosTotal);
-      labels.push(`Otros (${otrosArticulos.length})`);
-    }
-
-    this.chartProduccionTejido = {
-      series: series,
-      labels: labels,
-      chart: {
-        type: 'donut',
-        height: 176,
-        fontFamily: 'Inter, sans-serif',
-        toolbar: { show: false },
-        events: {
-          dataPointSelection: (event: any, chartContext: any, config: any) => {
-            const articulo = labels[config.dataPointIndex];
-            if (!articulo.startsWith('Otros')) {
-              this.seleccionarArticuloProduccion(articulo);
-            }
-          },
-        },
-      },
-      colors: [...COLORES, '#9ca3af'],
-      plotOptions: {
-        pie: {
-          donut: {
-            size: '70%',
-          },
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        show: true,
-        width: 2,
-        colors: ['#fff'],
-      },
-      legend: {
-        show: false,
-      },
-      tooltip: {
-        y: {
-          formatter: (val: number) => `${val.toFixed(2)} kg`,
-        },
-      },
-    };
-  }
-
-  private crearGraficaRevisadoTejido(data: any[]): void {
-    if (!data || data.length === 0) {
-      this.chartRevisadoTejido = null;
-      return;
-    }
-
-    const COLORES = [
-      '#10b981',
-      '#3b82f6',
-      '#f59e0b',
-      '#ec4899',
-      '#06b6d4',
-      '#6366f1',
-      '#14b8a6',
-      '#f97316',
-      '#84cc16',
-      '#a855f7',
-    ];
-    const topN = 8;
-
-    const datosOrdenados = [...data].sort(
-      (a, b) => parseFloat(b.TOTAL_RV) - parseFloat(a.TOTAL_RV),
-    );
-
-    const topArticulos = datosOrdenados.slice(0, topN);
-    const otrosArticulos = datosOrdenados.slice(topN);
-
-    const series = topArticulos.map((item) => parseFloat(item.TOTAL_RV));
-    const labels = topArticulos.map((item) => item.ARTICULO);
-
-    if (otrosArticulos.length > 0) {
-      const otrosTotal = otrosArticulos.reduce((sum, item) => sum + parseFloat(item.TOTAL_RV), 0);
-      series.push(otrosTotal);
-      labels.push(`Otros (${otrosArticulos.length})`);
-    }
-
-    this.chartRevisadoTejido = {
-      series: series,
-      labels: labels,
-      chart: {
-        type: 'donut',
-        height: 176,
-        fontFamily: 'Inter, sans-serif',
-        toolbar: { show: false },
-        events: {
-          dataPointSelection: (event: any, chartContext: any, config: any) => {
-            const articulo = labels[config.dataPointIndex];
-            if (!articulo.startsWith('Otros')) {
-              this.seleccionarArticuloRevisado(articulo);
-            }
-          },
-        },
-      },
-      colors: [...COLORES, '#9ca3af'],
-      plotOptions: {
-        pie: {
-          donut: {
-            size: '70%',
-          },
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        show: true,
-        width: 2,
-        colors: ['#fff'],
-      },
-      legend: {
-        show: false,
-      },
-      tooltip: {
-        y: {
-          formatter: (val: number) => `${val.toFixed(2)} kg`,
-        },
-      },
-    };
-  }
-
-  private crearGraficaPorRevisarTejido(data: any[]): void {
-    if (!data || data.length === 0) {
-      this.chartPorRevisarTejido = null;
-      return;
-    }
-
-    const COLORES = [
-      '#10b981',
-      '#3b82f6',
-      '#f59e0b',
-      '#ec4899',
-      '#06b6d4',
-      '#6366f1',
-      '#14b8a6',
-      '#f97316',
-      '#84cc16',
-      '#a855f7',
-    ];
-    const topN = 8;
-
-    const datosOrdenados = [...data].sort(
-      (a, b) => parseFloat(b.TOTAL_POR_REVISAR) - parseFloat(a.TOTAL_POR_REVISAR),
-    );
-
-    const topArticulos = datosOrdenados.slice(0, topN);
-    const otrosArticulos = datosOrdenados.slice(topN);
-
-    const series = topArticulos.map((item) => parseFloat(item.TOTAL_POR_REVISAR));
-    const labels = topArticulos.map((item) => item.ARTICULO);
-
-    if (otrosArticulos.length > 0) {
-      const otrosTotal = otrosArticulos.reduce(
-        (sum, item) => sum + parseFloat(item.TOTAL_POR_REVISAR),
-        0,
-      );
-      series.push(otrosTotal);
-      labels.push(`Otros (${otrosArticulos.length})`);
-    }
-
-    this.chartPorRevisarTejido = {
-      series: series,
-      labels: labels,
-      chart: {
-        type: 'donut',
-        height: 176,
-        fontFamily: 'Inter, sans-serif',
-        toolbar: { show: false },
-        events: {
-          dataPointSelection: (event: any, chartContext: any, config: any) => {
-            const articulo = labels[config.dataPointIndex];
-            if (!articulo.startsWith('Otros')) {
-              this.seleccionarArticuloPorRevisar(articulo);
-            }
-          },
-        },
-      },
-      colors: [...COLORES, '#9ca3af'],
-      plotOptions: {
-        pie: {
-          donut: {
-            size: '70%',
-          },
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        show: true,
-        width: 2,
-        colors: ['#fff'],
-      },
-      legend: {
-        show: false,
-      },
-      tooltip: {
-        y: {
-          formatter: (val: number) => `${val.toFixed(2)} kg`,
-        },
-      },
-    };
-  }
-
-  private crearGraficaSaldosTejido(data: any[]): void {
-    if (!data || data.length === 0) {
-      this.chartSaldosTejido = null;
-      return;
-    }
-
-    const COLORES = [
-      '#10b981',
-      '#3b82f6',
-      '#f59e0b',
-      '#ec4899',
-      '#06b6d4',
-      '#6366f1',
-      '#14b8a6',
-      '#f97316',
-      '#84cc16',
-      '#a855f7',
-    ];
-    const topN = 8;
-
-    const datosOrdenados = [...data].sort(
-      (a, b) => parseFloat(b.TOTAL_SALDO) - parseFloat(a.TOTAL_SALDO),
-    );
-
-    const topArticulos = datosOrdenados.slice(0, topN);
-    const otrosArticulos = datosOrdenados.slice(topN);
-
-    const series = topArticulos.map((item) => parseFloat(item.TOTAL_SALDO));
-    const labels = topArticulos.map((item) => item.ARTICULO);
-
-    if (otrosArticulos.length > 0) {
-      const otrosTotal = otrosArticulos.reduce(
-        (sum, item) => sum + parseFloat(item.TOTAL_SALDO),
-        0,
-      );
-      series.push(otrosTotal);
-      labels.push(`Otros (${otrosArticulos.length})`);
-    }
-
-    this.chartSaldosTejido = {
-      series: series,
-      labels: labels,
-      chart: {
-        type: 'donut',
-        height: 176,
-        fontFamily: 'Inter, sans-serif',
-        toolbar: { show: false },
-        events: {
-          dataPointSelection: (event: any, chartContext: any, config: any) => {
-            const articulo = labels[config.dataPointIndex];
-            if (!articulo.startsWith('Otros')) {
-              this.seleccionarArticuloSaldos(articulo);
-            }
-          },
-        },
-      },
-      colors: [...COLORES, '#9ca3af'],
-      plotOptions: {
-        pie: {
-          donut: {
-            size: '70%',
-          },
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        show: true,
-        width: 2,
-        colors: ['#fff'],
-      },
-      legend: {
-        show: false,
-      },
-      tooltip: {
-        y: {
-          formatter: (val: number) => `${val.toFixed(2)} kg`,
-        },
-      },
-    };
-  }
-
-  seleccionarArticuloProduccion(articulo: string): void {
-    if (this.articuloSeleccionadoProduccion === articulo) {
-      this.articuloSeleccionadoProduccion = null;
-    } else {
-      this.articuloSeleccionadoProduccion = articulo;
-    }
-    this.actualizarMetricasProduccion();
-  }
-
-  seleccionarArticuloRevisado(articulo: string): void {
-    if (this.articuloSeleccionadoRevisado === articulo) {
-      this.articuloSeleccionadoRevisado = null;
-    } else {
-      this.articuloSeleccionadoRevisado = articulo;
-    }
-    this.actualizarMetricasRevisado();
-  }
-
-  seleccionarArticuloPorRevisar(articulo: string): void {
-    if (this.articuloSeleccionadoPorRevisar === articulo) {
-      this.articuloSeleccionadoPorRevisar = null;
-    } else {
-      this.articuloSeleccionadoPorRevisar = articulo;
-    }
-    this.actualizarMetricasPorRevisar();
-  }
-
-  seleccionarArticuloSaldos(articulo: string): void {
-    if (this.articuloSeleccionadoSaldos === articulo) {
-      this.articuloSeleccionadoSaldos = null;
-    } else {
-      this.articuloSeleccionadoSaldos = articulo;
-    }
-    this.actualizarMetricasSaldos();
-  }
-
-  private actualizarMetricasProduccion(): void {
-    const area = this.areasResumen.find((a) => a.nombre === 'Producción tejido');
-    if (!area) return;
-    const datosFiltrados = this.articuloSeleccionadoProduccion
-      ? this.datosProduccionCompletos.filter(
-          (d) => d.ARTICULO === this.articuloSeleccionadoProduccion,
-        )
-      : this.datosProduccionCompletos;
-    const peso = datosFiltrados.reduce((sum, item) => sum + (Number(item.TOTAL_TJ) || 0), 0);
-    const piezas = datosFiltrados.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const articulos = datosFiltrados.length;
-    area.metrics[0].value = peso;
-    area.metrics[1].value = piezas;
-    area.metrics[2].value = articulos;
-
-    this.cdr.markForCheck();
-  }
-
-  private actualizarMetricasRevisado(): void {
-    const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
-    if (!area) return;
-
-    const datosFiltrados = this.articuloSeleccionadoRevisado
-      ? this.datosRevisadoCompletos.filter((d) => d.ARTICULO === this.articuloSeleccionadoRevisado)
-      : this.datosRevisadoCompletos;
-
-    const peso = datosFiltrados.reduce((sum, item) => sum + (Number(item.TOTAL_RV) || 0), 0);
-    const piezas = datosFiltrados.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const articulos = datosFiltrados.length;
-
-    area.metrics[0].value = peso;
-    area.metrics[1].value = piezas;
-    area.metrics[2].value = articulos;
-
-    this.cdr.markForCheck();
-  }
-
-  private actualizarMetricasPorRevisar(): void {
-    const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
-    if (!area) return;
-
-    const datosFiltrados = this.articuloSeleccionadoPorRevisar
-      ? this.datosPorRevisarCompletos.filter(
-          (d) => d.ARTICULO === this.articuloSeleccionadoPorRevisar,
-        )
-      : this.datosPorRevisarCompletos;
-
-    const peso = datosFiltrados.reduce(
-      (sum, item) => sum + (Number(item.TOTAL_POR_REVISAR) || 0),
-      0,
-    );
-    const piezas = datosFiltrados.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const articulos = datosFiltrados.length;
-
-    area.metrics[0].value = peso;
-    area.metrics[1].value = piezas;
-    area.metrics[2].value = articulos;
-
-    this.cdr.markForCheck();
-  }
-
-  private actualizarMetricasSaldos(): void {
+  private procesarSaldos(data: any[]): void {
+    if (!data || !Array.isArray(data)) return;
+    this.datosSaldosCompletos = data;
+    const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_SALDO) || 0), 0);
+    const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
+    const articulos = data.length;
     const area = this.areasResumen.find((a) => a.nombre === 'Saldos');
-    if (!area) return;
-
-    const datosFiltrados = this.articuloSeleccionadoSaldos
-      ? this.datosSaldosCompletos.filter((d) => d.ARTICULO === this.articuloSeleccionadoSaldos)
-      : this.datosSaldosCompletos;
-
-    const peso = datosFiltrados.reduce((sum, item) => sum + (Number(item.TOTAL_SALDO) || 0), 0);
-    const piezas = datosFiltrados.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-    const articulos = datosFiltrados.length;
-
-    area.metrics[0].value = peso;
-    area.metrics[1].value = piezas;
-    area.metrics[2].value = articulos;
-
-    this.cdr.markForCheck();
+    if (area) {
+      area.metrics[0].value = pesoTotal;
+      area.metrics[1].value = piezasTotal;
+      area.metrics[2].value = articulos;
+    }
+    this.crearGraficaSaldosTejido(data);
   }
 
   /**
@@ -1521,7 +1209,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
 
   private parseLocalYMD(ymd: string): Date {
     const [y, m, d] = ymd.split('-').map(Number);
-    return new Date(y, m - 1, d); // LOCAL, 00:00 local
+    return new Date(y, m - 1, d);
   }
 
   private crearGraficaEmbarquesTejido(data: any[]): void {
@@ -1568,7 +1256,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     }));
     const colors = tiposOrdenados.map((t) => t.color);
 
-    const textColor = '#e5e7eb';
+    const textColor = '#c4c4c4';
     const mutedText = '#9ca3af';
 
     this.chartEmbarquesTejido = {
@@ -1704,12 +1392,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   calcularArticulosEmbarquesCard(): number {
     const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
     return area?.metrics[2]?.value || 0;
-  }
-
-  private norm(v: any) {
-    return String(v ?? '')
-      .trim()
-      .toUpperCase();
   }
 
   seleccionarTipoEmbarque(tipo: string): void {

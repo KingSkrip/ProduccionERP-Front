@@ -9,7 +9,7 @@
           <div class="text-secondary mb-2 text-sm font-medium">Cantidad total</div>
           <div class="flex items-baseline gap-2">
             <div class="text-3xl font-bold">
-              {{ calcularCantidadTotal() | number: '1.0-0' }}
+              {{ calcularCantidadTotal() | number: '1.2-2' }}
             </div>
             <div class="text-secondary text-sm">kg</div>
           </div>
@@ -36,7 +36,7 @@
           [svgIcon]="'heroicons_outline:scale'"
         ></mat-icon>
       </div>
-      <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number: '1.0-0' }}</div>
+      <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number: '1.2-2' }}</div>
       <div class="text-secondary text-sm">Kilogramos</div>
     </div>
 
@@ -152,7 +152,7 @@
 
           <td class="px-3 py-2 text-right md:px-6 md:py-4">
             <span class="text-lg font-bold text-sky-600">
-              {{ grupo.piezasTotal | number: '1.0-0' }}
+              {{ grupo.piezasTotal | number: '1.2-2' }}
             </span>
           </td>
 
@@ -186,7 +186,7 @@
           <!-- PIEZAS del proceso -->
           <td class="px-6 py-3 text-right">
             <span class="text-sm font-medium text-sky-600">
-              {{ proceso.piezas | number: '1.0-0' }}
+              {{ proceso.piezas | number: '1.2-2' }}
             </span>
           </td>
 
