@@ -3,13 +3,14 @@
   <!-- Header -->
   <div class="mb-6 md:mb-8">
     <!-- Toggle Vista -->
-    <div class="flex w-fit gap-2 rounded-lg bg-gray-100 p-1">
+    <div class="flex w-fit gap-2 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
       <button
         (click)="cambiarVista('general')"
         [class.bg-white]="vistaActual === 'general'"
         [class.shadow]="vistaActual === 'general'"
         [class.text-blue-600]="vistaActual === 'general'"
         [class.text-gray-600]="vistaActual !== 'general'"
+        [class.dark:text-white]="vistaActual !== 'general'"
         class="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200"
       >
         <mat-icon class="h-5 w-5 text-lg">grid_view</mat-icon>
@@ -21,6 +22,7 @@
         [class.shadow]="vistaActual === 'detalle'"
         [class.text-blue-600]="vistaActual === 'detalle'"
         [class.text-gray-600]="vistaActual !== 'detalle'"
+        [class.dark:text-white]="vistaActual !== 'detalle'"
         class="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200"
       >
         <mat-icon class="h-5 w-5 text-lg">format_list_bulleted</mat-icon>
@@ -77,7 +79,10 @@
           </div>
 
           <!-- Loader o contenido -->
-          <div class="-mx-6 mt-4 flex flex-row flex-wrap" *ngIf="!loadingFacturacion; else loaderTemplate">
+          <div
+            class="-mx-6 mt-4 flex flex-row flex-wrap"
+            *ngIf="!loadingFacturacion; else loaderTemplate"
+          >
             <div class="mx-6 my-3 flex flex-col">
               <div class="text-secondary text-sm font-medium leading-none">Total sin IVA</div>
               <div class="mt-2 text-3xl font-medium leading-none">
@@ -91,7 +96,7 @@
               </div>
             </div>
           </div>
-          
+
           <ng-template #loaderTemplate>
             <div class="flex items-center justify-center py-8">
               <mat-spinner diameter="40"></mat-spinner>
@@ -137,11 +142,14 @@
           </div>
 
           <!-- Loader o contenido -->
-          <div class="-mx-6 mt-4 flex flex-row flex-wrap" *ngIf="!loadingFacturacion; else loaderConIva">
+          <div
+            class="-mx-6 mt-4 flex flex-row flex-wrap"
+            *ngIf="!loadingFacturacion; else loaderConIva"
+          >
             <div class="mx-6 my-3 flex flex-col">
               <div class="text-secondary text-sm font-medium leading-none">Total con IVA</div>
               <div class="mt-2 text-3xl font-medium leading-none">
-                  {{ ivaTotal | currency: 'MXN' }}
+                {{ ivaTotal | currency: 'MXN' }}
               </div>
             </div>
             <div class="mx-6 my-3 flex flex-col">
@@ -151,7 +159,7 @@
               </div>
             </div>
           </div>
-          
+
           <ng-template #loaderConIva>
             <div class="flex items-center justify-center py-8">
               <mat-spinner diameter="40"></mat-spinner>
@@ -177,7 +185,7 @@
               <div class="flex flex-col leading-tight">
                 <span class="text-secondary text-sm font-medium"> Total: </span>
                 <span class="text-secondary text-sm font-medium">
-                    {{ ivaTotal | currency: 'MXN' }}
+                  {{ ivaTotal | currency: 'MXN' }}
                 </span>
               </div>
             </div>
@@ -185,7 +193,10 @@
         </div>
 
         <!-- Loader o gráfica -->
-        <div *ngIf="loadingGraficaFacturacion" class="flex flex-1 items-center justify-center py-12">
+        <div
+          *ngIf="loadingGraficaFacturacion"
+          class="flex flex-1 items-center justify-center py-12"
+        >
           <div class="flex flex-col items-center gap-3">
             <mat-spinner diameter="48"></mat-spinner>
             <span class="text-sm text-gray-500">Cargando gráfica...</span>
@@ -206,8 +217,10 @@
           </apx-chart>
         </div>
 
-        <div *ngIf="!loadingGraficaFacturacion && !accountBalanceOptions?.series?.[0]?.data?.length" 
-             class="text-secondary flex flex-1 items-center justify-center p-6">
+        <div
+          *ngIf="!loadingGraficaFacturacion && !accountBalanceOptions?.series?.[0]?.data?.length"
+          class="text-secondary flex flex-1 items-center justify-center p-6"
+        >
           <div class="text-center">
             <mat-icon class="mb-2 text-4xl text-gray-300">bar_chart</mat-icon>
             <p>Sin datos para graficar en el rango seleccionado.</p>
@@ -237,7 +250,10 @@
 
         <div class="mt-4 flex-1">
           <!-- Loader -->
-          <div *ngIf="loadingDistribucionProcesos" class="flex h-[380px] items-center justify-center">
+          <div
+            *ngIf="loadingDistribucionProcesos"
+            class="flex h-[380px] items-center justify-center"
+          >
             <div class="flex flex-col items-center gap-3">
               <mat-spinner diameter="48"></mat-spinner>
               <span class="text-sm text-gray-500">Cargando distribución...</span>
@@ -810,8 +826,6 @@
         </div>
 
         <div class="mt-8">
-          
-
           <div *ngIf="!loadingSaldosTejido" class="-my-3 divide-y">
             <div class="py-3">
               <div class="grid grid-cols-2 items-center">
@@ -893,7 +907,6 @@
 
       <!-- Métricas inferiores -->
       <div class="mx-6 mb-6 mt-2">
-
         <div *ngIf="!loadingEmbarquesTejido" class="grid grid-cols-3 gap-4">
           <!-- Total embarcado -->
           <div class="flex flex-col items-center justify-center text-center">
@@ -942,7 +955,7 @@
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
       <div
         *ngFor="let area of areasResumen"
-        class="rounded-2xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md md:p-6"
+        class="rounded-2xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md md:p-6 dark:bg-gray-800"
       >
         <!-- Header del área -->
         <div class="mb-5 flex items-center gap-3 border-b-2 border-gray-100 pb-4">
@@ -950,11 +963,11 @@
             [style.background]="area.color"
             class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl md:h-12 md:w-12"
           >
-            <mat-icon class="h-5 w-5 text-xl text-white md:h-6 md:w-6 md:text-2xl">{{
-              area.icon
-            }}</mat-icon>
+            <mat-icon class="h-5 w-5 text-xl text-white md:h-6 md:w-6 md:text-2xl">
+              {{ area.icon }}
+            </mat-icon>
           </div>
-          <h2 class="line-clamp-2 text-base font-bold text-gray-900 md:text-lg">
+          <h2 class="line-clamp-2 text-base font-bold text-black dark:text-white md:text-lg">
             {{ area.nombre }}
           </h2>
         </div>
@@ -963,13 +976,15 @@
         <div class="space-y-3 md:space-y-4">
           <div
             *ngFor="let metric of area.metrics"
-            class="flex items-center justify-between rounded-xl bg-gray-50 p-3 transition-colors hover:bg-gray-100 md:p-4"
+            class="flex items-center justify-between rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-500 dark:hover:bg-gray-400 p-3 transition-colors md:p-4"
           >
-            <span class="text-xs font-medium text-gray-600 md:text-sm">{{ metric.label }}</span>
+            <span class="text-xs font-medium text-black dark:text-white md:text-sm">
+              {{ metric.label }}
+            </span>
 
             <div class="text-right">
               <mat-spinner *ngIf="area.loading" diameter="24"></mat-spinner>
-              <span *ngIf="!area.loading" class="text-base font-bold text-gray-900 md:text-lg">
+              <span *ngIf="!area.loading" class="text-base font-bold text-black dark:text-white md:text-lg">
                 {{ formatValue(metric.value, metric.format) }}
               </span>
             </div>

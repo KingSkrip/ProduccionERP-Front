@@ -84,7 +84,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   vistaActual: 'general' | 'detalle' = 'general';
   isMobile = false;
   datosAgrupados: ClienteAgrupado[] = [];
-
+  tipoEmbarqueSeleccionado: string | null = null;
   @ViewChild(MatSort) recentTransactionsTableMatSort!: MatSort;
   data: any = {
     previousStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
@@ -164,8 +164,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       icon: 'receipt_long',
       color: '#10b981',
       metrics: [
-        { label: 'Total facturado', value: 0, format: 'currency' },
-        { label: 'Facturas', value: 0, format: 'number' },
+        { label: 'Total sin IVA', value: 0, format: 'currency' },
+        { label: 'Total con IVA', value: 0, format: 'number' },
         { label: 'Cantidad total', value: 0, format: 'decimal' },
       ],
       loading: true,
@@ -226,7 +226,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       loading: true,
     },
     {
-      nombre: 'Procesos tejido',
+      nombre: 'Tejido',
       icon: 'category',
       color: '#6366f1',
       metrics: [
@@ -278,14 +278,10 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   datosRevisadoCompletos: RevisadoTejido[] = [];
   datosPorRevisarCompletos: PorRevisarTejido[] = [];
   datosSaldosCompletos: SaldosTejido[] = [];
-
-  // Para manejar la selección de artículos
   articuloSeleccionadoProduccion: string | null = null;
   articuloSeleccionadoRevisado: string | null = null;
   articuloSeleccionadoPorRevisar: string | null = null;
   articuloSeleccionadoSaldos: string | null = null;
-
-  // Gráficas de las cards
   chartProduccionTejido: ApexOptions | null = null;
   chartRevisadoTejido: ApexOptions | null = null;
   chartPorRevisarTejido: ApexOptions | null = null;
@@ -317,17 +313,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         this.cargarTodasLasAreas();
         this.sharedData.confirmarRecargaConsumida();
       });
-
-    // this._financeService.data$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
-    //   if (!data) return;
-    //   this.recentTransactionsDataSource.data = data.recentTransactions ?? [];
-    //   this.data = {
-    //     ...this.data,
-    //     recentTransactions: data.recentTransactions ?? this.data.recentTransactions,
-    //   };
-    //   this.cdr.markForCheck();
-    // });
-
     this.sharedData.datosFacturado$.pipe(takeUntil(this.destroy$)).subscribe((facturado) => {
       const payload = facturado?.data ?? facturado;
       const detalle = payload?.detalle ?? [];
@@ -420,8 +405,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Error cargando datos:', err);
-
-          // 🔥 Desactivar loaders también en caso de error
           this.loadingFacturacion = false;
           this.loadingGraficaFacturacion = false;
           this.loadingDistribucionProcesos = false;
@@ -431,7 +414,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
           this.loadingPorRevisarTejido = false;
           this.loadingSaldosTejido = false;
           this.loadingEmbarquesTejido = false;
-
           this.areasResumen.forEach((a) => (a.loading = false));
           this.cdr.markForCheck();
         },
@@ -443,135 +425,75 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     if (!payload) return;
     const tot = payload.totales ?? {};
     const detalle = payload.detalle ?? [];
-    const totalFacturado = Number(tot.total) || 0;
+    const importe = Number(tot.importe) || 0;
+    const impuestos = Number(tot.impuestos) || 0;
     const facturas = Number(tot.facturas) || 0;
-    const cantidad = Number(tot.cant) || 0;
-
     const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
     if (area) {
-      area.metrics[0].value = totalFacturado;
-      area.metrics[1].value = facturas;
-      area.metrics[2].value = cantidad;
+      area.metrics[0].value = importe;
+      area.metrics[1].value = impuestos;
+      area.metrics[2].value = facturas;
     }
   }
 
   private procesarProduccion(data: any[]): void {
     if (!data || !Array.isArray(data)) return;
-
-    // 🔥 Guardar datos completos
     this.datosProduccionCompletos = data;
-
     const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_TJ) || 0), 0);
     const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
     const articulos = data.length;
-
     const area = this.areasResumen.find((a) => a.nombre === 'Producción tejido');
     if (area) {
       area.metrics[0].value = pesoTotal;
       area.metrics[1].value = piezasTotal;
       area.metrics[2].value = articulos;
     }
-
-    // 🔥 Crear gráfica de anillo
     this.crearGraficaProduccionTejido(data);
   }
 
   private procesarRevisado(data: any[]): void {
     if (!data || !Array.isArray(data)) return;
-
-    // 🔥 Guardar datos completos
     this.datosRevisadoCompletos = data;
-
     const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_RV) || 0), 0);
     const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
     const articulos = data.length;
-
     const area = this.areasResumen.find((a) => a.nombre === 'Tejido revisado');
     if (area) {
       area.metrics[0].value = pesoTotal;
       area.metrics[1].value = piezasTotal;
       area.metrics[2].value = articulos;
     }
-
-    // 🔥 Crear gráfica de anillo
     this.crearGraficaRevisadoTejido(data);
   }
 
   private procesarPorRevisar(data: any[]): void {
     if (!data || !Array.isArray(data)) return;
-
-    // 🔥 Guardar datos completos
     this.datosPorRevisarCompletos = data;
-
     const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_POR_REVISAR) || 0), 0);
     const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
     const articulos = data.length;
-
     const area = this.areasResumen.find((a) => a.nombre === 'Por revisar');
     if (area) {
       area.metrics[0].value = pesoTotal;
       area.metrics[1].value = piezasTotal;
       area.metrics[2].value = articulos;
     }
-
-    // 🔥 Crear gráfica de anillo
     this.crearGraficaPorRevisarTejido(data);
   }
 
   private procesarSaldos(data: any[]): void {
     if (!data || !Array.isArray(data)) return;
-
-    // 🔥 Guardar datos completos
     this.datosSaldosCompletos = data;
-
     const pesoTotal = data.reduce((sum, item) => sum + (Number(item.TOTAL_SALDO) || 0), 0);
     const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
     const articulos = data.length;
-
     const area = this.areasResumen.find((a) => a.nombre === 'Saldos');
     if (area) {
       area.metrics[0].value = pesoTotal;
       area.metrics[1].value = piezasTotal;
       area.metrics[2].value = articulos;
     }
-
-    // 🔥 Crear gráfica de anillo
     this.crearGraficaSaldosTejido(data);
-  }
-
-  private procesarEmbarques(data: any[]): void {
-    if (!data || !Array.isArray(data)) return;
-
-    // Guardar datos completos
-    this.datosEmbarquesCompletos = data;
-
-    // Normalizar tipo (evita diferencias de mayúsculas/espacios)
-    const norm = (v: any) =>
-      String(v ?? '')
-        .trim()
-        .toUpperCase();
-
-    const totalEmbarcado = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
-
-    // ✅ Tipos fijos del negocio (siempre 6)
-    const TIPOS_FIJOS = ['PRIMERA', 'PREFERIDA', 'SEGUNDA', 'ORILLAS', 'RETAZO', 'MUESTRAS'];
-    const tipos = TIPOS_FIJOS.length;
-
-    // Artículos únicos
-    const articulos = new Set(data.map((item) => String(item.ARTICULO ?? '').trim())).size;
-
-    const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
-    if (area) {
-      area.metrics[0].value = totalEmbarcado;
-      area.metrics[1].value = tipos;
-      area.metrics[2].value = articulos;
-    }
-
-    // (Opcional) si tu filtro por tipo usa trim() normal, mejor normalizar también:
-    // this.datosEmbarquesCompletos = data.map(x => ({ ...x, TIPO: norm(x.TIPO) }));
-
-    // Crear gráfica
-    this.crearGraficaEmbarquesTejido(data);
   }
 
   private procesarTejido(data: any[]): void {
@@ -579,8 +501,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const cantidadTotal = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
     const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
     const departamentos = new Set(data.map((item) => item.departamento)).size;
-
-    const area = this.areasResumen.find((a) => a.nombre === 'Procesos tejido');
+    const area = this.areasResumen.find((a) => a.nombre === 'Tejido');
     if (area) {
       area.metrics[0].value = cantidadTotal;
       area.metrics[1].value = piezasTotal;
@@ -601,7 +522,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const cantidadTotal = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
     const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
     const procesos = data.length;
-
     const area = this.areasResumen.find((a) => a.nombre === 'Tintorería');
     if (area) {
       area.metrics[0].value = cantidadTotal;
@@ -622,7 +542,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const cantidadTotal = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
     const piezasTotal = data.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
     const procesos = data.length;
-
     const area = this.areasResumen.find((a) => a.nombre === 'Estampados');
     if (area) {
       area.metrics[0].value = cantidadTotal;
@@ -799,41 +718,41 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     };
   }
 
-private procesarFacturadoParaGrafica(detalle: any[]): void {
-  const getFecha = (x: any) => x.fecha || x.FECHA || x.fechaFactura || x.fecha_timbrado;
-  const getFactura = (x: any) => x.factura || x.FACTURA || x.cve_doc || x.CVE_DOC;
-  const porFactura = new Map<string, { ts: number; iva: number; subtotal: number }>();
-  for (const item of detalle) {
-    const folio = String(getFactura(item) ?? '').trim();
-    if (!folio) continue;
-    const raw = getFecha(item);
-    if (!raw) continue;
-    const d = new Date(String(raw).replace(' ', 'T'));
-    if (isNaN(d.getTime())) continue;
-    const dayKey = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-    const subtotal = this.toNum(item.importe);
-    const iva = this.toNum(item.impuestos);
-    if (!porFactura.has(folio)) porFactura.set(folio, { ts: dayKey, iva, subtotal });
-  }
+  private procesarFacturadoParaGrafica(detalle: any[]): void {
+    const getFecha = (x: any) => x.fecha || x.FECHA || x.fechaFactura || x.fecha_timbrado;
+    const getFactura = (x: any) => x.factura || x.FACTURA || x.cve_doc || x.CVE_DOC;
+    const porFactura = new Map<string, { ts: number; iva: number; subtotal: number }>();
+    for (const item of detalle) {
+      const folio = String(getFactura(item) ?? '').trim();
+      if (!folio) continue;
+      const raw = getFecha(item);
+      if (!raw) continue;
+      const d = new Date(String(raw).replace(' ', 'T'));
+      if (isNaN(d.getTime())) continue;
+      const dayKey = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      const subtotal = this.toNum(item.importe);
+      const iva = this.toNum(item.impuestos);
+      if (!porFactura.has(folio)) porFactura.set(folio, { ts: dayKey, iva, subtotal });
+    }
 
-  const porDia = new Map<number, { iva: number; subtotal: number }>();
-  for (const v of porFactura.values()) {
-    const prev = porDia.get(v.ts) ?? { iva: 0, subtotal: 0 };
-    prev.iva += v.iva;
-    prev.subtotal += v.subtotal;
-    porDia.set(v.ts, prev);
-  }
+    const porDia = new Map<number, { iva: number; subtotal: number }>();
+    for (const v of porFactura.values()) {
+      const prev = porDia.get(v.ts) ?? { iva: 0, subtotal: 0 };
+      prev.iva += v.iva;
+      prev.subtotal += v.subtotal;
+      porDia.set(v.ts, prev);
+    }
 
-  const days = Array.from(porDia.entries()).sort((a, b) => a[0] - b[0]);
-  this.data.accountBalance = {
-    growRate: 0,
-    ami: days.length ? days.reduce((s, [, v]) => s + v.iva, 0) / days.length : 0,
-    series: [
-      { name: 'IVA', data: days.map(([ts, v]) => [ts, v.iva]) },
-      { name: 'Sin IVA', data: days.map(([ts, v]) => [ts, v.subtotal]) },
-    ],
-  };
-}
+    const days = Array.from(porDia.entries()).sort((a, b) => a[0] - b[0]);
+    this.data.accountBalance = {
+      growRate: 0,
+      ami: days.length ? days.reduce((s, [, v]) => s + v.iva, 0) / days.length : 0,
+      series: [
+        { name: 'IVA', data: days.map(([ts, v]) => [ts, v.iva]) },
+        { name: 'Sin IVA', data: days.map(([ts, v]) => [ts, v.subtotal]) },
+      ],
+    };
+  }
 
   private setCardsFacturadoPorFiltro(detalle: any[], from: Date, to: Date): void {
     const r = this.sumarPeriodo(detalle, from, to);
@@ -930,40 +849,10 @@ private procesarFacturadoParaGrafica(detalle: any[]): void {
               (x.cliente ?? '').toLowerCase().includes(busqueda) ||
               (x.factura ?? '').toLowerCase().includes(busqueda),
           );
-      // this.agruparPorCliente(detalleFiltrado);
     } else {
       this.datosAgrupados = [];
     }
   }
-
-  // private agruparPorCliente(detalle: FacturaDetalle[]): void {
-  //   const agrupado = new Map<string, ClienteAgrupado>();
-  //   for (const item of detalle) {
-  //     const cliente = (item.cliente || 'Sin cliente').trim?.() ?? 'Sin cliente';
-  //     if (!agrupado.has(cliente)) {
-  //       agrupado.set(cliente, {
-  //         cliente,
-  //         facturas: [],
-  //         cantidadesPorUnidad: {},
-  //         importeTotal: 0,
-  //         impuestosTotal: 0,
-  //         totalFacturado: 0,
-  //         expandido: false,
-  //       });
-  //     }
-  //     const grupo = agrupado.get(cliente)!;
-  //     grupo.facturas.push(item);
-  //     const unidad = item.um || 'N/A';
-  //     grupo.cantidadesPorUnidad[unidad] =
-  //       (grupo.cantidadesPorUnidad[unidad] || 0) + (Number(item.cant) || 0);
-  //     grupo.importeTotal += Number(item.importe) || 0;
-  //     grupo.impuestosTotal += Number(item.impuestos) || 0;
-  //     grupo.totalFacturado += Number(item.total) || 0;
-  //   }
-  //   this.datosAgrupados = Array.from(agrupado.values()).sort(
-  //     (a, b) => b.totalFacturado - a.totalFacturado,
-  //   );
-  // }
 
   get detallesTintoreria() {
     return this.areasResumen.find((a) => a.nombre === 'Tintorería')?.detalles || [];
@@ -979,7 +868,7 @@ private procesarFacturadoParaGrafica(detalle: any[]): void {
 
   // 🔥 AGREGANDO GETTER PARA LOS DETALLES DE TEJIDO
   get detallesTejido() {
-    return this.areasResumen.find((a) => a.nombre === 'Procesos tejido')?.detalles || [];
+    return this.areasResumen.find((a) => a.nombre === 'Tejido')?.detalles || [];
   }
 
   private crearGraficaDistribucionProcesos(datos: any): void {
@@ -1010,23 +899,27 @@ private procesarFacturadoParaGrafica(detalle: any[]): void {
       },
     ];
 
+    const textColor = '#e5e7eb';
+    const mutedText = '#9ca3af';
+
     this.chartDistribucionProcesos = {
       series: [
-        {
-          name: 'Cantidad (kg)',
-          data: procesos.map((p) => p.cantidad),
-        },
-        {
-          name: 'Piezas',
-          data: procesos.map((p) => p.piezas),
-        },
+        { name: 'Cantidad (kg)', data: procesos.map((p) => p.cantidad) },
+        { name: 'Piezas', data: procesos.map((p) => p.piezas) },
       ],
       chart: {
         type: 'bar',
         height: this.isMobile ? 320 : 550,
         fontFamily: 'Inter, sans-serif',
         toolbar: { show: false },
+
+        // 👇 dark
+        foreColor: textColor,
       },
+
+      // 👇 dark
+      theme: { mode: 'dark' },
+
       plotOptions: {
         bar: {
           horizontal: false,
@@ -1034,37 +927,34 @@ private procesarFacturadoParaGrafica(detalle: any[]): void {
           borderRadius: 4,
         },
       },
+
       colors: ['#10b981', '#3b82f6'],
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        show: true,
-        width: 2,
-        colors: ['transparent'],
-      },
+      dataLabels: { enabled: false },
+
+      stroke: { show: true, width: 2, colors: ['transparent'] },
+
       xaxis: {
         categories: procesos.map((p) => p.nombre),
         labels: {
           style: {
             fontSize: this.isMobile ? '10px' : '12px',
+            colors: Array(procesos.length).fill(mutedText), // 👈 fuerza color
           },
           rotate: this.isMobile ? -45 : 0,
           rotateAlways: this.isMobile,
         },
+        axisBorder: { show: true, color: 'rgba(255,255,255,0.15)' },
+        axisTicks: { show: true, color: 'rgba(255,255,255,0.15)' },
       },
+
       yaxis: [
         {
           title: {
             text: this.isMobile ? '' : 'Cantidad (kg)',
-            style: {
-              fontSize: '11px',
-            },
+            style: { fontSize: '11px', color: textColor }, // 👈
           },
           labels: {
-            style: {
-              fontSize: this.isMobile ? '9px' : '11px',
-            },
+            style: { fontSize: this.isMobile ? '9px' : '11px', colors: [mutedText] }, // 👈
             formatter: (val: number) =>
               this.isMobile ? this.formatValue(val, 'number') : this.formatValue(val, 'decimal'),
           },
@@ -1073,46 +963,45 @@ private procesarFacturadoParaGrafica(detalle: any[]): void {
           opposite: true,
           title: {
             text: this.isMobile ? '' : 'Piezas',
-            style: {
-              fontSize: '11px',
-            },
+            style: { fontSize: '11px', color: textColor }, // 👈
           },
           labels: {
-            style: {
-              fontSize: this.isMobile ? '9px' : '11px',
-            },
+            style: { fontSize: this.isMobile ? '9px' : '11px', colors: [mutedText] }, // 👈
             formatter: (val: number) => this.formatValue(val, 'number'),
           },
         },
       ],
-      fill: {
-        opacity: 1,
-      },
+
+      fill: { opacity: 1 },
+
       tooltip: {
         theme: 'dark',
         y: {
           formatter: (val: number, opts: any) => {
-            if (opts.seriesIndex === 0) {
-              return this.formatValue(val, 'decimal') + ' kg';
-            }
+            if (opts.seriesIndex === 0) return this.formatValue(val, 'decimal') + ' kg';
             return this.formatValue(val, 'number') + ' piezas';
           },
         },
       },
+
       legend: {
         show: true,
         position: this.isMobile ? 'bottom' : 'top',
         horizontalAlign: this.isMobile ? 'center' : 'left',
         fontSize: this.isMobile ? '10px' : '12px',
-        markers: {
-          size: this.isMobile ? 5 : 7,
+        labels: {
+          colors: textColor, // 👈
+          useSeriesColors: false,
         },
+        markers: { size: this.isMobile ? 5 : 7 },
         itemMargin: {
           horizontal: this.isMobile ? 6 : 10,
           vertical: this.isMobile ? 4 : 6,
         },
       },
+
       grid: {
+        borderColor: 'rgba(255,255,255,0.08)', // 👈 opcional pero se ve bien en dark
         padding: {
           left: this.isMobile ? 5 : 10,
           right: this.isMobile ? 5 : 10,
@@ -1510,7 +1399,6 @@ private procesarFacturadoParaGrafica(detalle: any[]): void {
     };
   }
 
-  // Métodos para seleccionar artículos
   seleccionarArticuloProduccion(articulo: string): void {
     if (this.articuloSeleccionadoProduccion === articulo) {
       this.articuloSeleccionadoProduccion = null;
@@ -1547,21 +1435,17 @@ private procesarFacturadoParaGrafica(detalle: any[]): void {
     this.actualizarMetricasSaldos();
   }
 
-  // Métodos para actualizar las métricas según selección
   private actualizarMetricasProduccion(): void {
     const area = this.areasResumen.find((a) => a.nombre === 'Producción tejido');
     if (!area) return;
-
     const datosFiltrados = this.articuloSeleccionadoProduccion
       ? this.datosProduccionCompletos.filter(
           (d) => d.ARTICULO === this.articuloSeleccionadoProduccion,
         )
       : this.datosProduccionCompletos;
-
     const peso = datosFiltrados.reduce((sum, item) => sum + (Number(item.TOTAL_TJ) || 0), 0);
     const piezas = datosFiltrados.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
     const articulos = datosFiltrados.length;
-
     area.metrics[0].value = peso;
     area.metrics[1].value = piezas;
     area.metrics[2].value = articulos;
@@ -1631,8 +1515,191 @@ private procesarFacturadoParaGrafica(detalle: any[]): void {
     this.cdr.markForCheck();
   }
 
-  // Cambiar el método de selección para que sea por TIPO
-  tipoEmbarqueSeleccionado: string | null = null;
+  /**
+   * EMBARQUES
+   */
+  private crearGraficaEmbarquesTejido(data: any[]): void {
+    if (!data || data.length === 0) {
+      this.chartEmbarquesTejido = null;
+      return;
+    }
+
+    const tiposOrdenados = [
+      { nombre: 'PRIMERA', color: '#3b82f6' },
+      { nombre: 'PREFERIDA', color: '#6366f1' },
+      { nombre: 'SEGUNDA', color: '#f59e0b' },
+      { nombre: 'ORILLAS', color: '#14b8a6' },
+      { nombre: 'RETAZO', color: '#f59e0b' },
+      { nombre: 'MUESTRAS', color: '#a855f7' },
+    ];
+    const fechasMap = new Map<string, Map<string, number>>();
+    data.forEach((item: any) => {
+      const fechaStr = item.FECHA ? String(item.FECHA).split(' ')[0] : null;
+      if (!fechaStr) return;
+      const tipo = item.TIPO?.trim() || 'SIN CLASIFICAR';
+      const cantidad = parseFloat(item.CANTIDAD) || 0;
+      if (!fechasMap.has(fechaStr)) {
+        fechasMap.set(fechaStr, new Map());
+      }
+      const tipoMap = fechasMap.get(fechaStr)!;
+      tipoMap.set(tipo, (tipoMap.get(tipo) || 0) + cantidad);
+    });
+    const fechasOrdenadas = Array.from(fechasMap.keys()).sort((a, b) => {
+      return new Date(a).getTime() - new Date(b).getTime();
+    });
+    const categories = fechasOrdenadas.map((fecha) => {
+      const d = new Date(fecha);
+      return d.toLocaleDateString('es-MX', {
+        day: '2-digit',
+        month: 'short',
+      });
+    });
+    const series = tiposOrdenados.map((tipo) => ({
+      name: tipo.nombre,
+      data: fechasOrdenadas.map((fecha) => {
+        const tipoMap = fechasMap.get(fecha);
+        return tipoMap?.get(tipo.nombre) || 0;
+      }),
+    }));
+    const colors = tiposOrdenados.map((t) => t.color);
+
+    const textColor = '#e5e7eb';
+    const mutedText = '#9ca3af';
+
+    this.chartEmbarquesTejido = {
+      series: series,
+      chart: {
+        type: 'line',
+        height: this.isMobile ? 280 : 320,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: {
+          show: false,
+        },
+        animations: {
+          enabled: true,
+          speed: 400,
+        },
+        zoom: {
+          enabled: false,
+        },
+
+        foreColor: textColor,
+      },
+      theme: {
+        mode: 'dark',
+      },
+      colors: colors,
+      stroke: {
+        width: 3,
+        curve: 'smooth',
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      xaxis: {
+        categories: categories,
+        labels: {
+          rotate: -45,
+          rotateAlways: fechasOrdenadas.length > 7,
+          style: {
+            fontSize: this.isMobile ? '9px' : '10px',
+            colors: Array(categories.length).fill(mutedText),
+          },
+          formatter: (val: string) => {
+            if (!val || typeof val !== 'string') {
+              return '';
+            }
+            return val;
+          },
+        },
+        tickPlacement: 'on',
+        tooltip: {
+          enabled: false,
+        },
+      },
+      yaxis: {
+        title: {
+          text: 'Cantidad (kg)',
+          style: {
+            fontSize: '12px',
+            color: textColor,
+          },
+        },
+        labels: {
+          formatter: (val: number) => {
+            if (typeof val !== 'number' || isNaN(val)) {
+              return '0';
+            }
+            return val.toFixed(0);
+          },
+          style: {
+            fontSize: this.isMobile ? '9px' : '11px',
+            colors: [mutedText],
+          },
+        },
+      },
+      legend: {
+        show: true,
+        position: this.isMobile ? 'bottom' : 'bottom',
+        horizontalAlign: 'center',
+        fontSize: this.isMobile ? '10px' : '11px',
+        fontWeight: 500,
+        labels: {
+          colors: textColor,
+          useSeriesColors: false,
+        },
+        markers: {
+          size: 6,
+          strokeWidth: 0,
+        },
+        itemMargin: {
+          horizontal: 8,
+          vertical: 4,
+        },
+      },
+      tooltip: {
+        theme: 'dark',
+        shared: true,
+        intersect: false,
+        x: {
+          show: true,
+        },
+        y: {
+          formatter: (val: number) => {
+            if (typeof val !== 'number' || isNaN(val)) {
+              return '0.00 kg';
+            }
+            return `${val.toFixed(2)} kg`;
+          },
+        },
+      },
+      grid: {
+        show: false,
+      },
+      markers: {
+        size: 4,
+        strokeWidth: 2,
+        strokeColors: '#fff',
+        hover: {
+          size: 6,
+        },
+      },
+    };
+  }
+  calcularTotalEmbarquesCard(): number {
+    const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
+    return area?.metrics[0]?.value || 0;
+  }
+
+  calcularTiposEmbarqueCard(): number {
+    const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
+    return area?.metrics[1]?.value || 0;
+  }
+
+  calcularArticulosEmbarquesCard(): number {
+    const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
+    return area?.metrics[2]?.value || 0;
+  }
 
   private norm(v: any) {
     return String(v ?? '')
@@ -1672,189 +1739,23 @@ private procesarFacturadoParaGrafica(detalle: any[]): void {
     this.cdr.markForCheck();
   }
 
-  // Getters para usar en el template de embarques
-  calcularTotalEmbarquesCard(): number {
+  private procesarEmbarques(data: any[]): void {
+    if (!data || !Array.isArray(data)) return;
+    this.datosEmbarquesCompletos = data;
+    const norm = (v: any) =>
+      String(v ?? '')
+        .trim()
+        .toUpperCase();
+    const totalEmbarcado = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
+    const TIPOS_FIJOS = ['PRIMERA', 'PREFERIDA', 'SEGUNDA', 'ORILLAS', 'RETAZO', 'MUESTRAS'];
+    const tipos = TIPOS_FIJOS.length;
+    const articulos = new Set(data.map((item) => String(item.ARTICULO ?? '').trim())).size;
     const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
-    return area?.metrics[0]?.value || 0;
-  }
-
-  calcularTiposEmbarqueCard(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
-    return area?.metrics[1]?.value || 0;
-  }
-
-  calcularArticulosEmbarquesCard(): number {
-    const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
-    return area?.metrics[2]?.value || 0;
-  }
-
-  // gráfica de LÍNEAS múltiples en embarques
-  private crearGraficaEmbarquesTejido(data: any[]): void {
-    if (!data || data.length === 0) {
-      this.chartEmbarquesTejido = null;
-      return;
+    if (area) {
+      area.metrics[0].value = totalEmbarcado;
+      area.metrics[1].value = tipos;
+      area.metrics[2].value = articulos;
     }
-
-    // Tipos conocidos con colores específicos
-    const tiposOrdenados = [
-      { nombre: 'PRIMERA', color: '#3b82f6' },
-      { nombre: 'PREFERIDA', color: '#6366f1' },
-      { nombre: 'SEGUNDA', color: '#f59e0b' },
-      { nombre: 'ORILLAS', color: '#14b8a6' },
-      { nombre: 'RETAZO', color: '#f59e0b' },
-      { nombre: 'MUESTRAS', color: '#a855f7' },
-    ];
-
-    // 🔥 Agrupar por FECHA y TIPO
-    const fechasMap = new Map<string, Map<string, number>>();
-
-    data.forEach((item: any) => {
-      // Parsear la fecha (viene como string del backend)
-      const fechaStr = item.FECHA ? String(item.FECHA).split(' ')[0] : null;
-      if (!fechaStr) return;
-
-      const tipo = item.TIPO?.trim() || 'SIN CLASIFICAR';
-      const cantidad = parseFloat(item.CANTIDAD) || 0;
-
-      if (!fechasMap.has(fechaStr)) {
-        fechasMap.set(fechaStr, new Map());
-      }
-
-      const tipoMap = fechasMap.get(fechaStr)!;
-      tipoMap.set(tipo, (tipoMap.get(tipo) || 0) + cantidad);
-    });
-
-    // Ordenar fechas cronológicamente
-    const fechasOrdenadas = Array.from(fechasMap.keys()).sort((a, b) => {
-      return new Date(a).getTime() - new Date(b).getTime();
-    });
-
-    // Formatear fechas para el eje X
-    const categories = fechasOrdenadas.map((fecha) => {
-      const d = new Date(fecha);
-      return d.toLocaleDateString('es-MX', {
-        day: '2-digit',
-        month: 'short',
-      });
-    });
-
-    // Crear una serie (línea) por cada tipo de embarque
-    const series = tiposOrdenados.map((tipo) => ({
-      name: tipo.nombre,
-      data: fechasOrdenadas.map((fecha) => {
-        const tipoMap = fechasMap.get(fecha);
-        return tipoMap?.get(tipo.nombre) || 0;
-      }),
-    }));
-
-    const colors = tiposOrdenados.map((t) => t.color);
-
-    this.chartEmbarquesTejido = {
-      series: series,
-      chart: {
-        type: 'line',
-        height: this.isMobile ? 280 : 320,
-        fontFamily: 'Inter, sans-serif',
-        toolbar: {
-          show: false, // ✅ Ocultar toolbar
-        },
-        animations: {
-          enabled: true,
-          speed: 400,
-        },
-        zoom: {
-          enabled: false, // ✅ Deshabilitar zoom
-        },
-      },
-      colors: colors,
-      stroke: {
-        width: 3,
-        curve: 'smooth',
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      xaxis: {
-        categories: categories,
-        labels: {
-          rotate: -45,
-          rotateAlways: fechasOrdenadas.length > 7,
-          style: {
-            fontSize: this.isMobile ? '9px' : '10px',
-          },
-          formatter: (val: string) => {
-            if (!val || typeof val !== 'string') {
-              return '';
-            }
-            return val;
-          },
-        },
-        tickPlacement: 'on',
-        tooltip: {
-          enabled: false,
-        },
-      },
-      yaxis: {
-        title: {
-          text: 'Cantidad (kg)',
-          style: {
-            fontSize: '12px',
-          },
-        },
-        labels: {
-          formatter: (val: number) => {
-            if (typeof val !== 'number' || isNaN(val)) {
-              return '0';
-            }
-            return val.toFixed(0);
-          },
-          style: {
-            fontSize: this.isMobile ? '9px' : '11px',
-          },
-        },
-      },
-      legend: {
-        show: true,
-        position: this.isMobile ? 'bottom' : 'bottom',
-        horizontalAlign: 'center',
-        fontSize: this.isMobile ? '10px' : '11px',
-        fontWeight: 500,
-        markers: {
-          size: 6,
-          strokeWidth: 0,
-        },
-        itemMargin: {
-          horizontal: 8,
-          vertical: 4,
-        },
-      },
-      tooltip: {
-        theme: 'dark',
-        shared: true,
-        intersect: false,
-        x: {
-          show: true,
-        },
-        y: {
-          formatter: (val: number) => {
-            if (typeof val !== 'number' || isNaN(val)) {
-              return '0.00 kg';
-            }
-            return `${val.toFixed(2)} kg`;
-          },
-        },
-      },
-      grid: {
-        show: false, // ✅ Ocultar todas las líneas del grid
-      },
-      markers: {
-        size: 4,
-        strokeWidth: 2,
-        strokeColors: '#fff',
-        hover: {
-          size: 6,
-        },
-      },
-    };
+    this.crearGraficaEmbarquesTejido(data);
   }
 }

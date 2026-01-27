@@ -2,7 +2,7 @@
 <div class="md:px-8 md:py-4" *ngIf="!isLoadingTejido && datosTejidoFiltrados.length > 0">
     <!-- Vista móvil -->
     <div class="md:hidden">
-        <div class="bg-card shadow-sm rounded-xl px-5 py-4 border-l-4 border-indigo-500">
+        <div class="bg-card shadow-sm rounded-xl px-5 py-4 border-l-4 border-green-500">
             <div class="flex items-center justify-between gap-4">
                 <div class="flex-1 min-w-0">
                     <div class="text-sm font-medium text-secondary mb-2">
@@ -16,8 +16,8 @@
                     </div>
                 </div>
                 <div class="flex-shrink-0">
-                    <div class="w-12 h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                        <mat-icon class="text-indigo-500 icon-size-6" [svgIcon]="'heroicons_outline:scale'"></mat-icon>
+                    <div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+                        <mat-icon class="text-green-500 icon-size-6" [svgIcon]="'heroicons_outline:scale'"></mat-icon>
                     </div>
                 </div>
             </div>
@@ -26,28 +26,28 @@
 
     <!-- Vista desktop -->
     <div class="hidden md:grid grid-cols-3 gap-3">
-        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-indigo-500">
+        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-green-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base text-secondary">Total Tejido</div>
-                <mat-icon class="text-indigo-500 icon-size-5" [svgIcon]="'heroicons_outline:scale'"></mat-icon>
+                <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_outline:scale'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ calcularTotalPesoTejido() | number:'1.0-0' }}</div>
             <div class="text-sm text-secondary">Kilogramos</div>
         </div>
 
-        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-blue-500">
+        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-yellow-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base font-medium text-secondary">Total Artículos</div>
-                <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_outline:cube'"></mat-icon>
+                <mat-icon class="text-yellow-500 icon-size-5" [svgIcon]="'heroicons_outline:cube'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ contarArticulosTejido() }}</div>
             <div class="text-sm text-secondary">Artículos procesados</div>
         </div>
 
-        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-purple-500">
+        <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-sky-500">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-base font-medium text-secondary">Total Piezas</div>
-                <mat-icon class="text-purple-500 icon-size-5" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
+                <mat-icon class="text-sky-500 icon-size-5" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
             </div>
             <div class="text-2xl font-bold">{{ calcularTotalPiezasTejido() | number:'1.0-0' }}</div>
             <div class="text-sm text-secondary">Piezas producidas</div>
@@ -103,18 +103,18 @@
                 class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <td class="px-3 py-2 md:px-6 md:py-4">
                     <div class="flex items-center gap-3">
-                        <mat-icon class="icon-size-5 text-indigo-500 flex-shrink-0"
+                        <mat-icon class="icon-size-5 text-yellow-500 flex-shrink-0"
                             [svgIcon]="'heroicons_outline:cube'"></mat-icon>
                         <span class="font-semibold">{{ item.ARTICULO }}</span>
                     </div>
                 </td>
                 <td class="px-3 py-2 md:px-6 md:py-4 text-right">
-                    <span class="font-bold text-purple-600 dark:text-purple-400 text-lg">
+                    <span class="font-bold text-sky-600 dark:text-sky-400 text-lg">
                         {{ item.PIEZAS | number:'1.0-0' }}
                     </span>
                 </td>
                 <td class="px-3 py-2 md:px-6 md:py-4 text-right">
-                    <span class="font-bold text-indigo-600 dark:text-indigo-400 text-lg">
+                    <span class="font-bold text-green-600 dark:text-green-400 text-lg">
                         {{ item.TOTAL_TJ | number:'1.2-2' }}
                     </span>
                 </td>
@@ -126,12 +126,12 @@
                     Total:
                 </td>
                 <td class="px-3 py-2 md:px-6 md:py-4 text-right">
-                    <span class="text-lg text-purple-600 dark:text-purple-400">
+                    <span class="text-lg text-sky-600 dark:text-sky-400">
                         {{ calcularTotalPiezasTejido() | number:'1.0-0' }}
                     </span>
                 </td>
                 <td class="px-3 py-2 md:px-6 md:py-4 text-right">
-                    <span class="text-lg text-indigo-600 dark:text-indigo-400">
+                    <span class="text-lg text-green-600 dark:text-green-400">
                         {{ calcularTotalPesoTejido() | number:'1.2-2' }}
                     </span>
                 </td>

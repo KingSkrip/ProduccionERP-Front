@@ -1,206 +1,260 @@
 <!-- Cards de resumen - Solo mostrar si hay datos -->
 <div class="md:px-8 md:py-4" *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length > 0">
-    <!-- Vista móvil - Card único con total -->
-    <div class="md:hidden">
-        <div class="bg-card shadow-sm rounded-xl px-5 py-4 border-l-4 border-cyan-500">
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-secondary mb-2">
-                        Total Embarques
-                    </div>
-                    <div class="flex items-baseline gap-2">
-                        <div class="text-3xl font-bold">
-                            {{ calcularTotalEmbarques() | number:'1.0-0' }}
-                        </div>
-                        <div class="text-sm text-secondary">kg</div>
-                    </div>
-                </div>
-                <div class="flex-shrink-0">
-                    <div class="w-12 h-12 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-                        <mat-icon class="text-cyan-500 icon-size-6" [svgIcon]="'heroicons_outline:truck'"></mat-icon>
-                    </div>
-                </div>
+  <!-- Vista móvil - Card único con total -->
+  <div class="md:hidden">
+    <div class="bg-card rounded-xl border-l-4 border-green-500 px-5 py-4 shadow-sm">
+      <div class="flex items-center justify-between gap-4">
+        <div class="min-w-0 flex-1">
+          <div class="text-secondary mb-2 text-sm font-medium">Total Embarques</div>
+          <div class="flex items-baseline gap-2">
+            <div class="text-3xl font-bold">
+              {{ calcularTotalEmbarques() | number: '1.0-0' }}
             </div>
+            <div class="text-secondary text-sm">kg</div>
+          </div>
         </div>
+        <div class="flex-shrink-0">
+          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10">
+            <mat-icon
+              class="text-green-500 icon-size-6"
+              [svgIcon]="'heroicons_outline:truck'"
+            ></mat-icon>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Vista desktop - Grid de 7 cards (6 tipos + 1 total) -->
-    <div class="hidden md:block">
-        <!-- Primera fila: 4 cards -->
-        <div class="grid grid-cols-4 gap-3 mb-3">
-            <!-- PRIMERA -->
-            <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-blue-500">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="text-sm font-medium text-secondary">Primera</div>
-                    <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_outline:star'"></mat-icon>
-                </div>
-                <div class="text-2xl font-bold">{{ calcularPorTipo('PRIMERA') | number:'1.0-0' }}</div>
-                <div class="text-xs text-secondary">kg</div>
-            </div>
-
-            <!-- PREFERIDA -->
-            <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-indigo-500">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="text-sm font-medium text-secondary">Preferida</div>
-                    <mat-icon class="text-indigo-500 icon-size-5" [svgIcon]="'heroicons_outline:heart'"></mat-icon>
-                </div>
-                <div class="text-2xl font-bold">{{ calcularPorTipo('PREFERIDA') | number:'1.0-0' }}</div>
-                <div class="text-xs text-secondary">kg</div>
-            </div>
-
-            <!-- SEGUNDA -->
-            <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-orange-500">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="text-sm font-medium text-secondary">Segunda</div>
-                    <mat-icon class="text-orange-500 icon-size-5" [svgIcon]="'heroicons_outline:chevron-double-down'"></mat-icon>
-                </div>
-                <div class="text-2xl font-bold">{{ calcularPorTipo('SEGUNDA') | number:'1.0-0' }}</div>
-                <div class="text-xs text-secondary">kg</div>
-            </div>
-
-            <!-- ORILLAS -->
-            <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-teal-500">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="text-sm font-medium text-secondary">Orillas</div>
-                    <mat-icon class="text-teal-500 icon-size-5" [svgIcon]="'heroicons_outline:arrows-pointing-out'"></mat-icon>
-                </div>
-                <div class="text-2xl font-bold">{{ calcularPorTipo('ORILLAS') | number:'1.0-0' }}</div>
-                <div class="text-xs text-secondary">kg</div>
-            </div>
+  <!-- Vista desktop - Grid de 7 cards (6 tipos + 1 total) -->
+  <div class="hidden md:block">
+    <!-- Primera fila: 4 cards -->
+    <div class="mb-3 grid grid-cols-4 gap-3">
+      <!-- PRIMERA -->
+      <div class="bg-card rounded-xl border-l-4 border-blue-500 p-4 shadow-sm">
+        <div class="mb-1 flex items-center justify-between">
+          <div class="text-secondary text-sm font-medium">Primera</div>
+          <mat-icon
+            class="text-blue-500 icon-size-5"
+            [svgIcon]="'heroicons_outline:star'"
+          ></mat-icon>
         </div>
-
-        <!-- Segunda fila: 3 cards -->
-        <div class="grid grid-cols-3 gap-3">
-            <!-- RETAZO -->
-            <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-amber-500">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="text-sm font-medium text-secondary">Retazo</div>
-                    <mat-icon class="text-amber-500 icon-size-5" [svgIcon]="'heroicons_outline:scissors'"></mat-icon>
-                </div>
-                <div class="text-2xl font-bold">{{ calcularPorTipo('RETAZO') | number:'1.0-0' }}</div>
-                <div class="text-xs text-secondary">kg</div>
-            </div>
-
-            <!-- MUESTRAS -->
-            <div class="bg-card shadow-sm rounded-xl p-4 border-l-4 border-purple-500">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="text-sm font-medium text-secondary">Muestras</div>
-                    <mat-icon class="text-purple-500 icon-size-5" [svgIcon]="'heroicons_outline:beaker'"></mat-icon>
-                </div>
-                <div class="text-2xl font-bold">{{ calcularPorTipo('MUESTRAS') | number:'1.0-0' }}</div>
-                <div class="text-xs text-secondary">kg</div>
-            </div>
-
-            <!-- TOTAL GENERAL -->
-            <div class="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white shadow-lg rounded-xl p-4">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="text-sm font-semibold">Total General</div>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:calculator'"></mat-icon>
-                </div>
-                <div class="text-3xl font-bold">{{ calcularTotalEmbarques() | number:'1.0-0' }}</div>
-                <div class="text-xs opacity-90">kilogramos totales</div>
-            </div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('PRIMERA') | number: '1.0-0' }}</div>
+        <div class="text-secondary text-xs">kg</div>
+      </div>
+      <!-- PREFERIDA -->
+      <div class="bg-card rounded-xl border-l-4 border-indigo-500 p-4 shadow-sm">
+        <div class="mb-1 flex items-center justify-between">
+          <div class="text-secondary text-sm font-medium">Preferida</div>
+          <mat-icon
+            class="text-indigo-500 icon-size-5"
+            [svgIcon]="'heroicons_outline:heart'"
+          ></mat-icon>
         </div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('PREFERIDA') | number: '1.0-0' }}</div>
+        <div class="text-secondary text-xs">kg</div>
+      </div>
+      <!-- SEGUNDA -->
+      <div class="bg-card rounded-xl border-l-4 border-orange-500 p-4 shadow-sm">
+        <div class="mb-1 flex items-center justify-between">
+          <div class="text-secondary text-sm font-medium">Segunda</div>
+          <mat-icon
+            class="text-orange-500 icon-size-5"
+            [svgIcon]="'heroicons_outline:chevron-double-down'"
+          ></mat-icon>
+        </div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('SEGUNDA') | number: '1.0-0' }}</div>
+        <div class="text-secondary text-xs">kg</div>
+      </div>
+      <!-- ORILLAS -->
+      <div class="bg-card rounded-xl border-l-4 border-teal-500 p-4 shadow-sm">
+        <div class="mb-1 flex items-center justify-between">
+          <div class="text-secondary text-sm font-medium">Orillas</div>
+          <mat-icon
+            class="text-teal-500 icon-size-5"
+            [svgIcon]="'heroicons_outline:arrows-pointing-out'"
+          ></mat-icon>
+        </div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('ORILLAS') | number: '1.0-0' }}</div>
+        <div class="text-secondary text-xs">kg</div>
+      </div>
     </div>
+    <!-- Segunda fila: 3 cards -->
+    <div class="grid grid-cols-3 gap-3">
+      <!-- RETAZO -->
+      <div class="bg-card rounded-xl border-l-4 border-amber-500 p-4 shadow-sm">
+        <div class="mb-1 flex items-center justify-between">
+          <div class="text-secondary text-sm font-medium">Retazo</div>
+          <mat-icon
+            class="text-amber-500 icon-size-5"
+            [svgIcon]="'heroicons_outline:scissors'"
+          ></mat-icon>
+        </div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('RETAZO') | number: '1.0-0' }}</div>
+        <div class="text-secondary text-xs">kg</div>
+      </div>
+      <!-- MUESTRAS -->
+      <div class="bg-card rounded-xl border-l-4 border-purple-500 p-4 shadow-sm">
+        <div class="mb-1 flex items-center justify-between">
+          <div class="text-secondary text-sm font-medium">Muestras</div>
+          <mat-icon
+            class="text-purple-500 icon-size-5"
+            [svgIcon]="'heroicons_outline:beaker'"
+          ></mat-icon>
+        </div>
+        <div class="text-2xl font-bold">{{ calcularPorTipo('MUESTRAS') | number: '1.0-0' }}</div>
+        <div class="text-secondary text-xs">kg</div>
+      </div>
+      <!-- TOTAL GENERAL -->
+      <div
+        class="text-secondary rounded-xl bg-green-50 p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:bg-green-900/20"
+      >
+        <div class="mb-1 flex items-center justify-between">
+          <div class="text-sm font-semibold tracking-wide">Total General</div>
+          <mat-icon
+            class="opacity-80 icon-size-5"
+            [svgIcon]="'heroicons_outline:calculator'"
+          ></mat-icon>
+        </div>
+
+        <div class="text-3xl font-semibold text-black dark:text-white">
+          {{ calcularTotalEmbarques() | number: '1.0-0' }}
+        </div>
+
+        <div class="text-xs uppercase tracking-wide opacity-80">kilogramos totales</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Filtro adicional por tipo (solo desktop) -->
-<div class="hidden md:block md:px-8 mb-4" *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length > 0">
-    <mat-form-field class="fuse-mat-dense fuse-mat-rounded w-64">
-        <mat-icon matPrefix [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
-        <mat-select [formControl]="tipoEmbarqueControl" placeholder="Filtrar por tipo">
-            <mat-option [value]="''">Todos los tipos</mat-option>
-            <mat-option *ngFor="let tipo of tiposEmbarqueUnicos" [value]="tipo">{{ tipo }}</mat-option>
-        </mat-select>
-    </mat-form-field>
+<div
+  class="mb-4 hidden md:block md:px-8"
+  *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length > 0"
+>
+  <mat-form-field class="fuse-mat-dense fuse-mat-rounded w-64">
+    <mat-icon matPrefix [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
+    <mat-select [formControl]="tipoEmbarqueControl" placeholder="Filtrar por tipo">
+      <mat-option [value]="''">Todos los tipos</mat-option>
+      <mat-option *ngFor="let tipo of tiposEmbarqueUnicos" [value]="tipo">{{ tipo }}</mat-option>
+    </mat-select>
+  </mat-form-field>
 </div>
 
 <!-- Loading State -->
-<div *ngIf="isLoadingEmbarques" class="flex flex-col items-center justify-center py-16 px-4">
-    <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-    <p class="text-secondary">Cargando datos de embarques...</p>
+<div *ngIf="isLoadingEmbarques" class="flex flex-col items-center justify-center px-4 py-16">
+  <div
+    class="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"
+  ></div>
+  <p class="text-secondary">Cargando datos de embarques...</p>
 </div>
 
 <!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
-<div *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length === 0 && cargaInicial" 
-    class="flex flex-col items-center justify-center py-16 px-4">
-    <div class="relative mb-6">
-        <div class="w-24 h-24 rounded-2xl bg-pink-500/10 flex items-center justify-center">
-            <mat-icon class="icon-size-12 text-pink-500/40" [svgIcon]="'heroicons_outline:truck'"></mat-icon>
-        </div>
+<div
+  *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length === 0 && cargaInicial"
+  class="flex flex-col items-center justify-center px-4 py-16"
+>
+  <div class="relative mb-6">
+    <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-pink-500/10">
+      <mat-icon
+        class="text-pink-500/40 icon-size-12"
+        [svgIcon]="'heroicons_outline:truck'"
+      ></mat-icon>
     </div>
-    
-    <h3 class="text-xl font-bold mb-2">Sin datos de embarques</h3>
-    <p class="text-secondary text-center max-w-md mb-4">
-        No se encontraron registros con los filtros seleccionados.
-        <br>Intenta ajustar tus criterios de búsqueda o seleccionar otro periodo.
-    </p>
-    
-    <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
-        <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
-        Limpiar filtros
-    </button>
+  </div>
+
+  <h3 class="mb-2 text-xl font-bold">Sin datos de embarques</h3>
+  <p class="text-secondary mb-4 max-w-md text-center">
+    No se encontraron registros con los filtros seleccionados.
+    <br />Intenta ajustar tus criterios de búsqueda o seleccionar otro periodo.
+  </p>
+
+  <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
+    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+    Limpiar filtros
+  </button>
 </div>
 
 <!-- Tabla de datos -->
-<div class="mt-6 overflow-x-auto md:pb-8 md:px-8" *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length > 0">
-    <table class="w-full bg-card shadow-sm rounded-2xl overflow-hidden">
-        <thead class="bg-gray-50 dark:bg-gray-800">
-            <tr>
-                <th class="px-3 py-2 md:px-6 md:py-4 text-left text-sm md:text-base font-semibold tracking-wider">
-                    Tipo
-                </th>
-                <th class="px-3 py-2 md:px-6 md:py-4 text-left text-sm md:text-base font-semibold tracking-wider">
-                    Artículo
-                </th>
-                <th class="px-3 py-2 md:px-6 md:py-4 text-right text-sm md:text-base font-semibold tracking-wider">
-                    Cantidad (kg)
-                </th>
-            </tr>
-        </thead>
-        <tbody class="divide-y">
-            <tr *ngFor="let item of datosEmbarquesFiltrados"
-                class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <td class="px-3 py-2 md:px-6 md:py-4">
-                    <div class="flex items-center gap-3">
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="{
-                            'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300': item.TIPO === 'PRIMERA',
-                            'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300': item.TIPO === 'PREFERIDA',
-                            'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300': item.TIPO === 'SEGUNDA',
-                            'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300': item.TIPO === 'ORILLAS',
-                            'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300': item.TIPO === 'RETAZO',
-                            'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300': item.TIPO === 'MUESTRAS',
-                            'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300': item.TIPO === 'SIN CLASIFICAR'
-                        }">
-                            {{ item.TIPO }}
-                        </span>
-                    </div>
-                </td>
-                <td class="px-3 py-2 md:px-6 md:py-4">
-                    <div class="flex items-center gap-3">
-                        <mat-icon class="icon-size-5 text-cyan-500 flex-shrink-0" [svgIcon]="'heroicons_outline:cube'"></mat-icon>
-                        <span class="font-semibold">{{ item.ARTICULO }}</span>
-                    </div>
-                </td>
-                <td class="px-3 py-2 md:px-6 md:py-4 text-right">
-                    <span class="font-bold text-cyan-600 dark:text-cyan-400 text-lg">
-                        {{ item.CANTIDAD | number:'1.2-2' }}
-                    </span>
-                </td>
-            </tr>
-        </tbody>
-        <tfoot class="bg-gray-50 dark:bg-gray-800 font-bold border-t-2">
-            <tr>
-                <td colspan="2" class="px-3 py-2 md:px-6 md:py-4 text-right text-base">
-                    Total:
-                </td>
-                <td class="px-3 py-2 md:px-6 md:py-4 text-right">
-                    <span class="text-lg text-cyan-600 dark:text-cyan-400">
-                        {{ calcularTotalEmbarques() | number:'1.2-2' }}
-                    </span>
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+<div
+  class="mt-6 overflow-x-auto md:px-8 md:pb-8"
+  *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length > 0"
+>
+  <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">
+    <thead class="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th
+          class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Tipo
+        </th>
+        <th
+          class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Artículo
+        </th>
+        <th
+          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Cantidad (kg)
+        </th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <tr
+        *ngFor="let item of datosEmbarquesFiltrados"
+        class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+      >
+        <td class="px-3 py-2 md:px-6 md:py-4">
+          <div class="flex items-center gap-3">
+            <span
+              class="rounded-full px-3 py-1 text-xs font-semibold"
+              [ngClass]="{
+                'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300':
+                  item.TIPO === 'PRIMERA',
+                'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300':
+                  item.TIPO === 'PREFERIDA',
+                'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300':
+                  item.TIPO === 'SEGUNDA',
+                'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300':
+                  item.TIPO === 'ORILLAS',
+                'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300':
+                  item.TIPO === 'RETAZO',
+                'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300':
+                  item.TIPO === 'MUESTRAS',
+                'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300':
+                  item.TIPO === 'SIN CLASIFICAR',
+              }"
+            >
+              {{ item.TIPO }}
+            </span>
+          </div>
+        </td>
+        <td class="px-3 py-2 md:px-6 md:py-4">
+          <div class="flex items-center gap-3">
+            <mat-icon
+              class="flex-shrink-0 text-yellow-500 icon-size-5"
+              [svgIcon]="'heroicons_outline:cube'"
+            ></mat-icon>
+            <span class="font-semibold">{{ item.ARTICULO }}</span>
+          </div>
+        </td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg font-bold text-green-600 dark:text-green-400">
+            {{ item.CANTIDAD | number: '1.2-2' }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-800">
+      <tr>
+        <td colspan="2" class="px-3 py-2 text-right text-base md:px-6 md:py-4">Total:</td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg text-green-600 dark:text-green-400">
+            {{ calcularTotalEmbarques() | number: '1.2-2' }}
+          </span>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
 </div>
 <!-- hijo embarques -->
