@@ -873,7 +873,10 @@
       <div class="m-6 mb-0 flex items-start justify-between">
         <div class="flex flex-col">
           <div class="text-lg font-medium leading-6 tracking-tight">Embarques por artículo</div>
-          <div class="text-secondary mt-1 text-sm font-medium">Distribución por tipo</div>
+          <div class="text-secondary mt-1 text-sm font-medium">
+            Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }} -
+                {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
+              </div>
         </div>
       </div>
 

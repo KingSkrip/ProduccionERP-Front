@@ -1518,6 +1518,12 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   /**
    * EMBARQUES
    */
+
+  private parseLocalYMD(ymd: string): Date {
+    const [y, m, d] = ymd.split('-').map(Number);
+    return new Date(y, m - 1, d); // LOCAL, 00:00 local
+  }
+
   private crearGraficaEmbarquesTejido(data: any[]): void {
     if (!data || data.length === 0) {
       this.chartEmbarquesTejido = null;
@@ -1545,15 +1551,14 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       tipoMap.set(tipo, (tipoMap.get(tipo) || 0) + cantidad);
     });
     const fechasOrdenadas = Array.from(fechasMap.keys()).sort((a, b) => {
-      return new Date(a).getTime() - new Date(b).getTime();
+      return this.parseLocalYMD(a).getTime() - this.parseLocalYMD(b).getTime();
     });
+
     const categories = fechasOrdenadas.map((fecha) => {
-      const d = new Date(fecha);
-      return d.toLocaleDateString('es-MX', {
-        day: '2-digit',
-        month: 'short',
-      });
+      const d = this.parseLocalYMD(fecha);
+      return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
     });
+
     const series = tiposOrdenados.map((tipo) => ({
       name: tipo.nombre,
       data: fechasOrdenadas.map((fecha) => {
