@@ -474,8 +474,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       case 'number':
       default:
         return new Intl.NumberFormat('es-MX', {
-          minimumFractionDigits: 2, // ← AGREGAR ESTA LÍNEA
-          maximumFractionDigits: 2, // ← AGREGAR ESTA LÍNEA
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
         }).format(value);
     }
   }
@@ -1206,7 +1206,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   /**
    * EMBARQUES
    */
-
   private parseLocalYMD(ymd: string): Date {
     const [y, m, d] = ymd.split('-').map(Number);
     return new Date(y, m - 1, d);
@@ -1275,7 +1274,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         zoom: {
           enabled: false,
         },
-
         foreColor: textColor,
       },
       theme: {
