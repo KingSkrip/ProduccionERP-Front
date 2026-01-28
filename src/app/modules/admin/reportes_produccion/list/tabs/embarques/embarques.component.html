@@ -183,28 +183,29 @@
     <thead class="bg-gray-50 dark:bg-gray-700">
       <tr>
         <th
-          class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+          class="pl-2 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
         >
           Tipo
         </th>
         <th
-          class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+          class="py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
         >
           Artículo
         </th>
         <th
-          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+          class="pr-2 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
         >
           Cantidad (kg)
         </th>
       </tr>
     </thead>
+
     <tbody class="divide-y">
       <tr
         *ngFor="let item of datosEmbarquesFiltrados"
         class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
       >
-        <td class="px-3 py-2 md:px-6 md:py-4">
+        <td class="py-2 md:px-6 md:py-4">
           <div class="flex items-center gap-3">
             <span
               class="rounded-full px-3 py-1 text-xs font-semibold"
@@ -229,7 +230,8 @@
             </span>
           </div>
         </td>
-        <td class="px-3 py-2 md:px-6 md:py-4">
+
+        <td class="py-2 md:px-6 md:py-4">
           <div class="flex items-center gap-3">
             <mat-icon
               class="flex-shrink-0 text-yellow-500 icon-size-5"
@@ -238,13 +240,15 @@
             <span class="font-semibold">{{ item.ARTICULO }}</span>
           </div>
         </td>
-        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+
+        <td class="pr-3 py-2 text-right md:px-6 md:py-4">
           <span class="text-lg font-bold text-green-600 dark:text-green-400">
             {{ item.CANTIDAD | number: '1.2-2' }}
           </span>
         </td>
       </tr>
     </tbody>
+
     <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-700">
       <tr>
         <td colspan="2" class="px-3 py-2 text-right text-base md:px-6 md:py-4">Total:</td>
