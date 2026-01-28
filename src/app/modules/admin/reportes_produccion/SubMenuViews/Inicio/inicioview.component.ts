@@ -313,11 +313,88 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // private cargarTodasLasAreas(): void {
+  //   const filtros = this.sharedData.obtenerFiltros();
+  //   const fechaInicio =
+  //     filtros.fechaInicio || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  //   const fechaFin = filtros.fechaFin || new Date();
+  //   this.loadingFacturacion = true;
+  //   this.loadingGraficaFacturacion = true;
+  //   this.loadingDistribucionProcesos = true;
+  //   this.loadingDetallesProcesos = true;
+  //   this.loadingProduccionTejido = true;
+  //   this.loadingRevisadoTejido = true;
+  //   this.loadingPorRevisarTejido = true;
+  //   this.loadingSaldosTejido = true;
+  //   this.loadingEmbarquesTejido = true;
+  //   this.areasResumen.forEach((a) => (a.loading = true));
+  //   this.cdr.markForCheck();
+  //   forkJoin({
+  //     facturado: this.reportService.getFacturado(fechaInicio, fechaFin, true),
+  //     embarques: this.reportService.getEntregadoaEmbarques(fechaInicio, fechaFin),
+  //     tejido: this.reportService.getTejidoResumen(fechaInicio, fechaFin),
+  //     tintoreria: this.reportService.getTintoreria(fechaInicio, fechaFin),
+  //     estampados: this.reportService.getEstampados(fechaInicio, fechaFin),
+  //     acabado: this.reportService.getAcabado(fechaInicio, fechaFin),
+  //     produccion: this.reportService.getProduccionTejido(fechaInicio, fechaFin),
+  //     revisado: this.reportService.getRevisadoTejido(fechaInicio, fechaFin),
+  //     porRevisar: this.reportService.getPorRevisarTejido(fechaInicio, fechaFin),
+  //     saldos: this.reportService.getSaldosTejido(fechaInicio, fechaFin),
+  //   })
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe({
+  //       next: (datos) => {
+  //         this.sharedData.setDatosFacturado(datos.facturado);
+  //         this.procesarFacturado(datos.facturado);
+  //         this.onFacturadoLoaded(datos.facturado);
+  //         this.procesarProduccion(datos.produccion);
+  //         this.procesarRevisado(datos.revisado);
+  //         this.procesarPorRevisar(datos.porRevisar);
+  //         this.procesarSaldos(datos.saldos);
+  //         this.procesarEmbarques(datos.embarques);
+  //         this.procesarTejido(datos.tejido);
+  //         this.procesarTintoreria(datos.tintoreria);
+  //         this.procesarEstampados(datos.estampados);
+  //         this.procesarAcabado(datos.acabado);
+  //         this.crearGraficaDistribucionProcesos(datos);
+  //         this.loadingFacturacion = false;
+  //         this.loadingGraficaFacturacion = false;
+  //         this.loadingDistribucionProcesos = false;
+  //         this.loadingDetallesProcesos = false;
+  //         this.loadingProduccionTejido = false;
+  //         this.loadingRevisadoTejido = false;
+  //         this.loadingPorRevisarTejido = false;
+  //         this.loadingSaldosTejido = false;
+  //         this.loadingEmbarquesTejido = false;
+
+  //         this.areasResumen.forEach((a) => (a.loading = false));
+  //         this.cdr.markForCheck();
+  //       },
+  //       error: (err) => {
+  //         console.error('Error cargando datos:', err);
+  //         this.loadingFacturacion = false;
+  //         this.loadingGraficaFacturacion = false;
+  //         this.loadingDistribucionProcesos = false;
+  //         this.loadingDetallesProcesos = false;
+  //         this.loadingProduccionTejido = false;
+  //         this.loadingRevisadoTejido = false;
+  //         this.loadingPorRevisarTejido = false;
+  //         this.loadingSaldosTejido = false;
+  //         this.loadingEmbarquesTejido = false;
+  //         this.areasResumen.forEach((a) => (a.loading = false));
+  //         this.cdr.markForCheck();
+  //       },
+  //     });
+  // }
+
+
+
   private cargarTodasLasAreas(): void {
     const filtros = this.sharedData.obtenerFiltros();
-    const fechaInicio =
-      filtros.fechaInicio || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const fechaInicio = filtros.fechaInicio || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const fechaFin = filtros.fechaFin || new Date();
+
+    // Activar todos los loadings
     this.loadingFacturacion = true;
     this.loadingGraficaFacturacion = true;
     this.loadingDistribucionProcesos = true;
@@ -327,65 +404,65 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     this.loadingPorRevisarTejido = true;
     this.loadingSaldosTejido = true;
     this.loadingEmbarquesTejido = true;
-    this.areasResumen.forEach((a) => (a.loading = true));
+    this.areasResumen.forEach(a => a.loading = true);
     this.cdr.markForCheck();
-    forkJoin({
-      facturado: this.reportService.getFacturado(fechaInicio, fechaFin, true),
-      embarques: this.reportService.getEntregadoaEmbarques(fechaInicio, fechaFin),
-      tejido: this.reportService.getTejidoResumen(fechaInicio, fechaFin),
-      tintoreria: this.reportService.getTintoreria(fechaInicio, fechaFin),
-      estampados: this.reportService.getEstampados(fechaInicio, fechaFin),
-      acabado: this.reportService.getAcabado(fechaInicio, fechaFin),
-      produccion: this.reportService.getProduccionTejido(fechaInicio, fechaFin),
-      revisado: this.reportService.getRevisadoTejido(fechaInicio, fechaFin),
-      porRevisar: this.reportService.getPorRevisarTejido(fechaInicio, fechaFin),
-      saldos: this.reportService.getSaldosTejido(fechaInicio, fechaFin),
-    })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (datos) => {
-          this.sharedData.setDatosFacturado(datos.facturado);
-          this.procesarFacturado(datos.facturado);
-          this.onFacturadoLoaded(datos.facturado);
-          this.procesarProduccion(datos.produccion);
-          this.procesarRevisado(datos.revisado);
-          this.procesarPorRevisar(datos.porRevisar);
-          this.procesarSaldos(datos.saldos);
-          this.procesarEmbarques(datos.embarques);
-          this.procesarTejido(datos.tejido);
-          this.procesarTintoreria(datos.tintoreria);
-          this.procesarEstampados(datos.estampados);
-          this.procesarAcabado(datos.acabado);
-          this.crearGraficaDistribucionProcesos(datos);
-          this.loadingFacturacion = false;
-          this.loadingGraficaFacturacion = false;
-          this.loadingDistribucionProcesos = false;
-          this.loadingDetallesProcesos = false;
-          this.loadingProduccionTejido = false;
-          this.loadingRevisadoTejido = false;
-          this.loadingPorRevisarTejido = false;
-          this.loadingSaldosTejido = false;
-          this.loadingEmbarquesTejido = false;
 
-          this.areasResumen.forEach((a) => (a.loading = false));
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          console.error('Error cargando datos:', err);
-          this.loadingFacturacion = false;
-          this.loadingGraficaFacturacion = false;
-          this.loadingDistribucionProcesos = false;
-          this.loadingDetallesProcesos = false;
-          this.loadingProduccionTejido = false;
-          this.loadingRevisadoTejido = false;
-          this.loadingPorRevisarTejido = false;
-          this.loadingSaldosTejido = false;
-          this.loadingEmbarquesTejido = false;
-          this.areasResumen.forEach((a) => (a.loading = false));
-          this.cdr.markForCheck();
-        },
-      });
-  }
+    // 🚀 UNA SOLA PETICIÓN
+    this.reportService.getAllReports(fechaInicio, fechaFin)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+            next: (datos) => {
+                // Procesar todos los datos
+                this.sharedData.setDatosFacturado(datos.facturado);
+                this.procesarFacturado(datos.facturado);
+                this.onFacturadoLoaded(datos.facturado);
+                this.procesarProduccion(datos.produccion);
+                this.procesarRevisado(datos.revisado);
+                this.procesarPorRevisar(datos.porRevisar);
+                this.procesarSaldos(datos.saldos);
+                this.procesarEmbarques(datos.embarques);
+                this.procesarTejido(datos.tejido);
+                this.procesarTintoreria(datos.tintoreria);
+                this.procesarEstampados(datos.estampados);
+                this.procesarAcabado(datos.acabado);
+                this.crearGraficaDistribucionProcesos(datos);
+
+                // Desactivar todos los loadings
+                this.loadingFacturacion = false;
+                this.loadingGraficaFacturacion = false;
+                this.loadingDistribucionProcesos = false;
+                this.loadingDetallesProcesos = false;
+                this.loadingProduccionTejido = false;
+                this.loadingRevisadoTejido = false;
+                this.loadingPorRevisarTejido = false;
+                this.loadingSaldosTejido = false;
+                this.loadingEmbarquesTejido = false;
+                this.areasResumen.forEach(a => a.loading = false);
+                this.cdr.markForCheck();
+            },
+            error: (err) => {
+                console.error('Error cargando datos:', err);
+                // Desactivar loadings en error
+                this.loadingFacturacion = false;
+                this.loadingGraficaFacturacion = false;
+                this.loadingDistribucionProcesos = false;
+                this.loadingDetallesProcesos = false;
+                this.loadingProduccionTejido = false;
+                this.loadingRevisadoTejido = false;
+                this.loadingPorRevisarTejido = false;
+                this.loadingSaldosTejido = false;
+                this.loadingEmbarquesTejido = false;
+                this.areasResumen.forEach(a => a.loading = false);
+                this.cdr.markForCheck();
+            }
+        });
+}
+
+
+
+
+
+
 
   seleccionarArticulo(
     tipo: 'produccion' | 'revisado' | 'porRevisar' | 'saldos',
@@ -947,6 +1024,10 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       area.metrics[2].value = total;
     }
   }
+  get totalFacturacion(): number {
+  return this.getMetric('Facturación', 2); // index 2 = total según tu procesarFacturado
+}
+
 
   private getFechaFactura(item: any): Date | null {
     const raw = item.fecha || item.FECHA || item.fechaFactura || item.fecha_timbrado;

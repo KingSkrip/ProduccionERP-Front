@@ -487,4 +487,43 @@ export class ReportProdService {
             );
     }
 
+
+
+
+
+
+
+
+
+
+
+    /**
+ * 🚀 NUEVO: Obtener TODOS los reportes en una sola petición
+ */
+getAllReports(fechaInicio: Date, fechaFin: Date): Observable<any> {
+    let params = new HttpParams();
+
+    const formatoFirebird = (fecha: Date, esInicio: boolean): string => {
+        const dia = fecha.getDate().toString().padStart(2, '0');
+        const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+        const anio = fecha.getFullYear();
+        const hora = esInicio ? '00:00:00' : '23:59:59';
+        return `${dia}.${mes}.${anio} ${hora}`;
+    };
+
+    params = params
+        .set('fecha_inicio', formatoFirebird(fechaInicio, true))
+        .set('fecha_fin', formatoFirebird(fechaFin, false));
+
+    return this._httpClient
+        .get<{ success: boolean; data: any }>(`${this.apiUrl}reportes-produccion/all`, { params })
+        .pipe(
+            map(resp => resp.data),
+            catchError(err => {
+                console.error('Error al obtener todos los reportes', err);
+                return throwError(() => new Error(err.message || 'Error desconocido'));
+            })
+        );
+}
+
 }
