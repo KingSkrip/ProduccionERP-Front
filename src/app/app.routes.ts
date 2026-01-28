@@ -4,8 +4,6 @@ import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 
-
-
 // prettier-ignore
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
@@ -113,16 +111,18 @@ export const appRoutes: Route[] = [
                     { path: 'rodarobaloc_noitseG_THREE', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
                     { path: 'rodarobaloc_noitseG_FOUR', loadChildren: () => import('app/modules/admin/cruds/usuarios/colaborador/colaborador.routes') },
 
+
+
+
+
+
+
                     //Solicitudes
                     { path: 'Soli_Vac', loadChildren: () => import('app/modules/admin/solicitudes/Vacaciones/vacaciones.routes') },
-
                     //Autorizar pedidos
                     { path: 'AceptPedidos', loadChildren: () => import('app/modules/admin/autorizarpedidos/autpedidos.routes') },
-
                     //Reportes de produccion
                     { path: 'ReportProd', loadChildren: () => import('app/modules/admin/reportes_produccion/reportprod.routes') },
-
-
                     { path: 'file-manager', loadChildren: () => import('app/modules/admin/apps/file-manager/file-manager.routes') },
                     { path: 'help-center', loadChildren: () => import('app/modules/admin/apps/help-center/help-center.routes') },
                     { path: 'mailbox', loadChildren: () => import('app/modules/admin/apps/mailbox/mailbox.routes') },
@@ -255,8 +255,11 @@ export const appRoutes: Route[] = [
 
             // COLABORADOR dashboard
             {
-                path: 'apps/colaborador',
-                loadChildren: () => import('app/modules/colaborador/dashboards/colaborador/colaborador.routes')
+                path: 'apps/colaborador', children: [
+                    // loadChildren: () => import('app/modules/colaborador/dashboards/colaborador/colaborador.routes')
+                    { path: 'Barcode', loadChildren: () => import('app/modules/colaborador/scan/scan.routes') },
+
+                ]
             },
 
             // 404 & Catch all

@@ -84,17 +84,17 @@
             *ngIf="!loadingFacturacion; else loaderTemplate"
           >
             <div class="mx-6 my-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Total sin IVA</div>
+              <div class="text-secondary text-sm font-medium leading-none">Subtotal</div>
               <div class="mt-2 text-3xl font-medium leading-none">
                 {{ importeTotalSinIva | currency: 'MXN' }}
               </div>
             </div>
-            <div class="mx-6 my-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Facturas sin IVA</div>
+            <!-- <div class="mx-6 my-3 flex flex-col">
+              <div class="text-secondary text-sm font-medium leading-none">Facturas IVA</div>
               <div class="mt-2 text-3xl font-medium leading-none">
                 {{ facturasSinIva }}
               </div>
-            </div>
+            </div> -->
           </div>
 
           <ng-template #loaderTemplate>
@@ -147,17 +147,17 @@
             *ngIf="!loadingFacturacion; else loaderConIva"
           >
             <div class="mx-6 my-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Total con IVA</div>
+              <div class="text-secondary text-sm font-medium leading-none">Total IVA</div>
               <div class="mt-2 text-3xl font-medium leading-none">
                 {{ ivaTotal | currency: 'MXN' }}
               </div>
             </div>
-            <div class="mx-6 my-3 flex flex-col">
+            <!-- <div class="mx-6 my-3 flex flex-col">
               <div class="text-secondary text-sm font-medium leading-none">Facturas con IVA</div>
               <div class="mt-2 text-3xl font-medium leading-none">
                 {{ facturasConIva }}
               </div>
-            </div>
+            </div> -->
           </div>
 
           <ng-template #loaderConIva>
@@ -174,7 +174,7 @@
           <div class="flex items-center justify-between">
             <div class="flex flex-col">
               <div class="mr-4 truncate text-lg font-medium leading-6 tracking-tight">
-                Monto por factura
+                Facturación
               </div>
               <div class="text-secondary font-medium">
                 Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }} -
@@ -237,7 +237,7 @@
       >
         <div class="flex flex-col gap-1">
           <div class="text-base font-medium leading-6 tracking-tight sm:text-lg">
-            Distribución de Procesos
+            Distribución de procesos
           </div>
 
           <div class="text-secondary text-sm font-medium">
@@ -295,20 +295,34 @@
       <div class="grid auto-rows-auto grid-cols-1 gap-y-6 lg:col-span-1 xl:col-span-2">
         <!-- TEJIDO -->
         <div
-          class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
         >
-          <div class="flex items-start justify-between">
+          <!-- Decoración -->
+          <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
+            <svg width="260" height="70" viewBox="0 0 260 70" fill="none">
+              <path
+                d="M0 40 C 40 20, 80 60, 120 40 S 200 20, 260 40"
+                stroke="rgb(34 197 94)"
+                stroke-width="8"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+
+          <!-- Header -->
+          <div class="relative z-10 flex items-start justify-between">
             <div
               class="flex flex-wrap items-start gap-1 truncate text-lg font-medium leading-6 tracking-tight"
             >
               <span>Tejido</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-500"
+                class="flex flex-wrap gap-1 text-xs text-gray-400 dark:text-gray-500"
                 *ngFor="let detalle of detallesTejido"
               >
                 - {{ detalle.proceso }}
               </div>
             </div>
+
             <div class="-mr-3 -mt-2 ml-2">
               <button mat-icon-button [matMenuTriggerFor]="tejidoMenu">
                 <mat-icon
@@ -330,22 +344,24 @@
             </div>
           </div>
 
-          <!-- Loader o contenido -->
+          <!-- Loader -->
           <div *ngIf="loadingDetallesProcesos" class="flex items-center justify-center py-6">
             <mat-spinner diameter="32"></mat-spinner>
           </div>
 
+          <!-- Contenido -->
           <ng-container *ngIf="!loadingDetallesProcesos">
-            <div class="flex flex-col" *ngFor="let detalle of detallesTejido">
+            <div class="relative z-10 flex flex-col" *ngFor="let detalle of detallesTejido">
               <div class="-mx-6 flex flex-row flex-wrap">
                 <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-secondary text-sm font-medium leading-none">Cantidad</div>
+                  <div class="text-black dark:text-white text-sm font-medium leading-none">Cantidad</div>
                   <div class="mt-2 text-3xl font-medium leading-none">
                     {{ formatValue(detalle.cantidad, 'decimal') }} kg
                   </div>
                 </div>
+
                 <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-secondary text-sm font-medium leading-none">Piezas</div>
+                  <div class="text-black dark:text-white text-sm font-medium leading-none">Piezas</div>
                   <div class="mt-2 text-3xl font-medium leading-none">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
@@ -357,15 +373,34 @@
 
         <!-- TINTORERÍA -->
         <div
-          class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
         >
-          <div class="flex items-start justify-between">
+          <!-- Decoración -->
+          <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
+            <svg
+              width="260"
+              height="70"
+              viewBox="0 0 260 70"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M0 50 C 25 30, 50 30, 75 50 S 125 70, 150 50 S 200 30, 225 50 S 250 70, 260 50"
+                stroke="rgb(59 130 246)"
+                stroke-width="8"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+
+          <!-- Header -->
+          <div class="relative z-10 flex items-start justify-between">
             <div
               class="flex flex-wrap items-start gap-1 truncate text-lg font-medium leading-6 tracking-tight"
             >
               <span>Tintorería </span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-500"
+                class="flex flex-wrap gap-1 text-xs text-gray-400 dark:text-gray-500"
                 *ngFor="let detalle of detallesTintoreria"
               >
                 - {{ detalle.proceso }}
@@ -392,22 +427,23 @@
             </div>
           </div>
 
-          <!-- Loader o contenido -->
+          <!-- Loader -->
           <div *ngIf="loadingDetallesProcesos" class="flex items-center justify-center py-6">
             <mat-spinner diameter="32"></mat-spinner>
           </div>
 
+          <!-- Contenido -->
           <ng-container *ngIf="!loadingDetallesProcesos">
-            <div class="flex flex-col" *ngFor="let detalle of detallesTintoreria">
+            <div class="relative z-10 flex flex-col" *ngFor="let detalle of detallesTintoreria">
               <div class="-mx-6 flex flex-row flex-wrap">
                 <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-secondary text-sm font-medium leading-none">Cantidad</div>
+                  <div class="text-black dark:text-white text-sm font-medium leading-none">Cantidad</div>
                   <div class="mt-2 text-3xl font-medium leading-none">
                     {{ formatValue(detalle.cantidad, 'decimal') }} kg
                   </div>
                 </div>
                 <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-secondary text-sm font-medium leading-none">Piezas</div>
+                  <div class="text-black dark:text-white text-sm font-medium leading-none">Piezas</div>
                   <div class="mt-2 text-3xl font-medium leading-none">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
@@ -419,15 +455,28 @@
 
         <!-- ESTAMPADOS -->
         <div
-          class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
         >
-          <div class="flex items-start justify-between">
+          <!-- Decoración -->
+          <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
+            <svg width="260" height="70" viewBox="0 0 260 70" fill="none">
+              <path
+                d="M0 40 Q 65 10, 130 40 T 260 40"
+                stroke="rgb(168 85 247)"
+                stroke-width="8"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+
+          <!-- Header -->
+          <div class="relative z-10 flex items-start justify-between">
             <div
               class="flex flex-wrap items-start gap-1 truncate text-lg font-medium leading-6 tracking-tight"
             >
               <span>Estampado</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-500"
+                class="flex flex-wrap gap-1 text-xs text-gray-400 dark:text-gray-500"
                 *ngFor="let detalle of detallesEstampados"
               >
                 - {{ detalle.proceso }}
@@ -454,22 +503,23 @@
             </div>
           </div>
 
-          <!-- Loader o contenido -->
+          <!-- Loader -->
           <div *ngIf="loadingDetallesProcesos" class="flex items-center justify-center py-6">
             <mat-spinner diameter="32"></mat-spinner>
           </div>
 
+          <!-- Contenido -->
           <ng-container *ngIf="!loadingDetallesProcesos">
-            <div class="flex flex-col" *ngFor="let detalle of detallesEstampados">
+            <div class="relative z-10 flex flex-col" *ngFor="let detalle of detallesEstampados">
               <div class="-mx-6 flex flex-row flex-wrap">
                 <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-secondary text-sm font-medium leading-none">Cantidad</div>
+                  <div class="text-black dark:text-white text-sm font-medium leading-none">Cantidad</div>
                   <div class="mt-2 text-3xl font-medium leading-none">
                     {{ formatValue(detalle.cantidad, 'decimal') }} kg
                   </div>
                 </div>
                 <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-secondary text-sm font-medium leading-none">Piezas</div>
+                  <div class="text-black dark:text-white text-sm font-medium leading-none">Piezas</div>
                   <div class="mt-2 text-3xl font-medium leading-none">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
@@ -481,15 +531,28 @@
 
         <!-- ACABADO REAL -->
         <div
-          class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
         >
-          <div class="flex items-start justify-between">
+          <!-- Decoración -->
+          <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
+            <svg width="260" height="70" viewBox="0 0 260 70" fill="none">
+              <path
+                d="M0 25 C 40 30, 80 45, 120 50 S 200 60, 260 55"
+                stroke="rgb(239 68 68)"
+                stroke-width="8"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+
+          <!-- Header -->
+          <div class="relative z-10 flex items-start justify-between">
             <div
               class="flex flex-wrap items-start gap-1 truncate text-lg font-medium leading-6 tracking-tight"
             >
               <span>Acabado real</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-500"
+                class="flex flex-wrap gap-1 text-xs text-gray-400 dark:text-gray-500"
                 *ngFor="let detalle of detallesAcabado"
               >
                 - {{ detalle.proceso }}
@@ -516,22 +579,23 @@
             </div>
           </div>
 
-          <!-- Loader o contenido -->
+          <!-- Loader -->
           <div *ngIf="loadingDetallesProcesos" class="flex items-center justify-center py-6">
             <mat-spinner diameter="32"></mat-spinner>
           </div>
 
+          <!-- Contenido -->
           <ng-container *ngIf="!loadingDetallesProcesos">
-            <div class="flex flex-col" *ngFor="let detalle of detallesAcabado">
+            <div class="relative z-10 flex flex-col" *ngFor="let detalle of detallesAcabado">
               <div class="-mx-6 flex flex-row flex-wrap">
                 <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-secondary text-sm font-medium leading-none">Cantidad</div>
+                  <div class="text-black dark:text-white text-sm font-medium leading-none">Cantidad</div>
                   <div class="mt-2 text-3xl font-medium leading-none">
                     {{ formatValue(detalle.cantidad, 'decimal') }} kg
                   </div>
                 </div>
                 <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-secondary text-sm font-medium leading-none">Piezas</div>
+                  <div class="text-black dark:text-white text-sm font-medium leading-none">Piezas</div>
                   <div class="mt-2 text-3xl font-medium leading-none">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>

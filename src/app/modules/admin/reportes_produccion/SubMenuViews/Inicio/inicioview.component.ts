@@ -1314,7 +1314,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         title: {
           text: 'Cantidad (kg)',
           style: {
-            fontSize: '12px',
+            fontSize: '10px',
             color: textColor,
           },
         },

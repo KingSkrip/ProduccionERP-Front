@@ -3905,6 +3905,14 @@ export const menuColaborador: FuseNavigationItem[] = [
     icon: 'heroicons_outline:home',
     link: '/dashboards/project',
   },
+  {
+    id: 'colaborador.scan',
+    title: 'Escaner',
+    tooltip: 'Escaner',
+    type: 'basic',
+    icon: 'heroicons_outline:barcode',
+    link: '/apps/colaborador/Barcode',
+  },
 ];
 
 export const menuJefe: FuseNavigationItem[] = [
@@ -3955,7 +3963,7 @@ export const menuJefe: FuseNavigationItem[] = [
 export const menuReporteProd_Jefe: FuseNavigationItem[] = [
   {
     id: 'rp-Inicio',
-    title: 'Inicio',
+    title: 'Resumen',
     type: 'basic',
     icon: 'heroicons_outline:home',
     link: '/apps/ReportProd/list/inicio',
