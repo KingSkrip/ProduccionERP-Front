@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import {
     APP_INITIALIZER,
     ApplicationConfig,
@@ -19,12 +19,16 @@ import { MockApiService } from 'app/mock-api';
 import { firstValueFrom } from 'rxjs';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
 import { UserService } from './core/user/user.service';
+import { decryptInterceptor } from './core/interceptors/decrypt.interceptor';
 
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideAnimations(),
-        provideHttpClient(),
+        provideHttpClient(
+            withInterceptors([
+                decryptInterceptor,
+            ])),
         provideRouter(
             appRoutes,
             withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })
