@@ -12,9 +12,10 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ApexOptions } from 'apexcharts';
+// import { ResumenWebsocketService } from 'app/core/services/websockets/resumenwebsocket.service';
 import { FinanceService } from 'app/modules/admin/dashboards/finance/finance.service';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { filter, map, Subject, takeUntil } from 'rxjs';
+import { debounceTime, filter, map, Subject, takeUntil } from 'rxjs';
 import { SharedDataService } from '../../list/shared-data.service';
 import {
   PorRevisarTejido,
@@ -69,6 +70,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   accountBalanceOptions!: ApexOptions;
   private destroy$ = new Subject<void>();
   datosAgrupados: ClienteAgrupado[] = [];
+  private wsRefresh$ = new Subject<any>();
   datosSaldosCompletos: SaldosTejido[] = [];
   filtros$ = this.sharedData.filtrosGlobales$;
   chartSaldosTejido: ApexOptions | null = null;
@@ -261,9 +263,26 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private breakpointObserver: BreakpointObserver,
     private _financeService: FinanceService,
+    // private resumenwebsocket: ResumenWebsocketService,
   ) {}
 
   ngOnInit(): void {
+    // this.resumenwebsocket.listenReportesActualizados((event) => {
+    //   this.wsRefresh$.next(event);
+    // });
+
+    // this.wsRefresh$
+    //   .pipe(
+    //     takeUntil(this.destroy$),
+    //     // 👇 si llegan varios en corto, solo refresca 1 vez
+    //     debounceTime(500),
+    //   )
+    //   .subscribe((event) => {
+    //     console.log('🔔 Reportes actualizados:', event);
+    //     this.cargarTodasLasAreas({ silent: true });
+    //     // this.mostrarNotificacion(event.mensaje);
+    //   });
+
     this.breakpointObserver
       .observe([Breakpoints.Handset])
       .pipe(takeUntil(this.destroy$))
@@ -311,108 +330,44 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+
+    // this.resumenwebsocket.stopListening();
   }
 
-  // private cargarTodasLasAreas(): void {
-  //   const filtros = this.sharedData.obtenerFiltros();
-  //   const fechaInicio =
-  //     filtros.fechaInicio || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  //   const fechaFin = filtros.fechaFin || new Date();
-  //   this.loadingFacturacion = true;
-  //   this.loadingGraficaFacturacion = true;
-  //   this.loadingDistribucionProcesos = true;
-  //   this.loadingDetallesProcesos = true;
-  //   this.loadingProduccionTejido = true;
-  //   this.loadingRevisadoTejido = true;
-  //   this.loadingPorRevisarTejido = true;
-  //   this.loadingSaldosTejido = true;
-  //   this.loadingEmbarquesTejido = true;
-  //   this.areasResumen.forEach((a) => (a.loading = true));
-  //   this.cdr.markForCheck();
-  //   forkJoin({
-  //     facturado: this.reportService.getFacturado(fechaInicio, fechaFin, true),
-  //     embarques: this.reportService.getEntregadoaEmbarques(fechaInicio, fechaFin),
-  //     tejido: this.reportService.getTejidoResumen(fechaInicio, fechaFin),
-  //     tintoreria: this.reportService.getTintoreria(fechaInicio, fechaFin),
-  //     estampados: this.reportService.getEstampados(fechaInicio, fechaFin),
-  //     acabado: this.reportService.getAcabado(fechaInicio, fechaFin),
-  //     produccion: this.reportService.getProduccionTejido(fechaInicio, fechaFin),
-  //     revisado: this.reportService.getRevisadoTejido(fechaInicio, fechaFin),
-  //     porRevisar: this.reportService.getPorRevisarTejido(fechaInicio, fechaFin),
-  //     saldos: this.reportService.getSaldosTejido(fechaInicio, fechaFin),
-  //   })
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe({
-  //       next: (datos) => {
-  //         this.sharedData.setDatosFacturado(datos.facturado);
-  //         this.procesarFacturado(datos.facturado);
-  //         this.onFacturadoLoaded(datos.facturado);
-  //         this.procesarProduccion(datos.produccion);
-  //         this.procesarRevisado(datos.revisado);
-  //         this.procesarPorRevisar(datos.porRevisar);
-  //         this.procesarSaldos(datos.saldos);
-  //         this.procesarEmbarques(datos.embarques);
-  //         this.procesarTejido(datos.tejido);
-  //         this.procesarTintoreria(datos.tintoreria);
-  //         this.procesarEstampados(datos.estampados);
-  //         this.procesarAcabado(datos.acabado);
-  //         this.crearGraficaDistribucionProcesos(datos);
-  //         this.loadingFacturacion = false;
-  //         this.loadingGraficaFacturacion = false;
-  //         this.loadingDistribucionProcesos = false;
-  //         this.loadingDetallesProcesos = false;
-  //         this.loadingProduccionTejido = false;
-  //         this.loadingRevisadoTejido = false;
-  //         this.loadingPorRevisarTejido = false;
-  //         this.loadingSaldosTejido = false;
-  //         this.loadingEmbarquesTejido = false;
+  private mostrarNotificacion(mensaje: string) {
+    // Implementa tu sistema de notificaciones
+    console.log('📢 Notificación:', mensaje);
+  }
 
-  //         this.areasResumen.forEach((a) => (a.loading = false));
-  //         this.cdr.markForCheck();
-  //       },
-  //       error: (err) => {
-  //         console.error('Error cargando datos:', err);
-  //         this.loadingFacturacion = false;
-  //         this.loadingGraficaFacturacion = false;
-  //         this.loadingDistribucionProcesos = false;
-  //         this.loadingDetallesProcesos = false;
-  //         this.loadingProduccionTejido = false;
-  //         this.loadingRevisadoTejido = false;
-  //         this.loadingPorRevisarTejido = false;
-  //         this.loadingSaldosTejido = false;
-  //         this.loadingEmbarquesTejido = false;
-  //         this.areasResumen.forEach((a) => (a.loading = false));
-  //         this.cdr.markForCheck();
-  //       },
-  //     });
-  // }
+  private cargarTodasLasAreas(opts?: { silent?: boolean }): void {
+    const silent = opts?.silent ?? false;
 
-  private cargarTodasLasAreas(): void {
     const filtros = this.sharedData.obtenerFiltros();
     const fechaInicio =
       filtros.fechaInicio || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const fechaFin = filtros.fechaFin || new Date();
 
-    // Activar todos los loadings
-    this.loadingFacturacion = true;
-    this.loadingGraficaFacturacion = true;
-    this.loadingDistribucionProcesos = true;
-    this.loadingDetallesProcesos = true;
-    this.loadingProduccionTejido = true;
-    this.loadingRevisadoTejido = true;
-    this.loadingPorRevisarTejido = true;
-    this.loadingSaldosTejido = true;
-    this.loadingEmbarquesTejido = true;
-    this.areasResumen.forEach((a) => (a.loading = true));
-    this.cdr.markForCheck();
+    // ✅ Solo prender loaders si NO es silencioso
+    if (!silent) {
+      this.loadingFacturacion = true;
+      this.loadingGraficaFacturacion = true;
+      this.loadingDistribucionProcesos = true;
+      this.loadingDetallesProcesos = true;
+      this.loadingProduccionTejido = true;
+      this.loadingRevisadoTejido = true;
+      this.loadingPorRevisarTejido = true;
+      this.loadingSaldosTejido = true;
+      this.loadingEmbarquesTejido = true;
+      this.areasResumen.forEach((a) => (a.loading = true));
+      this.cdr.markForCheck();
+    }
 
-    // 🚀 UNA SOLA PETICIÓN
     this.reportService
-      .getAllReports(fechaInicio, fechaFin)
+      .getAllReports(fechaInicio, fechaFin, true)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (datos) => {
-          // Procesar todos los datos
+          // Procesar todos los datos (esto se queda igual)
           this.sharedData.setDatosFacturado(datos.facturado);
           this.procesarFacturado(datos.facturado);
           this.onFacturadoLoaded(datos.facturado);
@@ -427,33 +382,39 @@ export class InicioViewComponent implements OnInit, OnDestroy {
           this.procesarAcabado(datos.acabado);
           this.crearGraficaDistribucionProcesos(datos);
 
-          // Desactivar todos los loadings
-          this.loadingFacturacion = false;
-          this.loadingGraficaFacturacion = false;
-          this.loadingDistribucionProcesos = false;
-          this.loadingDetallesProcesos = false;
-          this.loadingProduccionTejido = false;
-          this.loadingRevisadoTejido = false;
-          this.loadingPorRevisarTejido = false;
-          this.loadingSaldosTejido = false;
-          this.loadingEmbarquesTejido = false;
-          this.areasResumen.forEach((a) => (a.loading = false));
+          // ✅ Solo apagar loaders si NO es silencioso
+          if (!silent) {
+            this.loadingFacturacion = false;
+            this.loadingGraficaFacturacion = false;
+            this.loadingDistribucionProcesos = false;
+            this.loadingDetallesProcesos = false;
+            this.loadingProduccionTejido = false;
+            this.loadingRevisadoTejido = false;
+            this.loadingPorRevisarTejido = false;
+            this.loadingSaldosTejido = false;
+            this.loadingEmbarquesTejido = false;
+            this.areasResumen.forEach((a) => (a.loading = false));
+          }
+
           this.cdr.markForCheck();
         },
         error: (err) => {
           console.error('Error cargando datos:', err);
-          // Desactivar loadings en error
-          this.loadingFacturacion = false;
-          this.loadingGraficaFacturacion = false;
-          this.loadingDistribucionProcesos = false;
-          this.loadingDetallesProcesos = false;
-          this.loadingProduccionTejido = false;
-          this.loadingRevisadoTejido = false;
-          this.loadingPorRevisarTejido = false;
-          this.loadingSaldosTejido = false;
-          this.loadingEmbarquesTejido = false;
-          this.areasResumen.forEach((a) => (a.loading = false));
-          this.cdr.markForCheck();
+
+          // ✅ En error, apaga loaders solo si NO es silencioso
+          if (!silent) {
+            this.loadingFacturacion = false;
+            this.loadingGraficaFacturacion = false;
+            this.loadingDistribucionProcesos = false;
+            this.loadingDetallesProcesos = false;
+            this.loadingProduccionTejido = false;
+            this.loadingRevisadoTejido = false;
+            this.loadingPorRevisarTejido = false;
+            this.loadingSaldosTejido = false;
+            this.loadingEmbarquesTejido = false;
+            this.areasResumen.forEach((a) => (a.loading = false));
+            this.cdr.markForCheck();
+          }
         },
       });
   }

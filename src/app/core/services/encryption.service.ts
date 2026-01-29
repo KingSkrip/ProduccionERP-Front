@@ -14,17 +14,11 @@ export class EncryptionService {
    */
   decrypt(encryptedData: string): any {
     try {
-      console.log('🔍 Intentando desencriptar:', encryptedData.substring(0, 50) + '...');
 
       // 🔥 Laravel Crypt retorna base64(json({iv, value, mac, tag}))
       const decoded = atob(encryptedData);
       const payload = JSON.parse(decoded);
 
-      console.log('📦 Payload desencriptado:', {
-        hasIv: !!payload.iv,
-        hasValue: !!payload.value,
-        hasMac: !!payload.mac,
-      });
 
       // Extraer IV y valor encriptado
       const iv = CryptoJS.enc.Base64.parse(payload.iv);
@@ -48,13 +42,8 @@ export class EncryptionService {
         throw new Error('La desencriptación resultó en una cadena vacía');
       }
 
-      console.log('✅ Desencriptación exitosa, parseando JSON...');
-
       // Parsear el JSON original
       const result = JSON.parse(decryptedStr);
-
-      console.log('✅ JSON parseado correctamente');
-
       return result;
     } catch (error) {
       console.error('❌ Error al desencriptar:', error);
@@ -68,7 +57,6 @@ export class EncryptionService {
    */
   isEncrypted(data: any): boolean {
     const isEnc = data && data.encrypted === true && typeof data.data === 'string';
-    console.log('🔒 ¿Está encriptado?', isEnc);
     return isEnc;
   }
 }
