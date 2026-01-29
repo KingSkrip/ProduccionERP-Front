@@ -169,7 +169,7 @@
       </div>
 
       <!-- COLUMNA DERECHA: Gráfica -->
-      <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl shadow">
+      <!-- <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl shadow">
         <div class="flex flex-col p-6 pb-4">
           <div class="flex items-center justify-between">
             <div class="flex flex-col">
@@ -191,8 +191,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Loader o gráfica -->
         <div
           *ngIf="loadingGraficaFacturacion"
           class="flex flex-1 items-center justify-center py-12"
@@ -202,7 +200,6 @@
             <span class="text-sm text-gray-500">Cargando gráfica...</span>
           </div>
         </div>
-
         <div *ngIf="!loadingGraficaFacturacion && accountBalanceOptions?.series?.[0]?.data?.length">
           <apx-chart
             class="h-full w-full flex-auto"
@@ -216,7 +213,6 @@
           >
           </apx-chart>
         </div>
-
         <div
           *ngIf="!loadingGraficaFacturacion && !accountBalanceOptions?.series?.[0]?.data?.length"
           class="text-secondary flex flex-1 items-center justify-center p-6"
@@ -226,13 +222,13 @@
             <p>Sin datos para graficar en el rango seleccionado.</p>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- GRAFICA CUARTETO Detalles de Tejido, Tintorería, Estampados y Acabado -->
     <div class="mt-6 grid w-full grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-6">
       <!-- Gráfica -->
-      <div
+      <!-- <div
         class="bg-card flex flex-col overflow-hidden rounded-2xl p-4 shadow sm:p-6 xl:col-span-4"
       >
         <div class="flex flex-col gap-1">
@@ -249,7 +245,7 @@
         </div>
 
         <div class="mt-4 flex-1">
-          <!-- Loader -->
+   
           <div
             *ngIf="loadingDistribucionProcesos"
             class="flex h-[380px] items-center justify-center"
@@ -260,7 +256,7 @@
             </div>
           </div>
 
-          <!-- Gráfica -->
+
           <apx-chart
             *ngIf="!loadingDistribucionProcesos && chartDistribucionProcesos"
             class="block w-full"
@@ -278,7 +274,7 @@
           >
           </apx-chart>
 
-          <!-- Sin datos -->
+
           <div
             *ngIf="!loadingDistribucionProcesos && !chartDistribucionProcesos"
             class="flex h-[260px] items-center justify-center text-gray-400 sm:h-[320px] lg:h-[380px]"
@@ -289,7 +285,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- COLUMNA DERECHA: 4 Cards apiladas (ocupa 2 columnas) -->
       <div class="grid auto-rows-auto grid-cols-1 gap-y-6 lg:col-span-1 xl:col-span-2">
