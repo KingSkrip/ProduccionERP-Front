@@ -186,12 +186,12 @@ export class ScrumboardBoardComponent implements OnInit, OnDestroy {
     deleteList(id): void {
         // Open the confirmation dialog
         const confirmation = this._fuseConfirmationService.open({
-            title: 'Delete list',
+            title: 'Eliminar lista',
             message:
-                'Are you sure you want to delete this list and its cards? This action cannot be undone!',
+                '¿Seguro que quieres eliminar esta lista y sus tarjetas? ¡Esta acción no se puede deshacer!',
             actions: {
                 confirm: {
-                    label: 'Delete',
+                    label: 'Eliminar',
                 },
             },
         });

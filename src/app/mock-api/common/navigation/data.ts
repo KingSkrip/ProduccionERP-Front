@@ -1306,8 +1306,8 @@ export const menuRh: FuseNavigationItem[] = [
 
   {
     id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
@@ -2632,8 +2632,8 @@ export const menuSuAdmin: FuseNavigationItem[] = [
 
       {
     id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
@@ -2736,8 +2736,8 @@ export const menuAdmin: FuseNavigationItem[] = [
       },
           {
     id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
@@ -3957,8 +3957,8 @@ export const menuColaborador: FuseNavigationItem[] = [
   },
   {
     id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
@@ -4053,8 +4053,8 @@ export const menuReporteProd_Jefe: FuseNavigationItem[] = [
   },
   {
     id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',

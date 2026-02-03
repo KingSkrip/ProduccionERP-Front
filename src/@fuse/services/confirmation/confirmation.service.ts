@@ -18,12 +18,12 @@ export class FuseConfirmationService {
         actions: {
             confirm: {
                 show: true,
-                label: 'Confirm',
+                label: 'Confirmar',
                 color: 'warn',
             },
             cancel: {
                 show: true,
-                label: 'Cancel',
+                label: 'Cancelar',
             },
         },
         dismissible: false,

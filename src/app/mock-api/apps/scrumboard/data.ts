@@ -48,25 +48,25 @@ export const lists = [
         id: 'a2df7786-519c-485a-a85f-c09a61cc5f37',
         boardId: '2c82225f-2a6c-45d3-b18a-1132712a4234',
         position: 65536,
-        title: 'To do',
+        title: 'Asignadas',
     },
     {
         id: '83ca2a34-65af-49c0-a42e-94a34003fcf2',
         boardId: '2c82225f-2a6c-45d3-b18a-1132712a4234',
         position: 131072,
-        title: 'In progress',
+        title: 'En progreso',
     },
     {
         id: 'a85ea483-f8f7-42d9-a314-3fed6aac22ab',
         boardId: '2c82225f-2a6c-45d3-b18a-1132712a4234',
         position: 196608,
-        title: 'In review',
+        title: 'En revision',
     },
     {
         id: '34cbef38-5687-4813-bd66-141a6df6d832',
         boardId: '2c82225f-2a6c-45d3-b18a-1132712a4234',
         position: 262144,
-        title: 'Completed',
+        title: 'Completedas',
     },
 ];
 export const cards = [

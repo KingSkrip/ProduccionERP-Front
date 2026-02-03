@@ -12,12 +12,17 @@ export const APP_CONFIG: AppConfig = {
   // },
 
   //SERVIDOR
-  apiUrl: 'https://fibrasan.ddns.net/api/public/api/',
-  apiBase: 'https://fibrasan.ddns.net/api/public',
+  // apiUrl: 'https://fibrasan.ddns.net/api/public/api/',
+  // apiBase: 'https://fibrasan.ddns.net/api/public',
 
   //TUNNEL
+<<<<<<< Updated upstream
   // apiUrl: 'https://journalist-utilities-dans-beginning.trycloudflare.com/api/',
   // apiBase: 'https://journalist-utilities-dans-beginning.trycloudflare.com',
+=======
+  apiUrl: 'https://journalist-utilities-dans-beginning.trycloudflare.com/api/',
+  apiBase: 'https://journalist-utilities-dans-beginning.trycloudflare.com',
+>>>>>>> Stashed changes
   reverb: {
     key: 'skihewaszkyxb28di1za',
     // host: 'https://gamecube-ignored-either-led.trycloudflare.com',
