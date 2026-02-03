@@ -148,8 +148,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       icon: 'receipt_long',
       color: '#10b981',
       metrics: [
-        { label: 'Subtotal', value: 0, format: 'currency' },
-        { label: 'Total IVA', value: 0, format: 'number' },
+        { label: 'Cantidad peso', value: 0, format: 'number' },
         { label: 'Cantidad total', value: 0, format: 'decimal' },
       ],
       loading: true,
@@ -952,40 +951,60 @@ export class InicioViewComponent implements OnInit, OnDestroy {
    * FACTURADO
    */
 
- private procesarFacturado(resp: any): void {
-  const payload = resp?.data ?? resp;
-  if (!payload) return;
+  private procesarFacturado1(resp: any): void {
+    const payload = resp?.data ?? resp;
+    if (!payload) return;
 
-  const tot = payload.totales ?? {};
-  const detalle: FacturaDetalle[] = payload.detalle ?? [];
+    const tot = payload.totales ?? {};
+    const detalle: FacturaDetalle[] = payload.detalle ?? [];
 
-  const importe = Number(tot.importe) || 0;
-  const impuestos = Number(tot.impuestos) || 0;
+    const subtotal = Number(tot.importe) || 0;
+    const impuestos = Number(tot.impuestos) || 0;
+    const cant = Number(tot.cant) || 0;
+    const total = Number(tot.total) || 0;
 
-  // ✅ Cantidad total (si viene en totales úsala; si no, calcúlala del detalle)
-  const cantidadTotal =
-    Number(tot.cant) ||
-    detalle.reduce((sum, x) => sum + (Number(x.cant) || 0), 0);
+    const cantidadTotal =
+      Number(tot.cant) || detalle.reduce((sum, x) => sum + (Number(x.cant) || 0), 0);
 
-  const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
-  if (area) {
-    area.metrics[0].value = importe;
-    area.metrics[1].value = impuestos;
-    area.metrics[2].value = cantidadTotal; // ✅ ahora sí es cantidad
+    // ✅ Guarda total con IVA para el card "Total"
+    this.totalConIva = total;
+
+    const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
+    if (area) {
+      area.metrics[0].value = subtotal; // Subtotal
+      area.metrics[1].value = impuestos; // IVA
+      area.metrics[2].value = cantidadTotal; // Cantidad total
+      area.metrics[2].value = cant; // Cantidad total
+    }
   }
-}
+
+  private procesarFacturado(resp: any): void {
+    const payload = resp?.data ?? resp;
+    if (!payload) return;
+    const tot = payload.totales ?? {};
+    const detalle: FacturaDetalle[] = payload.detalle ?? [];
+    const cant = Number(tot.cant) || 0;
+    const total = Number(tot.total) || 0;
 
 
-get cantidadesPorUnidadArray() {
-  return Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => ({
-    um,
-    cant,
-  }));
-}
+    const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
+    if (!area || area.metrics.length < 2) return;
+    area.metrics[0].value = cant;
+    area.metrics[1].value = total;
+  }
 
-
+  get cantidadesPorUnidadArray() {
+    return Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => ({
+      um,
+      cant,
+    }));
+  }
 
   get totalFacturacion(): number {
+    return this.totalConIva || 0;
+  }
+
+  get cantidadFacturada(): number {
     return this.getMetric('Facturación', 2);
   }
 
