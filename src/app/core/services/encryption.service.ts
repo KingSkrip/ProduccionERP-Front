@@ -1,6 +1,6 @@
-// app/core/services/encryption.service.ts
 import { Injectable } from '@angular/core';
 import * as CryptoJS from 'crypto-js';
+// app/core/services/encryption.service.ts
 
 @Injectable({ providedIn: 'root' })
 export class EncryptionService {

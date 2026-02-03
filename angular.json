@@ -16,6 +16,7 @@
             "architect": {
                 "build": {
                     "builder": "@angular-devkit/build-angular:application",
+                    
                     "options": {
                         "outputPath": "dist/fuse",
                         "index": "src/index.html",
@@ -31,7 +32,8 @@
                             "crypto-js/enc-utf8",
                             "crypto-js/hmac-sha256",
                             "crypto-js/enc-base64",
-                            "quill-delta"
+                            "quill-delta",
+                            "crypto-js"
                         ],
                         "assets": [
                             {
@@ -132,4 +134,6 @@
     "cli": {
         "analytics": "9258f8e0-ec93-4016-a484-4647fae752cc"
     }
+
+    
 }
