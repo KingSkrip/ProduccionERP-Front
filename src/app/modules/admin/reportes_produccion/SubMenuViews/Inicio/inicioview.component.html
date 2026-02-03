@@ -104,22 +104,22 @@
           </ng-template>
         </div>
 
-        <!-- Cantidad peso -->
+        <!-- Peso total -->
         <div
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
         >
           <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
             <mat-icon
-              class="text-sky-500 opacity-25 icon-size-24 dark:text-sky-400"
+              class="text-purple-500 opacity-25 icon-size-24 dark:text-purple-400"
               [svgIcon]="'heroicons_outline:check-circle'"
             ></mat-icon>
           </div>
           <div class="flex items-center">
             <div class="flex flex-col">
               <div class="truncate text-lg font-medium leading-6 tracking-tight">
-                Cantidad peso
+                Peso total
               </div>
-              <div class="text-sm font-medium text-sky-600">
+              <div class="text-sm font-medium text-purple-600">
                 Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }} -
                 {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
               </div>
@@ -149,7 +149,7 @@
             *ngIf="!loadingFacturacion; else loaderConIva"
           >
             <div class="mx-6 my-3 flex w-full flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Cantidad peso</div>
+              <div class="text-secondary text-sm font-medium leading-none">Peso total</div>
 
               <div class="mt-2 text-2xl font-medium leading-none">
                 <ng-container *ngIf="cantidadesPorUnidadArray?.length; else sinCantidades">

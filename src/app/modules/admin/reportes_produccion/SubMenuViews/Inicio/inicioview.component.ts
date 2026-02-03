@@ -148,7 +148,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       icon: 'receipt_long',
       color: '#10b981',
       metrics: [
-        { label: 'Cantidad peso', value: 0, format: 'number' },
+        { label: 'Peso total', value: 0, format: 'number' },
         { label: 'Cantidad total', value: 0, format: 'decimal' },
       ],
       loading: true,
