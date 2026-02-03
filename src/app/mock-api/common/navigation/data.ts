@@ -4000,22 +4000,22 @@ export const menuJefe: FuseNavigationItem[] = [
     ],
   },
 
-      {
-    id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
-    type: 'basic',
-    icon: 'heroicons_outline:archive-box',
-    link: '/pages/mailbox',
-  },
-  {
-    id: 'to.do',
-    title: 'scrumboard',
-    tooltip: 'scrumboard',
-    type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
-  },
+  //     {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja',
+  //   tooltip: 'Bandeja',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
 
   // =======================
   // PRODUCCIÓN
