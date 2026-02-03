@@ -183,6 +183,12 @@ export const appRoutes: Route[] = [
 
                     // Settings
                     { path: 'settings', loadChildren: () => import('app/modules/admin/pages/settings/settings.routes') },
+
+
+
+
+                    //bandeja de trabajo
+                    { path: 'mailbox', loadChildren: () => import('app/modules/mailbox/mailbox.routes') },
                 ]
             },
 

@@ -127,7 +127,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
         title: 'Mailbox',
         type: 'basic',
         icon: 'heroicons_outline:envelope',
-        link: '/apps/mailbox',
+        link: '/pages/mailbox',
         badge: {
           title: '27',
           classes: 'px-2 bg-pink-600 text-white rounded-full',
@@ -1305,6 +1305,23 @@ export const menuRh: FuseNavigationItem[] = [
   },
 
   {
+    id: 'bandeja.general',
+    title: 'Bandeja',
+    tooltip: 'Bandeja',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'to.do',
+    title: 'scrumboard',
+    tooltip: 'scrumboard',
+    type: 'basic',
+    icon: 'heroicons_outline:view-columns',
+    link: '/apps/scrumboard',
+  },
+
+  {
     id: 'cruds',
     title: 'Colaboradores', // le agregamos title para que aparezca como los demás
     subtitle: 'Gestión de usuarios',
@@ -1555,7 +1572,7 @@ export const menuRh: FuseNavigationItem[] = [
 //     //             title: 'Mailbox',
 //     //             type: 'basic',
 //     //             icon: 'heroicons_outline:envelope',
-//     //             link: '/apps/mailbox',
+//     //             link: '/pages/mailbox',
 //     //             badge: {
 //     //                 title: '27',
 //     //                 classes: 'px-2 bg-pink-600 text-white rounded-full',
@@ -2613,6 +2630,23 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     ],
   },
 
+      {
+    id: 'bandeja.general',
+    title: 'Bandeja',
+    tooltip: 'Bandeja',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'to.do',
+    title: 'scrumboard',
+    tooltip: 'scrumboard',
+    type: 'basic',
+    icon: 'heroicons_outline:view-columns',
+    link: '/apps/scrumboard',
+  },
+
   // =======================
   // GESTIÓN
   // =======================
@@ -2700,6 +2734,22 @@ export const menuAdmin: FuseNavigationItem[] = [
         icon: 'heroicons_outline:home',
         link: '/dashboards/project',
       },
+          {
+    id: 'bandeja.general',
+    title: 'Bandeja',
+    tooltip: 'Bandeja',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'to.do',
+    title: 'scrumboard',
+    tooltip: 'scrumboard',
+    type: 'basic',
+    icon: 'heroicons_outline:view-columns',
+    link: '/apps/scrumboard',
+  },
       // {
       //     id: 'dashboards.analytics',
       //     title: 'Analytics',
@@ -2857,7 +2907,7 @@ export const menuAdmin: FuseNavigationItem[] = [
   //             title: 'Mailbox',
   //             type: 'basic',
   //             icon: 'heroicons_outline:envelope',
-  //             link: '/apps/mailbox',
+  //             link: '/pages/mailbox',
   //             badge: {
   //                 title: '27',
   //                 classes: 'px-2 bg-pink-600 text-white rounded-full',
@@ -3906,6 +3956,22 @@ export const menuColaborador: FuseNavigationItem[] = [
     link: '/dashboards/project',
   },
   {
+    id: 'bandeja.general',
+    title: 'Bandeja',
+    tooltip: 'Bandeja',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'to.do',
+    title: 'scrumboard',
+    tooltip: 'scrumboard',
+    type: 'basic',
+    icon: 'heroicons_outline:view-columns',
+    link: '/apps/scrumboard',
+  },
+  {
     id: 'colaborador.scan',
     title: 'Escaner',
     tooltip: 'Escaner',
@@ -3932,6 +3998,23 @@ export const menuJefe: FuseNavigationItem[] = [
         link: '/dashboards/project',
       },
     ],
+  },
+
+      {
+    id: 'bandeja.general',
+    title: 'Bandeja',
+    tooltip: 'Bandeja',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'to.do',
+    title: 'scrumboard',
+    tooltip: 'scrumboard',
+    type: 'basic',
+    icon: 'heroicons_outline:view-columns',
+    link: '/apps/scrumboard',
   },
 
   // =======================
@@ -3967,6 +4050,22 @@ export const menuReporteProd_Jefe: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:home',
     link: '/apps/ReportProd/list/inicio',
+  },
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja',
+    tooltip: 'Bandeja',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'to.do',
+    title: 'scrumboard',
+    tooltip: 'scrumboard',
+    type: 'basic',
+    icon: 'heroicons_outline:view-columns',
+    link: '/apps/scrumboard',
   },
 
   {
