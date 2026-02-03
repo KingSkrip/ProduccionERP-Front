@@ -15,7 +15,7 @@ import { ApexOptions } from 'apexcharts';
 // import { ResumenWebsocketService } from 'app/core/services/websockets/resumenwebsocket.service';
 import { FinanceService } from 'app/modules/admin/dashboards/finance/finance.service';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { debounceTime, filter, map, Subject, takeUntil } from 'rxjs';
+import { filter, map, Subject, takeUntil } from 'rxjs';
 import { SharedDataService } from '../../list/shared-data.service';
 import {
   PorRevisarTejido,
@@ -82,6 +82,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   articuloSeleccionadoSaldos: string | null = null;
   chartProduccionTejido: ApexOptions | null = null;
   chartPorRevisarTejido: ApexOptions | null = null;
+  @ViewChild('chartEmbarques') chartEmbarques: any;
   datosProduccionCompletos: ProduccionTejido[] = [];
   datosPorRevisarCompletos: PorRevisarTejido[] = [];
   articuloSeleccionadoRevisado: string | null = null;
@@ -89,6 +90,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   chartDistribucionProcesos: ApexOptions | null = null;
   articuloSeleccionadoProduccion: string | null = null;
   articuloSeleccionadoPorRevisar: string | null = null;
+  tipoEmbarqueSeleccionadoGrafica: string | null = null;
   @ViewChild(MatSort) recentTransactionsTableMatSort!: MatSort;
 
   data: any = {
@@ -330,24 +332,15 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-
     // this.resumenwebsocket.stopListening();
-  }
-
-  private mostrarNotificacion(mensaje: string) {
-    // Implementa tu sistema de notificaciones
-    console.log('📢 Notificación:', mensaje);
   }
 
   private cargarTodasLasAreas(opts?: { silent?: boolean }): void {
     const silent = opts?.silent ?? false;
-
     const filtros = this.sharedData.obtenerFiltros();
     const fechaInicio =
       filtros.fechaInicio || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const fechaFin = filtros.fechaFin || new Date();
-
-    // ✅ Solo prender loaders si NO es silencioso
     if (!silent) {
       this.loadingFacturacion = true;
       this.loadingGraficaFacturacion = true;
@@ -367,7 +360,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (datos) => {
-          // Procesar todos los datos (esto se queda igual)
           this.sharedData.setDatosFacturado(datos.facturado);
           this.procesarFacturado(datos.facturado);
           this.onFacturadoLoaded(datos.facturado);
@@ -381,8 +373,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
           this.procesarEstampados(datos.estampados);
           this.procesarAcabado(datos.acabado);
           this.crearGraficaDistribucionProcesos(datos);
-
-          // ✅ Solo apagar loaders si NO es silencioso
           if (!silent) {
             this.loadingFacturacion = false;
             this.loadingGraficaFacturacion = false;
@@ -400,8 +390,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Error cargando datos:', err);
-
-          // ✅ En error, apaga loaders solo si NO es silencioso
           if (!silent) {
             this.loadingFacturacion = false;
             this.loadingGraficaFacturacion = false;
@@ -964,23 +952,41 @@ export class InicioViewComponent implements OnInit, OnDestroy {
    * FACTURADO
    */
 
-  private procesarFacturado(resp: any): void {
-    const payload = resp?.data ?? resp;
-    if (!payload) return;
-    const tot = payload.totales ?? {};
-    const detalle = payload.detalle ?? [];
-    const importe = Number(tot.importe) || 0;
-    const impuestos = Number(tot.impuestos) || 0;
-    const total = Number(tot.total) || 0;
-    const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
-    if (area) {
-      area.metrics[0].value = importe;
-      area.metrics[1].value = impuestos;
-      area.metrics[2].value = total;
-    }
+ private procesarFacturado(resp: any): void {
+  const payload = resp?.data ?? resp;
+  if (!payload) return;
+
+  const tot = payload.totales ?? {};
+  const detalle: FacturaDetalle[] = payload.detalle ?? [];
+
+  const importe = Number(tot.importe) || 0;
+  const impuestos = Number(tot.impuestos) || 0;
+
+  // ✅ Cantidad total (si viene en totales úsala; si no, calcúlala del detalle)
+  const cantidadTotal =
+    Number(tot.cant) ||
+    detalle.reduce((sum, x) => sum + (Number(x.cant) || 0), 0);
+
+  const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
+  if (area) {
+    area.metrics[0].value = importe;
+    area.metrics[1].value = impuestos;
+    area.metrics[2].value = cantidadTotal; // ✅ ahora sí es cantidad
   }
+}
+
+
+get cantidadesPorUnidadArray() {
+  return Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => ({
+    um,
+    cant,
+  }));
+}
+
+
+
   get totalFacturacion(): number {
-    return this.getMetric('Facturación', 2); // index 2 = total según tu procesarFacturado
+    return this.getMetric('Facturación', 2);
   }
 
   private getFechaFactura(item: any): Date | null {
@@ -1260,6 +1266,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       { nombre: 'RETAZO', color: '#f59e0b' },
       { nombre: 'MUESTRAS', color: '#a855f7' },
     ];
+
     const fechasMap = new Map<string, Map<string, number>>();
     data.forEach((item: any) => {
       const fechaStr = item.FECHA ? String(item.FECHA).split(' ')[0] : null;
@@ -1272,6 +1279,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       const tipoMap = fechasMap.get(fechaStr)!;
       tipoMap.set(tipo, (tipoMap.get(tipo) || 0) + cantidad);
     });
+
     const fechasOrdenadas = Array.from(fechasMap.keys()).sort((a, b) => {
       return this.parseLocalYMD(a).getTime() - this.parseLocalYMD(b).getTime();
     });
@@ -1288,8 +1296,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         return tipoMap?.get(tipo.nombre) || 0;
       }),
     }));
-    const colors = tiposOrdenados.map((t) => t.color);
 
+    const colors = tiposOrdenados.map((t) => t.color);
     const textColor = '#c4c4c4';
     const mutedText = '#9ca3af';
 
@@ -1299,29 +1307,45 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         type: 'line',
         height: this.isMobile ? 280 : 320,
         fontFamily: 'Inter, sans-serif',
-        toolbar: {
-          show: false,
-        },
+        toolbar: { show: false },
         animations: {
           enabled: true,
           speed: 400,
         },
-        zoom: {
-          enabled: false,
-        },
+        zoom: { enabled: false },
         foreColor: textColor,
+        events: {
+          legendClick: (chartContext: any, seriesIndex: number, config: any) => {
+            const tipoClickeado = series[seriesIndex].name;
+            if (this.tipoEmbarqueSeleccionadoGrafica === tipoClickeado) {
+              this.tipoEmbarqueSeleccionadoGrafica = null;
+              series.forEach((s, idx) => {
+                chartContext.showSeries(s.name);
+              });
+            } else {
+              this.tipoEmbarqueSeleccionadoGrafica = tipoClickeado;
+              series.forEach((s, idx) => {
+                if (s.name === tipoClickeado) {
+                  chartContext.showSeries(s.name);
+                } else {
+                  chartContext.hideSeries(s.name);
+                }
+              });
+            }
+            this.actualizarMetricasEmbarquesGrafica();
+            this.actualizarEstiloLeyenda();
+            this.cdr.markForCheck();
+            return false;
+          },
+        },
       },
-      theme: {
-        mode: 'dark',
-      },
+      theme: { mode: 'dark' },
       colors: colors,
       stroke: {
         width: 3,
         curve: 'smooth',
       },
-      dataLabels: {
-        enabled: false,
-      },
+      dataLabels: { enabled: false },
       xaxis: {
         categories: categories,
         labels: {
@@ -1332,16 +1356,12 @@ export class InicioViewComponent implements OnInit, OnDestroy {
             colors: Array(categories.length).fill(mutedText),
           },
           formatter: (val: string) => {
-            if (!val || typeof val !== 'string') {
-              return '';
-            }
+            if (!val || typeof val !== 'string') return '';
             return val;
           },
         },
         tickPlacement: 'on',
-        tooltip: {
-          enabled: false,
-        },
+        tooltip: { enabled: false },
       },
       yaxis: {
         title: {
@@ -1353,9 +1373,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         },
         labels: {
           formatter: (val: number) => {
-            if (typeof val !== 'number' || isNaN(val)) {
-              return '0';
-            }
+            if (typeof val !== 'number' || isNaN(val)) return '0';
             return val.toFixed(0);
           },
           style: {
@@ -1382,36 +1400,87 @@ export class InicioViewComponent implements OnInit, OnDestroy {
           horizontal: 8,
           vertical: 4,
         },
+        onItemClick: {
+          toggleDataSeries: false,
+        },
+        onItemHover: {
+          highlightDataSeries: false,
+        },
       },
       tooltip: {
         theme: 'dark',
         shared: true,
         intersect: false,
-        x: {
-          show: true,
-        },
+        x: { show: true },
         y: {
           formatter: (val: number) => {
-            if (typeof val !== 'number' || isNaN(val)) {
-              return '0.00 kg';
-            }
+            if (typeof val !== 'number' || isNaN(val)) return '0.00 kg';
             return `${val.toFixed(2)} kg`;
           },
         },
       },
-      grid: {
-        show: false,
-      },
+      grid: { show: false },
       markers: {
         size: 4,
         strokeWidth: 2,
         strokeColors: '#fff',
-        hover: {
-          size: 6,
-        },
+        hover: { size: 6 },
       },
     };
   }
+
+  private actualizarEstiloLeyenda(): void {
+    setTimeout(() => {
+      const leyendaItems = document.querySelectorAll('.apexcharts-legend-series');
+      leyendaItems.forEach((item: any) => {
+        const seriesName = item.getAttribute('seriesname');
+        if (!seriesName) return;
+        item.style.opacity = '';
+        item.style.transform = '';
+        item.style.transition = 'all 0.3s ease';
+
+        if (this.tipoEmbarqueSeleccionadoGrafica) {
+          if (seriesName === this.tipoEmbarqueSeleccionadoGrafica) {
+            item.style.opacity = '1';
+            item.style.transform = 'scale(1.1)';
+            item.style.fontWeight = 'bold';
+          } else {
+            item.style.opacity = '0.3';
+            item.style.transform = 'scale(0.95)';
+          }
+        } else {
+          item.style.opacity = '1';
+          item.style.transform = 'scale(1)';
+          item.style.fontWeight = 'normal';
+        }
+      });
+    }, 50);
+  }
+
+  private actualizarMetricasEmbarquesGrafica(): void {
+    const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
+    if (!area) return;
+    const datosFiltrados = this.tipoEmbarqueSeleccionadoGrafica
+      ? this.datosEmbarquesCompletos.filter(
+          (d) => this.norm(d.TIPO) === this.norm(this.tipoEmbarqueSeleccionadoGrafica!),
+        )
+      : this.datosEmbarquesCompletos;
+    const totalEmbarcado = datosFiltrados.reduce(
+      (sum, item) => sum + (Number(item.CANTIDAD) || 0),
+      0,
+    );
+    const tiposUnicos = new Set(datosFiltrados.map((d) => this.norm(d.TIPO)));
+    const tipos = tiposUnicos.size;
+    const articulos = new Set(datosFiltrados.map((item) => String(item.ARTICULO ?? '').trim()))
+      .size;
+
+    area.metrics[0].value = totalEmbarcado;
+    area.metrics[1].value = tipos;
+    area.metrics[2].value = articulos;
+
+    this.cdr.markForCheck();
+  }
+
   calcularTotalEmbarquesCard(): number {
     const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
     return area?.metrics[0]?.value || 0;
@@ -1461,6 +1530,9 @@ export class InicioViewComponent implements OnInit, OnDestroy {
 
   private procesarEmbarques(data: any[]): void {
     if (!data || !Array.isArray(data)) return;
+    this.tipoEmbarqueSeleccionadoGrafica = null;
+
+    this.datosEmbarquesCompletos = data;
     this.datosEmbarquesCompletos = data;
     const norm = (v: any) =>
       String(v ?? '')
@@ -1477,5 +1549,12 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       area.metrics[2].value = articulos;
     }
     this.crearGraficaEmbarquesTejido(data);
+  }
+
+  limpiarFiltroEmbarques(): void {
+    this.tipoEmbarqueSeleccionadoGrafica = null;
+    this.crearGraficaEmbarquesTejido(this.datosEmbarquesCompletos);
+    this.actualizarMetricasEmbarquesGrafica();
+    this.cdr.markForCheck();
   }
 }

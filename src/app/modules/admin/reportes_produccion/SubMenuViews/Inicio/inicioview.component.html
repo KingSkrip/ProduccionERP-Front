@@ -36,10 +36,10 @@
   <!-- ========================================= -->
   <div *ngIf="vistaActual === 'general'">
     <!-- GRAFICA FACTURACION -->
-    <div class="mt-8 grid w-full grid-cols-1 gap-8 xl:grid-cols-2">
+    <div class="mt-8 grid w-full grid-cols-1 gap-8">
       <!-- COLUMNA IZQUIERDA: 3 cards apiladas -->
-      <div class="grid grid-cols-1 gap-8">
-        <!-- Subtotal -->
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <!-- TOTAL -->
         <div
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
         >
@@ -51,7 +51,7 @@
           </div>
           <div class="flex items-center">
             <div class="flex flex-col">
-              <div class="truncate text-lg font-medium leading-6 tracking-tight">Subtotal</div>
+              <div class="truncate text-lg font-medium leading-6 tracking-tight">Total</div>
               <div class="text-sm font-medium text-orange-600">
                 Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }} -
                 {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
@@ -84,9 +84,9 @@
             *ngIf="!loadingFacturacion; else loaderTemplate"
           >
             <div class="mx-6 my-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Subtotal</div>
+              <div class="text-secondary text-sm font-medium leading-none">Total</div>
               <div class="mt-2 text-3xl font-medium leading-none">
-                {{ importeTotalSinIva | currency: 'MXN' }}
+                {{ totalFacturacion | currency: 'MXN' }}
               </div>
             </div>
             <!-- <div class="mx-6 my-3 flex flex-col">
@@ -104,7 +104,7 @@
           </ng-template>
         </div>
 
-        <!-- IVA -->
+        <!-- Cantidad peso -->
         <div
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
         >
@@ -116,7 +116,9 @@
           </div>
           <div class="flex items-center">
             <div class="flex flex-col">
-              <div class="truncate text-lg font-medium leading-6 tracking-tight">IVA</div>
+              <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                Cantidad peso
+              </div>
               <div class="text-sm font-medium text-sky-600">
                 Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }} -
                 {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
@@ -146,18 +148,21 @@
             class="-mx-6 mt-4 flex flex-row flex-wrap"
             *ngIf="!loadingFacturacion; else loaderConIva"
           >
-            <div class="mx-6 my-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Total IVA</div>
-              <div class="mt-2 text-3xl font-medium leading-none">
-                {{ ivaTotal | currency: 'MXN' }}
+            <div class="mx-6 my-3 flex w-full flex-col">
+              <div class="text-secondary text-sm font-medium leading-none">Cantidad peso</div>
+
+              <div class="mt-2 text-2xl font-medium leading-none">
+                <ng-container *ngIf="cantidadesPorUnidadArray?.length; else sinCantidades">
+                  <div *ngFor="let item of cantidadesPorUnidadArray" class="mb-1">
+                    {{ item.um }}: {{ formatValue(item.cant, 'decimal') }}
+                  </div>
+                </ng-container>
+
+                <ng-template #sinCantidades>
+                  <span class="text-secondary text-sm font-medium leading-none">—</span>
+                </ng-template>
               </div>
             </div>
-            <!-- <div class="mx-6 my-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Facturas con IVA</div>
-              <div class="mt-2 text-3xl font-medium leading-none">
-                {{ facturasConIva }}
-              </div>
-            </div> -->
           </div>
 
           <ng-template #loaderConIva>
@@ -226,72 +231,69 @@
     </div>
 
     <!-- GRAFICA CUARTETO Detalles de Tejido, Tintorería, Estampados y Acabado -->
-    <div class="mt-6 grid w-full grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-6">
-      <!-- Gráfica -->
+    <div class="mt-6 w-full">
+      <!-- Gráfica comentada -->
       <!-- <div
-        class="bg-card flex flex-col overflow-hidden rounded-2xl p-4 shadow sm:p-6 xl:col-span-4"
+    class="bg-card flex flex-col overflow-hidden rounded-2xl p-4 shadow sm:p-6 xl:col-span-4"
+  >
+    <div class="flex flex-col gap-1">
+      <div class="text-base font-medium leading-6 tracking-tight sm:text-lg">
+        Distribución de procesos
+      </div>
+
+      <div class="text-secondary text-sm font-medium">
+        Periodo:
+        {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }}
+        -
+        {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
+      </div>
+    </div>
+
+    <div class="mt-4 flex-1">
+      <div
+        *ngIf="loadingDistribucionProcesos"
+        class="flex h-[380px] items-center justify-center"
       >
-        <div class="flex flex-col gap-1">
-          <div class="text-base font-medium leading-6 tracking-tight sm:text-lg">
-            Distribución de procesos
-          </div>
-
-          <div class="text-secondary text-sm font-medium">
-            Periodo:
-            {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }}
-            -
-            {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
-          </div>
+        <div class="flex flex-col items-center gap-3">
+          <mat-spinner diameter="48"></mat-spinner>
+          <span class="text-sm text-gray-500">Cargando distribución...</span>
         </div>
+      </div>
 
-        <div class="mt-4 flex-1">
-   
-          <div
-            *ngIf="loadingDistribucionProcesos"
-            class="flex h-[380px] items-center justify-center"
-          >
-            <div class="flex flex-col items-center gap-3">
-              <mat-spinner diameter="48"></mat-spinner>
-              <span class="text-sm text-gray-500">Cargando distribución...</span>
-            </div>
-          </div>
+      <apx-chart
+        *ngIf="!loadingDistribucionProcesos && chartDistribucionProcesos"
+        class="block w-full"
+        [series]="chartDistribucionProcesos.series"
+        [chart]="chartDistribucionProcesos.chart"
+        [plotOptions]="chartDistribucionProcesos.plotOptions"
+        [colors]="chartDistribucionProcesos.colors"
+        [dataLabels]="chartDistribucionProcesos.dataLabels"
+        [stroke]="chartDistribucionProcesos.stroke"
+        [xaxis]="chartDistribucionProcesos.xaxis"
+        [yaxis]="chartDistribucionProcesos.yaxis"
+        [fill]="chartDistribucionProcesos.fill"
+        [tooltip]="chartDistribucionProcesos.tooltip"
+        [legend]="chartDistribucionProcesos.legend"
+      >
+      </apx-chart>
 
-
-          <apx-chart
-            *ngIf="!loadingDistribucionProcesos && chartDistribucionProcesos"
-            class="block w-full"
-            [series]="chartDistribucionProcesos.series"
-            [chart]="chartDistribucionProcesos.chart"
-            [plotOptions]="chartDistribucionProcesos.plotOptions"
-            [colors]="chartDistribucionProcesos.colors"
-            [dataLabels]="chartDistribucionProcesos.dataLabels"
-            [stroke]="chartDistribucionProcesos.stroke"
-            [xaxis]="chartDistribucionProcesos.xaxis"
-            [yaxis]="chartDistribucionProcesos.yaxis"
-            [fill]="chartDistribucionProcesos.fill"
-            [tooltip]="chartDistribucionProcesos.tooltip"
-            [legend]="chartDistribucionProcesos.legend"
-          >
-          </apx-chart>
-
-
-          <div
-            *ngIf="!loadingDistribucionProcesos && !chartDistribucionProcesos"
-            class="flex h-[260px] items-center justify-center text-gray-400 sm:h-[320px] lg:h-[380px]"
-          >
-            <div class="text-center">
-              <mat-icon class="mb-2 text-5xl sm:text-6xl">insights</mat-icon>
-              <p class="text-sm sm:text-base">Sin datos para graficar</p>
-            </div>
-          </div>
+      <div
+        *ngIf="!loadingDistribucionProcesos && !chartDistribucionProcesos"
+        class="flex h-[260px] items-center justify-center text-gray-400 sm:h-[320px] lg:h-[380px]"
+      >
+        <div class="text-center">
+          <mat-icon class="mb-2 text-5xl sm:text-6xl">insights</mat-icon>
+          <p class="text-sm sm:text-base">Sin datos para graficar</p>
         </div>
-      </div> -->
+      </div>
+    </div>
+  </div> -->
 
-      <!-- COLUMNA DERECHA: 4 Cards apiladas (ocupa 2 columnas) -->
-      <div class="grid auto-rows-auto grid-cols-1 gap-y-6 lg:col-span-1 xl:col-span-2">
+      <!-- Cards en 2 columnas responsive -->
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <!-- TEJIDO -->
         <div
-          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
           <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
@@ -318,26 +320,6 @@
                 - {{ detalle.proceso | lowercase | titlecase }}
               </div>
             </div>
-
-            <!-- <div class="-mr-3 -mt-2 ml-2">
-              <button mat-icon-button [matMenuTriggerFor]="tejidoMenu">
-                <mat-icon
-                  class="icon-size-5"
-                  [svgIcon]="'heroicons_mini:ellipsis-vertical'"
-                ></mat-icon>
-              </button>
-              <mat-menu #tejidoMenu="matMenu">
-                <button mat-menu-item>
-                  <span class="flex items-center">
-                    <mat-icon
-                      class="mr-3 icon-size-5"
-                      [svgIcon]="'heroicons_outline:printer'"
-                    ></mat-icon>
-                    <span>Imprimir</span>
-                  </span>
-                </button>
-              </mat-menu>
-            </div> -->
           </div>
 
           <!-- Loader -->
@@ -373,7 +355,7 @@
 
         <!-- TINTORERÍA -->
         <div
-          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
           <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
@@ -406,25 +388,6 @@
                 - {{ detalle.proceso | lowercase | titlecase }}
               </div>
             </div>
-            <!-- <div class="-mr-3 -mt-2 ml-2">
-              <button mat-icon-button [matMenuTriggerFor]="tintoreriaMenu">
-                <mat-icon
-                  class="icon-size-5"
-                  [svgIcon]="'heroicons_mini:ellipsis-vertical'"
-                ></mat-icon>
-              </button>
-              <mat-menu #tintoreriaMenu="matMenu">
-                <button mat-menu-item>
-                  <span class="flex items-center">
-                    <mat-icon
-                      class="mr-3 icon-size-5"
-                      [svgIcon]="'heroicons_outline:printer'"
-                    ></mat-icon>
-                    <span>Imprimir</span>
-                  </span>
-                </button>
-              </mat-menu>
-            </div> -->
           </div>
 
           <!-- Loader -->
@@ -459,7 +422,7 @@
 
         <!-- ESTAMPADOS -->
         <div
-          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
           <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
@@ -486,25 +449,6 @@
                 - {{ detalle.proceso | lowercase | titlecase }}
               </div>
             </div>
-            <!-- <div class="-mr-3 -mt-2 ml-2">
-              <button mat-icon-button [matMenuTriggerFor]="estampadosMenu">
-                <mat-icon
-                  class="icon-size-5"
-                  [svgIcon]="'heroicons_mini:ellipsis-vertical'"
-                ></mat-icon>
-              </button>
-              <mat-menu #estampadosMenu="matMenu">
-                <button mat-menu-item>
-                  <span class="flex items-center">
-                    <mat-icon
-                      class="mr-3 icon-size-5"
-                      [svgIcon]="'heroicons_outline:printer'"
-                    ></mat-icon>
-                    <span>Imprimir</span>
-                  </span>
-                </button>
-              </mat-menu>
-            </div> -->
           </div>
 
           <!-- Loader -->
@@ -539,7 +483,7 @@
 
         <!-- ACABADO REAL -->
         <div
-          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
           <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
@@ -566,25 +510,6 @@
                 - {{ detalle.proceso | lowercase | titlecase }}
               </div>
             </div>
-            <!-- <div class="-mr-3 -mt-2 ml-2">
-              <button mat-icon-button [matMenuTriggerFor]="acabadoMenu">
-                <mat-icon
-                  class="icon-size-5"
-                  [svgIcon]="'heroicons_mini:ellipsis-vertical'"
-                ></mat-icon>
-              </button>
-              <mat-menu #acabadoMenu="matMenu">
-                <button mat-menu-item>
-                  <span class="flex items-center">
-                    <mat-icon
-                      class="mr-3 icon-size-5"
-                      [svgIcon]="'heroicons_outline:printer'"
-                    ></mat-icon>
-                    <span>Imprimir</span>
-                  </span>
-                </button>
-              </mat-menu>
-            </div> -->
           </div>
 
           <!-- Loader -->
@@ -950,6 +875,25 @@
             {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
           </div>
         </div>
+      </div>
+
+      <!-- Indicador visual de filtro activo -->
+      <div
+        *ngIf="tipoEmbarqueSeleccionadoGrafica"
+        class="mx-6 mb-3 mt-2 flex items-center gap-2 rounded-lg bg-blue-500/10 px-4 py-2 text-sm"
+      >
+        <mat-icon class="text-blue-500 icon-size-5">filter_list</mat-icon>
+        <span class="text-blue-500">
+          Mostrando solo: <strong>{{ tipoEmbarqueSeleccionadoGrafica }}</strong>
+        </span>
+        <button
+          mat-icon-button
+          class="ml-auto"
+          (click)="limpiarFiltroEmbarques()"
+          matTooltip="Ver todos"
+        >
+          <mat-icon class="icon-size-5">close</mat-icon>
+        </button>
       </div>
 
       <!-- GRÁFICA DE LÍNEAS MÚLTIPLES -->
