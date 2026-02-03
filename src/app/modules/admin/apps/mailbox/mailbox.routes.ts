@@ -253,7 +253,7 @@ const mailResolver = (
 export default [
     {
         path: '',
-        redirectTo: 'inbox/1',
+        redirectTo: 'mensajes/1',
         pathMatch: 'full',
     },
     {

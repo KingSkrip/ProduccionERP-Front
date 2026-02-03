@@ -48,7 +48,7 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
         type: 'any',
         isTrashed: false,
         isArchived: false,
-        isStarred: false,
+        isdestacados: false,
     };
     queryParams: Params;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -67,7 +67,7 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
             type: [this.searchFormDefaults.type],
             isTrashed: [this.searchFormDefaults.isTrashed],
             isArchived: [this.searchFormDefaults.isArchived],
-            isStarred: [this.searchFormDefaults.isStarred],
+            isdestacados: [this.searchFormDefaults.isdestacados],
         });
     }
 
@@ -100,9 +100,9 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
                         isArchived: queryParams?.isArchived
                             ? coerceBooleanProperty(queryParams?.isArchived)
                             : this.searchFormDefaults.isArchived,
-                        isStarred: queryParams?.isStarred
-                            ? coerceBooleanProperty(queryParams?.isStarred)
-                            : this.searchFormDefaults.isStarred,
+                        isdestacados: queryParams?.isdestacados
+                            ? coerceBooleanProperty(queryParams?.isdestacados)
+                            : this.searchFormDefaults.isdestacados,
                     },
                     { emitEvent: false }
                 );

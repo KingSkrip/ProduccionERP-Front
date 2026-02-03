@@ -3,7 +3,7 @@
     <div
         class="flex h-16 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5"
     >
-        <div class="text-lg font-medium">New Message</div>
+        <div class="text-lg font-medium">Nueva orden de trabajo</div>
         <button mat-icon-button (click)="saveAndClose()" [tabIndex]="-1">
             <mat-icon
                 class="text-current"
@@ -57,10 +57,10 @@
             </mat-form-field>
         }
 
-        <!-- Subject -->
+        <!-- Asunto -->
         <mat-form-field>
-            <mat-label>Subject</mat-label>
-            <input matInput [formControlName]="'subject'" />
+            <mat-label>Asunto</mat-label>
+            <input matInput [formControlName]="'Asunto'" />
         </mat-form-field>
 
         <!-- Body -->

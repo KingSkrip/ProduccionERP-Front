@@ -20,8 +20,8 @@ export interface Mail {
         preview?: string;
         downloadUrl?: string;
     }[];
-    starred?: boolean;
-    important?: boolean;
+    destacados?: boolean;
+    importantes?: boolean;
     unread?: boolean;
     folder?: string;
     labels?: string[];

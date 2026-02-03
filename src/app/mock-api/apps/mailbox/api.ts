@@ -69,15 +69,15 @@ export class MailboxMockApi {
                     (mail) => mail.folder === folder.id
                 );
 
-                // If we are counting the 'sent' or the 'trash' folder...
-                if (folder.slug === 'sent' || folder.slug === 'trash') {
+                // If we are counting the 'enviados' or the 'eliminados' folder...
+                if (folder.slug === 'enviados' || folder.slug === 'eliminados') {
                     // Always set the count to 0
                     count = 0;
                 }
-                // If we are counting the 'drafts' or the 'spam' folder...
+                // If we are counting the 'borradores' or the 'spam' folder...
                 else if (
-                    folder.slug === 'drafts' ||
-                    folder.slug === 'trash' ||
+                    folder.slug === 'borradores' ||
+                    folder.slug === 'eliminados' ||
                     folder.slug === 'spam'
                 ) {
                     // Set the count to the count of all mails

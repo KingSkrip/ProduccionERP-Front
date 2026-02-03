@@ -62,7 +62,7 @@ export class MailboxComposeComponent implements OnInit {
             to: ['', [Validators.required, Validators.email]],
             cc: ['', [Validators.email]],
             bcc: ['', [Validators.email]],
-            subject: [''],
+            Asunto: [''],
             body: ['', [Validators.required]],
         });
     }

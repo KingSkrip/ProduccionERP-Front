@@ -11,7 +11,7 @@ export interface Mail {
     bcc?: string[];
     bccCount?: number;
     date?: string;
-    subject?: string;
+    Asunto?: string;
     content?: string;
     attachments?: {
         type?: string;
@@ -20,8 +20,8 @@ export interface Mail {
         preview?: string;
         downloadUrl?: string;
     }[];
-    starred?: boolean;
-    important?: boolean;
+    destacados?: boolean;
+    importantes?: boolean;
     unread?: boolean;
     folder?: string;
     labels?: string[];
