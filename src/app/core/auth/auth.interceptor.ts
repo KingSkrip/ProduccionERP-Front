@@ -33,13 +33,13 @@ export const authInterceptor = (
     // catch and delete the access token from the local storage while logging
     // the user out from the app.
     if (
-        authService.accessToken &&
-        !AuthUtils.isTokenExpired(authService.accessToken)
+        authService.encrypt &&
+        !AuthUtils.isTokenExpired(authService.encrypt)
     ) {
         newReq = req.clone({
             headers: req.headers.set(
                 'Authorization',
-                'Bearer ' + authService.accessToken
+                'Bearer ' + authService.encrypt
             ),
         });
     }
@@ -49,14 +49,14 @@ export const authInterceptor = (
         catchError((error) => {
             // Catch "401 Unauthorized" responses
             if (error instanceof HttpErrorResponse && error.status === 401) {
-                
+
                 // 🔥 SOLUCIÓN: NO hacer reload/logout si es el endpoint de sign-in
                 const isSignInRequest = req.url.includes('/auth/sign-in');
-                
+
                 if (isSignInRequest) {
                     return throwError(() => error);
                 }
-                
+
                 authService.signOut();
                 location.reload();
             }

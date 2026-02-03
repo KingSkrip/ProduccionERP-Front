@@ -9,6 +9,8 @@ import {
     FuseVerticalNavigationComponent,
 } from '@fuse/components/navigation';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
+import { APP_CONFIG } from 'app/core/config/app-config';
+import { AppConfig } from 'app/core/config/app-config.model';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { UserService } from 'app/core/user/user.service';
@@ -47,6 +49,7 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
     navigation: Navigation;
     user: User;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
+    appName = APP_CONFIG.appName;
 
     /**
      * Constructor
@@ -57,8 +60,10 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
         private _navigationService: NavigationService,
         private _userService: UserService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _fuseNavigationService: FuseNavigationService
-    ) {}
+        private _fuseNavigationService: FuseNavigationService,
+
+    ) {
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors

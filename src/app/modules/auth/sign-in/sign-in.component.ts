@@ -55,7 +55,7 @@ export class AuthSignInComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-      localStorage.removeItem('accessToken');
+      localStorage.removeItem('encrypt');
     this._authService.signOut().subscribe(); // resetea estado
 
     this.signInForm = this._formBuilder.group({

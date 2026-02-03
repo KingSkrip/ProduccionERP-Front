@@ -21,7 +21,7 @@
                             </div>
                         </ng-container>
                         <div class="flex items-center">
-                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:bell'"></mat-icon>
                             <div class="text-secondary ml-1.5 truncate leading-6">
                                 {{ (user$ | async)?.seguridad_social?.numero_imss?.split(' ')[0] }}!
                             </div>
@@ -46,7 +46,7 @@
                     <ng-template matTabContent>
                         <!-- Header con título -->
                         <div class="mb-6">
-                            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Control de Asistencias</h2>
+                            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Control de asistencias</h2>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Visualiza tu historial de entradas,
                                 salidas y registro</p>
                         </div>
@@ -298,7 +298,7 @@
                     <ng-template matTabContent>
                         <!-- Header con título -->
                         <div class="mb-6">
-                            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Gestión de Vacaciones</h2>
+                            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Gestión de vacaciones</h2>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Administra tus días de vacaciones,
                                 solicitudes y historial</p>
                         </div>
@@ -799,7 +799,7 @@
                                                 @if (scheduleItem.time) {
                                                 <div class="flex items-center">
                                                     <mat-icon class="text-hint icon-size-5" [svgIcon]="
-                                                                    'heroicons_solid:clock'
+                                                                    'heroicons_outline:clock'
                                                                 "></mat-icon>
                                                     <div class="text-secondary ml-1.5 text-md">
                                                         {{
@@ -813,7 +813,7 @@
                                                 ) {
                                                 <div class="flex items-center">
                                                     <mat-icon class="text-hint icon-size-5" [svgIcon]="
-                                                                    'heroicons_solid:map-pin'
+                                                                    'heroicons_outline:map-pin'
                                                                 "></mat-icon>
                                                     <div class="text-secondary ml-1.5 text-md">
                                                         {{

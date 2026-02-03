@@ -91,7 +91,7 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
-        // Get the label colors
+        // Get the Color de etiquetas
         this.labelColors = labelColorDefs;
 
         // Folders
@@ -215,24 +215,24 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Toggle important
+     * Toggle importantes
      */
-    toggleImportant(): void {
+    toggleimportantes(): void {
         // Update the mail object
-        this.mail.important = !this.mail.important;
+        this.mail.importantes = !this.mail.importantes;
 
         // Update the mail on the server
         this._mailboxService
-            .updateMail(this.mail.id, { important: this.mail.important })
+            .updateMail(this.mail.id, { importantes: this.mail.importantes })
             .subscribe();
 
-        // If the important was removed...
-        if (!this.mail.important) {
-            // If the current activated route has a filter parameter and it equals to the 'important'...
+        // If the importantes was removed...
+        if (!this.mail.importantes) {
+            // If the current activated route has a filter parameter and it equals to the 'importanteses'...
             if (
                 this._activatedRoute.snapshot.paramMap.get('filter') &&
                 this._activatedRoute.snapshot.paramMap.get('filter') ===
-                    'important'
+                    'importanteses'
             ) {
                 // Navigate to the parent
                 this._router.navigate(['./'], {
@@ -247,20 +247,20 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
      */
     toggleStar(): void {
         // Update the mail object
-        this.mail.starred = !this.mail.starred;
+        this.mail.destacados = !this.mail.destacados;
 
         // Update the mail on the server
         this._mailboxService
-            .updateMail(this.mail.id, { starred: this.mail.starred })
+            .updateMail(this.mail.id, { destacados: this.mail.destacados })
             .subscribe();
 
         // If the star was removed...
-        if (!this.mail.starred) {
-            // If the current activated route has a filter parameter and it equals to the 'starred'...
+        if (!this.mail.destacados) {
+            // If the current activated route has a filter parameter and it equals to the 'destacados'...
             if (
                 this._activatedRoute.snapshot.paramMap.get('filter') &&
                 this._activatedRoute.snapshot.paramMap.get('filter') ===
-                    'starred'
+                    'destacados'
             ) {
                 // Navigate to the parent
                 this._router.navigate(['./'], {
@@ -300,7 +300,7 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Reply all
+     * Responder a todos
      */
     replyAll(): void {
         // Activate the reply form
@@ -314,9 +314,9 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Forward
+     * Reenviar
      */
-    forward(): void {
+    Reenviar(): void {
         // Activate the reply form
         this.replyFormActive = true;
 

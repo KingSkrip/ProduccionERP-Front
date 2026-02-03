@@ -14,7 +14,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ColaboradorService } from 'app/modules/admin/cruds/usuarios/colaborador/colaborador.service';
-import { Subject, takeUntil } from 'rxjs';
+import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { CatalogosService } from '../modals.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
@@ -23,6 +23,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 
 import { registerLocaleData } from '@angular/common';
 import localeEsMX from '@angular/common/locales/es-MX';
+import { UserService } from 'app/core/user/user.service';
 registerLocaleData(localeEsMX, 'es-MX');
 @Component({
     selector: 'solicitudes-vacaciones',
@@ -63,17 +64,20 @@ export class SolicitudesVacacionesComponent implements OnInit, OnDestroy {
     totalSteps: number = 3;
     isLoading: boolean = false;
 
+    private _user = new BehaviorSubject<any>(null);
+    user$ = this._user.asObservable();
+
     vacationForm: UntypedFormGroup;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     // Datos del usuario
     userId: number = 1; // TODO: Obtener del servicio de autenticación
-    vacacionesData = {
-        diasTotales: 12,
-        diasDisfrutados: 0,
-        diasDisponibles: 12,
-        anio: new Date().getFullYear()
-    };
+    // vacacionesData = {
+    //     diasTotales: 12,
+    //     diasDisfrutados: 0,
+    //     diasDisponibles: 12,
+    //     anio: new Date().getFullYear()
+    // };
 
     // Cálculos
     diasSolicitados: number = 0;
@@ -87,12 +91,24 @@ export class SolicitudesVacacionesComponent implements OnInit, OnDestroy {
         private _formBuilder: UntypedFormBuilder,
         private _rhService: ColaboradorService,
         private _dialogRef: MatDialogRef<SolicitudesVacacionesComponent>,
-        private catalogosService: CatalogosService
+        private catalogosService: CatalogosService,
+        private _userService: UserService,
+        private _cdr: ChangeDetectorRef,
     ) { }
 
     ngOnInit(): void {
         this.initForm();
-        this.loadVacacionesData();
+        // this.loadVacacionesData();
+        this._userService.user$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((user) => {
+                if (user) {
+                    this._user.next(user);
+
+                    // this._prepareChartData();
+                    this._cdr.markForCheck();
+                }
+            });
     }
 
     ngOnDestroy(): void {
@@ -128,23 +144,23 @@ export class SolicitudesVacacionesComponent implements OnInit, OnDestroy {
         return new Date(dateStr + 'T12:00:00');
     }
 
-    loadVacacionesData(): void {
-        // TODO: Llamar al servicio real
-        // Simulación de datos del usuario actual
-        this.isLoading = true;
+    // loadVacacionesData(): void {
+    //     // TODO: Llamar al servicio real
+    //     // Simulación de datos del usuario actual
+    //     this.isLoading = true;
 
-        // Simular llamada al backend
-        setTimeout(() => {
-            this.vacacionesData = {
-                diasTotales: 12,
-                diasDisfrutados: 8, // De acuerdo a tu BD
-                diasDisponibles: 4,
-                anio: 2025
-            };
-            this.isLoading = false;
-            this._changeDetectorRef.markForCheck();
-        }, 500);
-    }
+    //     // Simular llamada al backend
+    //     setTimeout(() => {
+    //         this.vacacionesData = {
+    //             diasTotales: 12,
+    //             diasDisfrutados: 8, // De acuerdo a tu BD
+    //             diasDisponibles: 4,
+    //             anio: 2025
+    //         };
+    //         this.isLoading = false;
+    //         this._changeDetectorRef.markForCheck();
+    //     }, 500);
+    // }
 
     calcularDias(): void {
         if (this.fechaInicio && this.fechaFin) {
@@ -200,15 +216,16 @@ export class SolicitudesVacacionesComponent implements OnInit, OnDestroy {
 
         if (this.currentStep === 2) {
             // Validar disponibilidad
-            if (this.diasSolicitados > this.vacacionesData.diasDisponibles) {
+            if (this.diasSolicitados > this.vacacionesActuales.dias_disponibles) {
                 this._fuseConfirmationService.open({
                     title: 'Días insuficientes',
-                    message: `Solo tienes ${this.vacacionesData.diasDisponibles} días disponibles.`,
+                    message: `Solo tienes ${this.vacacionesActuales.dias_disponibles} días disponibles.`,
                     icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
                     actions: { confirm: { label: 'Entendido', color: 'primary' }, cancel: { show: false } }
                 });
                 return;
             }
+
         }
 
         if (this.currentStep < this.totalSteps) {
@@ -235,12 +252,11 @@ export class SolicitudesVacacionesComponent implements OnInit, OnDestroy {
         //     return;
         // }
 
-
         this.isLoading = true;
 
         const solicitud = {
             solicitante_id: this.userId,
-            status_id: 5, // "En proceso"
+            status_id: 5,
             titulo: 'Solicitud de Vacaciones',
             descripcion: `Solicitud de ${this.diasSolicitados} días de vacaciones`,
             comentarios_solicitante: this.vacationForm.get('comentarios').value,
@@ -258,29 +274,30 @@ export class SolicitudesVacacionesComponent implements OnInit, OnDestroy {
                         title: '¡Solicitud enviada!',
                         message: 'Tu solicitud de vacaciones ha sido registrada correctamente y está pendiente de aprobación.',
                         icon: { show: true, name: 'heroicons_outline:check-circle', color: 'success' },
-                        actions: {
-                            confirm: { label: 'Aceptar', color: 'primary' },
-                            cancel: { show: false }
-                        }
+                        actions: { confirm: { label: 'Aceptar', color: 'primary' }, cancel: { show: false } }
                     }).afterClosed().subscribe(() => {
-                        this._dialogRef.close(res); // Devuelve la respuesta real del backend
+                        this._dialogRef.close(res);
                     });
                 },
                 error: (err) => {
-                    this.isLoading = false;
-                    this._fuseConfirmationService.open({
+                    const mensajeError = err?.error?.error || 'No se pudo registrar la solicitud. Intenta nuevamente más tarde.';
+                    const dialogRef = this._fuseConfirmationService.open({
                         title: 'Error',
-                        message: 'No se pudo registrar la solicitud. Intenta nuevamente más tarde.',
+                        message: mensajeError,
                         icon: { show: true, name: 'heroicons_outline:x-circle', color: 'warn' },
-                        actions: {
-                            confirm: { label: 'Aceptar', color: 'primary' },
-                            cancel: { show: false }
-                        }
+                        actions: { confirm: { label: 'Aceptar', color: 'primary' }, cancel: { show: false } }
                     });
+
+                    // Después de cerrar el modal, resetear isLoading
+                    dialogRef.afterClosed().subscribe(() => {
+                        this.isLoading = false;
+                        this._changeDetectorRef.markForCheck();
+                    });
+
                     console.error(err);
                 }
-            });
 
+            });
     }
 
     closeModal(): void {
@@ -292,5 +309,29 @@ export class SolicitudesVacacionesComponent implements OnInit, OnDestroy {
     }
 
 
+
+
+    get vacacionesTotales(): number {
+        return this._user.value?.vacaciones?.[0]?.dias_totales ?? 0;
+    }
+
+    get vacacionesDisponibles(): number {
+        const user = this._user.value;
+        return user?.vacaciones?.[0]?.dias_disponibles ?? 0;
+    }
+
+    get vacacionesDisfrutadas(): number {
+        const user = this._user.value;
+        return user?.vacaciones?.[0]?.dias_disfrutados ?? 0;
+    }
+
+    get vacacionesActuales() {
+        return this._user.value?.vacaciones?.[0] ?? {
+            dias_totales: 0,
+            dias_disfrutados: 0,
+            dias_disponibles: 0,
+            anio: new Date().getFullYear()
+        };
+    }
 
 }

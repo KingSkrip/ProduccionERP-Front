@@ -59,10 +59,10 @@ export class MailboxComposeComponent implements OnInit {
     ngOnInit(): void {
         // Create the form
         this.composeForm = this._formBuilder.group({
-            to: ['', [Validators.required, Validators.email]],
+           para: ['', [Validators.required, Validators.email]],
             cc: ['', [Validators.email]],
             bcc: ['', [Validators.email]],
-            subject: [''],
+            Asunto: [''],
             body: ['', [Validators.required]],
         });
     }
@@ -98,9 +98,9 @@ export class MailboxComposeComponent implements OnInit {
     }
 
     /**
-     * Discard the message
+     * Cancelar the message
      */
-    discard(): void {}
+    Cancelar(): void {}
 
     /**
      * Save the message as a draft
@@ -108,7 +108,7 @@ export class MailboxComposeComponent implements OnInit {
     saveAsDraft(): void {}
 
     /**
-     * Send the message
+     * enviar the message
      */
-    send(): void {}
+    enviar(): void {}
 }

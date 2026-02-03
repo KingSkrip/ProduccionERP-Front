@@ -28,7 +28,7 @@ export const items = [
     {
         id: 'ed58add1-45a7-41db-887d-3ca7ee7f2719',
         folderId: null,
-        name: 'Work',
+        name: 'Trabajo',
         createdBy: 'Brian Hughes',
         createdAt: 'May 8, 2020',
         modifiedAt: 'May 8, 2020',
@@ -76,7 +76,7 @@ export const items = [
     {
         id: '4f64597a-df7e-461c-ad60-f33e5f7e0747',
         folderId: null,
-        name: 'Invoices',
+        name: 'facturas',
         createdBy: 'Brian Hughes',
         createdAt: 'January 12, 2020',
         modifiedAt: 'January 12, 2020',

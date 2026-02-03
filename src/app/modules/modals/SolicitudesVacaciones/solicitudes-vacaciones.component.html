@@ -29,20 +29,23 @@
 
           <!-- Información de días disponibles -->
           <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-5">
-            <h3 class="font-medium text-blue-900 dark:text-blue-300 mb-4">Días de vacaciones {{ vacacionesData.anio }}
+            <h3 class="font-medium text-blue-900 dark:text-blue-300 mb-4">Días de vacaciones {{ vacacionesActuales?.anio }}
+
             </h3>
             <div class="grid grid-cols-3 gap-6 text-center">
               <div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Totales</p>
-                <p class="text-3xl font-bold text-blue-900 dark:text-blue-300">{{ vacacionesData.diasTotales }}</p>
+                <p class="text-3xl font-bold text-blue-900 dark:text-blue-300">
+                  {{ vacacionesTotales }}
+                </p>
               </div>
               <div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Disfrutados</p>
-                <p class="text-3xl font-bold text-blue-900 dark:text-blue-300">{{ vacacionesData.diasDisfrutados }}</p>
+                <p class="text-3xl font-bold text-blue-900 dark:text-blue-300">{{ vacacionesDisfrutadas }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Disponibles</p>
-                <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ vacacionesData.diasDisponibles }}
+                <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ vacacionesDisponibles }}
                 </p>
               </div>
             </div>
@@ -88,7 +91,8 @@
               <div>
                 <dt class="text-sm text-gray-600 dark:text-gray-400">Período solicitado</dt>
                 <dd class="text-lg font-medium text-gray-900 dark:text-white">
-                  {{ fechaInicio | date:'dd MMMM yyyy' : '' : 'es-MX' }} → {{ fechaFin | date:'dd MMMM yyyy' : '' :'es-MX' }}
+                  {{ fechaInicio | date:'dd MMMM yyyy' : '' : 'es-MX' }} → {{ fechaFin | date:'dd MMMM yyyy' : ''
+                  :'es-MX' }}
                 </dd>
               </div>
               <div>
@@ -97,24 +101,24 @@
               </div>
               <div>
                 <dt class="text-sm text-gray-600 dark:text-gray-400">Días disponibles actualmente</dt>
-                <dd class="text-lg font-medium text-green-600 dark:text-green-400">{{ vacacionesData.diasDisponibles }}
+                <dd class="text-lg font-medium text-green-600 dark:text-green-400">{{ vacacionesActuales?.dias_disponibles }}
                 </dd>
               </div>
               <div>
                 <dt class="text-sm text-gray-600 dark:text-gray-400">Días restantes después</dt>
                 <dd class="text-lg font-medium"
-                  [class.text-green-600]="diasSolicitados <= vacacionesData.diasDisponibles"
-                  [class.text-red-600]="diasSolicitados > vacacionesData.diasDisponibles">
-                  {{ vacacionesData.diasDisponibles - diasSolicitados }}
+                  [class.text-green-600]="diasSolicitados <= vacacionesActuales?.dias_disponibles"
+                  [class.text-red-600]="diasSolicitados > vacacionesActuales?.dias_disponibles">
+                  {{ (vacacionesActuales?.dias_disponibles || 0) - diasSolicitados }}
                 </dd>
               </div>
             </dl>
           </div>
 
-          <div *ngIf="diasSolicitados > vacacionesData.diasDisponibles"
+          <div *ngIf="diasSolicitados > (vacacionesActuales?.dias_disponibles || 0)"
             class="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg p-5">
             <p class="text-red-800 dark:text-red-300 font-medium">
-              No tienes suficientes días disponibles. Solo cuentas con {{ vacacionesData.diasDisponibles }} días.
+              No tienes suficientes días disponibles. Solo cuentas con {{ vacacionesActuales?.dias_disponibles }} días.
             </p>
           </div>
         </div>
@@ -167,7 +171,7 @@
         <button *ngIf="currentStep < totalSteps"
           class="rounded-lg bg-primary-600 px-6 py-2.5 text-white hover:bg-primary-700 disabled:opacity-50"
           (click)="nextStep()"
-          [disabled]="isLoading || (currentStep === 1 && (diasSolicitados === 0 || !fechaInicio || !fechaFin)) || (currentStep === 2 && diasSolicitados > vacacionesData.diasDisponibles)">
+          [disabled]="isLoading || (currentStep === 1 && (diasSolicitados === 0 || !fechaInicio || !fechaFin)) || (currentStep === 2 && diasSolicitados > vacacionesActuales?.dias_disponibles)">
           Siguiente →
         </button>
 

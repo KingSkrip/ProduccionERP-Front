@@ -18,6 +18,7 @@ import { AsistenciasService } from './asistencias/asistencias.service';
 import { VacacionesService } from './vacaciones/vacaciones.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SolicitudesVacacionesComponent } from 'app/modules/modals/SolicitudesVacaciones/solicitudes-vacaciones.component';
+import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
 
 @Component({
     selector: 'project',
@@ -51,7 +52,8 @@ export class ProjectComponent implements OnInit, AfterViewInit, OnDestroy {
     chartAsistenciasSeries: { [key: string]: ApexAxisChartSeries } = {};
     chartVacaciones: ApexOptions = {};
     chartVacacionesSeries: { [key: string]: number[] } = {};
-
+    userRole: number | null = null;
+    userSubRole: number | null = null;
     private timer: any;
     data: any;
     selectedProject: string = 'ACME Corp. Backend App';
@@ -65,7 +67,7 @@ export class ProjectComponent implements OnInit, AfterViewInit, OnDestroy {
     tabIndexActual = 0;
     retardosCount = 0;
     vacacionesCount = 0;
-showChart = true;
+    showChart = true;
     @ViewChild('periodoSelector') periodoSelector!: MatButtonToggleGroup;
     periodoSeleccionado: 'actual' | 'anterior' | 'historico' = 'actual';
 
@@ -73,13 +75,13 @@ showChart = true;
     private _chartsReady = false;
 
     constructor(
-       private _projectService: ProjectService,
-    private _router: Router,
-    private _userService: UserService,
-    private _asistenciasService: AsistenciasService,
-    private _vacacionesService: VacacionesService,
-    private _cdr: ChangeDetectorRef,
-    private _dialog: MatDialog
+        private _projectService: ProjectService,
+        private _router: Router,
+        private _userService: UserService,
+        private _asistenciasService: AsistenciasService,
+        private _vacacionesService: VacacionesService,
+        private _cdr: ChangeDetectorRef,
+        private _dialog: MatDialog
     ) { }
 
     ngOnInit(): void {
@@ -98,7 +100,10 @@ showChart = true;
             .subscribe((user) => {
                 if (user) {
                     this._user.next(user);
-                    
+                    this.userRole = user.permissions?.[0] || null;
+                    this.userSubRole = user.sub_permissions?.[0] || null;
+                    // console.log(this.userRole = user.permissions?.[0] || null);
+                    // console.log(this.userSubRole = user.sub_permissions?.[0] || null);
                     this._prepareChartData();
                     this._cdr.markForCheck();
                 }
@@ -517,11 +522,11 @@ showChart = true;
         // Ocultar el chart inmediatamente
         this.showChart = false;
         this._cdr.detectChanges();
-        
+
         // Actualizar el índice del tab
         this.tabIndexActual = event.index;
         this._cdr.detectChanges();
-        
+
         // Si volvemos al tab de asistencias (index 0), mostrar el chart después de un delay
         if (event.index === 0) {
             setTimeout(() => {
@@ -533,21 +538,34 @@ showChart = true;
 
 
     abrirSolicitudVacaciones(): void {
-    const dialogRef = this._dialog.open(SolicitudesVacacionesComponent, {
-        width: '100%',
-        maxWidth: '640px',
-        autoFocus: false,
-        disableClose: false,
-        panelClass: 'fuse-confirmation-dialog-panel' // Opcional: usa estilos de Fuse
-    });
+        const dialogRef = this._dialog.open(SolicitudesVacacionesComponent, {
+            width: '100%',
+            maxWidth: '640px',
+            autoFocus: false,
+            disableClose: false,
+            panelClass: 'fuse-confirmation-dialog-panel' // Opcional: usa estilos de Fuse
+        });
 
-    dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-            console.log('Solicitud enviada:', result);
-            // Opcional: recargar datos del usuario o mostrar notificación
-            // this._userService.reloadUser(); // Si tienes un método para refrescar
-            this._prepareChartData(); // Refresca gráficas si es necesario
-        }
-    });
-}
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+
+                // this._userService.reloadUser(); // Si tienes un método para refrescar
+                this._prepareChartData();
+            }
+        })
+    }
+
+    /**
+      * APARIENCIA POR ROL
+      */
+
+    // Getter para verificar si es JEFE o SUADMIN
+    get isJefeOrSuadmin(): boolean {
+        return this.userSubRole === SubRoleEnum.JEFE &&
+            this.userRole === RoleEnum.SUADMIN;
+    }
+
+    get isAllUsers(): boolean {
+        return !this.isJefeOrSuadmin;
+    }
 }

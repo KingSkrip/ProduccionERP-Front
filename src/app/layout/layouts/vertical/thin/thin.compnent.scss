@@ -1,0 +1,27 @@
+// reportprod.component.scss
+
+:host {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+}
+
+.rp-inner-shell {
+    position: relative;
+    // z-index bajo para que el padre quede encima
+    z-index: 20;
+}
+
+// Asegurar que el nav hijo tenga z-index BAJO
+:host ::ng-deep fuse-vertical-navigation {
+    z-index: 30 !important;
+    position: relative;
+}
+
+// El nav padre debe tener z-index más alto
+:host-context(thin-layout) ::ng-deep {
+    fuse-vertical-navigation[name="mainNavigation"] {
+        z-index: 50 !important;
+    }
+}

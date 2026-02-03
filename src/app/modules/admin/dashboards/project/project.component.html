@@ -1,844 +1,1250 @@
 <div class="flex min-w-0 flex-auto flex-col">
-    <!-- Header -->
-    <div class="bg-card">
-        <div class="mx-auto flex w-full max-w-screen-xl flex-col px-6 sm:px-8">
-            <div class="my-8 flex min-w-0 flex-auto flex-col sm:my-12 sm:flex-row sm:items-center">
-                <!-- Avatar and name -->
-                <div class="flex min-w-0 flex-auto items-center">
-                    <div class="h-16 w-16 flex-0 overflow-hidden rounded-full">
-                        <img [src]="photoUrl" />
-                    </div>
-                    <div class="ml-4 flex min-w-0 flex-col">
-                        <ng-container *transloco="let t">
-                            <div
-                                class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug">
-                                <ng-container *transloco="let t">
-                                    Bienvenido,
-                                </ng-container>
-                                <span class="font-bold">
-                                    {{ (user$ | async)?.name?.split(' ')[0] }}!
-                                </span>
-                            </div>
-                        </ng-container>
-                        <div class="flex items-center">
-                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
-                            <div class="text-secondary ml-1.5 truncate leading-6">
-                                {{ (user$ | async)?.seguridad_social?.numero_imss?.split(' ')[0] }}!
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Actions -->
+  <!-- Header -->
+  <div class="bg-card">
+    <div class="mx-auto flex w-full max-w-screen-xl flex-col px-6 sm:px-8">
+      <div class="my-8 flex min-w-0 flex-auto flex-col sm:my-12 sm:flex-row sm:items-center">
+        <!-- Avatar and name -->
+        <div class="flex min-w-0 flex-auto items-center">
+          <div class="h-16 w-16 flex-0 overflow-hidden rounded-full">
+            <img [src]="photoUrl" />
+          </div>
+          <div class="ml-4 flex min-w-0 flex-col">
+            <ng-container *transloco="let t">
+              <div
+                class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug"
+              >
+                <ng-container *transloco="let t"> Bienvenido, </ng-container>
+                <span class="font-semibold"> {{ (user$ | async)?.name?.split(' ')[0] }}! </span>
+              </div>
+            </ng-container>
+
+            <!-- 🔥 IMSS estilo badge (Dark mode mejorado) -->
+            <div
+              class="mt-2 inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 dark:bg-blue-950/40 dark:ring-1 dark:ring-blue-800/50"
+              *ngIf="(user$ | async)?.IMSS as IMSS"
+            >
+              <mat-icon
+                class="text-blue-600 icon-size-4 dark:text-blue-400"
+                [svgIcon]="'heroicons_outline:identification'"
+              >
+              </mat-icon>
+
+              <div class="flex items-center gap-1.5">
+                <span class="text-base font-medium text-blue-700 dark:text-blue-300">NSS</span>
+                <span
+                  class="font-mono text-base font-bold tracking-wide text-blue-900 dark:text-blue-50"
+                >
+                  {{ IMSS }}
+                </span>
+              </div>
             </div>
-            <!-- Project selector -->
-
+          </div>
         </div>
+        <!-- Actions -->
+      </div>
+      <!-- Project selector -->
     </div>
+  </div>
+  
+<!-- new Header -->
+<!-- <div class="w-full">
+  <div class="relative h-32 bg-gradient-to-r from-indigo-500 via-purple-500 to-purple-600 sm:h-40">
+    <div class="mx-auto flex w-full max-w-screen-xl px-6 sm:px-8">
+      <div class="absolute bottom-0 left-6 translate-y-1/2 sm:left-8">
+        <div class="relative">
+          <img
+            [src]="photoUrl"
+            alt="User Avatar"
+            class="h-20 w-20 rounded-full border-4 border-white object-cover shadow-lg sm:h-24 sm:w-24"
+          />
+          <div class="absolute bottom-0 right-0 rounded bg-indigo-700 px-1.5 py-0.5 text-xs text-white sm:px-2 sm:py-1">
+            Profile
+          </div>
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-28 sm:bottom-6 sm:left-36">
+        <h1 class="text-2xl font-bold text-white sm:text-3xl">
+          {{ (user$ | async)?.name }}
+        </h1>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-card shadow-lg dark:bg-gray-900">
+    <div class="mx-auto w-full max-w-screen-xl px-6 py-4 pt-14 sm:px-8 sm:pt-16">
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div class="flex-1">
+          <p class="mb-3 text-sm text-gray-600 dark:text-gray-400 sm:text-base">
+            &#64;{{ (user$ | async)?.email?.split('@')[0] }} • {{ (user$ | async)?.role || 'Usuario' }}
+          </p>
+          <div
+            class="mb-3 inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 dark:bg-blue-950/40 dark:ring-1 dark:ring-blue-800/50"
+            *ngIf="(user$ | async)?.IMSS as IMSS"
+          >
+            <mat-icon
+              class="icon-size-4 text-blue-600 dark:text-blue-400"
+              [svgIcon]="'heroicons_outline:identification'"
+            >
+            </mat-icon>
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-medium text-blue-700 dark:text-blue-300">NSS</span>
+              <span class="font-mono text-sm font-bold tracking-wide text-blue-900 dark:text-blue-50">
+                {{ IMSS }}
+              </span>
+            </div>
+          </div>
+          <p class="mb-4 max-w-3xl text-sm text-gray-700 dark:text-gray-300 sm:text-base">
+            {{ (user$ | async)?.bio || 'Apasionado por el desarrollo y la tecnología. Siempre aprendiendo cosas nuevas y ayudando a otros a alcanzar sus metas.' }}
+          </p>
+          <div class="mb-4 flex flex-wrap gap-2">
+            <span class="cursor-pointer rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:text-sm">
+              Desarrollo
+            </span>
+            <span class="cursor-pointer rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:text-sm">
+              Tecnología
+            </span>
+            <span class="cursor-pointer rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:text-sm">
+              Innovación
+            </span>
+          </div>
+        </div>
 
-    <!-- Main -->
-    <div class="-mt-px flex-auto border-t pt-4 sm:pt-6">
-        <div class="mx-auto w-full max-w-screen-xl">
-            <!-- Tabs -->
-            <mat-tab-group class="sm:px-2" mat-stretch-tabs="false" [animationDuration]="'0'">
+        <div class="flex flex-col gap-4">
+          <div class="flex gap-2">
+            <button class="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white transition hover:bg-indigo-700 sm:px-6">
+              <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:envelope'"></mat-icon>
+              Mensaje
+            </button>
+            <button class="flex items-center gap-2 rounded-lg border-2 border-indigo-600 bg-white px-4 py-2 text-sm text-indigo-600 transition hover:bg-indigo-50 dark:bg-gray-800 dark:hover:bg-gray-700 sm:px-6">
+              <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:user-plus'"></mat-icon>
+              Seguir
+            </button>
+          </div>
 
-                <!-- Asistencias -->
-                <mat-tab label="Asistencias">
-                    <ng-template matTabContent>
-                        <!-- Header con título -->
-                        <div class="mb-6">
-                            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Control de Asistencias</h2>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Visualiza tu historial de entradas,
-                                salidas y registro</p>
-                        </div>
+          <div class="space-y-2 text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
+            <div class="flex items-start gap-2" *ngIf="(user$ | async)?.location">
+              <mat-icon class="icon-size-4 mt-0.5 text-gray-400" [svgIcon]="'heroicons_outline:map-pin'"></mat-icon>
+              <span>{{ (user$ | async)?.location }}</span>
+            </div>
+            <div class="flex items-start gap-2" *ngIf="(user$ | async)?.createdAt">
+              <mat-icon class="icon-size-4 mt-0.5 text-gray-400" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
+              <span>Miembro desde {{ (user$ | async)?.createdAt | date:'MMMM yyyy' }}</span>
+            </div>
+            <div class="flex items-start gap-2" *ngIf="(user$ | async)?.website">
+              <mat-icon class="icon-size-4 mt-0.5 text-gray-400" [svgIcon]="'heroicons_outline:link'"></mat-icon>
+              <a [href]="(user$ | async)?.website" target="_blank" class="text-indigo-600 hover:underline dark:text-indigo-400">
+                {{ (user$ | async)?.website }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->
 
-                        <!-- Cards de resumen -->
-                        <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+  <!-- ALL USERS -->
+  <div class="-mt-px flex-auto border-t pt-4 sm:pt-6" *ngIf="isAllUsers">
+    <div class="mx-auto w-full max-w-screen-xl">
+      <!-- Tabs -->
+      <mat-tab-group class="sm:px-2" mat-stretch-tabs="false" [animationDuration]="'0'">
+        <!-- Asistencias -->
+        <mat-tab label="Asistencias">
+          <ng-template matTabContent>
+            <!-- Header con título -->
+            <div class="mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                Control de asistencias
+              </h2>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Visualiza tu historial de entradas, salidas y registro
+              </p>
+            </div>
 
-                            <!-- Total Asistencias -->
+            <!-- Cards de resumen -->
+            <div class="mb-6 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <!-- Total Asistencias -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow transition-shadow hover:shadow-lg"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <mat-icon
+                    class="text-green-500"
+                    svgIcon="heroicons_outline:check-circle"
+                  ></mat-icon>
+                  <span
+                    class="rounded-full bg-green-100 px-2 py-1 text-base font-medium text-green-600 dark:bg-green-900/20"
+                  >
+                    Total
+                  </span>
+                </div>
+                <div class="mt-4 flex flex-col items-center justify-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-green-500">
+                    {{ totalAsistencias }}
+                  </div>
+                  <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
+                    Asistencias
+                  </div>
+                </div>
+              </div>
+
+              <!-- Retardos -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow transition-shadow hover:shadow-lg"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <mat-icon class="text-amber-500" svgIcon="heroicons_outline:clock"></mat-icon>
+                  <span
+                    class="rounded-full bg-amber-100 px-2 py-1 text-base font-medium text-amber-600 dark:bg-amber-900/20"
+                  >
+                    Total
+                  </span>
+                </div>
+                <div class="mt-4 flex flex-col items-center justify-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-amber-500">
+                    {{ totalRetardos }}
+                  </div>
+                  <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
+                    Retardos
+                  </div>
+                </div>
+              </div>
+
+              <!-- Faltas -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow transition-shadow hover:shadow-lg"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <mat-icon class="text-red-500" svgIcon="heroicons_outline:x-circle"></mat-icon>
+                  <span
+                    class="rounded-full bg-red-100 px-2 py-1 text-base font-medium text-red-600 dark:bg-red-900/20"
+                  >
+                    Total
+                  </span>
+                </div>
+                <div class="mt-4 flex flex-col items-center justify-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-red-500">
+                    {{ totalFaltas }}
+                  </div>
+                  <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
+                    Faltas
+                  </div>
+                </div>
+              </div>
+
+              <!-- Horas trabajadas -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow transition-shadow hover:shadow-lg"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <mat-icon class="text-blue-500" svgIcon="heroicons_outline:clock"></mat-icon>
+                  <span
+                    class="rounded-full bg-blue-100 px-2 py-1 text-base font-medium text-blue-600 dark:bg-blue-900/20"
+                  >
+                    Total
+                  </span>
+                </div>
+                <div class="mt-4 flex flex-col items-center justify-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-blue-500">
+                    {{ horasTrabajadas }}
+                  </div>
+                  <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
+                    Horas trabajadas
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gráfica y Listado -->
+            <div class="flex flex-col gap-6 lg:flex-row">
+              <!-- Gráfica de asistencias -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow lg:w-1/2"
+              >
+                <div
+                  class="mb-4 flex flex-col items-start justify-between sm:flex-row sm:items-center"
+                >
+                  <div class="flex items-center space-x-3">
+                    <mat-icon class="text-primary" svgIcon="heroicons_outline:chart-bar"></mat-icon>
+                    <div class="text-lg font-medium leading-6 tracking-tight">
+                      Historial de Asistencias
+                    </div>
+                  </div>
+                  <div class="mt-3 sm:ml-2 sm:mt-0">
+                    <mat-button-toggle-group value="semana" #periodoSelector="matButtonToggleGroup">
+                      <mat-button-toggle value="semana">Esta semana</mat-button-toggle>
+                      <mat-button-toggle value="mes">Este mes</mat-button-toggle>
+                      <mat-button-toggle value="anio">Este año</mat-button-toggle>
+                    </mat-button-toggle-group>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-auto flex-col">
+                  @if (
+                    chartAsistenciasSeries[periodoSelector.value] &&
+                    hasChartData(periodoSelector.value)
+                  ) {
+                    <apx-chart
+                      class="h-80 w-full flex-auto"
+                      [chart]="chartAsistencias.chart"
+                      [series]="chartAsistenciasSeries[periodoSelector.value]"
+                      [xaxis]="getXaxisForPeriod(periodoSelector.value)"
+                      [yaxis]="chartAsistencias.yaxis"
+                      [colors]="chartAsistencias.colors"
+                      [plotOptions]="chartAsistencias.plotOptions"
+                      [dataLabels]="chartAsistencias.dataLabels"
+                      [stroke]="chartAsistencias.stroke"
+                      [legend]="chartAsistencias.legend"
+                      [tooltip]="chartAsistencias.tooltip"
+                    >
+                    </apx-chart>
+                  } @else {
+                    <div class="flex h-80 flex-col items-center justify-center">
+                      <mat-icon
+                        class="text-gray-400 icon-size-16"
+                        svgIcon="heroicons_outline:chart-bar"
+                      ></mat-icon>
+                      <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                        No hay suficientes datos de asistencias para mostrar
+                      </p>
+                      <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                        Se necesitan al menos 2 registros para generar la gráfica
+                      </p>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Últimas asistencias registradas -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow lg:w-1/2"
+              >
+                <div class="mb-4 flex items-center space-x-3">
+                  <mat-icon class="text-primary" svgIcon="heroicons_outline:calendar"></mat-icon>
+                  <div class="text-lg font-medium leading-6 tracking-tight">
+                    Registros Recientes
+                  </div>
+                </div>
+                <div class="mt-2 flex max-h-96 flex-col divide-y overflow-y-auto">
+                  @if (user$ | async; as user) {
+                    @if (user.asistencias && user.asistencias.length > 0) {
+                      @for (asistencia of asistenciasOrdenadas; track asistencia.id) {
+                        <div
+                          class="flex flex-row items-center justify-between rounded-lg px-2 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                        >
+                          <div class="flex items-center space-x-4">
+                            <!-- Indicador visual -->
                             <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <mat-icon class="text-green-500"
-                                        svgIcon="heroicons_outline:check-circle"></mat-icon>
-                                    <span
-                                        class="text-base font-medium text-green-600 bg-green-100 dark:bg-green-900/20 px-2 py-1 rounded-full">
-                                        Total
-                                    </span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center mt-4">
-                                    <div class="text-7xl font-bold leading-none tracking-tight text-green-500">
-                                        {{ totalAsistencias }}
-                                    </div>
-                                    <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
-                                        Asistencias
-                                    </div>
-                                </div>
+                              class="flex h-10 w-10 items-center justify-center rounded-full"
+                              [ngClass]="{
+                                'bg-green-100 dark:bg-green-900/20': !isRetardoUI(asistencia),
+                                'bg-amber-100 dark:bg-amber-900/20': isRetardoUI(asistencia),
+                              }"
+                            >
+                              <mat-icon
+                                [ngClass]="{
+                                  'text-green-600': !isRetardoUI(asistencia),
+                                  'text-amber-600': isRetardoUI(asistencia),
+                                }"
+                                [svgIcon]="
+                                  isRetardoUI(asistencia)
+                                    ? 'heroicons_outline:clock'
+                                    : 'heroicons_outline:check-circle'
+                                "
+                              >
+                              </mat-icon>
                             </div>
 
-                            <!-- Retardos -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <mat-icon class="text-amber-500" svgIcon="heroicons_outline:clock"></mat-icon>
-                                    <span
-                                        class="text-base font-medium text-amber-600 bg-amber-100 dark:bg-amber-900/20 px-2 py-1 rounded-full">
-                                        Total
-                                    </span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center mt-4">
-                                    <div class="text-7xl font-bold leading-none tracking-tight text-amber-500">
-                                        {{ totalRetardos }}
-                                    </div>
-                                    <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
-                                        Retardos
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Faltas -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <mat-icon class="text-red-500" svgIcon="heroicons_outline:x-circle"></mat-icon>
-                                    <span
-                                        class="text-base font-medium text-red-600 bg-red-100 dark:bg-red-900/20 px-2 py-1 rounded-full">
-                                        Total
-                                    </span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center mt-4">
-                                    <div class="text-7xl font-bold leading-none tracking-tight text-red-500">
-                                        {{ totalFaltas }}
-                                    </div>
-                                    <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
-                                        Faltas
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Horas trabajadas -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <mat-icon class="text-blue-500" svgIcon="heroicons_outline:clock"></mat-icon>
-                                    <span
-                                        class="text-base font-medium text-blue-600 bg-blue-100 dark:bg-blue-900/20 px-2 py-1 rounded-full">
-                                        Total
-                                    </span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center mt-4">
-                                    <div class="text-7xl font-bold leading-none tracking-tight text-blue-500">
-                                        {{ horasTrabajadas }}
-                                    </div>
-                                    <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
-                                        Horas trabajadas
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Gráfica y Listado -->
-                        <div class="flex flex-col gap-6 lg:flex-row">
-
-                            <!-- Gráfica de asistencias -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow lg:w-1/2">
-                                <div class="flex flex-col items-start justify-between sm:flex-row sm:items-center mb-4">
-                                    <div class="flex items-center space-x-3">
-                                        <mat-icon class="text-primary" svgIcon="heroicons_outline:chart-bar"></mat-icon>
-                                        <div class="text-lg font-medium leading-6 tracking-tight">
-                                            Historial de Asistencias
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 sm:ml-2 sm:mt-0">
-                                        <mat-button-toggle-group value="semana" #periodoSelector="matButtonToggleGroup">
-                                            <mat-button-toggle value="semana">Esta semana</mat-button-toggle>
-                                            <mat-button-toggle value="mes">Este mes</mat-button-toggle>
-                                            <mat-button-toggle value="anio">Este año</mat-button-toggle>
-                                        </mat-button-toggle-group>
-                                    </div>
-                                </div>
-                                <div class="mt-2 flex flex-auto flex-col">
-
-                                    @if (chartAsistenciasSeries[periodoSelector.value] &&
-                                    hasChartData(periodoSelector.value)) {
-                                    <apx-chart class="h-80 w-full flex-auto" [chart]="chartAsistencias.chart"
-                                        [series]="chartAsistenciasSeries[periodoSelector.value]"
-                                        [xaxis]="getXaxisForPeriod(periodoSelector.value)"
-                                        [yaxis]="chartAsistencias.yaxis" [colors]="chartAsistencias.colors"
-                                        [plotOptions]="chartAsistencias.plotOptions"
-                                        [dataLabels]="chartAsistencias.dataLabels" [stroke]="chartAsistencias.stroke"
-                                        [legend]="chartAsistencias.legend" [tooltip]="chartAsistencias.tooltip">
-                                    </apx-chart>
-                                    } @else {
-                                    <div class="flex flex-col items-center justify-center h-80">
-                                        <mat-icon class="icon-size-16 text-gray-400"
-                                            svgIcon="heroicons_outline:chart-bar"></mat-icon>
-                                        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                                            No hay suficientes datos de asistencias para mostrar
-                                        </p>
-                                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
-                                            Se necesitan al menos 2 registros para generar la gráfica
-                                        </p>
-                                    </div>
-                                    }
-
-                                </div>
-                            </div>
-
-                            <!-- Últimas asistencias registradas -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow lg:w-1/2">
-                                <div class="flex items-center space-x-3 mb-4">
-                                    <mat-icon class="text-primary" svgIcon="heroicons_outline:calendar"></mat-icon>
-                                    <div class="text-lg font-medium leading-6 tracking-tight">
-                                        Registros Recientes
-                                    </div>
-                                </div>
-                                <div class="mt-2 flex flex-col divide-y max-h-96 overflow-y-auto">
-
-                                    @if (user$ | async; as user) {
-
-                                    @if (user.asistencias && user.asistencias.length > 0) {
-
-                                    @for (asistencia of asistenciasOrdenadas; track asistencia.id) {
-                                    <div
-                                        class="flex flex-row items-center justify-between py-4 px-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
-                                        <div class="flex items-center space-x-4">
-                                            <!-- Indicador visual -->
-                                            <div class="flex items-center justify-center w-10 h-10 rounded-full"
-                                                [ngClass]="{
-                                                'bg-green-100 dark:bg-green-900/20': !isRetardoUI(asistencia),
-                                                'bg-amber-100 dark:bg-amber-900/20': isRetardoUI(asistencia)
-                                            }">
-                                                <mat-icon [ngClass]="{
-                                                'text-green-600': !isRetardoUI(asistencia),
-                                                'text-amber-600': isRetardoUI(asistencia)
-                                            }" [svgIcon]="isRetardoUI(asistencia) ? 'heroicons_outline:clock' : 'heroicons_outline:check-circle'">
-                                                </mat-icon>
-                                            </div>
-
-                                            <div class="flex flex-col">
-                                                <div class="font-medium text-gray-900 dark:text-gray-100">
-                                                    {{ asistencia.fecha }}
-                                                </div>
-                                                <div class="flex items-center space-x-3 mt-1">
-                                                    <div
-                                                        class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                                        <mat-icon class="icon-size-4 mr-1"
-                                                            svgIcon="heroicons_mini:arrow-right-on-rectangle"></mat-icon>
-                                                        {{ asistencia.hora_entrada }}
-                                                    </div>
-                                                    <div class="flex items-center text-sm">
-                                                        <mat-icon class="icon-size-4 mr-1"
-                                                            svgIcon="heroicons_mini:arrow-left-on-rectangle"></mat-icon>
-
-                                                        @if (!asistencia.hora_salida) {
-                                                        <span
-                                                            class="text-yellow-600 dark:text-yellow-400 font-semibold">
-                                                            En turno ⏳
-                                                        </span>
-                                                        } @else {
-                                                        <span class="text-gray-600 dark:text-gray-400">
-                                                            {{ asistencia.hora_salida }}
-                                                        </span>
-                                                        }
-                                                    </div>
-                                                </div>
-
-                                                @if (asistencia.turno) {
-                                                <div
-                                                    class="flex items-center text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                                    <mat-icon class="icon-size-3 mr-1"
-                                                        svgIcon="heroicons_mini:sun"></mat-icon>
-                                                    {{ asistencia.turno.nombre }} ({{ asistencia.turno.hora_inicio }} -
-                                                    {{ asistencia.turno.hora_fin }})
-                                                </div>
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <!-- Badge de estado -->
-                                        <div>
-                                            @if (isRetardoUI(asistencia)) {
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
-                                                Retardo
-                                            </span>
-                                            } @else {
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                                                A tiempo
-                                            </span>
-                                            }
-                                        </div>
-                                    </div>
-                                    }
-
-                                    } @else {
-                                    <div class="flex flex-col items-center justify-center py-12">
-                                        <mat-icon class="icon-size-16 text-gray-400"
-                                            svgIcon="heroicons_outline:calendar"></mat-icon>
-                                        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                                            No hay registros de asistencia
-                                        </p>
-                                    </div>
-                                    }
-
-                                    }
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </ng-template>
-                </mat-tab>
-
-                <!-- Vacaciones -->
-                <mat-tab label="Vacaciones">
-                    <ng-template matTabContent>
-                        <!-- Header con título -->
-                        <div class="mb-6">
-                            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Gestión de Vacaciones</h2>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Administra tus días de vacaciones,
-                                solicitudes y historial</p>
-                        </div>
-
-                        <!-- Cards de resumen -->
-                        <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-
-                            <!-- Total Vacaciones -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <mat-icon class="text-blue-500" svgIcon="heroicons_outline:calendar"></mat-icon>
-                                    <span
-                                        class="text-base font-medium text-blue-600 bg-blue-100 dark:bg-blue-900/20 px-2 py-1 rounded-full">
-                                        Total
-                                    </span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center mt-4">
-                                    <div class="text-7xl font-bold leading-none tracking-tight text-blue-500">
-                                        {{ vacacionesTotales }}
-                                    </div>
-                                    <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
-                                        Días totales
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Disponibles -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <mat-icon class="text-green-500"
-                                        svgIcon="heroicons_outline:check-circle"></mat-icon>
-                                    <span
-                                        class="text-base font-medium text-green-600 bg-green-100 dark:bg-green-900/20 px-2 py-1 rounded-full">
-                                        Disponibles
-                                    </span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center mt-4">
-                                    <div class="text-7xl font-bold leading-none tracking-tight text-green-500">
-                                        {{ vacacionesDisponibles }}
-                                    </div>
-                                    <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
-                                        Días libres
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Disfrutadas -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <mat-icon class="text-amber-500" svgIcon="heroicons_outline:sun"></mat-icon>
-                                    <span
-                                        class="text-base font-medium text-amber-600 bg-amber-100 dark:bg-amber-900/20 px-2 py-1 rounded-full">
-                                        Usados
-                                    </span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center mt-4">
-                                    <div class="text-7xl font-bold leading-none tracking-tight text-amber-500">
-                                        {{ vacacionesDisfrutadas }}
-                                    </div>
-                                    <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
-                                        Disfrutadas
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Solicitudes -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <mat-icon class="text-purple-500"
-                                        svgIcon="heroicons_outline:document-text"></mat-icon>
-                                    <span
-                                        class="text-base font-medium text-purple-600 bg-purple-100 dark:bg-purple-900/20 px-2 py-1 rounded-full">
-                                        Solicitudes
-                                    </span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center mt-4">
-                                    <div class="text-7xl font-bold leading-none tracking-tight text-purple-500">
-                                        {{ solicitudesVacaciones }}
-                                    </div>
-                                    <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
-                                        Pendientes
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Gráfica y Listado -->
-                        <div class="flex flex-col gap-6 lg:flex-row">
-
-                            <!-- Gráfica de vacaciones -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow lg:w-1/2">
-                                <div class="flex flex-col items-start justify-between sm:flex-row sm:items-center mb-4">
-                                    <div class="flex items-center space-x-3">
-                                        <mat-icon class="text-primary" svgIcon="heroicons_outline:chart-pie"></mat-icon>
-                                        <div class="text-lg font-medium leading-6 tracking-tight">
-                                            Distribución de Vacaciones
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 sm:ml-2 sm:mt-0">
-                                        <mat-button-toggle-group value="actual"
-                                            #periodoVacaciones="matButtonToggleGroup">
-                                            <mat-button-toggle value="actual">Año actual</mat-button-toggle>
-                                            <mat-button-toggle value="anterior">Año anterior</mat-button-toggle>
-                                            <mat-button-toggle value="historico">Histórico</mat-button-toggle>
-                                        </mat-button-toggle-group>
-                                    </div>
-                                </div>
-                                <div class="mt-2 flex flex-auto flex-col">
-                                    @if (chartVacacionesSeries[periodoVacaciones.value] &&
-                                    hasVacacionesChartData(periodoVacaciones.value)) {
-                                    <apx-chart class="h-80 w-full flex-auto" [chart]="chartVacaciones.chart"
-                                        [series]="chartVacacionesSeries[periodoVacaciones.value]"
-                                        [labels]="chartVacaciones.labels" [colors]="chartVacaciones.colors"
-                                        [legend]="chartVacaciones.legend" [dataLabels]="chartVacaciones.dataLabels"
-                                        [tooltip]="chartVacaciones.tooltip">
-                                    </apx-chart>
-                                    } @else {
-                                    <div class="flex flex-col items-center justify-center h-80">
-                                        <mat-icon class="icon-size-16 text-gray-400"
-                                            svgIcon="heroicons_outline:chart-pie"></mat-icon>
-                                        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                                            No hay datos de vacaciones para mostrar
-                                        </p>
-                                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
-                                            Se necesitan registros para generar la gráfica
-                                        </p>
-                                    </div>
-                                    }
-                                </div>
-                            </div>
-
-                            <!-- Últimas solicitudes de vacaciones -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow lg:w-1/2">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center space-x-3">
-                                        <mat-icon class="text-primary"
-                                            svgIcon="heroicons_outline:document-text"></mat-icon>
-                                        <div class="text-lg font-medium leading-6 tracking-tight">
-                                            Solicitudes Recientes
-                                        </div>
-                                    </div>
-                                    <button mat-icon-button color="primary" matTooltip="Solicitar vacaciones"
-                                        (click)="abrirSolicitudVacaciones()">
-                                        <mat-icon svgIcon="heroicons_outline:plus"></mat-icon>
-                                    </button>
-                                </div>
-                                <div class="mt-2 flex flex-col divide-y max-h-96 overflow-y-auto">
-                                    <div *ngIf="user$ | async as user">
-                                        <ng-container *ngIf="solicitudesOrdenadas?.length > 0; else noSolicitudes">
-                                            <div *ngFor="let solicitud of solicitudesOrdenadas; trackBy: trackByFn"
-                                                class="flex flex-row items-center justify-between py-4 px-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
-                                                <!-- Contenido de cada solicitud -->
-                                                <div class="flex items-center space-x-4">
-                                                    <div class="flex items-center justify-center w-10 h-10 rounded-full"
-                                                        [ngClass]="{
-               'bg-green-100 dark:bg-green-900/20': solicitud.estado === 'aprobada',
-               'bg-amber-100 dark:bg-amber-900/20': solicitud.estado === 'pendiente',
-               'bg-red-100 dark:bg-red-900/20': solicitud.estado === 'rechazada'
-             }">
-                                                        <mat-icon [ngClass]="{
-            'text-green-600': solicitud.estado === 'aprobada',
-            'text-amber-600': solicitud.estado === 'pendiente',
-            'text-red-600': solicitud.estado === 'rechazada'
-          }" [svgIcon]="getEstadoIcon(solicitud.estado)">
-                                                        </mat-icon>
-                                                    </div>
-                                                    <div class="flex flex-col">
-                                                        <div class="font-medium text-gray-900 dark:text-gray-100">
-                                                            {{ solicitud.fecha_inicio }} - {{ solicitud.fecha_fin }}
-                                                        </div>
-                                                        <div class="flex items-center space-x-3 mt-1">
-                                                            <div
-                                                                class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                                                <mat-icon class="icon-size-4 mr-1"
-                                                                    svgIcon="heroicons_mini:calendar-days"></mat-icon>
-                                                                {{ solicitud.dias_solicitados }} días
-                                                            </div>
-                                                            <div
-                                                                class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                                                <mat-icon class="icon-size-4 mr-1"
-                                                                    svgIcon="heroicons_mini:clock"></mat-icon>
-                                                                {{ solicitud.fecha_solicitud }}
-                                                            </div>
-                                                        </div>
-                                                        <div *ngIf="solicitud.motivo"
-                                                            class="flex items-center text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                                            <mat-icon class="icon-size-3 mr-1"
-                                                                svgIcon="heroicons_mini:document-text"></mat-icon>
-                                                            {{ solicitud.motivo }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <span *ngIf="solicitud.estado === 'aprobada'"
-                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                                                        Aprobada
-                                                    </span>
-                                                    <span *ngIf="solicitud.estado === 'pendiente'"
-                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
-                                                        Pendiente
-                                                    </span>
-                                                    <span *ngIf="solicitud.estado === 'rechazada'"
-                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
-                                                        Rechazada
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </ng-container>
-
-                                        <ng-template #noSolicitudes>
-                                            <div class="flex flex-col items-center justify-center py-12">
-                                                <mat-icon class="icon-size-16 text-gray-400"
-                                                    svgIcon="heroicons_outline:document-text"></mat-icon>
-                                                <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                                                    No hay solicitudes de vacaciones
-                                                </p>
-                                                <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
-                                                    Crea una nueva solicitud para comenzar
-                                                </p>
-                                            </div>
-                                        </ng-template>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </ng-template>
-                </mat-tab>
-
-
-                <!-- Inicio -->
-                <mat-tab label="Inicio">
-                    <ng-template matTabContent>
-                        <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
-                            <!-- Github issues summary -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4">
-                                <div class="flex flex-col items-start justify-between sm:flex-row">
-                                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
-                                        Resumen de problemas de GitHub
-                                    </div>
-                                    <div class="mt-3 sm:ml-2 sm:mt-0">
-                                        <mat-button-toggle-group value="this-week"
-                                            #githubIssuesWeekSelector="matButtonToggleGroup">
-                                            <mat-button-toggle value="last-week">Semana
-                                                pasada</mat-button-toggle>
-                                            <mat-button-toggle value="this-week">Esta semana</mat-button-toggle>
-                                        </mat-button-toggle-group>
-                                    </div>
-                                </div>
-                                <div class="mt-8 grid w-full grid-flow-row grid-cols-1 gap-6 sm:mt-4 lg:grid-cols-2">
-                                    <!-- Nuevos vs. Cerrados
- -->
-                                    <div class="flex flex-auto flex-col">
-                                        <div class="text-secondary font-medium">
-                                            Nuevos vs. Cerrados
-                                        </div>
-                                        <div class="flex flex-auto flex-col">
-                                            <apx-chart class="h-80 w-full flex-auto" [chart]="
-                                                    chartGithubIssues.chart
-                                                " [colors]="
-                                                    chartGithubIssues.colors
-                                                " [dataLabels]="
-                                                    chartGithubIssues.dataLabels
-                                                " [grid]="chartGithubIssues.grid" [labels]="
-                                                    chartGithubIssues.labels
-                                                " [legend]="
-                                                    chartGithubIssues.legend
-                                                " [plotOptions]="
-                                                    chartGithubIssues.plotOptions
-                                                " [series]="
-                                                    chartGithubIssues.series[
-                                                        githubIssuesWeekSelector
-                                                            .value
-                                                    ]
-                                                " [states]="
-                                                    chartGithubIssues.states
-                                                " [stroke]="
-                                                    chartGithubIssues.stroke
-                                                " [tooltip]="
-                                                    chartGithubIssues.tooltip
-                                                " [xaxis]="
-                                                    chartGithubIssues.xaxis
-                                                " [yaxis]="
-                                                    chartGithubIssues.yaxis
-                                                "></apx-chart>
-                                        </div>
-                                    </div>
-                                    <!-- Overview -->
-                                    <div class="flex flex-col">
-                                        <div class="text-secondary font-medium">
-                                            Resumen general
-                                        </div>
-                                        <div class="mt-6 grid flex-auto grid-cols-4 gap-4">
-                                            <!-- Nuevos problemas
- -->
-                                            <div
-                                                class="col-span-2 flex flex-col items-center justify-center rounded-2xl bg-indigo-50 px-1 py-8 text-indigo-800 dark:bg-white dark:bg-opacity-5 dark:text-indigo-400">
-                                                <div
-                                                    class="text-5xl font-semibold leading-none tracking-tight sm:text-7xl">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['new-issues']
-                                                    }}
-                                                </div>
-                                                <div class="mt-1 text-sm font-medium sm:text-lg">
-                                                    Nuevos problemas
-                                                </div>
-                                            </div>
-                                            <!-- Cerrado
- -->
-                                            <div
-                                                class="col-span-2 flex flex-col items-center justify-center rounded-2xl bg-green-50 px-1 py-8 text-green-800 dark:bg-white dark:bg-opacity-5 dark:text-green-500">
-                                                <div
-                                                    class="text-5xl font-semibold leading-none tracking-tight sm:text-7xl">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['closed-issues']
-                                                    }}
-                                                </div>
-                                                <div class="mt-1 text-sm font-medium sm:text-lg">
-                                                    Cerrado
-                                                </div>
-                                            </div>
-                                            <!-- Fixed -->
-                                            <div
-                                                class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 sm:col-span-1 dark:bg-white dark:bg-opacity-5">
-                                                <div class="text-5xl font-semibold leading-none tracking-tight">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['fixed']
-                                                    }}
-                                                </div>
-                                                <div class="mt-1 text-center text-sm font-medium">
-                                                    Corregido
-                                                </div>
-                                            </div>
-                                            <!-- Won't fix -->
-                                            <div
-                                                class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 sm:col-span-1 dark:bg-white dark:bg-opacity-5">
-                                                <div class="text-5xl font-semibold leading-none tracking-tight">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['wont-fix']
-                                                    }}
-                                                </div>
-                                                <div class="mt-1 text-center text-sm font-medium">
-                                                    No se corregirá
-                                                </div>
-                                            </div>
-                                            <!-- Reabierto -->
-                                            <div
-                                                class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 sm:col-span-1 dark:bg-white dark:bg-opacity-5">
-                                                <div class="text-5xl font-semibold leading-none tracking-tight">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['re-opened']
-                                                    }}
-                                                </div>
-                                                <div class="mt-1 text-center text-sm font-medium">
-                                                    Reabierto
-                                                </div>
-                                            </div>
-                                            <!-- Evaluación -->
-                                            <div
-                                                class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 sm:col-span-1 dark:bg-white dark:bg-opacity-5">
-                                                <div class="text-5xl font-semibold leading-none tracking-tight">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['needs-triage']
-                                                    }}
-                                                </div>
-                                                <div class="mt-1 text-center text-sm font-medium">
-                                                    Evaluación
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Distribución de tareas -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4 lg:col-span-2">
-                                <div class="flex flex-col items-start justify-between sm:flex-row">
-                                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
-                                        Distribución de tareas
-                                    </div>
-                                    <div class="mt-3 sm:ml-2 sm:mt-0">
-                                        <mat-button-toggle-group value="this-week"
-                                            #taskDistributionWeekSelector="matButtonToggleGroup">
-                                            <mat-button-toggle value="last-week">Semana
-                                                pasada</mat-button-toggle>
-                                            <mat-button-toggle value="this-week">Esta semana</mat-button-toggle>
-                                        </mat-button-toggle-group>
-                                    </div>
-                                </div>
-                                <div class="mt-6 flex flex-auto flex-col">
-                                    <apx-chart class="h-80 w-full flex-auto" [chart]="chartTaskDistribution.chart"
-                                        [labels]="chartTaskDistribution.labels" [legend]="chartTaskDistribution.legend"
-                                        [plotOptions]="
-                                            chartTaskDistribution.plotOptions
-                                        " [series]="
-                                            chartTaskDistribution.series[
-                                                taskDistributionWeekSelector
-                                                    .value
-                                            ]
-                                        " [states]="chartTaskDistribution.states"
-                                        [stroke]="chartTaskDistribution.stroke" [theme]="chartTaskDistribution.theme"
-                                        [tooltip]="
-                                            chartTaskDistribution.tooltip
-                                        " [yaxis]="chartTaskDistribution.yaxis"></apx-chart>
-                                </div>
+                            <div class="flex flex-col">
+                              <div class="font-medium text-gray-900 dark:text-gray-100">
+                                {{ asistencia.fecha }}
+                              </div>
+                              <div class="mt-1 flex items-center space-x-3">
                                 <div
-                                    class="-m-6 mt-4 grid grid-cols-2 divide-x border-t bg-gray-50 dark:bg-transparent">
-                                    <div class="flex flex-col items-center justify-center p-6 sm:p-8">
-                                        <div class="text-5xl font-semibold leading-none tracking-tighter">
-                                            {{
-                                            data.taskDistribution.overview[
-                                            taskDistributionWeekSelector
-                                            .value
-                                            ]['new']
-                                            }}
-                                        </div>
-                                        <div class="text-secondary mt-1 text-center">
-                                            Nuevas tareas
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col items-center justify-center p-6 sm:p-8">
-                                        <div class="text-5xl font-semibold leading-none tracking-tighter">
-                                            {{
-                                            data.taskDistribution.overview[
-                                            taskDistributionWeekSelector
-                                            .value
-                                            ]['completed']
-                                            }}
-                                        </div>
-                                        <div class="text-secondary mt-1 text-center">
-                                            Tareas completadas
-                                        </div>
-                                    </div>
+                                  class="flex items-center text-sm text-gray-600 dark:text-gray-400"
+                                >
+                                  <mat-icon
+                                    class="mr-1 icon-size-4"
+                                    svgIcon="heroicons_mini:arrow-right-on-rectangle"
+                                  ></mat-icon>
+                                  {{ asistencia.hora_entrada }}
                                 </div>
-                            </div>
-                            <!-- Schedule -->
-                            <div
-                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4 lg:col-span-2">
-                                <div class="flex flex-col items-start justify-between sm:flex-row">
-                                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
-                                        Horario
-                                    </div>
-                                    <div class="mt-3 sm:ml-2 sm:mt-0">
-                                        <mat-button-toggle-group value="today"
-                                            #scheduleDaySelector="matButtonToggleGroup">
-                                            <mat-button-toggle value="today">Hoy</mat-button-toggle>
-                                            <mat-button-toggle value="tomorrow">Mañana</mat-button-toggle>
-                                        </mat-button-toggle-group>
-                                    </div>
-                                </div>
-                                <div class="mt-2 flex flex-col divide-y">
-                                    @for (
-                                    scheduleItem of data.schedule[
-                                    scheduleDaySelector.value
-                                    ];
-                                    track trackByFn($index, scheduleItem)
-                                    ) {
-                                    <div class="flex flex-row items-center justify-between px-0.5 py-4">
-                                        <div class="flex flex-col">
-                                            <div class="font-medium">
-                                                {{ scheduleItem.title }}
-                                            </div>
-                                            <div
-                                                class="-ml-0.5 mt-2 flex flex-col space-y-1 sm:mt-1 sm:flex-row sm:items-center sm:space-x-3 sm:space-y-0">
-                                                @if (scheduleItem.time) {
-                                                <div class="flex items-center">
-                                                    <mat-icon class="text-hint icon-size-5" [svgIcon]="
-                                                                    'heroicons_solid:clock'
-                                                                "></mat-icon>
-                                                    <div class="text-secondary ml-1.5 text-md">
-                                                        {{
-                                                        scheduleItem.time
-                                                        }}
-                                                    </div>
-                                                </div>
-                                                }
-                                                @if (
-                                                scheduleItem.location
-                                                ) {
-                                                <div class="flex items-center">
-                                                    <mat-icon class="text-hint icon-size-5" [svgIcon]="
-                                                                    'heroicons_solid:map-pin'
-                                                                "></mat-icon>
-                                                    <div class="text-secondary ml-1.5 text-md">
-                                                        {{
-                                                        scheduleItem.location
-                                                        }}
-                                                    </div>
-                                                </div>
-                                                }
-                                            </div>
-                                        </div>
-                                        <button mat-icon-button>
-                                            <mat-icon [svgIcon]="
-                                                        'heroicons_mini:chevron-right'
-                                                    "></mat-icon>
-                                        </button>
-                                    </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </ng-template>
-                </mat-tab>
+                                <div class="flex items-center text-sm">
+                                  <mat-icon
+                                    class="mr-1 icon-size-4"
+                                    svgIcon="heroicons_mini:arrow-left-on-rectangle"
+                                  ></mat-icon>
 
-            </mat-tab-group>
-        </div>
+                                  @if (!asistencia.hora_salida) {
+                                    <span
+                                      class="font-semibold text-yellow-600 dark:text-yellow-400"
+                                    >
+                                      En turno ⏳
+                                    </span>
+                                  } @else {
+                                    <span class="text-gray-600 dark:text-gray-400">
+                                      {{ asistencia.hora_salida }}
+                                    </span>
+                                  }
+                                </div>
+                              </div>
+
+                              @if (asistencia.turno) {
+                                <div
+                                  class="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-500"
+                                >
+                                  <mat-icon
+                                    class="mr-1 icon-size-3"
+                                    svgIcon="heroicons_mini:sun"
+                                  ></mat-icon>
+                                  {{ asistencia.turno.nombre }} ({{
+                                    asistencia.turno.hora_inicio
+                                  }}
+                                  - {{ asistencia.turno.hora_fin }})
+                                </div>
+                              }
+                            </div>
+                          </div>
+
+                          <!-- Badge de estado -->
+                          <div>
+                            @if (isRetardoUI(asistencia)) {
+                              <span
+                                class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/20 dark:text-amber-400"
+                              >
+                                Retardo
+                              </span>
+                            } @else {
+                              <span
+                                class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                              >
+                                A tiempo
+                              </span>
+                            }
+                          </div>
+                        </div>
+                      }
+                    } @else {
+                      <div class="flex flex-col items-center justify-center py-12">
+                        <mat-icon
+                          class="text-gray-400 icon-size-16"
+                          svgIcon="heroicons_outline:calendar"
+                        ></mat-icon>
+                        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                          No hay registros de asistencia
+                        </p>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </mat-tab>
+
+        <!-- Vacaciones -->
+        <mat-tab label="Vacaciones">
+          <ng-template matTabContent>
+            <!-- Header con título -->
+            <div class="mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                Gestión de vacaciones
+              </h2>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Administra tus días de vacaciones, solicitudes y historial
+              </p>
+            </div>
+
+            <!-- Cards de resumen -->
+            <div class="mb-6 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <!-- Total Vacaciones -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow transition-shadow hover:shadow-lg"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <mat-icon class="text-blue-500" svgIcon="heroicons_outline:calendar"></mat-icon>
+                  <span
+                    class="rounded-full bg-blue-100 px-2 py-1 text-base font-medium text-blue-600 dark:bg-blue-900/20"
+                  >
+                    Total
+                  </span>
+                </div>
+                <div class="mt-4 flex flex-col items-center justify-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-blue-500">
+                    {{ vacacionesTotales }}
+                  </div>
+                  <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
+                    Días totales
+                  </div>
+                </div>
+              </div>
+
+              <!-- Disponibles -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow transition-shadow hover:shadow-lg"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <mat-icon
+                    class="text-green-500"
+                    svgIcon="heroicons_outline:check-circle"
+                  ></mat-icon>
+                  <span
+                    class="rounded-full bg-green-100 px-2 py-1 text-base font-medium text-green-600 dark:bg-green-900/20"
+                  >
+                    Disponibles
+                  </span>
+                </div>
+                <div class="mt-4 flex flex-col items-center justify-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-green-500">
+                    {{ vacacionesDisponibles }}
+                  </div>
+                  <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
+                    Días libres
+                  </div>
+                </div>
+              </div>
+
+              <!-- Disfrutadas -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow transition-shadow hover:shadow-lg"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <mat-icon class="text-amber-500" svgIcon="heroicons_outline:sun"></mat-icon>
+                  <span
+                    class="rounded-full bg-amber-100 px-2 py-1 text-base font-medium text-amber-600 dark:bg-amber-900/20"
+                  >
+                    Usados
+                  </span>
+                </div>
+                <div class="mt-4 flex flex-col items-center justify-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-amber-500">
+                    {{ vacacionesDisfrutadas }}
+                  </div>
+                  <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
+                    Disfrutadas
+                  </div>
+                </div>
+              </div>
+
+              <!-- Solicitudes -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow transition-shadow hover:shadow-lg"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <mat-icon
+                    class="text-purple-500"
+                    svgIcon="heroicons_outline:document-text"
+                  ></mat-icon>
+                  <span
+                    class="rounded-full bg-purple-100 px-2 py-1 text-base font-medium text-purple-600 dark:bg-purple-900/20"
+                  >
+                    Solicitudes
+                  </span>
+                </div>
+                <div class="mt-4 flex flex-col items-center justify-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-purple-500">
+                    {{ solicitudesVacaciones }}
+                  </div>
+                  <div class="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">
+                    Pendientes
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gráfica y Listado -->
+            <div class="flex flex-col gap-6 lg:flex-row">
+              <!-- Gráfica de vacaciones -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow lg:w-1/2"
+              >
+                <div
+                  class="mb-4 flex flex-col items-start justify-between sm:flex-row sm:items-center"
+                >
+                  <div class="flex items-center space-x-3">
+                    <mat-icon class="text-primary" svgIcon="heroicons_outline:chart-pie"></mat-icon>
+                    <div class="text-lg font-medium leading-6 tracking-tight">
+                      Distribución de Vacaciones
+                    </div>
+                  </div>
+                  <div class="mt-3 sm:ml-2 sm:mt-0">
+                    <mat-button-toggle-group
+                      value="actual"
+                      #periodoVacaciones="matButtonToggleGroup"
+                    >
+                      <mat-button-toggle value="actual">Año actual</mat-button-toggle>
+                      <mat-button-toggle value="anterior">Año anterior</mat-button-toggle>
+                      <mat-button-toggle value="historico">Histórico</mat-button-toggle>
+                    </mat-button-toggle-group>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-auto flex-col">
+                  @if (
+                    chartVacacionesSeries[periodoVacaciones.value] &&
+                    hasVacacionesChartData(periodoVacaciones.value)
+                  ) {
+                    <apx-chart
+                      class="h-80 w-full flex-auto"
+                      [chart]="chartVacaciones.chart"
+                      [series]="chartVacacionesSeries[periodoVacaciones.value]"
+                      [labels]="chartVacaciones.labels"
+                      [colors]="chartVacaciones.colors"
+                      [legend]="chartVacaciones.legend"
+                      [dataLabels]="chartVacaciones.dataLabels"
+                      [tooltip]="chartVacaciones.tooltip"
+                    >
+                    </apx-chart>
+                  } @else {
+                    <div class="flex h-80 flex-col items-center justify-center">
+                      <mat-icon
+                        class="text-gray-400 icon-size-16"
+                        svgIcon="heroicons_outline:chart-pie"
+                      ></mat-icon>
+                      <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                        No hay datos de vacaciones para mostrar
+                      </p>
+                      <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                        Se necesitan registros para generar la gráfica
+                      </p>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Últimas solicitudes de vacaciones -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow lg:w-1/2"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <div class="flex items-center space-x-3">
+                    <mat-icon
+                      class="text-primary"
+                      svgIcon="heroicons_outline:document-text"
+                    ></mat-icon>
+                    <div class="text-lg font-medium leading-6 tracking-tight">
+                      Solicitudes Recientes
+                    </div>
+                  </div>
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    matTooltip="Solicitar vacaciones"
+                    (click)="abrirSolicitudVacaciones()"
+                  >
+                    <mat-icon svgIcon="heroicons_outline:plus"></mat-icon>
+                  </button>
+                </div>
+                <div class="mt-2 flex max-h-96 flex-col divide-y overflow-y-auto">
+                  <div *ngIf="user$ | async as user">
+                    <ng-container *ngIf="solicitudesOrdenadas?.length > 0; else noSolicitudes">
+                      <div
+                        *ngFor="let solicitud of solicitudesOrdenadas; trackBy: trackByFn"
+                        class="flex flex-row items-center justify-between rounded-lg px-2 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      >
+                        <!-- Contenido de cada solicitud -->
+                        <div class="flex items-center space-x-4">
+                          <div
+                            class="flex h-10 w-10 items-center justify-center rounded-full"
+                            [ngClass]="{
+                              'bg-green-100 dark:bg-green-900/20':
+                                solicitud.status_id === 'aprobada',
+                              'bg-amber-100 dark:bg-amber-900/20':
+                                solicitud.status_id === 'pendiente',
+                              'bg-red-100 dark:bg-red-900/20': solicitud.status_id === 'rechazada',
+                            }"
+                          >
+                            <mat-icon
+                              [ngClass]="{
+                                'text-green-600': solicitud.status_id === 'aprobada',
+                                'text-amber-600': solicitud.status_id === 'pendiente',
+                                'text-red-600': solicitud.status_id === 'rechazada',
+                              }"
+                              [svgIcon]="getEstadoIcon(solicitud.estado)"
+                            >
+                            </mat-icon>
+                          </div>
+                          <div class="flex flex-col">
+                            <div class="font-medium text-gray-900 dark:text-gray-100">
+                              {{ solicitud.fecha_inicio }} - {{ solicitud.fecha_fin }}
+                            </div>
+                            <div class="mt-1 flex items-center space-x-3">
+                              <div
+                                class="flex items-center text-sm text-gray-600 dark:text-gray-400"
+                              >
+                                <mat-icon
+                                  class="mr-1 icon-size-4"
+                                  svgIcon="heroicons_mini:calendar-days"
+                                ></mat-icon>
+                                {{ solicitud.dias_solicitados }} días
+                              </div>
+                              <div
+                                class="flex items-center text-sm text-gray-600 dark:text-gray-400"
+                              >
+                                <mat-icon
+                                  class="mr-1 icon-size-4"
+                                  svgIcon="heroicons_mini:clock"
+                                ></mat-icon>
+                                {{ solicitud.fecha_solicitud }}
+                              </div>
+                            </div>
+                            <div
+                              *ngIf="solicitud.motivo"
+                              class="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-500"
+                            >
+                              <mat-icon
+                                class="mr-1 icon-size-3"
+                                svgIcon="heroicons_mini:document-text"
+                              ></mat-icon>
+                              {{ solicitud.motivo }}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <span
+                            *ngIf="solicitud.estado === 'aprobada'"
+                            class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                          >
+                            Aprobada
+                          </span>
+                          <span
+                            *ngIf="solicitud.estado === 'pendiente'"
+                            class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/20 dark:text-amber-400"
+                          >
+                            Pendiente
+                          </span>
+                          <span
+                            *ngIf="solicitud.estado === 'rechazada'"
+                            class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                          >
+                            Rechazada
+                          </span>
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <ng-template #noSolicitudes>
+                      <div class="flex flex-col items-center justify-center py-12">
+                        <mat-icon
+                          class="text-gray-400 icon-size-16"
+                          svgIcon="heroicons_outline:document-text"
+                        ></mat-icon>
+                        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                          No hay solicitudes de vacaciones
+                        </p>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                          Crea una nueva solicitud para comenzar
+                        </p>
+                      </div>
+                    </ng-template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </mat-tab>
+
+        <!-- Inicio -->
+        <mat-tab label="Inicio">
+          <ng-template matTabContent>
+            <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+              <!-- Github issues summary -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4"
+              >
+                <div class="flex flex-col items-start justify-between sm:flex-row">
+                  <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                    Resumen de problemas de GitHub
+                  </div>
+                  <div class="mt-3 sm:ml-2 sm:mt-0">
+                    <mat-button-toggle-group
+                      value="this-week"
+                      #githubIssuesWeekSelector="matButtonToggleGroup"
+                    >
+                      <mat-button-toggle value="last-week">Semana pasada</mat-button-toggle>
+                      <mat-button-toggle value="this-week">Esta semana</mat-button-toggle>
+                    </mat-button-toggle-group>
+                  </div>
+                </div>
+                <div
+                  class="mt-8 grid w-full grid-flow-row grid-cols-1 gap-6 sm:mt-4 lg:grid-cols-2"
+                >
+                  <!-- Nuevos vs. Cerrados
+ -->
+                  <div class="flex flex-auto flex-col">
+                    <div class="text-secondary font-medium">Nuevos vs. Cerrados</div>
+                    <div class="flex flex-auto flex-col">
+                      <apx-chart
+                        class="h-80 w-full flex-auto"
+                        [chart]="chartGithubIssues.chart"
+                        [colors]="chartGithubIssues.colors"
+                        [dataLabels]="chartGithubIssues.dataLabels"
+                        [grid]="chartGithubIssues.grid"
+                        [labels]="chartGithubIssues.labels"
+                        [legend]="chartGithubIssues.legend"
+                        [plotOptions]="chartGithubIssues.plotOptions"
+                        [series]="chartGithubIssues.series[githubIssuesWeekSelector.value]"
+                        [states]="chartGithubIssues.states"
+                        [stroke]="chartGithubIssues.stroke"
+                        [tooltip]="chartGithubIssues.tooltip"
+                        [xaxis]="chartGithubIssues.xaxis"
+                        [yaxis]="chartGithubIssues.yaxis"
+                      ></apx-chart>
+                    </div>
+                  </div>
+                  <!-- Overview -->
+                  <div class="flex flex-col">
+                    <div class="text-secondary font-medium">Resumen general</div>
+                    <div class="mt-6 grid flex-auto grid-cols-4 gap-4">
+                      <!-- Nuevos problemas
+ -->
+                      <div
+                        class="col-span-2 flex flex-col items-center justify-center rounded-2xl bg-indigo-50 px-1 py-8 text-indigo-800 dark:bg-white dark:bg-opacity-5 dark:text-indigo-400"
+                      >
+                        <div class="text-5xl font-semibold leading-none tracking-tight sm:text-7xl">
+                          {{
+                            data.githubIssues.overview[githubIssuesWeekSelector.value]['new-issues']
+                          }}
+                        </div>
+                        <div class="mt-1 text-sm font-medium sm:text-lg">Nuevos problemas</div>
+                      </div>
+                      <!-- Cerrado
+ -->
+                      <div
+                        class="col-span-2 flex flex-col items-center justify-center rounded-2xl bg-green-50 px-1 py-8 text-green-800 dark:bg-white dark:bg-opacity-5 dark:text-green-500"
+                      >
+                        <div class="text-5xl font-semibold leading-none tracking-tight sm:text-7xl">
+                          {{
+                            data.githubIssues.overview[githubIssuesWeekSelector.value][
+                              'closed-issues'
+                            ]
+                          }}
+                        </div>
+                        <div class="mt-1 text-sm font-medium sm:text-lg">Cerrado</div>
+                      </div>
+                      <!-- Fixed -->
+                      <div
+                        class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 sm:col-span-1 dark:bg-white dark:bg-opacity-5"
+                      >
+                        <div class="text-5xl font-semibold leading-none tracking-tight">
+                          {{ data.githubIssues.overview[githubIssuesWeekSelector.value]['fixed'] }}
+                        </div>
+                        <div class="mt-1 text-center text-sm font-medium">Corregido</div>
+                      </div>
+                      <!-- Won't fix -->
+                      <div
+                        class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 sm:col-span-1 dark:bg-white dark:bg-opacity-5"
+                      >
+                        <div class="text-5xl font-semibold leading-none tracking-tight">
+                          {{
+                            data.githubIssues.overview[githubIssuesWeekSelector.value]['wont-fix']
+                          }}
+                        </div>
+                        <div class="mt-1 text-center text-sm font-medium">No se corregirá</div>
+                      </div>
+                      <!-- Reabierto -->
+                      <div
+                        class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 sm:col-span-1 dark:bg-white dark:bg-opacity-5"
+                      >
+                        <div class="text-5xl font-semibold leading-none tracking-tight">
+                          {{
+                            data.githubIssues.overview[githubIssuesWeekSelector.value]['re-opened']
+                          }}
+                        </div>
+                        <div class="mt-1 text-center text-sm font-medium">Reabierto</div>
+                      </div>
+                      <!-- Evaluación -->
+                      <div
+                        class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 sm:col-span-1 dark:bg-white dark:bg-opacity-5"
+                      >
+                        <div class="text-5xl font-semibold leading-none tracking-tight">
+                          {{
+                            data.githubIssues.overview[githubIssuesWeekSelector.value][
+                              'needs-triage'
+                            ]
+                          }}
+                        </div>
+                        <div class="mt-1 text-center text-sm font-medium">Evaluación</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Distribución de tareas -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4 lg:col-span-2"
+              >
+                <div class="flex flex-col items-start justify-between sm:flex-row">
+                  <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                    Distribución de tareas
+                  </div>
+                  <div class="mt-3 sm:ml-2 sm:mt-0">
+                    <mat-button-toggle-group
+                      value="this-week"
+                      #taskDistributionWeekSelector="matButtonToggleGroup"
+                    >
+                      <mat-button-toggle value="last-week">Semana pasada</mat-button-toggle>
+                      <mat-button-toggle value="this-week">Esta semana</mat-button-toggle>
+                    </mat-button-toggle-group>
+                  </div>
+                </div>
+                <div class="mt-6 flex flex-auto flex-col">
+                  <apx-chart
+                    class="h-80 w-full flex-auto"
+                    [chart]="chartTaskDistribution.chart"
+                    [labels]="chartTaskDistribution.labels"
+                    [legend]="chartTaskDistribution.legend"
+                    [plotOptions]="chartTaskDistribution.plotOptions"
+                    [series]="chartTaskDistribution.series[taskDistributionWeekSelector.value]"
+                    [states]="chartTaskDistribution.states"
+                    [stroke]="chartTaskDistribution.stroke"
+                    [theme]="chartTaskDistribution.theme"
+                    [tooltip]="chartTaskDistribution.tooltip"
+                    [yaxis]="chartTaskDistribution.yaxis"
+                  ></apx-chart>
+                </div>
+                <div
+                  class="-m-6 mt-4 grid grid-cols-2 divide-x border-t bg-gray-50 dark:bg-transparent"
+                >
+                  <div class="flex flex-col items-center justify-center p-6 sm:p-8">
+                    <div class="text-5xl font-semibold leading-none tracking-tighter">
+                      {{
+                        data.taskDistribution.overview[taskDistributionWeekSelector.value]['new']
+                      }}
+                    </div>
+                    <div class="text-secondary mt-1 text-center">Nuevas tareas</div>
+                  </div>
+                  <div class="flex flex-col items-center justify-center p-6 sm:p-8">
+                    <div class="text-5xl font-semibold leading-none tracking-tighter">
+                      {{
+                        data.taskDistribution.overview[taskDistributionWeekSelector.value][
+                          'completed'
+                        ]
+                      }}
+                    </div>
+                    <div class="text-secondary mt-1 text-center">Tareas completadas</div>
+                  </div>
+                </div>
+              </div>
+              <!-- Schedule -->
+              <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4 lg:col-span-2"
+              >
+                <div class="flex flex-col items-start justify-between sm:flex-row">
+                  <div class="truncate text-lg font-medium leading-6 tracking-tight">Horario</div>
+                  <div class="mt-3 sm:ml-2 sm:mt-0">
+                    <mat-button-toggle-group
+                      value="today"
+                      #scheduleDaySelector="matButtonToggleGroup"
+                    >
+                      <mat-button-toggle value="today">Hoy</mat-button-toggle>
+                      <mat-button-toggle value="tomorrow">Mañana</mat-button-toggle>
+                    </mat-button-toggle-group>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-col divide-y">
+                  @for (
+                    scheduleItem of data.schedule[scheduleDaySelector.value];
+                    track trackByFn($index, scheduleItem)
+                  ) {
+                    <div class="flex flex-row items-center justify-between px-0.5 py-4">
+                      <div class="flex flex-col">
+                        <div class="font-medium">
+                          {{ scheduleItem.title }}
+                        </div>
+                        <div
+                          class="-ml-0.5 mt-2 flex flex-col space-y-1 sm:mt-1 sm:flex-row sm:items-center sm:space-x-3 sm:space-y-0"
+                        >
+                          @if (scheduleItem.time) {
+                            <div class="flex items-center">
+                              <mat-icon
+                                class="text-hint icon-size-5"
+                                [svgIcon]="'heroicons_outline:clock'"
+                              ></mat-icon>
+                              <div class="text-secondary ml-1.5 text-md">
+                                {{ scheduleItem.time }}
+                              </div>
+                            </div>
+                          }
+                          @if (scheduleItem.location) {
+                            <div class="flex items-center">
+                              <mat-icon
+                                class="text-hint icon-size-5"
+                                [svgIcon]="'heroicons_outline:map-pin'"
+                              ></mat-icon>
+                              <div class="text-secondary ml-1.5 text-md">
+                                {{ scheduleItem.location }}
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                      <button mat-icon-button>
+                        <mat-icon [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </mat-tab>
+      </mat-tab-group>
     </div>
+  </div>
+
+  <!-- SU ADMIN / JEFE -->
+  <div class="-mt-px mb-5 flex-auto border-t pt-4 sm:pt-6" *ngIf="isJefeOrSuadmin">
+    <div class="mx-auto w-full max-w-screen-xl px-6 sm:px-8">
+      <!-- Header Ejecutivo -->
+      <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Panel de Control</h2>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Vista general del sistema</p>
+      </div>
+
+      <!-- KPIs Principales -->
+      <div class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Card 1 -->
+        <div
+          class="bg-card rounded-2xl border border-gray-100 p-6 shadow transition-shadow hover:shadow-md dark:border-gray-800"
+        >
+          <div class="mb-4 flex items-center justify-between">
+            <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+              <mat-icon
+                class="text-gray-600 dark:text-gray-400"
+                svgIcon="heroicons_outline:users"
+              ></mat-icon>
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">Colaboradores</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">—</p>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div
+          class="bg-card rounded-2xl border border-gray-100 p-6 shadow transition-shadow hover:shadow-md dark:border-gray-800"
+        >
+          <div class="mb-4 flex items-center justify-between">
+            <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+              <mat-icon
+                class="text-gray-600 dark:text-gray-400"
+                svgIcon="heroicons_outline:chart-bar"
+              ></mat-icon>
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">Actividad</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">—</p>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div
+          class="bg-card rounded-2xl border border-gray-100 p-6 shadow transition-shadow hover:shadow-md dark:border-gray-800"
+        >
+          <div class="mb-4 flex items-center justify-between">
+            <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+              <mat-icon
+                class="text-gray-600 dark:text-gray-400"
+                svgIcon="heroicons_outline:check-circle"
+              ></mat-icon>
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">Estado</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">—</p>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div
+          class="bg-card rounded-2xl border border-gray-100 p-6 shadow transition-shadow hover:shadow-md dark:border-gray-800"
+        >
+          <div class="mb-4 flex items-center justify-between">
+            <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+              <mat-icon
+                class="text-gray-600 dark:text-gray-400"
+                svgIcon="heroicons_outline:document-text"
+              ></mat-icon>
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">Pendientes</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección Central -->
+      <div class="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Gráfico Placeholder -->
+        <div class="bg-card rounded-2xl border border-gray-100 p-6 shadow dark:border-gray-800">
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Información General
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Resumen del sistema</p>
+          </div>
+
+          <div
+            class="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
+          >
+            <div class="text-center">
+              <mat-icon
+                class="mb-4 text-gray-400 icon-size-16"
+                svgIcon="heroicons_outline:chart-bar"
+              ></mat-icon>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Sin datos disponibles</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Métricas Placeholder -->
+        <div class="bg-card rounded-2xl border border-gray-100 p-6 shadow dark:border-gray-800">
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Métricas</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Indicadores principales</p>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Métrica 1 -->
+            <div>
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Categoría A</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">—</span>
+              </div>
+              <div class="h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                <div class="h-full bg-gray-300 dark:bg-gray-700" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Métrica 2 -->
+            <div>
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Categoría B</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">—</span>
+              </div>
+              <div class="h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                <div class="h-full bg-gray-300 dark:bg-gray-700" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Métrica 3 -->
+            <div>
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Categoría C</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">—</span>
+              </div>
+              <div class="h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                <div class="h-full bg-gray-300 dark:bg-gray-700" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Métrica 4 -->
+            <div>
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Categoría D</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">—</span>
+              </div>
+              <div class="h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                <div class="h-full bg-gray-300 dark:bg-gray-700" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones y Notificaciones -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Acciones Rápidas -->
+        <div
+          class="bg-card rounded-2xl border border-gray-100 p-6 shadow lg:col-span-2 dark:border-gray-800"
+        >
+          <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Acciones Rápidas
+          </h3>
+          <div class="grid grid-cols-2 gap-4">
+            <button mat-stroked-button class="flex h-20 items-center justify-start px-4">
+              <div class="flex items-center">
+                <div class="mr-3 rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+                  <mat-icon
+                    class="text-gray-600 icon-size-5 dark:text-gray-400"
+                    svgIcon="heroicons_outline:user-group"
+                  ></mat-icon>
+                </div>
+                <div class="text-left">
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Gestión</div>
+                  <div class="text-xs text-gray-500">Ver información</div>
+                </div>
+              </div>
+            </button>
+
+            <button mat-stroked-button class="flex h-20 items-center justify-start px-4">
+              <div class="flex items-center">
+                <div class="mr-3 rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+                  <mat-icon
+                    class="text-gray-600 icon-size-5 dark:text-gray-400"
+                    svgIcon="heroicons_outline:clipboard-document-check"
+                  ></mat-icon>
+                </div>
+                <div class="text-left">
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Revisión</div>
+                  <div class="text-xs text-gray-500">Pendientes</div>
+                </div>
+              </div>
+            </button>
+
+            <button mat-stroked-button class="flex h-20 items-center justify-start px-4">
+              <div class="flex items-center">
+                <div class="mr-3 rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+                  <mat-icon
+                    class="text-gray-600 icon-size-5 dark:text-gray-400"
+                    svgIcon="heroicons_outline:chart-pie"
+                  ></mat-icon>
+                </div>
+                <div class="text-left">
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Reportes</div>
+                  <div class="text-xs text-gray-500">Ver análisis</div>
+                </div>
+              </div>
+            </button>
+
+            <button mat-stroked-button class="flex h-20 items-center justify-start px-4">
+              <div class="flex items-center">
+                <div class="mr-3 rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+                  <mat-icon
+                    class="text-gray-600 icon-size-5 dark:text-gray-400"
+                    svgIcon="heroicons_outline:cog-6-tooth"
+                  ></mat-icon>
+                </div>
+                <div class="text-left">
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    Configuración
+                  </div>
+                  <div class="text-xs text-gray-500">Ajustes</div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div class="bg-card rounded-2xl border border-gray-100 p-6 shadow dark:border-gray-800">
+          <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Notificaciones
+          </h3>
+          <div class="flex h-48 items-center justify-center">
+            <div class="text-center">
+              <mat-icon
+                class="mb-2 text-gray-300 icon-size-12 dark:text-gray-700"
+                svgIcon="heroicons_outline:bell"
+              ></mat-icon>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Sin notificaciones</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

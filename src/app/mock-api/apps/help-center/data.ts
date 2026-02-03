@@ -13,12 +13,12 @@ export const faqCategories = [
     {
         id: 'b388a87f-bfbb-44d0-800c-0ddbce2a5d22',
         slug: 'licenses',
-        title: 'Licenses',
+        title: 'Licencias',
     },
     {
         id: '71c34043-d89d-4aca-951d-8606c3943c43',
-        slug: 'payments',
-        title: 'Payments',
+        slug: 'pagos',
+        title: 'Pagos',
     },
     {
         id: 'bea49ee0-26da-46ad-97be-116cd7ab416d',
@@ -220,13 +220,13 @@ export const guideCategories = [
     },
     {
         id: 'c88a1f54-360a-4b9b-a54b-2f92b7a1f63b',
-        slug: 'settings',
-        title: 'Settings',
+        slug: 'ajustes',
+        title: 'Ajustes',
     },
     {
         id: '7b25b38c-1ab3-4474-8569-65b3ea232add',
-        slug: 'payments',
-        title: 'Payments',
+        slug: 'pagos',
+        title: 'Pagos',
     },
     {
         id: '41fdf071-aec4-49de-9dd4-b4f746596928',

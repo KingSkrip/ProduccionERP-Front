@@ -1,0 +1,138 @@
+<!-- Tarjetas de resumen -->
+<div class="mt-3 px-4 py-3 md:px-8 md:py-4">
+  <!-- Card móvil -->
+  <div class="md:hidden">
+    <div class="bg-card rounded-lg border-l-4 border-green-500 px-4 py-2 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-secondary mb-1 text-sm font-medium">Cantidad total</div>
+          <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number: '1.2-2' }}</div>
+          <div class="text-secondary mt-1 text-xs">kilogramos</div>
+        </div>
+        <mat-icon
+          class="text-green-500 icon-size-8"
+          [svgIcon]="'heroicons_outline:scale'"
+        ></mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards desktop -->
+  <div class="hidden grid-cols-3 gap-3 md:grid">
+    <!-- departamentos
+    <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base font-medium">Departamentos</div>
+        <mat-icon
+          class="text-yellow-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:building-office'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ contarDepartamentos() }}</div>
+      <div class="text-secondary text-sm">Áreas activas</div>
+    </div> -->
+
+    <!-- TOTAL -->
+    <div class="bg-card rounded-xl border-l-4 border-green-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base font-medium">Cantidad total</div>
+        <mat-icon
+          class="text-green-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:scale'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number: '1.2-2' }}</div>
+      <div class="text-secondary text-sm">Kilogramos</div>
+    </div>
+
+    <!-- <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base font-medium">Total procesos</div>
+        <mat-icon
+          class="text-yellow-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:document-text'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ datosFiltrados.length }}</div>
+      <div class="text-secondary text-sm">Procesos activos</div>
+    </div> -->
+  </div>
+</div>
+
+<!-- Tabla -->
+<div class="mt-6 overflow-x-auto px-4 md:px-8 md:pb-8">
+  <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">
+    <thead class="bg-gray-50 dark:bg-gray-700">
+      <tr>
+        <th class="px-6 py-4 text-left text-base font-semibold tracking-wider">Departamento</th>
+        <th class="px-6 py-4 text-right text-base font-semibold tracking-wider">Cantidad (kg)</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <ng-container *ngFor="let grupo of datosAgrupados; let i = index">
+        <tr
+          class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+          (click)="toggleDepartamento(i)"
+        >
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <mat-icon
+                class="transition-transform icon-size-4"
+                [ngClass]="{ 'rotate-90': grupo.expandido }"
+                [svgIcon]="'heroicons_outline:chevron-right'"
+              ></mat-icon>
+              <mat-icon
+                class="text-yellow-500 icon-size-5"
+                [svgIcon]="'heroicons_outline:building-office'"
+              ></mat-icon>
+              <div>
+                <div class="font-semibold capitalize">
+                  {{ grupo.departamento | lowercase }}
+                </div>
+
+                <div class="text-secondary text-xs">{{ grupo.procesos.length }} procesos</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <span class="text-lg font-bold text-green-600 dark:text-green-400">
+              {{ grupo.cantidadTotal | number: '1.2-2' }}
+            </span>
+          </td>
+        </tr>
+        <tr
+          *ngFor="let proceso of grupo.procesos"
+          [style.display]="grupo.expandido ? 'table-row' : 'none'"
+          class="bg-gray-50 dark:bg-gray-800/50"
+        >
+          <td class="px-6 py-3 pl-20">
+            <div class="flex items-center gap-3">
+              <mat-icon
+                class="text-gray-400 icon-size-4"
+                [svgIcon]="'heroicons_outline:cog-8-tooth'"
+              ></mat-icon>
+              <span class="text-secondary text-sm capitalize">
+                {{ proceso.proceso | lowercase }}
+              </span>
+            </div>
+          </td>
+          <td class="px-6 py-3 text-right">
+            <span class="text-sm font-medium text-green-600 dark:text-green-400">
+              {{ proceso.cantidad | number: '1.2-2' }}
+            </span>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+    <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-700">
+      <tr>
+        <td class="px-6 py-4 text-right text-base">Total general:</td>
+        <td class="px-6 py-4 text-right">
+          <span class="text-lg text-green-600 dark:text-green-400">
+            {{ calcularCantidadTotal() | number: '1.2-2' }}
+          </span>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>

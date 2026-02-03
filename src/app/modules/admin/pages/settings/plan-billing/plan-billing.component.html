@@ -37,7 +37,7 @@
                     @if (planRadioGroup.value === plan.value) {
                         <mat-icon
                             class="absolute right-0 top-0 mr-3 mt-3 text-primary icon-size-7"
-                            [svgIcon]="'heroicons_solid:check-circle'"
+                            [svgIcon]="'heroicons_outline:check-circle'"
                         ></mat-icon>
                     }
                     <div class="font-semibold">{{ plan.label }}</div>
@@ -73,7 +73,7 @@
                     <mat-label>Card holder</mat-label>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:user'"
+                        [svgIcon]="'heroicons_outline:user'"
                         matPrefix
                     ></mat-icon>
                     <input [formControlName]="'cardHolder'" matInput />
@@ -85,7 +85,7 @@
                     <mat-label>Card number</mat-label>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:credit-card'"
+                        [svgIcon]="'heroicons_outline:credit-card'"
                         matPrefix
                     ></mat-icon>
                     <input [formControlName]="'cardNumber'" matInput />
@@ -97,7 +97,7 @@
                     <mat-label>Expiration date</mat-label>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:calendar'"
+                        [svgIcon]="'heroicons_outline:calendar'"
                         matPrefix
                     ></mat-icon>
                     <input
@@ -113,7 +113,7 @@
                     <mat-label>CVC / CVC2</mat-label>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:lock-closed'"
+                        [svgIcon]="'heroicons_outline:lock-closed'"
                         matPrefix
                     ></mat-icon>
                     <input [formControlName]="'cardCVC'" matInput />
@@ -125,7 +125,7 @@
                     <mat-label>Country</mat-label>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:map-pin'"
+                        [svgIcon]="'heroicons_outline:map-pin'"
                         matPrefix
                     ></mat-icon>
                     <mat-select [formControlName]="'country'">
@@ -144,7 +144,7 @@
                     <mat-label>ZIP / Postal code</mat-label>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:hashtag'"
+                        [svgIcon]="'heroicons_outline:hashtag'"
                         matPrefix
                     ></mat-icon>
                     <input matInput />

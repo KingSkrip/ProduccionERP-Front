@@ -12,55 +12,57 @@ const generatePalette = require(
  * Tailwind-like color palettes automatically
  */
 const customPalettes = {
-    brand: generatePalette('#2196F3'),
+    brand: generatePalette('#006a90'),
+    // accent: generatePalette('#a0e0cd'),
+    accent: generatePalette('#75e6d5'),
 };
 
 /**
  * Themes
  */
 const themes = {
-    // Default theme es requerido for theming system to work correctly!
-    default: {
-        primary: {
-            ...colors.indigo,
-            DEFAULT: colors.indigo[600],
-        },
-        accent: {
-            ...colors.slate,
-            DEFAULT: colors.slate[800],
-        },
-        warn: {
-            ...colors.red,
-            DEFAULT: colors.red[600],
-        },
-        'on-warn': {
-            500: colors.red['50'],
-        },
+  default: {
+    primary: {
+      ...customPalettes.brand,
+      DEFAULT: customPalettes.brand[500],
     },
-    // Rest of the themes will use the 'default' as the base
-    // theme and will extend it with their given configuration.
-    brand: {
-        primary: customPalettes.brand,
+    accent: {
+      ...customPalettes.accent,
+      DEFAULT: customPalettes.accent[500],
     },
-    teal: {
-        primary: {
-            ...colors.teal,
-            DEFAULT: colors.teal[600],
-        },
+    warn: {
+      ...colors.red,
+      DEFAULT: colors.red[600],
     },
-    rose: {
-        primary: colors.rose,
+    'on-warn': {
+      500: colors.red['50'],
     },
-    purple: {
-        primary: {
-            ...colors.purple,
-            DEFAULT: colors.purple[600],
-        },
+  },
+
+  // puedes dejar brand o quitarlo (pero no uses colors.brand)
+  brand: {
+    primary: customPalettes.brand,
+    accent: customPalettes.accent,
+  },
+
+  teal: {
+    primary: {
+      ...customPalettes.brand,
+      DEFAULT: customPalettes.brand[500],
     },
-    amber: {
-        primary: colors.amber,
+    accent: {
+      ...customPalettes.accent,
+      DEFAULT: customPalettes.accent[500],
     },
+  },
+
+  rose: { primary: colors.rose },
+  purple: {
+    primary: { ...colors.purple, DEFAULT: colors.purple[600] },
+  },
+  amber: { primary: colors.amber },
 };
+
 
 /**
  * Tailwind configuration

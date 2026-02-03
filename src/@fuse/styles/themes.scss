@@ -2,6 +2,7 @@
 @use '@angular/material' as mat;
 @use 'user-themes' as userThemes;
 
+mat.$theme-ignore-duplication-warnings: true;
 /* Set the base colors for light themes */
 $light-base: (
     foreground: (

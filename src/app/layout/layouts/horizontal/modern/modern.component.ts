@@ -10,6 +10,8 @@ import {
     FuseVerticalNavigationComponent,
 } from '@fuse/components/navigation';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
+import { APP_CONFIG } from 'app/core/config/app-config';
+import { AppConfig } from 'app/core/config/app-config.model';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { LanguagesComponent } from 'app/layout/common/languages/languages.component';
@@ -46,6 +48,7 @@ export class ModernLayoutComponent implements OnInit, OnDestroy {
     isScreenSmall: boolean;
     navigation: Navigation;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
+appName = APP_CONFIG.appName;
 
     /**
      * Constructor
@@ -55,9 +58,12 @@ export class ModernLayoutComponent implements OnInit, OnDestroy {
         private _router: Router,
         private _navigationService: NavigationService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _fuseNavigationService: FuseNavigationService
-    ) {}
-
+        private _fuseNavigationService: FuseNavigationService,
+         
+    ) {
+        // 👇 aquí lo asignas
+        
+    }
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
     // -----------------------------------------------------------------------------------------------------

@@ -1,14 +1,13 @@
-<!-- Loading bar -->
-<fuse-loading-bar></fuse-loading-bar>
+<!-- MENU PADDRE -->
+<fuse-loading-bar [autoMode]="false"></fuse-loading-bar>
+
 
 <!-- Navigation -->
-<fuse-vertical-navigation
-    class="bg-card dark:bg-gray-900 print:hidden"
+<fuse-vertical-navigation 
+class="bg-card dark:bg-gray-900 print:hidden z-[300]"
     [appearance]="isScreenSmall ? 'futuristic' : 'dense'"
-    [mode]="isScreenSmall ? 'over' : 'side'"
-    name="mainNavigation"
-    [navigation]="navigation"
-    [opened]="!isScreenSmall">
+     [mode]="isScreenSmall ? 'over' : 'side'" name="mainNavigation"
+    [navigation]="navigation" [opened]="!isScreenSmall">
 
     <!-- Navigation header hook -->
     <ng-container fuseVerticalNavigationContentHeader>
@@ -19,28 +18,23 @@
 </fuse-vertical-navigation>
 
 <!-- Wrapper -->
-<div class="flex w-full min-w-0 flex-auto flex-col">
+<div class="flex w-full min-w-0 flex-auto flex-col z-[100]">
     <!-- Header -->
     <div
-        class="bg-card relative z-49 flex h-16 w-full flex-0 items-center px-4 shadow dark:border-b dark:bg-transparent dark:shadow-none md:px-6 print:hidden"
-    >
+        class="bg-card dark:bg-gray-900 relative z-[250] flex h-11 md:h-16 w-full flex-0 items-center px-4 shadow dark:border-b  dark:shadow-none md:px-6 print:hidden">
         <!-- Navigation toggle button -->
-        <button
-            class="mr-2"
-            mat-icon-button
-            (click)="toggleNavigation('mainNavigation')"
-        >
+        <button class="mr-2" mat-icon-button (click)="toggleNavigation('mainNavigation')">
             <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
         </button>
-        
+
         <!-- Components -->
         <div class="ml-auto flex items-center space-x-0.5 pl-2 sm:space-x-2">
             <fuse-fullscreen class="hidden md:block"></fuse-fullscreen>
-            <search [appearance]="'bar'"></search>
+            <!-- <search [appearance]="'bar'"></search> -->
             <!-- <shortcuts></shortcuts> -->
-            <messages></messages>
-            <notifications></notifications>
-            <button
+            <!-- <messages></messages>
+            <notifications></notifications> -->
+            <!-- <button
                 class="lg:hidden"
                 mat-icon-button
                 (click)="quickChat.toggle()"
@@ -48,7 +42,7 @@
                 <mat-icon
                     [svgIcon]="'heroicons_outline:chat-bubble-left-right'"
                 ></mat-icon>
-            </button>
+            </button> -->
             <user></user>
         </div>
     </div>
@@ -58,17 +52,16 @@
         <!-- *ngIf="true" hack es requerido here for router-outlet to work correctly.
              Otherwise, layout changes won't be registered and the view won't be updated! -->
         @if (true) {
-            <router-outlet></router-outlet>
+        <router-outlet></router-outlet>
         }
     </div>
 
     <!-- Footer -->
     <div
-        class="bg-card relative z-49 flex h-14 w-full flex-0 items-center justify-start border-t px-4 dark:bg-transparent md:px-6 print:hidden"
-    >
-        <span class="text-secondary font-medium"
-            >Fuse &copy; {{ currentYear }}</span
-        >
+        class="bg-card relative z-[200] dark:z-[200] flex h-10 md:h-14 w-full flex-0 items-center justify-start border-t px-4  md:px-6 print:hidden">
+        <span class="text-secondary font-medium">
+            {{ appName }} &copy; {{ currentYear }}
+        </span>
     </div>
 </div>
 

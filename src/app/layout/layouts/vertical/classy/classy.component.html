@@ -35,7 +35,7 @@
                 @if (!user?.avatar) {
                     <mat-icon
                         class="icon-size-24"
-                        [svgIcon]="'heroicons_solid:user-circle'"
+                        [svgIcon]="'heroicons_outline:user-circle'"
                     ></mat-icon>
                 }
             </div>
@@ -58,7 +58,7 @@
         <div
             class="mb-4 mt-2 flex h-16 flex-0 items-center justify-center pl-2 pr-6 opacity-12"
         >
-            <img class="max-w-36" src="images/logo/logo-text-on-dark.svg" />
+            <img class="max-w-36" src="images/logo/logo-text-on-dark.png" />
         </div>
     </ng-container>
 </fuse-vertical-navigation>
@@ -80,7 +80,7 @@
             <search [appearance]="'bar'"></search>
             <shortcuts></shortcuts>
             <messages></messages>
-            <button
+            <!-- <button
                 class="lg:hidden"
                 mat-icon-button
                 (click)="quickChat.toggle()"
@@ -88,7 +88,7 @@
                 <mat-icon
                     [svgIcon]="'heroicons_outline:chat-bubble-left-right'"
                 ></mat-icon>
-            </button>
+            </button> -->
         </div>
     </div>
 

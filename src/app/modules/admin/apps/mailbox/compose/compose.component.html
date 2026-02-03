@@ -3,7 +3,7 @@
     <div
         class="flex h-16 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5"
     >
-        <div class="text-lg font-medium">New Message</div>
+        <div class="text-lg font-medium">Nueva orden de trabajo</div>
         <button mat-icon-button (click)="saveAndClose()" [tabIndex]="-1">
             <mat-icon
                 class="text-current"
@@ -19,8 +19,8 @@
     >
         <!-- To -->
         <mat-form-field>
-            <mat-label>To</mat-label>
-            <input matInput [formControlName]="'to'" />
+            <mat-label>Para</mat-label>
+            <input matInput [formControlName]="'para'" />
             <div class="copy-fields-toggles" matSuffix>
                 @if (!copyFields.cc) {
                     <span
@@ -41,7 +41,7 @@
             </div>
         </mat-form-field>
 
-        <!-- Cc -->
+        <!-- CCON COPIA CC -->
         @if (copyFields.cc) {
             <mat-form-field>
                 <mat-label>Cc</mat-label>
@@ -49,7 +49,7 @@
             </mat-form-field>
         }
 
-        <!-- Bcc -->
+        <!-- Bcc CON COPIA OCULTA -->
         @if (copyFields.bcc) {
             <mat-form-field>
                 <mat-label>Bcc</mat-label>
@@ -57,10 +57,10 @@
             </mat-form-field>
         }
 
-        <!-- Subject -->
+        <!-- Asunto -->
         <mat-form-field>
-            <mat-label>Subject</mat-label>
-            <input matInput [formControlName]="'subject'" />
+            <mat-label>Asunto</mat-label>
+            <input matInput [formControlName]="'Asunto'" />
         </mat-form-field>
 
         <!-- Body -->
@@ -80,57 +80,57 @@
                 <button mat-icon-button>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:paper-clip'"
+                        [svgIcon]="'heroicons_outline:paper-clip'"
                     ></mat-icon>
                 </button>
                 <!-- Insert link -->
                 <button mat-icon-button>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:link'"
+                        [svgIcon]="'heroicons_outline:link'"
                     ></mat-icon>
                 </button>
                 <!-- Insert emoji -->
                 <button mat-icon-button>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:face-smile'"
+                        [svgIcon]="'heroicons_outline:face-smile'"
                     ></mat-icon>
                 </button>
                 <!-- Insert image -->
                 <button mat-icon-button>
                     <mat-icon
                         class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:photo'"
+                        [svgIcon]="'heroicons_outline:photo'"
                     ></mat-icon>
                 </button>
             </div>
 
             <div class="mt-4 flex items-center sm:mt-0">
-                <!-- Discard -->
+                <!-- Cancelar -->
                 <button
                     class="ml-auto sm:ml-0"
                     mat-stroked-button
-                    (click)="discard()"
+                    (click)="Cancelar()"
                 >
-                    Discard
+                    Cancelar
                 </button>
-                <!-- Save as draft -->
+                <!-- Guardar como borrador -->
                 <button
                     class="sm:mx-3"
                     mat-stroked-button
                     (click)="saveAsDraft()"
                 >
-                    <span>Save as draft</span>
+                    <span>Guardar como borrador</span>
                 </button>
-                <!-- Send -->
+                <!-- enviar -->
                 <button
                     class="order-first sm:order-last"
                     mat-flat-button
                     [color]="'primary'"
-                    (click)="send()"
+                    (click)="enviar()"
                 >
-                    Send
+                    Enviar
                 </button>
             </div>
         </div>

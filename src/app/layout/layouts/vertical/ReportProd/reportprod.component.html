@@ -1,0 +1,56 @@
+<!-- Navigation Sidebar con estilo Fuse -->
+<fuse-vertical-navigation #reportProdNav name="reportProdNav"
+  class="reportprod-nav dark:bg-gray-900 print:hidden bg-white shadow-lg w-64 md:w-72" [appearance]="'default'"
+  [mode]="isScreenSmall ? 'over' : 'side'" [navigation]="navigation" [opened]="!isScreenSmall">
+
+  <ng-container fuseVerticalNavigationContentHeader>
+    <div class="px-6 py-6 bg-primary dark:bg-primary-700 rounded-b-xl mt-11 md:mt-0">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+          <mat-icon class="text-white !text-xl" svgIcon="heroicons_outline:chart-bar"></mat-icon>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-white">Producción</h2>
+        </div>
+      </div>
+
+      <!-- Search bar -->
+      <!-- <mat-form-field class="w-full !mb-3" appearance="outline">
+        <mat-icon matPrefix class="!text-gray-400" svgIcon="heroicons_outline:magnifying-glass"></mat-icon>
+        <input matInput placeholder="Buscar reportes...">
+      </mat-form-field> -->
+    </div>
+
+    <div class="px-6 py-3 border-b border-gray-100 dark:border-gray-800">
+      <div class="text-base font-bold text-black dark:text-white">Categorías</div>
+    </div>
+  </ng-container>
+</fuse-vertical-navigation>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="flex w-full min-w-0 flex-auto flex-col">
+  <!-- Toolbar superior estilo Fuse -->
+  <div
+    class="relative flex h-16 w-full flex-0 items-center justify-between px-4 md:px-6 bg-card dark:bg-transparent print:hidden border-b">
+    <div class="flex items-center gap-2">
+      <!-- Toggle navigation -->
+      <button mat-icon-button (click)="toggleReportProdNav()" class="text-secondary">
+        <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
+      </button>
+
+      <!-- Breadcrumb o título -->
+      <div class="hidden md:flex items-center gap-2">
+        <mat-icon class="icon-size-5 text-primary" svgIcon="heroicons_outline:home">
+        </mat-icon>
+        <span class="text-base font-bold ">
+          Panel de control
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Área de contenido -->
+  <div class="flex min-w-0 flex-auto flex-col overflow-auto">
+    <router-outlet></router-outlet>
+  </div>
+</div>

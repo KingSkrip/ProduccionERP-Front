@@ -4,4 +4,11 @@ export interface AppConfig {
   appName: string;
   environment: 'dev' | 'prod';
   featureFlagX: boolean;
+
+  reverb: {
+    key: string;
+    host: string;
+    port: number;
+    scheme: 'http' | 'https';
+  };
 }
