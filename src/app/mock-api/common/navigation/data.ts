@@ -1314,7 +1314,7 @@ export const menuRh: FuseNavigationItem[] = [
   },
   {
     id: 'to.do',
-    title: 'scrumboard',
+    title: 'Scrumboard',
     tooltip: 'scrumboard',
     type: 'basic',
     icon: 'heroicons_outline:view-columns',
@@ -2640,7 +2640,7 @@ export const menuSuAdmin: FuseNavigationItem[] = [
   },
   {
     id: 'to.do',
-    title: 'scrumboard',
+    title: 'Scrumboard',
     tooltip: 'scrumboard',
     type: 'basic',
     icon: 'heroicons_outline:view-columns',
@@ -2744,7 +2744,7 @@ export const menuAdmin: FuseNavigationItem[] = [
   },
   {
     id: 'to.do',
-    title: 'scrumboard',
+    title: 'Scrumboard',
     tooltip: 'scrumboard',
     type: 'basic',
     icon: 'heroicons_outline:view-columns',
@@ -3965,7 +3965,7 @@ export const menuColaborador: FuseNavigationItem[] = [
   },
   {
     id: 'to.do',
-    title: 'scrumboard',
+    title: 'Scrumboard',
     tooltip: 'scrumboard',
     type: 'basic',
     icon: 'heroicons_outline:view-columns',
@@ -4010,7 +4010,7 @@ export const menuJefe: FuseNavigationItem[] = [
   // },
   // {
   //   id: 'to.do',
-  //   title: 'scrumboard',
+  //   title: 'Scrumboard',
   //   tooltip: 'scrumboard',
   //   type: 'basic',
   //   icon: 'heroicons_outline:view-columns',
@@ -4061,7 +4061,7 @@ export const menuReporteProd_Jefe: FuseNavigationItem[] = [
   },
   {
     id: 'to.do',
-    title: 'scrumboard',
+    title: 'Scrumboard',
     tooltip: 'scrumboard',
     type: 'basic',
     icon: 'heroicons_outline:view-columns',
