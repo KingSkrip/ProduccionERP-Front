@@ -1,138 +1,287 @@
 <div class="-m-6 flex max-h-screen max-w-240 flex-col md:min-w-160">
-    <!-- Header -->
-    <div
-        class="flex h-16 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5"
-    >
-        <div class="text-lg font-medium">Nueva orden de trabajo</div>
-        <button mat-icon-button (click)="saveAndClose()" [tabIndex]="-1">
-            <mat-icon
-                class="text-current"
-                [svgIcon]="'heroicons_outline:x-mark'"
-            ></mat-icon>
-        </button>
-    </div>
+  <!-- Header -->
+  <div
+    class="flex h-16 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5"
+  >
+    <div class="text-lg font-medium">Nueva orden de trabajo</div>
+    <button mat-icon-button (click)="saveAndClose()" [tabIndex]="-1">
+      <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+    </button>
+  </div>
 
-    <!-- Compose form -->
-    <form
-        class="flex flex-auto flex-col overflow-y-auto p-6 sm:p-8"
-        [formGroup]="composeForm"
-    >
-        <!-- To -->
-        <mat-form-field>
-            <mat-label>To</mat-label>
-            <input matInput [formControlName]="'to'" />
-            <div class="copy-fields-toggles" matSuffix>
-                @if (!copyFields.cc) {
-                    <span
-                        class="cursor-pointer select-none text-sm font-medium hover:underline"
-                        (click)="showCopyField('cc')"
-                    >
-                        Cc
-                    </span>
-                }
-                @if (!copyFields.bcc) {
-                    <span
-                        class="ml-2 cursor-pointer select-none text-sm font-medium hover:underline"
-                        (click)="showCopyField('bcc')"
-                    >
-                        Bcc
-                    </span>
-                }
+  <!-- Compose form -->
+  <form class="flex flex-auto flex-col overflow-y-auto p-6 sm:p-8" [formGroup]="composeForm">
+
+    <!-- PARA (MULTI con buscador) -->
+    <!-- PARA (MULTI con buscador) -->
+<mat-form-field>
+  <mat-label>Para</mat-label>
+
+  <mat-select [formControlName]="'para'" multiple>
+    <!-- 🔹 TRIGGER con chips -->
+    <mat-select-trigger>
+      <div class="flex flex-wrap gap-2">
+        @for (id of composeForm.value.para || []; track id) {
+          @if (getUserById(id); as u) {
+            <div class="flex items-center gap-2 rounded-full bg-black/5 px-2 py-1">
+              <img
+                class="h-5 w-5 rounded-full object-cover"
+                [src]="userPhoto(u)"
+                (error)="onImgError($event)"
+                alt="avatar"
+              />
+              <span class="text-sm">{{ u.nombre }}</span>
+
+              <button
+                type="button"
+                class="ml-1 grid h-5 w-5 place-items-center rounded-full hover:bg-black/10"
+                (click)="removeFrom('para', id, $event)"
+                aria-label="Quitar"
+              >
+                ✕
+              </button>
             </div>
-        </mat-form-field>
-
-        <!-- Cc -->
-        @if (copyFields.cc) {
-            <mat-form-field>
-                <mat-label>Cc</mat-label>
-                <input matInput [formControlName]="'cc'" />
-            </mat-form-field>
+          }
         }
 
-        <!-- Bcc -->
-        @if (copyFields.bcc) {
-            <mat-form-field>
-                <mat-label>Bcc</mat-label>
-                <input matInput [formControlName]="'bcc'" />
-            </mat-form-field>
+        @if (!composeForm.value.para?.length) {
+          <span class="text-sm opacity-60">Selecciona uno o varios</span>
         }
+      </div>
+    </mat-select-trigger>
 
-        <!-- Asunto -->
-        <mat-form-field>
-            <mat-label>Asunto</mat-label>
-            <input matInput [formControlName]="'Asunto'" />
-        </mat-form-field>
+    <!-- ✅ BUSCADOR (ngx) DENTRO DE mat-option (A HUEVO) -->
+    <mat-option>
+      <ngx-mat-select-search
+        [formControl]="paraFilterCtrl"
+        placeholderLabel="Buscar por nombre o correo..."
+        noEntriesFoundLabel="No hay resultados"
+      ></ngx-mat-select-search>
+    </mat-option>
 
-        <!-- Body -->
-        <quill-editor
-            class="mt-2"
-            [formControlName]="'body'"
-            [bounds]="'self'"
-            [modules]="quillModules"
-        ></quill-editor>
-
-        <!-- Actions -->
-        <div
-            class="mt-4 flex flex-col justify-between sm:mt-6 sm:flex-row sm:items-center"
-        >
-            <div class="-ml-2">
-                <!-- Attach file -->
-                <button mat-icon-button>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_outline:paper-clip'"
-                    ></mat-icon>
-                </button>
-                <!-- Insert link -->
-                <button mat-icon-button>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_outline:link'"
-                    ></mat-icon>
-                </button>
-                <!-- Insert emoji -->
-                <button mat-icon-button>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_outline:face-smile'"
-                    ></mat-icon>
-                </button>
-                <!-- Insert image -->
-                <button mat-icon-button>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_outline:photo'"
-                    ></mat-icon>
-                </button>
-            </div>
-
-            <div class="mt-4 flex items-center sm:mt-0">
-                <!-- Discard -->
-                <button
-                    class="ml-auto sm:ml-0"
-                    mat-stroked-button
-                    (click)="discard()"
-                >
-                    Discard
-                </button>
-                <!-- Save as draft -->
-                <button
-                    class="sm:mx-3"
-                    mat-stroked-button
-                    (click)="saveAsDraft()"
-                >
-                    <span>Save as draft</span>
-                </button>
-                <!-- Send -->
-                <button
-                    class="order-first sm:order-last"
-                    mat-flat-button
-                    [color]="'primary'"
-                    (click)="send()"
-                >
-                    Send
-                </button>
-            </div>
+    <!-- ✅ LISTA FILTRADA -->
+    <mat-option *ngFor="let u of filteredParaUsers" [value]="u.id">
+      <div class="flex items-center gap-3">
+        <img
+          class="h-8 w-8 rounded-full object-cover"
+          [src]="userPhoto(u)"
+          (error)="onImgError($event)"
+          alt="avatar"
+        />
+        <div class="min-w-0">
+          <div class="truncate font-medium">{{ u.nombre }}</div>
+          <div class="truncate text-xs opacity-60">({{ u.correo || 'sin correo' }})</div>
         </div>
-    </form>
+      </div>
+    </mat-option>
+  </mat-select>
+
+  <div class="copy-fields-toggles" matSuffix>
+    @if (!copyFields.cc) {
+      <span
+        class="cursor-pointer select-none text-sm font-medium hover:underline"
+        (click)="showCopyField('cc')"
+      >
+        Cc
+      </span>
+    }
+    @if (!copyFields.bcc) {
+      <span
+        class="ml-2 cursor-pointer select-none text-sm font-medium hover:underline"
+        (click)="showCopyField('bcc')"
+      >
+        Bcc
+      </span>
+    }
+  </div>
+</mat-form-field>
+
+
+  <!-- CC -->
+@if (copyFields.cc) {
+  <mat-form-field>
+    <mat-label>Cc</mat-label>
+
+    <mat-select [formControlName]="'cc'" multiple>
+      <!-- ✅ trigger chips -->
+      <mat-select-trigger>
+        <div class="flex flex-wrap gap-2">
+          @for (id of composeForm.value.cc || []; track id) {
+            @if (getUserById(id); as u) {
+              <div class="flex items-center gap-2 rounded-full bg-black/5 px-2 py-1">
+                <img
+                  class="h-5 w-5 rounded-full object-cover"
+                  [src]="userPhoto(u)"
+                  (error)="onImgError($event)"
+                  alt="avatar"
+                />
+                <span class="text-sm">{{ u.nombre }}</span>
+
+                <button
+                  type="button"
+                  class="ml-1 grid h-5 w-5 place-items-center rounded-full hover:bg-black/10"
+                  (click)="removeFrom('cc', id, $event)"
+                  aria-label="Quitar"
+                >
+                  ✕
+                </button>
+              </div>
+            }
+          }
+
+          @if (!composeForm.value.cc?.length) {
+            <span class="text-sm opacity-60">Selecciona uno o varios</span>
+          }
+        </div>
+      </mat-select-trigger>
+
+      <!-- ✅ BUSCADOR: tiene que ir dentro de mat-option -->
+      <mat-option>
+        <ngx-mat-select-search
+          [formControl]="ccFilterCtrl"
+          placeholderLabel="Buscar por nombre o correo..."
+          noEntriesFoundLabel="No hay resultados"
+        ></ngx-mat-select-search>
+      </mat-option>
+
+      <!-- ✅ lista filtrada -->
+      <mat-option *ngFor="let u of filteredCcUsers" [value]="u.id">
+        <div class="flex items-center gap-3">
+          <img
+            class="h-8 w-8 rounded-full object-cover"
+            [src]="userPhoto(u)"
+            (error)="onImgError($event)"
+            alt="avatar"
+          />
+          <div class="min-w-0">
+            <div class="truncate font-medium">{{ u.nombre }}</div>
+            <div class="truncate text-xs opacity-60">({{ u.correo || 'sin correo' }})</div>
+          </div>
+        </div>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+}
+
+
+
+   <!-- BCC -->
+@if (copyFields.bcc) {
+  <mat-form-field>
+    <mat-label>Bcc</mat-label>
+
+    <mat-select [formControlName]="'bcc'" multiple>
+      <!-- ✅ trigger chips (igual que CC) -->
+      <mat-select-trigger>
+        <div class="flex flex-wrap gap-2">
+          @for (id of composeForm.value.bcc || []; track id) {
+            @if (getUserById(id); as u) {
+              <div class="flex items-center gap-2 rounded-full bg-black/5 px-2 py-1">
+                <img
+                  class="h-5 w-5 rounded-full object-cover"
+                  [src]="userPhoto(u)"
+                  (error)="onImgError($event)"
+                  alt="avatar"
+                />
+                <span class="text-sm">{{ u.nombre }}</span>
+
+                <button
+                  type="button"
+                  class="ml-1 grid h-5 w-5 place-items-center rounded-full hover:bg-black/10"
+                  (click)="removeFrom('bcc', id, $event)"
+                  aria-label="Quitar"
+                >
+                  ✕
+                </button>
+              </div>
+            }
+          }
+
+          @if (!composeForm.value.bcc?.length) {
+            <span class="text-sm opacity-60">Selecciona uno o varios</span>
+          }
+        </div>
+      </mat-select-trigger>
+
+      <!-- ✅ buscador: debe ir dentro de mat-option -->
+      <mat-option>
+        <ngx-mat-select-search
+          [formControl]="bccFilterCtrl"
+          placeholderLabel="Buscar por nombre o correo..."
+          noEntriesFoundLabel="No hay resultados"
+        ></ngx-mat-select-search>
+      </mat-option>
+
+      <!-- ✅ opciones filtradas -->
+      <mat-option *ngFor="let u of filteredBccUsers" [value]="u.id">
+        <div class="flex items-center gap-3">
+          <img
+            class="h-8 w-8 rounded-full object-cover"
+            [src]="userPhoto(u)"
+            (error)="onImgError($event)"
+            alt="avatar"
+          />
+          <div class="min-w-0">
+            <div class="truncate font-medium">{{ u.nombre }}</div>
+            <div class="truncate text-xs opacity-60">({{ u.correo || 'sin correo' }})</div>
+          </div>
+        </div>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+}
+
+
+    <!-- Asunto -->
+    <mat-form-field>
+      <mat-label>Asunto</mat-label>
+      <input matInput [formControlName]="'Asunto'" />
+    </mat-form-field>
+
+    <!-- Body -->
+    <quill-editor
+      class="mt-2"
+      [formControlName]="'body'"
+      [bounds]="'self'"
+      [modules]="quillModules"
+    ></quill-editor>
+
+    <!-- Actions -->
+    <div class="mt-4 flex flex-col justify-between sm:mt-6 sm:flex-row sm:items-center">
+      <div class="-ml-2">
+        <button mat-icon-button type="button">
+          <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:paper-clip'"></mat-icon>
+        </button>
+        <button mat-icon-button type="button">
+          <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:link'"></mat-icon>
+        </button>
+        <button mat-icon-button type="button">
+          <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:face-smile'"></mat-icon>
+        </button>
+        <button mat-icon-button type="button">
+          <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+        </button>
+      </div>
+
+      <div class="mt-4 flex items-center sm:mt-0">
+        <button class="ml-auto sm:ml-0" mat-stroked-button type="button" (click)="Cancelar()">
+          Cancelar
+        </button>
+
+        <button class="sm:mx-3" mat-stroked-button type="button" (click)="saveAsDraft()">
+          <span>Guardar como borrador</span>
+        </button>
+
+        <button
+          class="order-first sm:order-last"
+          mat-flat-button
+          [color]="'primary'"
+          type="button"
+          (click)="enviar()"
+        >
+          Enviar
+        </button>
+      </div>
+    </div>
+  </form>
 </div>

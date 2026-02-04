@@ -1,13 +1,26 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+
+import { APP_CONFIG } from 'app/core/config/app-config';
 import {
-  Mail,
-  MailCategory,
-  MailFilter,
-  MailFolder,
-  MailLabel,
-} from 'app/modules/admin/apps/mailbox/mailbox.types';
-import { BehaviorSubject, Observable, map, of, switchMap, take, tap, throwError } from 'rxjs';
+  BehaviorSubject,
+  Observable,
+  catchError,
+  map,
+  of,
+  switchMap,
+  take,
+  tap,
+  throwError,
+} from 'rxjs';
+import { Mail, MailCategory, MailFilter, MailFolder, MailLabel } from './mailbox.types';
+
+export interface SimpleUser {
+  id: number;
+  nombre: string;
+  correo?: string | null;
+  photo?: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class MailboxService {
@@ -20,7 +33,7 @@ export class MailboxService {
   private _mailsLoading: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private _mail: BehaviorSubject<Mail> = new BehaviorSubject(null);
   private _pagination: BehaviorSubject<any> = new BehaviorSubject(null);
-
+  private readonly apiUrl = APP_CONFIG.apiUrl;
   /**
    * Constructor
    */
@@ -375,5 +388,57 @@ export class MailboxService {
         ),
       ),
     );
+  }
+
+  /**
+   * tasks
+   */
+  createTask(payload: {
+    de_id: number;
+    para_id?: number | null;
+    status_id?: number | null;
+    titulo: string;
+    descripcion: string;
+    participants?: Array<{
+      user_id: number;
+      role: string;
+      status_id?: number | null;
+      comentarios?: string | null;
+      fecha_accion?: string | null;
+      orden?: number | null;
+    }>;
+  }): Observable<any> {
+    return this._httpClient.post('api/tasks/store', payload);
+  }
+
+  getAllUsers(q = '', limit = 200): Observable<SimpleUser[]> {
+    let params = new HttpParams().set('q', q).set('limit', String(limit));
+
+    return this._httpClient
+      .get<
+        { success?: boolean; data?: SimpleUser[] } | SimpleUser[]
+      >(`${this.apiUrl}users/all`, { params })
+      .pipe(
+        map((resp: any) => {
+          // soporta ambos formatos: {data:[...]} o [...]
+          return Array.isArray(resp) ? resp : (resp?.data ?? []);
+        }),
+        catchError((err) => {
+          console.error('Error cargando usuarios', err);
+          return throwError(() => err);
+        }),
+      );
+  }
+
+  userPhoto(u: { photo?: string | null }): string {
+    const p = (u.photo || '').trim();
+    if (!p) return 'assets/images/avatars/default-avatar.png';
+
+    // si ya viene full url
+    if (p.startsWith('http://') || p.startsWith('https://')) return p;
+
+    const base = APP_CONFIG.apiBase.replace(/\/$/, '');
+    const path = p.startsWith('/') ? p : `/${p}`;
+    return `${base}${path}`;
   }
 }

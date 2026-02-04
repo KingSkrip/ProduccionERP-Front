@@ -7,11 +7,13 @@ import {
   FuseNavigationService,
   FuseVerticalNavigationComponent,
 } from '@fuse/components/navigation';
-import { MailboxComposeComponent } from 'app/modules/admin/apps/mailbox/compose/compose.component';
-import { labelColorDefs } from 'app/modules/admin/apps/mailbox/mailbox.constants';
-import { MailboxService } from 'app/modules/admin/apps/mailbox/mailbox.service';
-import { MailFilter, MailFolder, MailLabel } from 'app/modules/admin/apps/mailbox/mailbox.types';
+
+
 import { Subject, takeUntil } from 'rxjs';
+import { MailFilter, MailFolder, MailLabel } from '../mailbox.types';
+import { labelColorDefs } from '../mailbox.constants';
+import { MailboxComposeComponent } from '../compose/compose.component';
+import { MailboxService } from '../mailbox.service';
 
 @Component({
   selector: 'mailbox-sidebar',

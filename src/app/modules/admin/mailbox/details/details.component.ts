@@ -27,14 +27,12 @@ import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FuseScrollResetDirective } from '@fuse/directives/scroll-reset';
 import { FuseFindByKeyPipe } from '@fuse/pipes/find-by-key/find-by-key.pipe';
-import { labelColorDefs } from 'app/modules/admin/apps/mailbox/mailbox.constants';
-import { MailboxService } from 'app/modules/admin/apps/mailbox/mailbox.service';
-import {
-    Mail,
-    MailFolder,
-    MailLabel,
-} from 'app/modules/admin/apps/mailbox/mailbox.types';
+
+
 import { Subject, takeUntil } from 'rxjs';
+import { MailboxService } from '../mailbox.service';
+import { labelColorDefs } from '../mailbox.constants';
+import { Mail, MailFolder, MailLabel } from '../mailbox.types';
 
 @Component({
     selector: 'mailbox-details',
