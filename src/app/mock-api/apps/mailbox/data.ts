@@ -36,6 +36,7 @@ export const folders = [
         icon: 'heroicons_outline:trash',
     },
 ];
+
 export const filters = [
     {
         id: 'de1b41f6-6839-4f1b-9d2c-07e55f6f8f82',
@@ -50,6 +51,7 @@ export const filters = [
         icon: 'heroicons_outline:exclamation-circle',
     },
 ];
+
 export const labels = [
     {
         id: 'b167d3c4-f6ed-4ea6-9579-a12f95a9d76e',
@@ -88,9 +90,11 @@ export const labels = [
         color: 'green',
     },
 ];
+
 export const settings = {
     messageLayout: 'right',
 };
+
 export const mails = [
     {
         id: 'f9c4c091-3ac4-4df9-ac5d-aec7b07c8e3f',

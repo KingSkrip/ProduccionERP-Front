@@ -27,27 +27,27 @@
             <span class="text-secondary mx-1">-</span>
             <span>{{ pagination.endIndex + 1 }}</span>
             <span class="text-secondary mx-1">of</span>
-            <span>{{ pagination.totalResults }}</span>
+            <span>{{ pagination.length }}</span>
           </div>
           <!-- Previous page button -->
+
           <a
             class="h-8 min-h-8 w-8"
             mat-icon-button
-            [disabled]="pagination.currentPage === 1"
-            [routerLink]="['../' + (pagination.currentPage > 1 ? pagination.currentPage - 1 : 1)]"
+            [disabled]="pagination.page === 1"
+            [routerLink]="['../' + (pagination.page > 1 ? pagination.page - 1 : 1)]"
           >
             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chevron-left'"></mat-icon>
           </a>
           <!-- Next page button-->
+
           <a
             class="h-8 min-h-8 w-8"
             mat-icon-button
-            [disabled]="pagination.currentPage === pagination.lastPage"
+            [disabled]="pagination.page === pagination.lastPage"
             [routerLink]="[
               '../' +
-                (pagination.currentPage < pagination.lastPage
-                  ? pagination.currentPage + 1
-                  : pagination.lastPage),
+                (pagination.page < pagination.lastPage ? pagination.page + 1 : pagination.lastPage),
             ]"
           >
             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chevron-right'"></mat-icon>
@@ -68,6 +68,7 @@
         <!-- Item loop -->
         @for (mail of mails; track trackByFn(i, mail); let i = $index) {
           <!-- Item -->
+
           <a
             class="relative flex border-t hover:bg-hover first:border-0"
             [routerLink]="[mail.id]"
@@ -77,7 +78,7 @@
             <div
               class="flex w-full flex-col items-start justify-start border-l-4 border-transparent py-6 pl-5 pr-4"
               [ngClass]="{
-                'border-primary': mail.unread,
+                'border-primary': isUnread(mail),
                 'bg-primary-50 dark:bg-black dark:bg-opacity-5':
                   selectedMail && selectedMail.id === mail.id,
               }"
@@ -86,10 +87,10 @@
               <div class="flex w-full items-center">
                 <!-- Sender name -->
                 <div class="mr-2 truncate font-semibold">
-                  {{ mail.from.contact.split('<')[0].trim() }}
+                  {{ getSenderName(mail) }}
                 </div>
                 <!-- importantes indicator -->
-                @if (mail.importantes) {
+                @if (isImportant(mail)) {
                   <mat-icon
                     class="mr-3 text-red-500 icon-size-4 dark:text-red-600"
                     [svgIcon]="'heroicons_outline:exclamation-circle'"
@@ -97,25 +98,25 @@
                 }
                 <!-- Date -->
                 <div class="text-hint ml-auto whitespace-nowrap text-right text-md">
-                  {{ mail.date | date: 'LLL dd' }}
+                  {{ getMailDate(mail) ? (getMailDate(mail) | date: 'LLL dd') : '' }}
                 </div>
               </div>
 
               <!-- Asunto -->
               <div class="mt-1 flex w-full items-center">
-                <span class="truncate leading-4">{{ mail.Asunto }}</span>
+                <span class="truncate leading-4">{{ getSubject(mail) }}</span>
                 <!-- Indicators -->
-                @if ((mail.attachments && mail.attachments.length > 0) || mail.destacados) {
+                @if (hasAttachments(mail) || isStarred(mail)) {
                   <div class="ml-auto flex pl-2">
                     <!-- Attachments -->
-                    @if (mail.attachments && mail.attachments.length > 0) {
+                    @if (hasAttachments(mail)) {
                       <mat-icon
                         class="flex justify-center icon-size-4"
                         [svgIcon]="'heroicons_outline:paper-clip'"
                       ></mat-icon>
                     }
                     <!-- destacados -->
-                    @if (mail.destacados) {
+                    @if (isStarred(mail)) {
                       <mat-icon
                         class="ml-1 flex justify-center text-orange-500 icon-size-4 dark:text-orange-400"
                         [svgIcon]="'heroicons_outline:star'"
@@ -127,7 +128,7 @@
 
               <!-- Excerpt -->
               <div class="text-secondary mt-2 line-clamp-2 leading-normal">
-                {{ mail.content }}...
+                {{ getContent(mail) }}...
               </div>
             </div>
           </a>
@@ -144,8 +145,6 @@
       </div>
     </div>
   }
-
-  <!-- No mails template -->
 
   <!-- Mail details -->
   @if (mails && mails.length > 0) {

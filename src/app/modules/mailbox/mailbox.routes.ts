@@ -156,14 +156,27 @@ const mailsResolver = (
         );
     }
 
-    // If filter is set on the parameters...
+    // 🔥 CAMBIO CLAVE: Si filter es importantes o destacados, usa getMailsByCustomFilter
     if (route.paramMap.get('filter')) {
-        sources.push(
-            mailboxService.getMailsByFilter(
-                route.paramMap.get('filter'),
-                route.paramMap.get('page')
-            )
-        );
+        const filterSlug = route.paramMap.get('filter');
+        
+        // Filtros personalizados (importantes, destacados)
+        if (filterSlug === 'importantes' || filterSlug === 'destacados') {
+            sources.push(
+                mailboxService.getMailsByCustomFilter(
+                    filterSlug as 'importantes' | 'destacados',
+                    route.paramMap.get('page')
+                )
+            );
+        } else {
+            // Filtros normales (si los tuvieras en el futuro)
+            sources.push(
+                mailboxService.getMailsByFilter(
+                    filterSlug,
+                    route.paramMap.get('page')
+                )
+            );
+        }
     }
 
     // If label is set on the parameters...

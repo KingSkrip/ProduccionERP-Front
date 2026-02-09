@@ -1,11 +1,14 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { APP_CONFIG } from 'app/core/config/app-config';
+import { SILENT_HTTP } from 'app/core/interceptors/silent-http.token';
 import {
   BehaviorSubject,
   Observable,
   catchError,
+  filter,
   map,
   of,
   switchMap,
@@ -20,6 +23,24 @@ export interface SimpleUser {
   nombre: string;
   correo?: string | null;
   photo?: string | null;
+}
+
+export interface TaskParticipantPayload {
+  user_id: number;
+  role: 'receptor' | 'cc' | 'bcc';
+  status_id?: number | null;
+  comentarios?: string | null;
+  fecha_accion?: string | null;
+  orden?: number | null;
+}
+
+export interface CreateTaskPayload {
+  de_id: number;
+  para_id?: number | null;
+  status_id?: number | null;
+  titulo: string;
+  descripcion: string;
+  participants?: TaskParticipantPayload[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -97,6 +118,71 @@ export class MailboxService {
    */
   get pagination$(): Observable<any> {
     return this._pagination.asObservable();
+  }
+
+  // ==========================
+  // Mailbox actions (REAL)
+  // ==========================
+  markRead(mail: any, is_read = true): Observable<any> {
+    const mi = this.getMailboxItemId(mail);
+
+    // 1) si tengo mailboxItemId uso el endpoint actual
+    if (mi) {
+      return this._httpClient
+        .patch<any>(`${this.apiUrl}mailbox/${mi}/read`, { is_read })
+        .pipe(map((resp) => resp?.data ?? resp));
+    }
+
+    // 2) si NO existe mailboxItem, uso endpoint por workorder
+    const wo = this.getWorkorderId(mail);
+    return this._httpClient
+      .patch<any>(`${this.apiUrl}mailbox/workorder/${wo}/read`, { is_read })
+      .pipe(map((resp) => resp?.data ?? resp));
+  }
+
+  toggleStar(mail: any): Observable<any> {
+    const mi = this.getMailboxItemId(mail);
+
+    if (mi) {
+      return this._httpClient
+        .patch<any>(`${this.apiUrl}mailbox/${mi}/star`, {})
+        .pipe(map((resp) => resp?.data ?? resp));
+    }
+
+    const wo = this.getWorkorderId(mail);
+    return this._httpClient
+      .patch<any>(`${this.apiUrl}mailbox/workorder/${wo}/star`, {})
+      .pipe(map((resp) => resp?.data ?? resp));
+  }
+
+  toggleImportant(mail: any): Observable<any> {
+    const mi = this.getMailboxItemId(mail);
+
+    if (mi) {
+      return this._httpClient
+        .patch<any>(`${this.apiUrl}mailbox/${mi}/important`, {})
+        .pipe(map((resp) => resp?.data ?? resp));
+    }
+
+    const wo = this.getWorkorderId(mail);
+    return this._httpClient
+      .patch<any>(`${this.apiUrl}mailbox/workorder/${wo}/important`, {})
+      .pipe(map((resp) => resp?.data ?? resp));
+  }
+
+  moveTo(mail: any, folder: 'general' | 'spam' | 'eliminados' | 'drafts'): Observable<any> {
+    const mi = this.getMailboxItemId(mail);
+
+    if (mi) {
+      return this._httpClient
+        .patch<any>(`${this.apiUrl}mailbox/${mi}/move`, { folder })
+        .pipe(map((resp) => resp?.data ?? resp));
+    }
+
+    const wo = this.getWorkorderId(mail);
+    return this._httpClient
+      .patch<any>(`${this.apiUrl}mailbox/workorder/${wo}/move`, { folder })
+      .pipe(map((resp) => resp?.data ?? resp));
   }
 
   // -----------------------------------------------------------------------------------------------------
@@ -177,35 +263,58 @@ export class MailboxService {
    * Get mails by folder
    */
   getMailsByFolder(folder: string, page: string = '1'): Observable<any> {
-    // Execute the mails loading with true
     this._mailsLoading.next(true);
 
+    // 👇 Traducción de slugs UI -> slugs API
+    const apiFolderMap: Record<string, string> = {
+      mensajes: 'general',
+    };
+
+    const apiFolder = apiFolderMap[folder] ?? folder;
+
     return this._httpClient
-      .get<Mail[]>('api/apps/mailbox/mails', {
-        params: {
-          folder,
-          page,
-        },
-      })
+      .get<any>(`${this.apiUrl}mailbox/${apiFolder}`, { params: { page } })
       .pipe(
+        map((resp: any) => resp?.data ?? resp),
         tap((response: any) => {
-          this._category.next({
-            type: 'folder',
-            name: folder,
-          });
-          this._mails.next(response.mails);
+          this._category.next({ type: 'folder', name: folder }); // UI muestra "mensajes"
+          const mails = (response?.mails ?? []).map((wo: any) => this.normalizeWorkorderToMail(wo));
+          this._mails.next(mails);
           this._pagination.next(response.pagination);
           this._mailsLoading.next(false);
         }),
         switchMap((response) => {
           if (response.mails === null) {
-            return throwError({
+            return throwError(() => ({
               message: 'Requested page is not available!',
               pagination: response.pagination,
-            });
+            }));
           }
-
           return of(response);
+        }),
+      );
+  }
+
+  getMailsByCustomFilter(filter: 'importantes' | 'destacados', page = '1') {
+    this._mailsLoading.next(true);
+
+    const mapSlug: Record<'importantes' | 'destacados', string> = {
+      importantes: 'important',
+      destacados: 'starred',
+    };
+
+    const apiFilter = mapSlug[filter];
+
+    return this._httpClient
+      .get<any>(`${this.apiUrl}mailbox/${apiFilter}`, { params: { page } })
+      .pipe(
+        map((resp: any) => resp?.data ?? resp),
+        tap((response: any) => {
+          this._category.next({ type: 'filter', name: filter });
+          const mails = (response?.mails ?? []).map((wo: any) => this.normalizeWorkorderToMail(wo));
+          this._mails.next(mails);
+          this._pagination.next(response.pagination);
+          this._mailsLoading.next(false);
         }),
       );
   }
@@ -250,24 +359,22 @@ export class MailboxService {
   /**
    * Get mail by id
    */
+
   getMailById(id: string): Observable<any> {
+    const wantedId = String(id);
+
     return this._mails.pipe(
+      filter((mails: any) => Array.isArray(mails) && mails.length > 0),
       take(1),
-      map((mails) => {
-        // Find the mail
-        const mail = mails.find((item) => item.id === id) || null;
-
-        // Update the mail
+      map((mails: any[]) => {
+        const mail = mails.find((item) => String(item?.id) === wantedId) || null;
         this._mail.next(mail);
-
-        // Return the mail
         return mail;
       }),
       switchMap((mail) => {
         if (!mail) {
-          return throwError('Could not found mail with id of ' + id + '!');
+          return throwError(() => new Error('Could not found mail with id of ' + wantedId + '!'));
         }
-
         return of(mail);
       }),
     );
@@ -393,22 +500,33 @@ export class MailboxService {
   /**
    * tasks
    */
-  createTask(payload: {
-    de_id: number;
-    para_id?: number | null;
-    status_id?: number | null;
-    titulo: string;
-    descripcion: string;
-    participants?: Array<{
-      user_id: number;
-      role: string;
-      status_id?: number | null;
-      comentarios?: string | null;
-      fecha_accion?: string | null;
-      orden?: number | null;
-    }>;
-  }): Observable<any> {
-    return this._httpClient.post('api/tasks/store', payload);
+  createTask(payload: CreateTaskPayload, files: File[] = [], silent = false): Observable<any> {
+    const context = new HttpContext().set(SILENT_HTTP, silent);
+
+    const fd = new FormData();
+    fd.append('de_id', String(payload.de_id));
+    fd.append('para_id', payload.para_id == null ? '' : String(payload.para_id));
+    fd.append('status_id', payload.status_id == null ? '' : String(payload.status_id));
+    fd.append('titulo', payload.titulo ?? '');
+    fd.append('descripcion', payload.descripcion ?? '');
+
+    // IMPORTANT: participants como JSON string (porque FormData)
+    fd.append('participants', JSON.stringify(payload.participants ?? []));
+
+    // files como attachments[]
+    for (const f of files) {
+      fd.append('attachments[]', f, f.name);
+    }
+
+    return this._httpClient.post<any>(`${this.apiUrl}tasks/store`, fd, { context }).pipe(
+      map((resp) => resp?.data ?? resp),
+      catchError((err) => {
+        console.error('Error al crear task', err);
+        return throwError(
+          () => new Error(err?.error?.message || err?.message || 'Error desconocido'),
+        );
+      }),
+    );
   }
 
   getAllUsers(q = '', limit = 200): Observable<SimpleUser[]> {
@@ -434,11 +552,153 @@ export class MailboxService {
     const p = (u.photo || '').trim();
     if (!p) return 'assets/images/avatars/default-avatar.png';
 
-    // si ya viene full url
     if (p.startsWith('http://') || p.startsWith('https://')) return p;
 
     const base = APP_CONFIG.apiBase.replace(/\/$/, '');
     const path = p.startsWith('/') ? p : `/${p}`;
     return `${base}${path}`;
+  }
+
+  private normalizeWorkorderToMail(wo: any): any {
+    const myEmail = (
+      (localStorage.getItem('encrypt_user_email') ??
+        localStorage.getItem('userEmail') ??
+        localStorage.getItem('email') ??
+        '') as string
+    )
+      .toLowerCase()
+      .trim();
+
+    const participants = Array.isArray(wo?.task_participants) ? wo.task_participants : [];
+
+    const byRole = (role: 'receptor' | 'cc' | 'bcc') =>
+      participants
+        .filter((p) => p?.role === role)
+        .sort((a, b) => (a?.orden ?? 0) - (b?.orden ?? 0))
+        .map((p) => {
+          const fu = p?.user?.firebird_user;
+          const name = (fu?.NOMBRE ?? '').trim();
+          const email = (fu?.CORREO ?? '').trim();
+
+          // ✅ si soy yo, representarlo como "me"
+          if (myEmail && email && email.toLowerCase().trim() === myEmail) {
+            return 'me';
+          }
+
+          if (name && email) return `${name} <${email}>`;
+          return name || email;
+        })
+        .filter(Boolean);
+
+    const fromFU = wo?.de?.firebird_user;
+    const fromName = (fromFU?.NOMBRE ?? '').trim();
+    const fromEmail = (fromFU?.CORREO ?? '').trim();
+    const photoPath = (fromFU?.PHOTO ?? '').toString();
+
+    const toList = wo?.para?.firebird_user
+      ? (() => {
+          const fu = wo.para.firebird_user;
+          const n = (fu?.NOMBRE ?? '').trim();
+          const e = (fu?.CORREO ?? '').trim();
+          return [n && e ? `${n} <${e}>` : n || e].filter(Boolean);
+        })()
+      : byRole('receptor');
+
+    const ccList = byRole('cc');
+    const bccList = byRole('bcc');
+
+    const dateRaw = wo?.fecha_solicitud ?? wo?.created_at ?? wo?.updated_at;
+
+    const attachments = (wo?.attachments ?? []).map((a: any) => ({
+      id: a.id,
+      name: a.original_name,
+      type: a.mime_type, // 👈 tu UI usa attachment.type
+      size: a.size,
+      path: a.path,
+      preview: a.preview, // si no existe, puedes calcularlo aparte
+    }));
+
+    const mailboxItems =
+      (Array.isArray(wo?.mailbox_items) && wo.mailbox_items) ||
+      (Array.isArray(wo?.mailboxItems) && wo.mailboxItems) ||
+      [];
+
+    const mi0 = mailboxItems?.[0] ?? null;
+
+    // deriva flags a formato “Mail” para que UI pinte igual
+    const destacados = mi0 ? !!mi0.is_starred : !!wo.destacados;
+    const importantes = mi0 ? !!mi0.is_important : !!wo.importantes;
+    const unread = mi0 ? !mi0.read_at : typeof wo.unread === 'boolean' ? wo.unread : false;
+
+    return {
+      ...wo,
+
+      mailbox_items: mailboxItems,
+
+      destacados,
+      importantes,
+      unread,
+
+      from: {
+        contact: fromName && fromEmail ? `${fromName} <${fromEmail}>` : fromName || fromEmail,
+        avatar: this.userPhoto({ photo: photoPath }),
+      },
+      to: toList,
+      cc: ccList,
+      bcc: bccList,
+      date: dateRaw ? new Date(dateRaw) : null,
+
+      Asunto: wo?.titulo ?? wo?.Asunto ?? '(Sin asunto)',
+      ccCount: ccList.length,
+      bccCount: bccList.length,
+
+      attachments,
+    };
+  }
+
+  getMyEmail(): string {
+    // 1) si ya lo tienes en algún lado
+    const e1 = (this as any)?.currentUserEmail;
+    if (typeof e1 === 'string' && e1.trim()) return e1.toLowerCase().trim();
+
+    // 2) fallback: usa lo que ya guardas en localStorage (si guardas algo)
+    const e2 = (
+      localStorage.getItem('userEmail') ??
+      localStorage.getItem('email') ??
+      localStorage.getItem('correo') ??
+      ''
+    )
+      .toLowerCase()
+      .trim();
+
+    return e2;
+  }
+
+  createDraft(payload: CreateTaskPayload, files: File[] = [], silent = false): Observable<any> {
+    const context = new HttpContext().set(SILENT_HTTP, silent);
+
+    const fd = new FormData();
+    fd.append('de_id', String(payload.de_id));
+    fd.append('para_id', payload.para_id == null ? '' : String(payload.para_id));
+    fd.append('status_id', payload.status_id == null ? '' : String(payload.status_id));
+    fd.append('titulo', payload.titulo ?? '');
+    fd.append('descripcion', payload.descripcion ?? '');
+    fd.append('participants', JSON.stringify(payload.participants ?? []));
+
+    for (const f of files) fd.append('attachments[]', f, f.name);
+
+    // 👇 endpoint nuevo para draft
+    return this._httpClient.post<any>(`${this.apiUrl}mailbox/drafts/store`, fd, { context }).pipe(
+      map((resp) => resp?.data ?? resp),
+      catchError((err) => throwError(() => err)),
+    );
+  }
+
+  private getMailboxItemId(mail: any): number | null {
+    return mail?.mailbox_items?.[0]?.id ?? mail?.mailboxItems?.[0]?.id ?? null;
+  }
+
+  private getWorkorderId(mail: any): number {
+    return Number(mail?.id);
   }
 }

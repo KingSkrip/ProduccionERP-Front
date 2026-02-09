@@ -8,12 +8,11 @@ import {
   FuseVerticalNavigationComponent,
 } from '@fuse/components/navigation';
 
-
 import { Subject, takeUntil } from 'rxjs';
-import { MailFilter, MailFolder, MailLabel } from '../mailbox.types';
-import { MailboxService } from '../mailbox.service';
 import { MailboxComposeComponent } from '../compose/compose.component';
 import { labelColorDefs } from '../mailbox.constants';
+import { MailboxService } from '../mailbox.service';
+import { MailFilter, MailFolder, MailLabel } from '../mailbox.types';
 
 @Component({
   selector: 'mailbox-sidebar',
@@ -131,7 +130,7 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
         title: folder.title,
         type: 'basic',
         icon: folder.icon,
-        link: '/apps/mailbox/' + folder.slug,
+        link: '/pages/mailbox/' + folder.slug,
       };
 
       // If the count is available and is bigger than zero...
@@ -167,7 +166,7 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
         title: filter.title,
         type: 'basic',
         icon: filter.icon,
-        link: '/apps/mailbox/filter/' + filter.slug,
+        link: '/pages/mailbox/filter/' + filter.slug,
       });
     });
 
@@ -195,7 +194,7 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
         classes: {
           icon: labelColorDefs[label.color].text,
         },
-        link: '/apps/mailbox/label/' + label.slug,
+        link: '/pages/mailbox/label/' + label.slug,
       });
     });
 
@@ -214,7 +213,7 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
       title: 'Settings',
       type: 'basic',
       icon: 'heroicons_outline:cog-8-tooth',
-      link: '/apps/mailbox/settings',
+      link: '/pages/mailbox/settings',
     });
 
     // Update the menu data
@@ -258,23 +257,32 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
    * @private
    */
   private _updateNavigationBadge(folders: MailFolder[]): void {
-    // Get the inbox folder
-    const inboxFolder = this.folders.find((folder) => folder.slug === 'mensajes');
+    const inboxFolder = this.folders?.find((f) => f.slug === 'mensajes');
+    if (!inboxFolder) return;
 
-    // Get the component -> navigation data -> item
     const mainNavigationComponent =
       this._fuseNavigationService.getComponent<FuseVerticalNavigationComponent>('mainNavigation');
 
-    // If the main navigation component exists...
-    if (mainNavigationComponent) {
-      const mainNavigation = mainNavigationComponent.navigation;
-      const menuItem = this._fuseNavigationService.getItem('apps.mailbox', mainNavigation);
+    if (!mainNavigationComponent) return;
 
-      // Update the badge title of the item
-      menuItem.badge.title = inboxFolder.count + '';
+    const mainNavigation = mainNavigationComponent.navigation;
 
-      // Refresh the navigation
-      mainNavigationComponent.refresh();
+    // OJO: este id puede no existir en tu navegación
+    const menuItem = this._fuseNavigationService.getItem('pages.mailbox', mainNavigation);
+
+    if (!menuItem) {
+      // Si quieres, log para saber cuál es el id real
+      // console.warn('No existe item pages.mailbox en navegación', mainNavigation);
+      return;
     }
+
+    // Si no trae badge creado, lo creas
+    if (!menuItem.badge) {
+      menuItem.badge = { title: '0' };
+    }
+
+    menuItem.badge.title = String(inboxFolder.count ?? 0);
+
+    mainNavigationComponent.refresh();
   }
 }

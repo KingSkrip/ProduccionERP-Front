@@ -19,7 +19,7 @@
               <mat-checkbox
                 class="pointer-events-none"
                 [color]="'primary'"
-                [checked]="mail.labels.includes(label.id)"
+                [checked]="(mail?.labels ?? []).includes(label.id)"
                 [disableRipple]="true"
               >
                 {{ label.title }}
@@ -57,13 +57,13 @@
           @if (mail.unread) {
             <button mat-menu-item (click)="toggleUnread(false)">
               <mat-icon [svgIcon]="'heroicons_outline:envelope-open'"></mat-icon>
-              <span>Mark as read</span>
+              <span>Marcar como leído</span>
             </button>
           }
           @if (!mail.unread) {
             <button mat-menu-item (click)="toggleUnread(true)">
               <mat-icon [svgIcon]="'heroicons_outline:envelope'"></mat-icon>
-              <span>Mark as unread</span>
+              <span>Marcar como no leído</span>
             </button>
           }
           <!-- Marks as spam / not span-->
@@ -76,14 +76,14 @@
           @if (getCurrentFolder() === 'spam') {
             <button mat-menu-item (click)="moveToFolder('mensajes')">
               <mat-icon [svgIcon]="'heroicons_outline:exclamation-triangle'"></mat-icon>
-              <span>Not spam</span>
+              <span>No spam</span>
             </button>
           }
           <!-- Delete -->
           @if (getCurrentFolder() !== 'eliminados') {
             <button mat-menu-item (click)="moveToFolder('eliminados')">
               <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
-              <span>Delete</span>
+              <span>Eliminar</span>
             </button>
           }
         </mat-menu>
@@ -127,28 +127,33 @@
             <div
               class="flex h-10 w-10 flex-0 items-center justify-center overflow-hidden rounded-full"
             >
-              <img class="h-full w-full" [src]="mail.from.avatar" alt="User avatar" />
+              <img class="h-full w-full" [src]="getAvatar(mail)" alt="User avatar" />
             </div>
 
             <!-- Info -->
             <div class="ml-4 min-w-0">
               <!-- From -->
               <div class="truncate font-semibold">
-                {{ mail.from.contact.split('<')[0].trim() }}
+                {{ getSenderName(mail) }}
               </div>
 
               <!-- To -->
               <div class="mt-0.5 flex items-center leading-5">
-                <div>to</div>
-                <div class="ml-1 font-semibold">me</div>
-                @if (mail.ccCount + mail.bccCount > 0) {
+                <div>Para</div>
+                <div class="ml-1 font-semibold">
+                  {{ getToSummary(mail) }}
+                </div>
+
+                @if (getOtherRecipientsCount(mail) > 0) {
                   <div>
-                    <span class="ml-1">and</span>
-                    <span class="ml-1 font-semibold">{{ mail.ccCount + mail.bccCount }}</span>
-                    <span class="ml-1 font-semibold" [ngPlural]="mail.ccCount + mail.bccCount">
-                      <ng-template ngPluralCase="=1">other</ng-template>
-                      <ng-template ngPluralCase="other">others</ng-template>
+                    <span class="ml-1">y</span>
+
+                    <span class="ml-1 font-semibold" [ngPlural]="getOtherRecipientsCount(mail)">
+                      <ng-template ngPluralCase="=1">otro</ng-template>
+                      <ng-template ngPluralCase="other">otros</ng-template>
                     </span>
+
+                    <span class="ml-1 font-semibold">{{ getOtherRecipientsCount(mail) }}</span>
                   </div>
                 }
 
@@ -172,48 +177,47 @@
                   >
                     <!-- From -->
                     <div class="flex">
-                      <div class="min-w-14 text-right font-medium">de:</div>
+                      <div class="min-w-14 text-right font-medium">De:</div>
                       <div class="whitespace-pre-wrap pl-2">
-                        {{ mail.from.contact }}
+                        {{ mail?.from?.contact ?? mail?.from ?? 'Sin remitente' }}
                       </div>
                     </div>
                     <!-- To -->
                     <div class="flex">
-                      <div class="min-w-14 text-right font-medium">to:</div>
+                      <div class="min-w-14 text-right font-medium">Para:</div>
                       <div class="whitespace-pre-wrap pl-2">
-                        {{ mail.to }}
+                        <!-- {{ Array.isArray(mail?.to) ? mail.to.join(', ') : (mail?.to ?? 'me') }} -->
+                        {{ toText(mail?.to) }}
                       </div>
                     </div>
                     <!-- Cc -->
-                    @if (mail.cc) {
-                      <div class="flex">
-                        <div class="min-w-14 text-right font-medium">cc:</div>
-                        <div class="whitespace-pre-wrap pl-2">
-                          {{ mail.cc.join(',\n') }}
-                        </div>
+                    <div class="flex" *ngIf="mail?.cc?.length">
+                      <div class="min-w-14 text-right font-medium">CC:</div>
+                      <div class="whitespace-pre-wrap pl-2">
+                        {{ toText(mail.cc) }}
                       </div>
-                    }
-                    <!-- Bbc -->
-                    @if (mail.bcc) {
-                      <div class="flex">
-                        <div class="min-w-14 text-right font-medium">bcc:</div>
-                        <div class="whitespace-pre-wrap pl-2">
-                          {{ mail.bcc.join(',\n') }}
-                        </div>
+                    </div>
+                    <!-- Bcc -->
+                    <div class="flex" *ngIf="mail?.bcc?.length">
+                      <div class="min-w-14 text-right font-medium">BCC:</div>
+                      <div class="whitespace-pre-wrap pl-2">
+                        {{ toText(mail.bcc) }}
                       </div>
-                    }
+                    </div>
+
                     <!-- Date -->
                     <div class="flex">
-                      <div class="min-w-14 text-right font-medium">date:</div>
+                      <div class="min-w-14 text-right font-medium">Fecha:</div>
                       <div class="whitespace-pre-wrap pl-2">
-                        {{ mail.date | date: 'EEEE, MMMM d, y - hh:mm a' }}
+                        {{ mail.date | date:"EEEE d 'de' MMMM y - hh:mm a":undefined:"es-MX" }}
+
                       </div>
                     </div>
                     <!-- Asunto -->
                     <div class="flex">
                       <div class="min-w-14 text-right font-medium">Asunto:</div>
                       <div class="whitespace-pre-wrap pl-2">
-                        {{ mail.Asunto }}
+                        {{ getSubject(mail) }}
                       </div>
                     </div>
                   </div>
@@ -225,7 +229,7 @@
           <!-- Content -->
           <div
             class="mt-8 flex whitespace-pre-line leading-relaxed"
-            [innerHTML]="mail.content"
+            [innerHTML]="getContent(mail)"
           ></div>
 
           <!-- Attachments -->
@@ -234,31 +238,49 @@
               <!-- Title -->
               <div class="mt-12 flex items-center">
                 <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:paper-clip'"></mat-icon>
-                <div class="ml-2 font-semibold">{{ mail.attachments.length }} Attachments</div>
+                <div class="ml-2 font-semibold">{{ mail.attachments.length }} Adjuntos</div>
               </div>
 
               <!-- Files -->
               <div class="-m-3 mt-3 flex flex-wrap">
                 @for (attachment of mail.attachments; track attachment) {
                   <div class="m-3 flex items-center">
-                    <!-- Preview -->
-                    @if (attachment.type.startsWith('image/')) {
-                      <img
-                        class="h-10 w-10 overflow-hidden rounded-md"
-                        [src]="'images/apps/mailbox/' + attachment.preview"
-                      />
-                    }
-                    @if (attachment.type.startsWith('application/')) {
-                      <div
-                        class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md bg-primary-100"
-                      >
-                        <div
-                          class="text-primary-500-800 flex items-center justify-center text-sm font-semibold"
-                        >
-                          {{ attachment.type.split('/')[1].trim().toUpperCase() }}
+                    <!-- Preview / Icon único -->
+                    <div
+                      class="flex h-10 w-10 flex-0 items-center justify-center overflow-hidden rounded-md bg-gray-100 dark:bg-black/20"
+                    >
+                      @if (
+                        (attachment?.type ?? '').startsWith('image/') &&
+                        attachment?.preview &&
+                        !attachment.__imgError
+                      ) {
+                        <img
+                          class="h-full w-full object-cover"
+                          [src]="'images/apps/mailbox/' + attachment.preview"
+                          (error)="attachment.__imgError = true"
+                          alt="Attachment preview"
+                        />
+                      } @else {
+                        <div class="relative flex h-10 w-10 items-center justify-center">
+                          <mat-icon
+                            class="icon-size-6"
+                            [svgIcon]="getAttachmentIcon(attachment)"
+                          ></mat-icon>
+
+                          @if (
+                            (attachment?.type ?? '').toLowerCase() === 'application/pdf' ||
+                            (attachment?.name ?? '').toLowerCase().endsWith('.pdf')
+                          ) {
+                            <span
+                              class="absolute bottom-0 right-0 rounded bg-gray-200 px-1 text-[10px] font-semibold dark:bg-white/10"
+                            >
+                              PDF
+                            </span>
+                          }
                         </div>
-                      </div>
-                    }
+                      }
+                    </div>
+
                     <!-- File info -->
                     <div class="ml-3">
                       <div class="truncate text-md font-medium" [title]="attachment.name">
@@ -290,7 +312,7 @@
                   class="icon-size-5"
                   [svgIcon]="'heroicons_outline:arrow-uturn-left'"
                 ></mat-icon>
-                <span class="ml-2">Reply</span>
+                <span class="ml-2">Responder</span>
               </button>
               <!-- Responder a todos -->
               <button class="m-2" mat-stroked-button [color]="'primary'" (click)="replyAll()">
@@ -357,11 +379,11 @@
                     mat-button
                     (click)="discard()"
                   >
-                    Discard
+                    Descartar
                   </button>
                   <!-- Send -->
                   <button class="sm:ml-3" mat-flat-button [color]="'primary'" (click)="send()">
-                    Send
+                    Enviar
                   </button>
                 </div>
               </div>

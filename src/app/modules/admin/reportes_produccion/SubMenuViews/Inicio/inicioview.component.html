@@ -45,14 +45,14 @@
         >
           <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
             <mat-icon
-              class="text-orange-500 opacity-25 icon-size-24 dark:text-orange-400"
+              class="text-green-500 opacity-25 icon-size-24 dark:text-green-400"
               [svgIcon]="'heroicons_outline:check-circle'"
             ></mat-icon>
           </div>
           <div class="flex items-center">
             <div class="flex flex-col">
               <div class="truncate text-lg font-medium leading-6 tracking-tight">Total</div>
-              <div class="text-sm font-medium text-orange-600">
+              <div class="text-sm font-medium text-green-600">
                 Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }} -
                 {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
               </div>
