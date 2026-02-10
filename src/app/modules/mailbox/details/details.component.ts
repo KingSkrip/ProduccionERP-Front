@@ -1,4 +1,4 @@
-import { Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { Overlay, OverlayModule, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { DatePipe, DecimalPipe, NgClass, NgIf, NgPlural, NgPluralCase } from '@angular/common';
 import {
@@ -27,6 +27,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { labelColorDefs } from '../mailbox.constants';
 import { MailboxService } from '../mailbox.service';
 import { Mail, MailFolder, MailLabel } from '../mailbox.types';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { APP_CONFIG } from 'app/core/config/app-config';
 
 @Component({
   selector: 'mailbox-details',
@@ -49,12 +51,18 @@ import { Mail, MailFolder, MailLabel } from '../mailbox.types';
     DecimalPipe,
     DatePipe,
     NgIf,
+    OverlayModule
   ],
 })
 export class MailboxDetailsComponent implements OnInit, OnDestroy {
   @ViewChild('infoDetailsPanelOrigin')
   private _infoDetailsPanelOrigin: MatButton;
-  @ViewChild('infoDetailsPanel') private _infoDetailsPanel: TemplateRef<any>;
+
+  @ViewChild('attachmentViewer')
+  private _attachmentViewer: TemplateRef<any>;
+
+  @ViewChild('infoDetailsPanel')
+  private _infoDetailsPanel: TemplateRef<any>;
 
   folders: MailFolder[];
   labelColors: any;
@@ -64,6 +72,14 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   replyFormActive: boolean = false;
   private _overlayRef: OverlayRef;
   private _unsubscribeAll: Subject<any> = new Subject<any>();
+
+  composeAttachments: {
+    file: File;
+    preview?: string;
+    type: string;
+    name: string;
+    size: number;
+  }[] = [];
 
   /**
    * Constructor
@@ -76,6 +92,7 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _viewContainerRef: ViewContainerRef,
     private _userService: UserService,
+      private _sanitizer: DomSanitizer
   ) {}
 
   // -----------------------------------------------------------------------------------------------------
@@ -138,31 +155,29 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
    *
    * @param folderSlug
    */
-moveToFolder(folderSlug: string): void {
-  const folderMap: Record<string, string> = {
-    mensajes: 'general',
-    eliminados: 'eliminados',
-    spam: 'spam',
-    borradores: 'drafts',
-  };
+  moveToFolder(folderSlug: string): void {
+    const folderMap: Record<string, string> = {
+      mensajes: 'general',
+      eliminados: 'eliminados',
+      spam: 'spam',
+      borradores: 'drafts',
+    };
 
-  const apiFolder = folderMap[folderSlug] || folderSlug;
+    const apiFolder = folderMap[folderSlug] || folderSlug;
 
-  // Actualizar UI inmediatamente
-  this.mail.folder = apiFolder;
+    // Actualizar UI inmediatamente
+    this.mail.folder = apiFolder;
 
-  // ✅ NUEVO: delega al service que ya sabe si usar mailboxItemId o workorderId
-  this._mailboxService.moveTo(this.mail, apiFolder as any).subscribe({
-    next: () => {
-      this._router.navigate(['./'], { relativeTo: this._activatedRoute.parent });
-    },
-    error: (err) => {
-      console.error('Error moviendo correo:', err);
-    },
-  });
-}
-
-
+    // ✅ NUEVO: delega al service que ya sabe si usar mailboxItemId o workorderId
+    this._mailboxService.moveTo(this.mail, apiFolder as any).subscribe({
+      next: () => {
+        this._router.navigate(['./'], { relativeTo: this._activatedRoute.parent });
+      },
+      error: (err) => {
+        console.error('Error moviendo correo:', err);
+      },
+    });
+  }
 
   /**
    * Toggle label
@@ -197,33 +212,29 @@ moveToFolder(folderSlug: string): void {
   /**
    * Toggle importantes
    */
-toggleimportantes(): void {
-  this.mail.importantes = !this.mail.importantes;
-  this._mailboxService.toggleImportant(this.mail).subscribe();
-}
-
-
+  toggleimportantes(): void {
+    this.mail.importantes = !this.mail.importantes;
+    this._mailboxService.toggleImportant(this.mail).subscribe();
+  }
 
   /**
    * Toggle star
    */
- toggleStar(): void {
-  this.mail.destacados = !this.mail.destacados;
-  this._mailboxService.toggleStar(this.mail).subscribe();
-}
-
+  toggleStar(): void {
+    this.mail.destacados = !this.mail.destacados;
+    this._mailboxService.toggleStar(this.mail).subscribe();
+  }
 
   /**
    * Toggle unread
    *
    * @param unread
    */
- toggleUnread(unread: boolean): void {
-  this.mail.unread = unread;
-  // unread=true => is_read=false
-  this._mailboxService.markRead(this.mail, !unread).subscribe();
-}
-
+  toggleUnread(unread: boolean): void {
+    this.mail.unread = unread;
+    // unread=true => is_read=false
+    this._mailboxService.markRead(this.mail, !unread).subscribe();
+  }
 
   /**
    * Reply
@@ -426,10 +437,6 @@ toggleimportantes(): void {
   }
 
   getToSummary(mail: any): string {
-    // console.log('ME', this._userService.user);
-    // console.log('MY_IDENTITY', this._myIdentityId());
-    // console.log('MAIL_PARTS', mail?.task_participants);
-
     if (this._isSentLike(mail)) {
       const toList = this._normalizeList(mail?.to);
       return toList[0] ?? 'Sin destinatario';
@@ -466,7 +473,6 @@ toggleimportantes(): void {
   }
 
   private _isFromMe(mail?: any): boolean {
-    // Ajusta esto a tu app: email del usuario logueado
     const myEmail =
       (this._mailboxService as any)?.currentUserEmail?.toLowerCase?.() ||
       (this._mailboxService as any)?.meEmail?.toLowerCase?.() ||
@@ -479,13 +485,10 @@ toggleimportantes(): void {
   }
 
   private _isSentLike(mail?: any): boolean {
-    // 1) por carpeta/ruta (como ya lo tienes)
     const routeSlug = this.getCurrentFolder();
     const mailSlug = this._getFolderSlugById(mail?.folder);
     const slug = (routeSlug || mailSlug || '').toLowerCase();
     const byFolder = ['enviados', 'sent', 'salida', 'outbox'].includes(slug);
-
-    // 2) o porque el remitente soy yo
     return byFolder || this._isFromMe(mail);
   }
 
@@ -513,42 +516,6 @@ toggleimportantes(): void {
     return 0;
   }
 
-  private _getMyEmail(): string {
-    return (
-      (this._mailboxService as any)?.currentUserEmail?.toLowerCase?.() ||
-      (this._mailboxService as any)?.meEmail?.toLowerCase?.() ||
-      (localStorage.getItem('userEmail') ?? '').toLowerCase()
-    ).trim();
-  }
-
-  private _listEmails(v: any): string[] {
-    const arr = Array.isArray(v) ? v : typeof v === 'string' && v.trim() ? [v] : [];
-    return arr.map((x) => this._extractEmail(x)).filter(Boolean);
-  }
-
-  // private _iAmRecipient(mail: any): boolean {
-  //   const me = this._getMyEmail();
-  //   if (!me) return false;
-
-  //   const toEmails = this._listEmails(mail?.to);
-  //   const ccEmails = this._listEmails(mail?.cc);
-  //   const bccEmails = this._listEmails(mail?.bcc);
-
-  //   return [...toEmails, ...ccEmails, ...bccEmails].includes(me);
-  // }
-
-  // private _otherRecipientsCountExcludingMe(mail: any): number {
-  //   const me = this._getMyEmail();
-  //   const toEmails = this._listEmails(mail?.to);
-  //   const ccEmails = this._listEmails(mail?.cc);
-  //   const bccEmails = this._listEmails(mail?.bcc);
-
-  //   const all = [...toEmails, ...ccEmails, ...bccEmails].filter(Boolean);
-  //   if (!me) return all.length;
-
-  //   return all.filter((e) => e !== me).length;
-  // }
-
   private _myIdentityId(): number | null {
     const me: any = this._userService.user;
     const id = me?.identity_id;
@@ -566,8 +533,6 @@ toggleimportantes(): void {
   private _otherRecipientsCountExcludingMe(mail: any): number {
     const myId = this._myIdentityId();
     const parts = Array.isArray(mail?.task_participants) ? mail.task_participants : [];
-
-    // cuenta solo receptores/cc/bcc distintos (por si repiten)
     const ids = new Set<number>();
     for (const p of parts) {
       const uid = Number(p?.user_id);
@@ -580,8 +545,113 @@ toggleimportantes(): void {
     return ids.size;
   }
 
-  private _mailboxItemId(mail: any): number | null {
-    const id = mail?.mailbox_items?.[0]?.id;
-    return typeof id === 'number' ? id : id ? Number(id) : null;
+
+openAttachmentViewer(att: any): void {
+  this._overlayRef = this._overlay.create({
+    hasBackdrop: true,
+    backdropClass: 'bg-black-70',
+    panelClass: ['attachment-viewer-panel'],
+    scrollStrategy: this._overlay.scrollStrategies.block(),
+    positionStrategy: this._overlay.position().global().centerHorizontally().centerVertically()
+  });
+
+  const portal = new TemplatePortal(this._attachmentViewer, this._viewContainerRef, {
+    $implicit: att,
+  });
+
+  this._overlayRef.attach(portal);
+
+  this._overlayRef.backdropClick().subscribe(() => {
+    this.closeAttachmentViewer();
+  });
+}
+
+  closeAttachmentViewer(): void {
+    if (this._overlayRef) {
+      this._overlayRef.dispose();
+      this._overlayRef = null!;
+    }
   }
+
+  getAttachmentUrl(att: any): string {
+    if (att.url) return att.url;
+
+    if (att.preview) {
+      return 'images/apps/mailbox/' + att.preview;
+    }
+
+    return '';
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+  // En tu componente details.component.ts, agrega estos métodos:
+
+isImageAttachment(att: any): boolean {
+  const type = (att?.type ?? '').toLowerCase();
+  const name = (att?.name ?? '').toLowerCase();
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+  const ext = name.includes('.') ? name.split('.').pop()! : '';
+  
+  return type.startsWith('image/') || imageExts.includes(ext);
+}
+
+isPdfAttachment(att: any): boolean {
+  const type = (att?.type ?? '').toLowerCase();
+  const name = (att?.name ?? '').toLowerCase();
+  
+  return type === 'application/pdf' || name.endsWith('.pdf');
+}
+
+getSafeAttachmentUrl(att: any): string {
+  if (att.url) {
+    return att.url;
+  }
+  
+  if (att.path) {
+    const baseUrl = APP_CONFIG.apiBase.replace(/\/$/, '');
+    const pathParts = att.path.split('/').filter(Boolean);
+    const sanitizedParts = pathParts.map((part: string) => encodeURIComponent(part));
+    const cleanPath = sanitizedParts.join('/');
+    const url = `${baseUrl}/storage/${cleanPath}`;
+    return url;
+  }
+  
+  if (att.preview) {
+    const url = `images/apps/mailbox/${att.preview}`;
+    return url;
+  }
+  
+  console.error('❌ No URL found for attachment');
+  return '';
+}
+
+getSafePdfUrl(att: any): SafeResourceUrl {
+  const url = this.getSafeAttachmentUrl(att);
+  return this._sanitizer.bypassSecurityTrustResourceUrl(url);
+}
+
+onAttachmentError(event: any, att: any): void {
+  console.error('Error cargando archivo:', att.name, event);
+  // Opcional: mostrar mensaje de error al usuario
+}
+
+formatFileSize(bytes: number): string {
+  if (!bytes) return '0 B';
+  
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+}
 }

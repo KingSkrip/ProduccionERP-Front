@@ -83,7 +83,7 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
       });
 
     // Generate other menu links
-    this._generateOtherMenuLinks();
+    // this._generateOtherMenuLinks();
   }
 
   /**
@@ -119,12 +119,8 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
    * @private
    */
   private _generateFoldersMenuLinks(): void {
-    // Reset the folders menu data
     this._foldersMenuData = [];
-
-    // Iterate through the folders
     this.folders.forEach((folder) => {
-      // Generate menu item for the folder
       const menuItem: FuseNavigationItem = {
         id: folder.id,
         title: folder.title,
@@ -133,19 +129,16 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
         link: '/pages/mailbox/' + folder.slug,
       };
 
-      // If the count is available and is bigger than zero...
-      if (folder.count && folder.count > 0) {
-        // Add the count as a badge
-        menuItem['badge'] = {
-          title: folder.count + '',
-        };
-      }
+      //CONTADOR QUE SE PUEDE HACER AUTOMATICO CON LOS MENSAJES PENDIENTES O PONER UN INDICADOR
 
-      // Push the menu item to the folders menu data
+      // if (folder.count && folder.count > 0) {
+      //   menuItem['badge'] = {
+      //     title: folder.count + '',
+      //   };
+      // }
+
       this._foldersMenuData.push(menuItem);
     });
-
-    // Update the menu data
     this._updateMenuData();
   }
 
@@ -155,7 +148,6 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
    * @private
    */
   private _generateFiltersMenuLinks(): void {
-    // Reset the filters menu
     this._filtersMenuData = [];
 
     // Iterate through the filters
@@ -207,18 +199,18 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
    *
    * @private
    */
-  private _generateOtherMenuLinks(): void {
-    // Settings menu
-    this._otherMenuData.push({
-      title: 'Settings',
-      type: 'basic',
-      icon: 'heroicons_outline:cog-8-tooth',
-      link: '/pages/mailbox/settings',
-    });
+  // private _generateOtherMenuLinks(): void {
+  //   // Settings menu
+  //   this._otherMenuData.push({
+  //     title: 'Settings',
+  //     type: 'basic',
+  //     icon: 'heroicons_outline:cog-8-tooth',
+  //     link: '/pages/mailbox/settings',
+  //   });
 
-    // Update the menu data
-    this._updateMenuData();
-  }
+  //   // Update the menu data
+  //   this._updateMenuData();
+  // }
 
   /**
    * Update the menu data
@@ -237,14 +229,14 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
         type: 'group',
         children: [...this._filtersMenuData],
       },
-      {
-        title: 'ETIQUETAS',
-        type: 'group',
-        children: [...this._labelsMenuData],
-      },
-      {
-        type: 'spacer',
-      },
+      // {
+      //   title: 'ETIQUETAS',
+      //   type: 'group',
+      //   children: [...this._labelsMenuData],
+      // },
+      // {
+      //   type: 'spacer',
+      // },
       ...this._otherMenuData,
     ];
   }
