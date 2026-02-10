@@ -1,6 +1,10 @@
-<div class="fixed inset-0 z-50 flex flex-col bg-white md:relative md:inset-auto md:-m-6 md:max-h-screen md:max-w-240 md:min-w-160">
+<div
+  class="fixed inset-0 z-50 flex flex-col bg-white md:relative md:inset-auto md:-m-6 md:max-h-screen md:min-w-160 md:max-w-240 dark:bg-gray-800"
+>
   <!-- Header FIJO -->
-  <div class="flex h-14 flex-shrink-0 items-center justify-between bg-primary px-4 text-on-primary md:h-16 md:px-6">
+  <div
+    class="flex h-14 flex-shrink-0 items-center justify-between bg-primary px-4 text-on-primary md:h-16 md:px-6"
+  >
     <div class="text-base font-medium md:text-lg">Nueva orden de trabajo</div>
     <button mat-icon-button (click)="Cancelar()" [tabIndex]="-1">
       <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
@@ -15,7 +19,6 @@
         <mat-label>Para</mat-label>
 
         <mat-select formControlName="para" multiple (selectionChange)="onSelectChange('para')">
-
           <!-- 🔹 TRIGGER con chips -->
           <mat-select-trigger>
             <div class="flex flex-wrap gap-2">
@@ -74,11 +77,10 @@
           </mat-option>
         </mat-select>
 
-        <!-- ✅ SOLUCIÓN: Agregar (click)="$event.stopPropagation()" -->
         <div class="copy-fields-toggles" matSuffix>
           @if (!copyFields.cc) {
             <span
-              class="cursor-pointer select-none text-sm font-medium hover:underline"
+              class="cursor-pointer select-none text-sm font-medium hover:underline dark:text-white"
               (click)="showCopyField('cc'); $event.stopPropagation()"
             >
               Cc
@@ -86,7 +88,7 @@
           }
           @if (!copyFields.bcc) {
             <span
-              class="ml-2 cursor-pointer select-none text-sm font-medium hover:underline"
+              class="ml-2 cursor-pointer select-none text-sm font-medium hover:underline  dark:text-white"
               (click)="showCopyField('bcc'); $event.stopPropagation()"
             >
               Bcc
@@ -101,7 +103,6 @@
           <mat-label>Cc</mat-label>
 
           <mat-select formControlName="cc" multiple (selectionChange)="onSelectChange('cc')">
-
             <mat-select-trigger>
               <div class="flex flex-wrap gap-2">
                 @for (id of composeForm.value.cc || []; track id) {
@@ -165,7 +166,6 @@
           <mat-label>Bcc</mat-label>
 
           <mat-select formControlName="bcc" multiple (selectionChange)="onSelectChange('bcc')">
-
             <mat-select-trigger>
               <div class="flex flex-wrap gap-2">
                 @for (id of composeForm.value.bcc || []; track id) {
@@ -247,18 +247,23 @@
           <div class="text-sm font-medium">
             Adjuntos
             @if (attachedFiles.length) {
-              <span class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+              <span
+                class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary dark:bg-white"
+              >
                 {{ attachedFiles.length }}
               </span>
             }
           </div>
-          <button 
-            mat-stroked-button 
-            type="button" 
+          <button
+            mat-stroked-button
+            type="button"
             (click)="attachAny()"
             class="!h-8 !min-h-0 !px-3 !text-xs"
           >
-            <mat-icon class="mr-1 !h-4 !w-4 !text-base" [svgIcon]="'heroicons_outline:paper-clip'"></mat-icon>
+            <mat-icon
+              class="mr-1 !h-4 !w-4 !text-base"
+              [svgIcon]="'heroicons_outline:paper-clip'"
+            ></mat-icon>
             Adjuntar
           </button>
         </div>
@@ -266,12 +271,11 @@
         <!-- Dropzone COMPACTA - Solo visible cuando NO hay archivos -->
         @if (!attachedFiles.length) {
           <div
-            class="flex min-h-[60px] items-center justify-center rounded-lg border-2 border-dashed border-black/10 p-3 text-center transition-colors"
+            class="flex min-h-[60px] items-center justify-center rounded-lg border-2 border-dashed border-black/10 p-3 text-center transition-colors dark:border-gray-100/50"
             (dragover)="onDragOver($event)"
             (dragleave)="onDragLeave($event)"
             (drop)="onDrop($event)"
             [class.border-primary]="isDragging"
-         
           >
             <div class="text-xs opacity-70">
               Arrastra archivos aquí o haz clic en <span class="font-medium">Adjuntar</span>
@@ -281,7 +285,7 @@
 
         <!-- Lista COMPACTA de adjuntos -->
         @if (attachedFiles.length) {
-          <div 
+          <div
             class="space-y-1.5 rounded-lg border border-black/10 bg-black/[0.02] p-2"
             (dragover)="onDragOver($event)"
             (dragleave)="onDragLeave($event)"
@@ -289,7 +293,9 @@
             [class.border-primary]="isDragging"
           >
             @for (f of attachedFiles; track f.name + f.size + f.lastModified) {
-              <div class="group flex items-center gap-2 rounded-md bg-white p-1.5 shadow-sm transition-shadow hover:shadow">
+              <div
+                class="group flex items-center gap-2 rounded-md bg-white p-1.5 shadow-sm transition-shadow hover:shadow dark:bg-gray-300/20"
+              >
                 <!-- Preview / icono MÁS PEQUEÑO -->
                 @if (isImage(f)) {
                   <img
@@ -298,7 +304,9 @@
                     alt="preview"
                   />
                 } @else {
-                  <div class="grid h-8 w-8 flex-shrink-0 place-items-center rounded bg-black/5 text-[10px] font-bold uppercase">
+                  <div
+                    class="grid h-8 w-8 flex-shrink-0 place-items-center rounded bg-black/5 text-[10px] font-bold uppercase"
+                  >
                     {{ extOf(f.name) || 'FILE' }}
                   </div>
                 }
@@ -317,7 +325,10 @@
                   title="Quitar"
                   class="!h-6 !w-6 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                 >
-                  <mat-icon class="!h-4 !w-4 !text-base" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                  <mat-icon
+                    class="!h-4 !w-4 !text-base dark:text-white"
+                    [svgIcon]="'heroicons_outline:x-mark'"
+                  ></mat-icon>
                 </button>
               </div>
             }
@@ -348,7 +359,9 @@
   </div>
 
   <!-- FOOTER FIJO -->
-  <div class="flex-shrink-0 border-t border-black/10 bg-white px-4 py-3 md:px-6">
+  <div
+    class="flex-shrink-0 border-t border-black/10 bg-white px-4 py-3 md:px-6 dark:bg-primary-500"
+  >
     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div class="-ml-2 hidden md:block">
         <!-- <button mat-icon-button type="button" (click)="insertImage()" title="Insertar imagen">
@@ -357,16 +370,26 @@
       </div>
 
       <div class="flex flex-col gap-2 md:flex-row md:items-center">
-        <button class="order-2 md:order-1" mat-stroked-button type="button" (click)="Cancelar()">
+        <button
+          class="order-2 text-black md:order-1 dark:bg-gray-100"
+          mat-stroked-button
+          type="button"
+          (click)="Cancelar()"
+        >
           Cancelar
         </button>
 
-        <button class="order-3 md:order-2" mat-stroked-button type="button" (click)="BorradorAndClose()">
-          <span>Guardar como borrador</span>
+        <button
+          class="order-3 md:order-2 dark:bg-gray-100"
+          mat-stroked-button
+          type="button"
+          (click)="BorradorAndClose()"
+        >
+          <span class="text-black">Guardar como borrador</span>
         </button>
 
         <button
-          class="order-1 md:order-3"
+          class="order-1 md:order-3 dark:bg-gray-800"
           mat-flat-button
           [color]="'primary'"
           type="button"
