@@ -7,7 +7,7 @@ const now = DateTime.now();
 export const folders = [
     {
         id: '7c004a19-4506-48ef-93ab-f16381302e3b',
-        title: 'Mensajes',
+        title: 'Bandeja de entrada',
         slug: 'mensajes',
         icon: 'heroicons_outline:inbox',
     },
