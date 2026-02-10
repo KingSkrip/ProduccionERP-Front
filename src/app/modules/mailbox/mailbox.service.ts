@@ -1,4 +1,3 @@
-
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
@@ -559,6 +558,101 @@ export class MailboxService {
     return `${base}${path}`;
   }
 
+  // private normalizeWorkorderToMail(wo: any): any {
+  //   const myEmail = (
+  //     (localStorage.getItem('encrypt_user_email') ??
+  //       localStorage.getItem('userEmail') ??
+  //       localStorage.getItem('email') ??
+  //       '') as string
+  //   )
+  //     .toLowerCase()
+  //     .trim();
+
+  //   const participants = Array.isArray(wo?.task_participants) ? wo.task_participants : [];
+
+  //   const byRole = (role: 'receptor' | 'cc' | 'bcc') =>
+  //     participants
+  //       .filter((p) => p?.role === role)
+  //       .sort((a, b) => (a?.orden ?? 0) - (b?.orden ?? 0))
+  //       .map((p) => {
+  //         const fu = p?.user?.firebird_user;
+  //         const name = (fu?.NOMBRE ?? '').trim();
+  //         const email = (fu?.CORREO ?? '').trim();
+  //         if (myEmail && email && email.toLowerCase().trim() === myEmail) {
+  //           return 'me';
+  //         }
+
+  //         if (name && email) return `${name} <${email}>`;
+  //         return name || email;
+  //       })
+  //       .filter(Boolean);
+
+  //   const fromFU = wo?.de?.firebird_user;
+  //   const fromName = (fromFU?.NOMBRE ?? '').trim();
+  //   const fromEmail = (fromFU?.CORREO ?? '').trim();
+  //   const photoPath = (fromFU?.PHOTO ?? '').toString();
+
+  //   const toList = wo?.para?.firebird_user
+  //     ? (() => {
+  //         const fu = wo.para.firebird_user;
+  //         const n = (fu?.NOMBRE ?? '').trim();
+  //         const e = (fu?.CORREO ?? '').trim();
+  //         return [n && e ? `${n} <${e}>` : n || e].filter(Boolean);
+  //       })()
+  //     : byRole('receptor');
+
+  //   const ccList = byRole('cc');
+  //   const bccList = byRole('bcc');
+
+  //   const dateRaw = wo?.fecha_solicitud ?? wo?.created_at ?? wo?.updated_at;
+
+  //   const attachments = (wo?.attachments ?? []).map((a: any) => ({
+  //     id: a.id,
+  //     name: a.original_name,
+  //     type: a.mime_type,
+  //     size: a.size,
+  //     path: a.path,
+  //     preview: a.preview,
+  //   }));
+
+  //   const mailboxItems =
+  //     (Array.isArray(wo?.mailbox_items) && wo.mailbox_items) ||
+  //     (Array.isArray(wo?.mailboxItems) && wo.mailboxItems) ||
+  //     [];
+
+  //   const mi0 = mailboxItems?.[0] ?? null;
+
+  //   // deriva flags a formato “Mail” para que UI pinte igual
+  //   const destacados = mi0 ? !!mi0.is_starred : !!wo.destacados;
+  //   const importantes = mi0 ? !!mi0.is_important : !!wo.importantes;
+  //   const unread = mi0 ? !mi0.read_at : typeof wo.unread === 'boolean' ? wo.unread : false;
+
+  //   return {
+  //     ...wo,
+
+  //     mailbox_items: mailboxItems,
+
+  //     destacados,
+  //     importantes,
+  //     unread,
+
+  //     from: {
+  //       contact: fromName && fromEmail ? `${fromName} <${fromEmail}>` : fromName || fromEmail,
+  //       avatar: this.userPhoto({ photo: photoPath }),
+  //     },
+  //     to: toList,
+  //     cc: ccList,
+  //     bcc: bccList,
+  //     date: dateRaw ? new Date(dateRaw) : null,
+
+  //     Asunto: wo?.titulo ?? wo?.Asunto ?? '(Sin asunto)',
+  //     ccCount: ccList.length,
+  //     bccCount: bccList.length,
+
+  //     attachments,
+  //   };
+  // }
+
   private normalizeWorkorderToMail(wo: any): any {
     const myEmail = (
       (localStorage.getItem('encrypt_user_email') ??
@@ -580,7 +674,6 @@ export class MailboxService {
           const name = (fu?.NOMBRE ?? '').trim();
           const email = (fu?.CORREO ?? '').trim();
 
-          // ✅ si soy yo, representarlo como "me"
           if (myEmail && email && email.toLowerCase().trim() === myEmail) {
             return 'me';
           }
@@ -609,13 +702,30 @@ export class MailboxService {
 
     const dateRaw = wo?.fecha_solicitud ?? wo?.created_at ?? wo?.updated_at;
 
-    const attachments = (wo?.attachments ?? []).map((a: any) => ({
-      id: a.id,
-      name: a.original_name,
-      type: a.mime_type, // 👈 tu UI usa attachment.type
-      size: a.size,
-      path: a.path,
-      preview: a.preview, // si no existe, puedes calcularlo aparte
+    // 👇 FILTRAR SOLO ATTACHMENTS DEL MAIL PRINCIPAL (sin reply_id)
+    const attachments = (wo?.attachments ?? [])
+      .filter((a: any) => !a.reply_id) // 👈 IMPORTANTE
+      .map((a: any) => ({
+        id: a.id,
+        name: a.original_name,
+        type: a.mime_type,
+        size: a.size,
+        path: a.path,
+        preview: a.preview,
+      }));
+
+    // 👇 NORMALIZAR REPLIES (con sus attachments)
+    const replies = (wo?.replies ?? []).map((reply: any) => ({
+      ...reply,
+      attachments: (reply?.attachments ?? []).map((a: any) => ({
+        id: a.id,
+        name: a.original_name,
+        original_name: a.original_name, // 👈 AGREGAR ESTO
+        type: a.mime_type,
+        size: a.size,
+        path: a.path,
+        preview: a.preview,
+      })),
     }));
 
     const mailboxItems =
@@ -625,7 +735,6 @@ export class MailboxService {
 
     const mi0 = mailboxItems?.[0] ?? null;
 
-    // deriva flags a formato “Mail” para que UI pinte igual
     const destacados = mi0 ? !!mi0.is_starred : !!wo.destacados;
     const importantes = mi0 ? !!mi0.is_important : !!wo.importantes;
     const unread = mi0 ? !mi0.read_at : typeof wo.unread === 'boolean' ? wo.unread : false;
@@ -652,7 +761,8 @@ export class MailboxService {
       ccCount: ccList.length,
       bccCount: bccList.length,
 
-      attachments,
+      attachments, // 👈 SOLO LOS DEL MAIL PRINCIPAL
+      replies, // 👈 REPLIES NORMALIZADAS CON SUS ATTACHMENTS
     };
   }
 
@@ -700,5 +810,81 @@ export class MailboxService {
 
   private getWorkorderId(mail: any): number {
     return Number(mail?.id);
+  }
+
+  /**
+   * RESPUESTAS (REPLY)
+   */
+  // replyToMail(payload: any, files: File[] = []) {
+  //   const formData = new FormData();
+
+  //   Object.keys(payload).forEach((key) => {
+  //     if (payload[key] !== null && payload[key] !== undefined) {
+  //       formData.append(key, payload[key]);
+  //     }
+  //   });
+
+  //   files.forEach((file) => {
+  //     formData.append('attachments[]', file);
+  //   });
+
+  //   return this._httpClient.post<any>(`${this.apiUrl}mailbox/reply`, formData).pipe(
+  //     map((resp) => resp?.data ?? resp),
+  //     tap((workorder) => {
+  //       // 👇 ACTUALIZAR EL MAIL ACTUAL CON LAS REPLIES
+  //       const currentMails = this._mails.value || [];
+  //       const index = currentMails.findIndex((m) => m.id === workorder.id);
+
+  //       if (index !== -1) {
+  //         currentMails[index] = this.normalizeWorkorderToMail(workorder);
+  //         this._mails.next([...currentMails]);
+  //       }
+
+  //       // Actualizar el mail individual
+  //       if (this._mail.value?.id === workorder.id) {
+  //         this._mail.next(this.normalizeWorkorderToMail(workorder));
+  //       }
+  //     }),
+  //   );
+  // }
+
+  /**
+   * RESPUESTAS (REPLY)
+   */
+  replyToMail(payload: any, files: File[] = []) {
+    const formData = new FormData();
+
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] !== null && payload[key] !== undefined) {
+        formData.append(key, payload[key]);
+      }
+    });
+
+    files.forEach((file) => {
+      formData.append('attachments[]', file);
+    });
+
+    return this._httpClient.post<any>(`${this.apiUrl}mailbox/reply`, formData).pipe(
+      map((resp) => resp?.data ?? resp),
+      map((workorder) => {
+        // 👇 NORMALIZAR EL WORKORDER ANTES DE DEVOLVERLO
+        return this.normalizeWorkorderToMail(workorder);
+      }),
+      tap((normalizedWorkorder) => {
+        // 👇 ACTUALIZAR LA LISTA DE MAILS
+        const currentMails = this._mails.value || [];
+        const index = currentMails.findIndex((m) => m.id === normalizedWorkorder.id);
+
+        if (index !== -1) {
+          currentMails[index] = normalizedWorkorder;
+          this._mails.next([...currentMails]);
+        }
+
+        // 👇 ACTUALIZAR EL MAIL INDIVIDUAL
+        if (this._mail.value?.id === normalizedWorkorder.id) {
+          this._mail.next(normalizedWorkorder);
+        }
+      }),
+    );
   }
 }

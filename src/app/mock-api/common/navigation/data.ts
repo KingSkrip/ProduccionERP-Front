@@ -4000,6 +4000,24 @@ export const menuJefe: FuseNavigationItem[] = [
     ],
   },
 
+
+    {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'to.do',
+    title: 'Scrumboard',
+    tooltip: 'scrumboard',
+    type: 'basic',
+    icon: 'heroicons_outline:view-columns',
+    link: '/apps/scrumboard',
+  },
+
   //     {
   //   id: 'bandeja.general',
   //   title: 'Bandeja',

@@ -22,13 +22,15 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FuseScrollResetDirective } from '@fuse/directives/scroll-reset';
 import { FuseFindByKeyPipe } from '@fuse/pipes/find-by-key/find-by-key.pipe';
 
+import { FormsModule } from '@angular/forms';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { APP_CONFIG } from 'app/core/config/app-config';
 import { UserService } from 'app/core/user/user.service';
 import { Subject, takeUntil } from 'rxjs';
 import { labelColorDefs } from '../mailbox.constants';
 import { MailboxService } from '../mailbox.service';
 import { Mail, MailFolder, MailLabel } from '../mailbox.types';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { APP_CONFIG } from 'app/core/config/app-config';
 
 @Component({
   selector: 'mailbox-details',
@@ -51,26 +53,32 @@ import { APP_CONFIG } from 'app/core/config/app-config';
     DecimalPipe,
     DatePipe,
     NgIf,
-    OverlayModule
+    OverlayModule,
+    FormsModule,
+    MatTooltipModule,
   ],
 })
 export class MailboxDetailsComponent implements OnInit, OnDestroy {
   @ViewChild('infoDetailsPanelOrigin')
   private _infoDetailsPanelOrigin: MatButton;
-
   @ViewChild('attachmentViewer')
   private _attachmentViewer: TemplateRef<any>;
-
   @ViewChild('infoDetailsPanel')
   private _infoDetailsPanel: TemplateRef<any>;
 
-  folders: MailFolder[];
+  @ViewChild('replyFileInput') replyFileInput: any;
+
+  mail: any;
   labelColors: any;
   labels: MailLabel[];
-  // mail: Mail;
-  mail: any;
-  replyFormActive: boolean = false;
+  folders: MailFolder[];
+  replyText: string = '';
+  replyAttachments: File[] = [];
   private _overlayRef: OverlayRef;
+  replyFormActive: boolean = false;
+  replyType: 'reply' | 'reply_all' = 'reply';
+  replyPreviewMap = new Map<string, string>();
+
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
   composeAttachments: {
@@ -92,7 +100,7 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _viewContainerRef: ViewContainerRef,
     private _userService: UserService,
-      private _sanitizer: DomSanitizer
+    private _sanitizer: DomSanitizer,
   ) {}
 
   // -----------------------------------------------------------------------------------------------------
@@ -237,20 +245,104 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * RESPUESTAS (REPLY)
+   */
+
+  attachReplyFile(): void {
+    this.replyFileInput.nativeElement.click();
+  }
+
+  onReplyFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (input.files?.length) {
+      this.addReplyFiles(Array.from(input.files));
+    }
+
+    input.value = '';
+  }
+
+  onReplyDragOver(ev: DragEvent): void {
+    ev.preventDefault();
+  }
+
+  onReplyDrop(ev: DragEvent): void {
+    ev.preventDefault();
+    const files = Array.from(ev.dataTransfer?.files || []);
+    if (files.length) this.addReplyFiles(files);
+  }
+
+  private addReplyFiles(files: File[]): void {
+    const existing = new Set(
+      this.replyAttachments.map((f) => `${f.name}-${f.size}-${f.lastModified}`),
+    );
+
+    const incoming = files.filter((f) => !existing.has(`${f.name}-${f.size}-${f.lastModified}`));
+
+    if (!incoming.length) return;
+
+    this.replyAttachments.push(...incoming);
+  }
+
+  replyFileKey(f: File): string {
+    return `${f.name}-${f.size}-${f.lastModified}`;
+  }
+
+  replyFilePreview(file: File): string {
+    const key = this.replyFileKey(file);
+
+    if (!this.replyPreviewMap.has(key)) {
+      this.replyPreviewMap.set(key, URL.createObjectURL(file));
+    }
+
+    return this.replyPreviewMap.get(key)!;
+  }
+
+  removeReplyFile(file: File): void {
+    const key = this.replyFileKey(file);
+
+    const url = this.replyPreviewMap.get(key);
+    if (url) {
+      URL.revokeObjectURL(url);
+      this.replyPreviewMap.delete(key);
+    }
+
+    this.replyAttachments = this.replyAttachments.filter((f) => f !== file);
+  }
+
+  /**
    * Reply
    */
+  // reply(): void {
+  //   this.replyFormActive = true;
+  //   setTimeout(() => {
+  //     this._elementRef.nativeElement.scrollTop = this._elementRef.nativeElement.scrollHeight;
+  //   });
+  // }
+
   reply(): void {
+    this.replyType = 'reply';
     this.replyFormActive = true;
-    setTimeout(() => {
-      this._elementRef.nativeElement.scrollTop = this._elementRef.nativeElement.scrollHeight;
-    });
+    this._scrollBottom();
   }
 
   /**
    * Responder a todos
    */
+  // replyAll(): void {
+  //   this.replyFormActive = true;
+  //   setTimeout(() => {
+  //     this._elementRef.nativeElement.scrollTop = this._elementRef.nativeElement.scrollHeight;
+  //   });
+  // }
+
   replyAll(): void {
+    this.replyType = 'reply_all';
     this.replyFormActive = true;
+    this._scrollBottom();
+  }
+
+  private _scrollBottom(): void {
     setTimeout(() => {
       this._elementRef.nativeElement.scrollTop = this._elementRef.nativeElement.scrollHeight;
     });
@@ -270,7 +362,6 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
    * Discard
    */
   discard(): void {
-    // Deactivate the reply form
     this.replyFormActive = false;
   }
 
@@ -278,8 +369,37 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
    * Send
    */
   send(): void {
-    // Deactivate the reply form
-    this.replyFormActive = false;
+    if (!this.replyText.trim() && !this.replyAttachments.length) return;
+
+    const payload = {
+      workorder_id: this.mail.id,
+      reply_type: this.replyType,
+      reply_to_id: this.getLastReplyId(),
+      body: this.replyText,
+    };
+
+    this._mailboxService.replyToMail(payload, this.replyAttachments).subscribe({
+      next: (updatedWorkorder) => {
+        // Actualizar el mail actual con las replies
+        this.mail = updatedWorkorder;
+
+        // Limpiar formulario
+        this.replyText = '';
+        this.replyAttachments = [];
+        this.replyFormActive = false;
+
+        // Scroll para ver la nueva respuesta
+        setTimeout(() => {
+          this._elementRef.nativeElement.scrollTop = this._elementRef.nativeElement.scrollHeight;
+        }, 100);
+      },
+      error: (err) => console.error('Error enviando reply', err),
+    });
+  }
+
+  getLastReplyId(): number | null {
+    if (!this.mail?.replies?.length) return null;
+    return this.mail.replies[this.mail.replies.length - 1].id;
   }
 
   /**
@@ -545,26 +665,25 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
     return ids.size;
   }
 
+  openAttachmentViewer(att: any): void {
+    this._overlayRef = this._overlay.create({
+      hasBackdrop: true,
+      backdropClass: 'bg-black-70',
+      panelClass: ['attachment-viewer-panel'],
+      scrollStrategy: this._overlay.scrollStrategies.block(),
+      positionStrategy: this._overlay.position().global().centerHorizontally().centerVertically(),
+    });
 
-openAttachmentViewer(att: any): void {
-  this._overlayRef = this._overlay.create({
-    hasBackdrop: true,
-    backdropClass: 'bg-black-70',
-    panelClass: ['attachment-viewer-panel'],
-    scrollStrategy: this._overlay.scrollStrategies.block(),
-    positionStrategy: this._overlay.position().global().centerHorizontally().centerVertically()
-  });
+    const portal = new TemplatePortal(this._attachmentViewer, this._viewContainerRef, {
+      $implicit: att,
+    });
 
-  const portal = new TemplatePortal(this._attachmentViewer, this._viewContainerRef, {
-    $implicit: att,
-  });
+    this._overlayRef.attach(portal);
 
-  this._overlayRef.attach(portal);
-
-  this._overlayRef.backdropClick().subscribe(() => {
-    this.closeAttachmentViewer();
-  });
-}
+    this._overlayRef.backdropClick().subscribe(() => {
+      this.closeAttachmentViewer();
+    });
+  }
 
   closeAttachmentViewer(): void {
     if (this._overlayRef) {
@@ -583,75 +702,87 @@ openAttachmentViewer(att: any): void {
     return '';
   }
 
-
-
-
-
-
-
-
-
-
-
-
   // En tu componente details.component.ts, agrega estos métodos:
 
-isImageAttachment(att: any): boolean {
-  const type = (att?.type ?? '').toLowerCase();
-  const name = (att?.name ?? '').toLowerCase();
-  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
-  const ext = name.includes('.') ? name.split('.').pop()! : '';
-  
-  return type.startsWith('image/') || imageExts.includes(ext);
-}
+  isImageAttachment(att: any): boolean {
+    const type = (att?.type ?? '').toLowerCase();
+    const name = (att?.name ?? '').toLowerCase();
+    const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+    const ext = name.includes('.') ? name.split('.').pop()! : '';
 
-isPdfAttachment(att: any): boolean {
-  const type = (att?.type ?? '').toLowerCase();
-  const name = (att?.name ?? '').toLowerCase();
-  
-  return type === 'application/pdf' || name.endsWith('.pdf');
-}
+    return type.startsWith('image/') || imageExts.includes(ext);
+  }
+
+  isPdfAttachment(att: any): boolean {
+    const type = (att?.type ?? '').toLowerCase();
+    const name = (att?.name ?? '').toLowerCase();
+
+    return type === 'application/pdf' || name.endsWith('.pdf');
+  }
 
 getSafeAttachmentUrl(att: any): string {
   if (att.url) {
     return att.url;
   }
-  
+
   if (att.path) {
     const baseUrl = APP_CONFIG.apiBase.replace(/\/$/, '');
-    const pathParts = att.path.split('/').filter(Boolean);
-    const sanitizedParts = pathParts.map((part: string) => encodeURIComponent(part));
-    const cleanPath = sanitizedParts.join('/');
-    const url = `${baseUrl}/storage/${cleanPath}`;
+    
+    let cleanPath = att.path;
+    
+    // 🔥 FIX CRÍTICO: El path viene como "task/images/xxx.png"
+    // pero Laravel Storage espera "workorders/task/images/xxx.png"
+    
+    // Remover 'public/' si existe
+    if (cleanPath.startsWith('public/')) {
+      cleanPath = cleanPath.substring(7);
+    }
+    
+    // 👇 AGREGAR 'workorders/' si no está presente
+    if (!cleanPath.startsWith('workorders/')) {
+      cleanPath = `workorders/${cleanPath}`;
+    }
+
+    const pathParts = cleanPath.split('/').filter(Boolean);
+    const encodedPath = pathParts.map(part => encodeURIComponent(part)).join('/');
+    const url = `${baseUrl}/storage/${encodedPath}`;
     return url;
   }
-  
+
   if (att.preview) {
-    const url = `images/apps/mailbox/${att.preview}`;
-    return url;
+    return `images/apps/mailbox/${att.preview}`;
   }
-  
-  console.error('❌ No URL found for attachment');
+
+  console.error('❌ No URL found for attachment:', att);
   return '';
 }
 
-getSafePdfUrl(att: any): SafeResourceUrl {
-  const url = this.getSafeAttachmentUrl(att);
-  return this._sanitizer.bypassSecurityTrustResourceUrl(url);
-}
+  getSafePdfUrl(att: any): SafeResourceUrl {
+    const url = this.getSafeAttachmentUrl(att);
+    return this._sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
 
-onAttachmentError(event: any, att: any): void {
-  console.error('Error cargando archivo:', att.name, event);
-  // Opcional: mostrar mensaje de error al usuario
-}
+  onAttachmentError(event: any, att: any): void {
+    console.error('Error cargando archivo:', att.name, event);
+    // Opcional: mostrar mensaje de error al usuario
+  }
 
-formatFileSize(bytes: number): string {
-  if (!bytes) return '0 B';
-  
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-}
+  formatFileSize(bytes: number): string {
+    if (!bytes) return '0 B';
+
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  getReplyAvatar(reply: any): string {
+    const photo = reply?.user?.firebird_user?.PHOTO || reply?.user?.firebirdUser?.PHOTO;
+    return this._mailboxService.userPhoto({ photo });
+  }
+
+  getReplyAuthor(reply: any): string {
+    return reply?.user?.firebird_user?.NOMBRE || reply?.user?.firebirdUser?.NOMBRE || 'Usuario';
+  }
 }
