@@ -1312,14 +1312,14 @@ export const menuRh: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
-  {
-    id: 'to.do',
-    title: 'Scrumboard',
-    tooltip: 'scrumboard',
-    type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
-  },
+  //{
+    //id: 'to.do',
+    //title: 'Scrumboard',
+    //tooltip: 'scrumboard',
+    //type: 'basic',
+    //icon: 'heroicons_outline:view-columns',
+    //link: '/apps/scrumboard',
+  //},
 
   {
     id: 'cruds',
@@ -2638,14 +2638,14 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
-  {
-    id: 'to.do',
-    title: 'Scrumboard',
-    tooltip: 'scrumboard',
-    type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
-  },
+  //{
+    //id: 'to.do',
+    //title: 'Scrumboard',
+    //tooltip: 'scrumboard',
+    //type: 'basic',
+    //icon: 'heroicons_outline:view-columns',
+    //link: '/apps/scrumboard',
+  //},
 
   // =======================
   // GESTIÓN
@@ -3963,14 +3963,14 @@ export const menuColaborador: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
-  {
-    id: 'to.do',
-    title: 'Scrumboard',
-    tooltip: 'scrumboard',
-    type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
-  },
+  //{
+    //id: 'to.do',
+    //title: 'Scrumboard',
+    //tooltip: 'scrumboard',
+    //type: 'basic',
+    //icon: 'heroicons_outline:view-columns',
+    //link: '/apps/scrumboard',
+  //},
   {
     id: 'colaborador.scan',
     title: 'Escaner',
@@ -4009,14 +4009,14 @@ export const menuJefe: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
-  {
-    id: 'to.do',
-    title: 'Scrumboard',
-    tooltip: 'scrumboard',
-    type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
-  },
+  //{
+    //id: 'to.do',
+    //title: 'Scrumboard',
+    //tooltip: 'scrumboard',
+    //type: 'basic',
+    //icon: 'heroicons_outline:view-columns',
+    //link: '/apps/scrumboard',
+  //},
 
   //     {
   //   id: 'bandeja.general',
