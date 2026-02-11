@@ -73,6 +73,15 @@ export class MailboxService {
     this._mailsUpdated$.next(true);
   }
 
+  getMailByIdFromApi(id: number): Observable<any> {
+    return this._httpClient.get<any>(`${this.apiUrl}mailbox/workorder/${id}`).pipe(
+      map((resp: any) => resp?.data ?? resp),
+      tap((mail) => {
+        this._mail.next(mail);
+      }),
+    );
+  }
+
   /**
    * Getter for category
    */
@@ -915,18 +924,11 @@ export class MailboxService {
     // Verificar que no exista ya
     const exists = currentMails.some((m) => m.id === newMail.id);
     if (exists) {
-
       return;
     }
-
-    // Normalizar el workorder a formato Mail
     const normalizedMail = this.normalizeWorkorderToMail(newMail);
-
-    // Agregar al principio
     const updatedMails = [normalizedMail, ...currentMails];
     this._mails.next(updatedMails);
-
-    // Actualizar paginación
     const currentPagination = this._pagination.value;
     if (currentPagination) {
       this._pagination.next({
@@ -934,7 +936,6 @@ export class MailboxService {
         length: currentPagination.length + 1,
       });
     }
-
   }
 
   /**
@@ -993,8 +994,6 @@ export class MailboxService {
         this._mail.next({ ...currentMail, ...changes });
       }
     }
-
-
   }
 
   /**
@@ -1036,7 +1035,6 @@ export class MailboxService {
         });
       }
     }
-
   }
 
   /**
@@ -1049,8 +1047,6 @@ export class MailboxService {
       console.warn('⚠️ No hay carpeta activa para refrescar');
       return;
     }
-
-
 
     if (category.type === 'folder') {
       this.getMailsByFolder(category.name).subscribe();

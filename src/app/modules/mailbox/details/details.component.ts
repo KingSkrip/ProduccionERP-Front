@@ -30,7 +30,7 @@ import { UserService } from 'app/core/user/user.service';
 import { Subject, takeUntil } from 'rxjs';
 import { labelColorDefs } from '../mailbox.constants';
 import { MailboxService } from '../mailbox.service';
-import { Mail, MailFolder, MailLabel } from '../mailbox.types';
+import { MailFolder, MailLabel } from '../mailbox.types';
 
 @Component({
   selector: 'mailbox-details',
@@ -78,9 +78,10 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   replyFormActive: boolean = false;
   replyType: 'reply' | 'reply_all' = 'reply';
   replyPreviewMap = new Map<string, string>();
+  apiBase = APP_CONFIG.apiBase;
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
-
+  avatarUrl: string = '';
   composeAttachments: {
     file: File;
     preview?: string;
@@ -115,11 +116,12 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe((shouldReload) => {
         if (shouldReload && this.mail?.id) {
-      
-          // Recargar el mail actual para ver nuevas replies
-          this._mailboxService.getMailById(this.mail.id).subscribe((updatedMail) => {
-            this.mail = updatedMail;
-          });
+          this._mailboxService
+            .getMailByIdFromApi(this.mail.id)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((updatedMail) => {
+              this.mail = updatedMail;
+            });
         }
       });
 
@@ -141,8 +143,13 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
       });
 
     // Mail
-    this._mailboxService.mail$.pipe(takeUntil(this._unsubscribeAll)).subscribe((mail: Mail) => {
+    // this._mailboxService.mail$.pipe(takeUntil(this._unsubscribeAll)).subscribe((mail: Mail) => {
+    //   this.mail = mail;
+    // });
+
+    this._mailboxService.mail$.pipe(takeUntil(this._unsubscribeAll)).subscribe((mail) => {
       this.mail = mail;
+      this.avatarUrl = this.buildAvatar(mail);
     });
 
     this._mailboxService.selectedMailChanged.pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
@@ -331,6 +338,15 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   //     this._elementRef.nativeElement.scrollTop = this._elementRef.nativeElement.scrollHeight;
   //   });
   // }
+  buildAvatar(mail: any): string {
+    const photo = mail?.de?.firebirdUser?.photo;
+
+    if (!photo) {
+      return '';
+    }
+
+    return this.apiBase + photo;
+  }
 
   reply(): void {
     this.replyType = 'reply';
@@ -494,7 +510,14 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   }
 
   getAvatar(m: any) {
-    return m?.from?.avatar || 'assets/images/avatars/default-avatar.png';
+    const photo =
+      m?.from?.photo ||
+      m?.de?.firebirdUser?.PHOTO ||
+      m?.de?.firebird_user?.PHOTO ||
+      m?.de?.firebirdUser?.photo ||
+      m?.de?.firebird_user?.photo;
+
+    return this._mailboxService.userPhoto({ photo });
   }
 
   isUnread(m: any) {
@@ -504,6 +527,14 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
 
   private _ensureLabelsArray(): void {
     if (!Array.isArray(this.mail?.labels)) this.mail.labels = [];
+  }
+
+  trackByReplyId(index: number, reply: any): any {
+    return reply?.id ?? index;
+  }
+
+  trackByAttachmentId(index: number, att: any): any {
+    return att?.id ?? index;
   }
 
   isArray(v: any): v is any[] {
@@ -790,11 +821,17 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   }
 
   getReplyAvatar(reply: any): string {
-    const photo = reply?.user?.firebird_user?.PHOTO || reply?.user?.firebirdUser?.PHOTO;
+    // Intentar ambas variantes (camelCase y snake_case)
+    const photo =
+      reply?.user?.firebirdUser?.PHOTO ||
+      reply?.user?.firebird_user?.PHOTO ||
+      reply?.user?.firebirdUser?.photo ||
+      reply?.user?.firebird_user?.photo;
+
     return this._mailboxService.userPhoto({ photo });
   }
 
   getReplyAuthor(reply: any): string {
-    return reply?.user?.firebird_user?.NOMBRE || reply?.user?.firebirdUser?.NOMBRE || 'Usuario';
+    return reply?.user?.firebirdUser?.NOMBRE || reply?.user?.firebird_user?.NOMBRE || 'Usuario';
   }
 }

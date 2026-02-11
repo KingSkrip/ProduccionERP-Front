@@ -208,8 +208,6 @@ export class MailboxComposeComponent implements OnInit {
       this._snackBar.open(`Archivo(s) adjunto(s): ${fileNames}`, 'OK', {
         duration: 3000,
       });
-
-  
     }
     input.value = '';
   }
@@ -389,7 +387,10 @@ export class MailboxComposeComponent implements OnInit {
     };
 
     this._mailboxService.createTask(payload, this.attachedFiles).subscribe({
-      next: (res) => this.matDialogRef.close(res),
+      next: (res) => {
+        this._mailboxService.prependMail(res);
+        this.matDialogRef.close(res);
+      },
       error: (err) => console.error(err),
     });
   }
@@ -439,6 +440,10 @@ export class MailboxComposeComponent implements OnInit {
     this._mailboxService.createDraft(payload, this.attachedFiles).subscribe({
       next: (res) => {
         this._snackBar.open('Borrador guardado', 'OK', { duration: 2000 });
+
+        // 👇 ACTUALIZAR LISTA LOCALMENTE
+        this._mailboxService.prependMail(res);
+
         this.matDialogRef.close(res);
       },
       error: (err) => {
