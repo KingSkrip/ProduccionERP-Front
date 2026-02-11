@@ -54,6 +54,9 @@ export class MailboxService {
   private _mail: BehaviorSubject<Mail> = new BehaviorSubject(null);
   private _pagination: BehaviorSubject<any> = new BehaviorSubject(null);
   private readonly apiUrl = APP_CONFIG.apiUrl;
+
+  private _mailsUpdated$ = new BehaviorSubject<boolean>(false);
+  mailsUpdated$ = this._mailsUpdated$.asObservable();
   /**
    * Constructor
    */
@@ -62,6 +65,13 @@ export class MailboxService {
   // -----------------------------------------------------------------------------------------------------
   // @ Accessors
   // -----------------------------------------------------------------------------------------------------
+
+  /**
+   * WEBSOCKET
+   */
+  reloadMails(): void {
+    this._mailsUpdated$.next(true);
+  }
 
   /**
    * Getter for category
@@ -886,5 +896,168 @@ export class MailboxService {
         }
       }),
     );
+  }
+
+  /**
+   * WEBSOCKET
+   */
+
+  // ========================================
+  // AGREGAR ESTOS MÉTODOS A TU MailboxService
+  // ========================================
+
+  /**
+   * ✅ Agregar nuevo correo al principio de la lista (llamado desde WebSocket)
+   */
+  prependMail(newMail: any): void {
+    const currentMails = this._mails.value || [];
+
+    // Verificar que no exista ya
+    const exists = currentMails.some((m) => m.id === newMail.id);
+    if (exists) {
+      console.log('ℹ️ El correo ya existe en la lista');
+      return;
+    }
+
+    // Normalizar el workorder a formato Mail
+    const normalizedMail = this.normalizeWorkorderToMail(newMail);
+
+    // Agregar al principio
+    const updatedMails = [normalizedMail, ...currentMails];
+    this._mails.next(updatedMails);
+
+    // Actualizar paginación
+    const currentPagination = this._pagination.value;
+    if (currentPagination) {
+      this._pagination.next({
+        ...currentPagination,
+        length: currentPagination.length + 1,
+      });
+    }
+
+    console.log('✅ Nuevo correo agregado a la lista:', normalizedMail.id);
+  }
+
+  /**
+   * ✅ Actualizar correo existente en la lista (llamado desde WebSocket)
+   */
+  updateMailInList(workorderId: number, changes: any): void {
+    const currentMails = this._mails.value || [];
+
+    const updatedMails = currentMails.map((mail) => {
+      if (Number(mail.id) === Number(workorderId)) {
+        // Actualizar mailbox_items si los cambios son de estado
+        if (mail.mailbox_items?.[0]) {
+          const updatedMailboxItems = [
+            {
+              ...mail.mailbox_items[0],
+              ...changes,
+            },
+          ];
+
+          return {
+            ...mail,
+            mailbox_items: updatedMailboxItems,
+            // También actualizar campos de nivel superior
+            destacados: changes.is_starred ?? mail.destacados,
+            importantes: changes.is_important ?? mail.importantes,
+            unread: changes.read_at ? false : changes.read_at === null ? true : mail.unread,
+          };
+        }
+
+        return { ...mail, ...changes };
+      }
+      return mail;
+    });
+
+    this._mails.next(updatedMails);
+
+    // También actualizar el mail individual si está abierto
+    const currentMail = this._mail.value;
+    if (currentMail && Number(currentMail.id) === Number(workorderId)) {
+      if (currentMail.mailbox_items?.[0]) {
+        const updatedMailboxItems = [
+          {
+            ...currentMail.mailbox_items[0],
+            ...changes,
+          },
+        ];
+
+        this._mail.next({
+          ...currentMail,
+          mailbox_items: updatedMailboxItems,
+          destacados: changes.is_starred ?? currentMail.destacados,
+          importantes: changes.is_important ?? currentMail.importantes,
+          unread: changes.read_at ? false : changes.read_at === null ? true : currentMail.unread,
+        });
+      } else {
+        this._mail.next({ ...currentMail, ...changes });
+      }
+    }
+
+    console.log('✅ Correo actualizado en la lista:', workorderId, changes);
+  }
+
+  /**
+   * ✅ Agregar respuesta a un correo (llamado desde WebSocket)
+   */
+  addReplyToMail(workorderId: number, replyData: any): void {
+    const currentMails = this._mails.value || [];
+
+    const updatedMails = currentMails.map((mail) => {
+      if (Number(mail.id) === Number(workorderId)) {
+        const replies = mail.replies || [];
+
+        // Verificar que no exista ya
+        const replyExists = replies.some((r: any) => r.id === replyData.id);
+        if (replyExists) {
+          return mail;
+        }
+
+        return {
+          ...mail,
+          replies: [...replies, replyData],
+        };
+      }
+      return mail;
+    });
+
+    this._mails.next(updatedMails);
+
+    // También actualizar el mail individual si está abierto
+    const currentMail = this._mail.value;
+    if (currentMail && Number(currentMail.id) === Number(workorderId)) {
+      const replies = currentMail.replies || [];
+      const replyExists = replies.some((r: any) => r.id === replyData.id);
+
+      if (!replyExists) {
+        this._mail.next({
+          ...currentMail,
+          replies: [...replies, replyData],
+        });
+      }
+    }
+
+    console.log('✅ Respuesta agregada al correo:', workorderId, replyData.id);
+  }
+
+  /**
+   * ✅ Refrescar carpeta actual (útil para debugging)
+   */
+  refreshCurrentFolder(): void {
+    const category = this._category.value;
+
+    if (!category) {
+      console.warn('⚠️ No hay carpeta activa para refrescar');
+      return;
+    }
+
+    console.log('🔄 Refrescando carpeta:', category);
+
+    if (category.type === 'folder') {
+      this.getMailsByFolder(category.name).subscribe();
+    } else if (category.type === 'filter') {
+      this.getMailsByCustomFilter(category.name as any).subscribe();
+    }
   }
 }

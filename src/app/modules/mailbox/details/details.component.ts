@@ -111,6 +111,18 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
    * On init
    */
   ngOnInit(): void {
+    this._mailboxService.mailsUpdated$
+      .pipe(takeUntil(this._unsubscribeAll))
+      .subscribe((shouldReload) => {
+        if (shouldReload && this.mail?.id) {
+          console.log('🔄 Actualizando mail actual...');
+          // Recargar el mail actual para ver nuevas replies
+          this._mailboxService.getMailById(this.mail.id).subscribe((updatedMail) => {
+            this.mail = updatedMail;
+          });
+        }
+      });
+
     // Get the Color de etiquetas
     this.labelColors = labelColorDefs;
 
@@ -720,42 +732,42 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
     return type === 'application/pdf' || name.endsWith('.pdf');
   }
 
-getSafeAttachmentUrl(att: any): string {
-  if (att.url) {
-    return att.url;
-  }
-
-  if (att.path) {
-    const baseUrl = APP_CONFIG.apiBase.replace(/\/$/, '');
-    
-    let cleanPath = att.path;
-    
-    // 🔥 FIX CRÍTICO: El path viene como "task/images/xxx.png"
-    // pero Laravel Storage espera "workorders/task/images/xxx.png"
-    
-    // Remover 'public/' si existe
-    if (cleanPath.startsWith('public/')) {
-      cleanPath = cleanPath.substring(7);
-    }
-    
-    // 👇 AGREGAR 'workorders/' si no está presente
-    if (!cleanPath.startsWith('workorders/')) {
-      cleanPath = `workorders/${cleanPath}`;
+  getSafeAttachmentUrl(att: any): string {
+    if (att.url) {
+      return att.url;
     }
 
-    const pathParts = cleanPath.split('/').filter(Boolean);
-    const encodedPath = pathParts.map(part => encodeURIComponent(part)).join('/');
-    const url = `${baseUrl}/storage/${encodedPath}`;
-    return url;
-  }
+    if (att.path) {
+      const baseUrl = APP_CONFIG.apiBase.replace(/\/$/, '');
 
-  if (att.preview) {
-    return `images/apps/mailbox/${att.preview}`;
-  }
+      let cleanPath = att.path;
 
-  console.error('❌ No URL found for attachment:', att);
-  return '';
-}
+      // 🔥 FIX CRÍTICO: El path viene como "task/images/xxx.png"
+      // pero Laravel Storage espera "workorders/task/images/xxx.png"
+
+      // Remover 'public/' si existe
+      if (cleanPath.startsWith('public/')) {
+        cleanPath = cleanPath.substring(7);
+      }
+
+      // 👇 AGREGAR 'workorders/' si no está presente
+      if (!cleanPath.startsWith('workorders/')) {
+        cleanPath = `workorders/${cleanPath}`;
+      }
+
+      const pathParts = cleanPath.split('/').filter(Boolean);
+      const encodedPath = pathParts.map((part) => encodeURIComponent(part)).join('/');
+      const url = `${baseUrl}/storage/${encodedPath}`;
+      return url;
+    }
+
+    if (att.preview) {
+      return `images/apps/mailbox/${att.preview}`;
+    }
+
+    console.error('❌ No URL found for attachment:', att);
+    return '';
+  }
 
   getSafePdfUrl(att: any): SafeResourceUrl {
     const url = this.getSafeAttachmentUrl(att);
