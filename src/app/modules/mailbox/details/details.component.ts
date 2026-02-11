@@ -115,7 +115,7 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe((shouldReload) => {
         if (shouldReload && this.mail?.id) {
-          console.log('🔄 Actualizando mail actual...');
+      
           // Recargar el mail actual para ver nuevas replies
           this._mailboxService.getMailById(this.mail.id).subscribe((updatedMail) => {
             this.mail = updatedMail;

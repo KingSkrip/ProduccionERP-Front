@@ -209,7 +209,7 @@ export class MailboxComposeComponent implements OnInit {
         duration: 3000,
       });
 
-      console.log('Archivos adjuntos:', this.attachedFiles);
+  
     }
     input.value = '';
   }

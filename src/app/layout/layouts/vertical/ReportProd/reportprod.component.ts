@@ -65,8 +65,6 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(({ roleId, subRoleId }) => {
 
-                // console.log('rol', roleId);
-                // console.log('subrol', subRoleId);
 
                 const canSeeChildMenu =
                     subRoleId === SubRoleEnum.JEFE || roleId === RoleEnum.SUADMIN;

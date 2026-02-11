@@ -191,11 +191,7 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
     filterUsuarios(searchTerm: string): void {
         this.usuarios$ = this._rhService.usuarios$.pipe(
             map(usuarios => {
-                // DEBUG: Imprime el primer usuario para ver qué propiedades tiene
-                // if (usuarios && usuarios.length > 0) {
-                //     console.log('Primer usuario:', usuarios[0]);
-                //     console.log('Propiedades disponibles:', Object.keys(usuarios[0]));
-                // }
+
 
                 if (!searchTerm.trim()) {
                     this.updatePagination(usuarios);

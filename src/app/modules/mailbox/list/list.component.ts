@@ -62,7 +62,7 @@ export class MailboxListComponent implements OnInit, OnDestroy {
     .pipe(takeUntil(this._unsubscribeAll))
     .subscribe((shouldReload) => {
       if (shouldReload && this.category) {
-        console.log('🔄 Recargando mails por WebSocket...');
+       
         // Recargar la categoría actual
         this._mailboxService.refreshCurrentFolder();
       }

@@ -41,12 +41,11 @@ export class WebsocketService {
       },
     });
     const channelName = `user.${identityId}`;
-    console.log('📡 Suscribiéndose al canal privado:', channelName);
 
     this.echo
       .private(channelName)
       .listen('.workorder.created', (event: any) => {
-        console.log('📨 Nuevo workorder recibido:', event);
+     
         this.messages$.next({
           type: 'workorder.created',
           data: event,
@@ -54,26 +53,25 @@ export class WebsocketService {
       })
 
       .listen('.mail.reply.created', (event: any) => {
-        console.log('💬 Nueva respuesta recibida:', event);
+    
         this.messages$.next({
           type: 'mail.reply.created',
           data: event,
         });
       })
       .listen('.mailbox.updated', (event: any) => {
-        console.log('📬 Mailbox actualizado:', event);
+      
         this.messages$.next({
           type: 'mailbox.updated',
           data: event,
         });
       });
 
-    // this.connected$.next(true);
-    // console.log('✅ WebSocket conectado para identityId:', identityId);
+
 
     this.echo.connector.pusher.connection.bind('connected', () => {
       this.connected$.next(true);
-      console.log('✅ WebSocket realmente conectado');
+  
     });
 
     this.echo.connector.pusher.connection.bind('disconnected', () => {
@@ -88,7 +86,7 @@ export class WebsocketService {
       this.echo.disconnect();
       this.echo = null;
       this.connected$.next(false);
-      console.log('❌ WebSocket desconectado');
+   
     }
   }
   isConnected(): Observable<boolean> {
@@ -105,13 +103,13 @@ export class WebsocketService {
     this.echo
       .join(`workorder.${workorderId}`)
       .here((users: any[]) => {
-        console.log('👥 Usuarios online en workorder:', users);
+      
       })
       .joining((user: any) => {
-        console.log('✅ Usuario se unió:', user);
+      
       })
       .leaving((user: any) => {
-        console.log('❌ Usuario salió:', user);
+   
       });
   }
   leaveWorkorder(workorderId: number): void {

@@ -277,13 +277,13 @@ export class ReportProdService {
 
     return this._httpClient
       .get<{ success: boolean; data: any[] }>(
-        `${this.apiUrl}reportes-produccion/entregado-embarques`, // 🔥 VERIFICA ESTA RUTA
+        `${this.apiUrl}reportes-produccion/entregado-embarques`,
         { params },
       )
       .pipe(
         map((resp) => {
-          // console.log('🔧 SERVICE: Respuesta del servidor:', resp);
-          return resp.data || []; // 🔥 ASEGÚRATE DE RETORNAR resp.data
+
+          return resp.data || []; 
         }),
         catchError((err) => {
           console.error('🔧 SERVICE: Error en petición:', err);

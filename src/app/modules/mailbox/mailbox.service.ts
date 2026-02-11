@@ -915,7 +915,7 @@ export class MailboxService {
     // Verificar que no exista ya
     const exists = currentMails.some((m) => m.id === newMail.id);
     if (exists) {
-      console.log('ℹ️ El correo ya existe en la lista');
+
       return;
     }
 
@@ -935,7 +935,6 @@ export class MailboxService {
       });
     }
 
-    console.log('✅ Nuevo correo agregado a la lista:', normalizedMail.id);
   }
 
   /**
@@ -995,7 +994,7 @@ export class MailboxService {
       }
     }
 
-    console.log('✅ Correo actualizado en la lista:', workorderId, changes);
+
   }
 
   /**
@@ -1038,7 +1037,6 @@ export class MailboxService {
       }
     }
 
-    console.log('✅ Respuesta agregada al correo:', workorderId, replyData.id);
   }
 
   /**
@@ -1052,7 +1050,7 @@ export class MailboxService {
       return;
     }
 
-    console.log('🔄 Refrescando carpeta:', category);
+
 
     if (category.type === 'folder') {
       this.getMailsByFolder(category.name).subscribe();

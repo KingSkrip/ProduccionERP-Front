@@ -31,21 +31,12 @@ export class MailboxComponent implements OnInit, OnDestroy {
  ngOnInit(): void {
   const user = this._userService.user;
 
-  console.log('👤 USER COMPLETO:', {
-    id: user?.id,
-    firebird_user_id: user?.firebird_user_id,
-    firebird_user_clave: user?.firebird_user_clave,
-    name: user?.name,
-  });
+
 
   if (user?.id) {
     const token = localStorage.getItem('encrypt') ?? '';
 
-    console.log('🔥 Conectando WS:', {
-      identity_id: user.id,
-      firebird_user_id: user.firebird_user_id,
-      usando_para_ws: user.id,
-    });
+
 
     this._websocketService.connect(Number(user.id), token);
   }
@@ -57,23 +48,23 @@ export class MailboxComponent implements OnInit, OnDestroy {
     .subscribe((msg) => {
       if (!msg) return;
       
-      console.log('📡 Evento WS recibido:', msg);
+    
 
       switch (msg.type) {
         case 'workorder.created':
-          console.log('📨 Nuevo workorder:', msg.data);
+        
           // Recargar la lista de correos
           this._mailboxService.reloadMails();
           break;
 
         case 'mail.reply.created':
-          console.log('💬 Nueva respuesta:', msg.data);
+        
           // Actualizar el mail actual si está abierto
           this._mailboxService.reloadMails();
           break;
 
         case 'mailbox.updated':
-          console.log('📬 Mailbox actualizado:', msg.data);
+       
           // Actualizar el estado del item
           this._mailboxService.reloadMails();
           break;
