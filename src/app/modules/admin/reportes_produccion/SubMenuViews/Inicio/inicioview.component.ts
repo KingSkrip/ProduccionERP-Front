@@ -92,6 +92,12 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   articuloSeleccionadoPorRevisar: string | null = null;
   tipoEmbarqueSeleccionadoGrafica: string | null = null;
   @ViewChild(MatSort) recentTransactionsTableMatSort!: MatSort;
+  private readonly CONVERSION_RATES = {
+    LB_TO_KG: 0.453592,
+    KG_TO_LB: 2.20462,
+    OZ_TO_G: 28.3495,
+    G_TO_OZ: 0.035274,
+  };
 
   data: any = {
     previousStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
@@ -986,7 +992,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const cant = Number(tot.cant) || 0;
     const total = Number(tot.total) || 0;
 
-
     const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
     if (!area || area.metrics.length < 2) return;
     area.metrics[0].value = cant;
@@ -994,10 +999,27 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   }
 
   get cantidadesPorUnidadArray() {
-    return Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => ({
-      um,
-      cant,
-    }));
+    const unidades = Object.entries(this.cantidadesPorUnidad || {});
+    let totalKG = 0;
+
+    // Convertir todas las unidades a KG y sumarlas
+    unidades.forEach(([um, cant]) => {
+      const umUpper = um.toUpperCase();
+
+      if (umUpper === 'KG' || umUpper === 'KGS') {
+        totalKG += cant;
+      } else if (umUpper === 'LB' || umUpper === 'LBS') {
+        totalKG += cant * 0.453592; // Convertir LB a KG
+      } else if (umUpper === 'OZ') {
+        totalKG += cant * 0.0283495; // Convertir OZ a KG
+      } else if (umUpper === 'G' || umUpper === 'GR') {
+        totalKG += cant * 0.001; // Convertir G a KG
+      }
+      // Si hay otras unidades que no son de peso, las ignoramos para el total de KG
+    });
+
+    // Retornar solo el total en KG
+    return [{ um: 'KG', cant: totalKG }];
   }
 
   get totalFacturacion(): number {
