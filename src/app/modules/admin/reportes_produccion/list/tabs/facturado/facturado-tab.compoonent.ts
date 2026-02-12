@@ -1,10 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { fuseAnimations } from '@fuse/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { fuseAnimations } from '@fuse/animations';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ReportProdService } from '../../../reportprod.service';
@@ -34,18 +41,12 @@ interface ClienteAgrupado {
   selector: 'tabs-facturado-tab',
   templateUrl: './facturado-tab.component.html',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatProgressSpinnerModule,
-    MatIconModule,
-    MatButtonModule,
-  ],
+  imports: [CommonModule, MatProgressSpinnerModule, MatIconModule, MatButtonModule],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: fuseAnimations
+  animations: fuseAnimations,
 })
 export class FacturadoTabComponent implements OnInit, OnDestroy {
-
   // Datos originales y agrupados
   datosOriginales: any = null;
   datosAgrupados: ClienteAgrupado[] = [];
@@ -60,7 +61,14 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
   impuestosTotal = 0;
   totalConIva = 0;
   totalFacturas = 0;
-
+  private readonly CONVERSION_RATES = {
+    LB_TO_KG: 0.453592,
+    KG_TO_LB: 2.20462,
+    OZ_TO_G: 28.3495,
+    G_TO_OZ: 0.035274,
+    OZ_TO_KG: 0.0283495,
+    G_TO_KG: 0.001,
+  };
 
   private _unsubscribeAll = new Subject<void>();
 
@@ -68,14 +76,14 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
     private _cd: ChangeDetectorRef,
     private _reportService: ReportProdService,
     private _snackBar: MatSnackBar,
-    private _sharedDataService: SharedDataService
-  ) { }
+    private _sharedDataService: SharedDataService,
+  ) {}
 
   ngOnInit(): void {
     // Escuchar cambios en filtros globales
     this._sharedDataService.filtrosGlobales$
       .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe(filtros => {
+      .subscribe((filtros) => {
         if (this.cargaInicial) {
           this.aplicarFiltrosYAgrupar(filtros);
         }
@@ -85,7 +93,7 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
     this._sharedDataService.recargarDatos$
       .pipe(
         takeUntil(this._unsubscribeAll),
-        filter(recargar => recargar === true)
+        filter((recargar) => recargar === true),
       )
       .subscribe(() => {
         const filtros = this._sharedDataService.obtenerFiltros();
@@ -115,19 +123,18 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
 
     // Filtrar detalle
     const detalleFiltrado = this.datosOriginales.detalle.filter((item: FacturaDetalle) => {
-      return !busqueda ||
+      return (
+        !busqueda ||
         item.cliente?.toLowerCase().includes(busqueda) ||
-        item.factura?.toLowerCase().includes(busqueda);
+        item.factura?.toLowerCase().includes(busqueda)
+      );
     });
 
     // Agrupar por cliente
     this.agruparPorCliente(detalleFiltrado);
 
     // Recalcular total
-    this.totalFacturado = this.datosAgrupados.reduce(
-      (sum, grupo) => sum + grupo.totalFacturado,
-      0
-    );
+    this.totalFacturado = this.datosAgrupados.reduce((sum, grupo) => sum + grupo.totalFacturado, 0);
 
     this._cd.markForCheck();
   }
@@ -135,7 +142,7 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
   private agruparPorCliente(detalle: FacturaDetalle[]): void {
     const agrupado = new Map<string, ClienteAgrupado>();
 
-    detalle.forEach(item => {
+    detalle.forEach((item) => {
       const cliente = item.cliente || 'Sin cliente';
 
       if (!agrupado.has(cliente)) {
@@ -146,7 +153,7 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
           importeTotal: 0,
           impuestosTotal: 0,
           totalFacturado: 0,
-          expandido: false
+          expandido: false,
         });
       }
 
@@ -166,8 +173,9 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
     });
 
     // Convertir a array y ordenar por total descendente
-    this.datosAgrupados = Array.from(agrupado.values())
-      .sort((a, b) => b.totalFacturado - a.totalFacturado);
+    this.datosAgrupados = Array.from(agrupado.values()).sort(
+      (a, b) => b.totalFacturado - a.totalFacturado,
+    );
   }
 
   cargarFacturado(fechaInicio?: Date | null, fechaFin?: Date | null): void {
@@ -176,10 +184,8 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this._cd.markForCheck();
 
-    this._reportService.getFacturado(
-      fechaInicio || undefined,
-      fechaFin || undefined,
-      true)
+    this._reportService
+      .getFacturado(fechaInicio || undefined, fechaFin || undefined, true)
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
         next: (data) => {
@@ -201,7 +207,7 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
           this._snackBar.open('Error al cargar datos de facturado', 'Cerrar', { duration: 3000 });
           this.isLoading = false;
           this._cd.markForCheck();
-        }
+        },
       });
   }
 
@@ -211,16 +217,13 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
   }
 
   calcularTotalFacturas(): number {
-    return this.datosAgrupados.reduce(
-      (sum, grupo) => sum + grupo.facturas.length,
-      0
-    );
+    return this.datosAgrupados.reduce((sum, grupo) => sum + grupo.facturas.length, 0);
   }
 
   calcularCantidadTotal(): number {
     let total = 0;
-    this.datosAgrupados.forEach(grupo => {
-      Object.values(grupo.cantidadesPorUnidad).forEach(cantidad => {
+    this.datosAgrupados.forEach((grupo) => {
+      Object.values(grupo.cantidadesPorUnidad).forEach((cantidad) => {
         total += cantidad;
       });
     });
@@ -228,39 +231,43 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
   }
 
   calcularCantidadTotalPorUnidad(): { [key: string]: number } {
-    const totalesPorUnidad: { [key: string]: number } = {};
+    let totalKG = 0;
 
-    this.datosAgrupados.forEach(grupo => {
+    this.datosAgrupados.forEach((grupo) => {
       Object.entries(grupo.cantidadesPorUnidad).forEach(([unidad, cantidad]) => {
-        if (!totalesPorUnidad[unidad]) {
-          totalesPorUnidad[unidad] = 0;
+        const unidadUpper = unidad.toUpperCase();
+
+        // Convertir todo a KG
+        if (unidadUpper === 'KG' || unidadUpper === 'KGS') {
+          totalKG += cantidad;
+        } else if (unidadUpper === 'LB' || unidadUpper === 'LBS') {
+          totalKG += cantidad * this.CONVERSION_RATES.LB_TO_KG;
+        } else if (unidadUpper === 'OZ') {
+          totalKG += cantidad * this.CONVERSION_RATES.OZ_TO_KG;
+        } else if (unidadUpper === 'G' || unidadUpper === 'GR') {
+          totalKG += cantidad * this.CONVERSION_RATES.G_TO_KG;
         }
-        totalesPorUnidad[unidad] += cantidad;
+        // Otras unidades se ignoran para el cálculo de peso
       });
     });
 
-    return totalesPorUnidad;
+    // Retornar solo KG
+    return { KG: totalKG };
   }
 
   calcularImporteTotal(): number {
-    return this.datosAgrupados.reduce(
-      (sum, grupo) => sum + grupo.importeTotal,
-      0
-    );
+    return this.datosAgrupados.reduce((sum, grupo) => sum + grupo.importeTotal, 0);
   }
 
   calcularImpuestosTotal(): number {
-    return this.datosAgrupados.reduce(
-      (sum, grupo) => sum + grupo.impuestosTotal,
-      0
-    );
+    return this.datosAgrupados.reduce((sum, grupo) => sum + grupo.impuestosTotal, 0);
   }
 
   limpiarFiltrosLocales(): void {
     this._sharedDataService.actualizarFiltros({
       busqueda: '',
       departamento: '',
-      proceso: ''
+      proceso: '',
     });
   }
 }
