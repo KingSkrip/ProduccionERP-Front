@@ -35,6 +35,23 @@
   <!-- VISTA GENERAL -->
   <!-- ========================================= -->
   <div *ngIf="vistaActual === 'general'">
+    <!-- FACTURACION -->
+    <div class="my-8 flex items-center gap-4">
+      <div
+        class="h-px flex-1 bg-gradient-to-r from-transparent via-green-300 to-transparent dark:via-green-700"
+      ></div>
+      <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
+        <mat-icon
+          svgIcon="heroicons_outline:banknotes"
+          class="text-black icon-size-5 dark:text-green-400"
+        ></mat-icon>
+        <span class="text-sm font-semibold uppercase tracking-wide"> Facturación </span>
+      </div>
+      <div
+        class="h-px flex-1 bg-gradient-to-r from-transparent via-green-300 to-transparent dark:via-green-700"
+      ></div>
+    </div>
+
     <!-- GRAFICA FACTURACION -->
     <div class="mt-8 grid w-full grid-cols-1 gap-8">
       <!-- COLUMNA IZQUIERDA: 3 cards apiladas -->
@@ -116,9 +133,7 @@
           </div>
           <div class="flex items-center">
             <div class="flex flex-col">
-              <div class="truncate text-lg font-medium leading-6 tracking-tight">
-                Peso total
-              </div>
+              <div class="truncate text-lg font-medium leading-6 tracking-tight">Peso total</div>
               <div class="text-sm font-medium text-purple-600">
                 Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }} -
                 {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
@@ -228,6 +243,26 @@
           </div>
         </div>
       </div> -->
+    </div>
+
+    <!-- Distribución de procesos -->
+    <div class="my-8 flex items-center gap-4">
+      <div
+        class="h-px flex-1 bg-gradient-to-r from-transparent via-blue-300 to-transparent dark:via-blue-700"
+      ></div>
+      <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+        <mat-icon
+          svgIcon="heroicons_outline:chart-bar"
+          class="text-black icon-size-5 dark:text-blue-400"
+        >
+        </mat-icon>
+        <span class="text-sm font-semibold uppercase tracking-wide">
+          Distribución de procesos
+        </span>
+      </div>
+      <div
+        class="h-px flex-1 bg-gradient-to-r from-transparent via-blue-300 to-transparent dark:via-blue-700"
+      ></div>
     </div>
 
     <!-- GRAFICA CUARTETO Detalles de Tejido, Tintorería, Estampados y Acabado -->
