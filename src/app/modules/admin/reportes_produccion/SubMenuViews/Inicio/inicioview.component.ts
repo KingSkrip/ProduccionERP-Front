@@ -972,7 +972,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const cantidadTotal =
       Number(tot.cant) || detalle.reduce((sum, x) => sum + (Number(x.cant) || 0), 0);
 
-    // ✅ Guarda total con IVA para el card "Total"
+    //  Guarda total con IVA para el card "Total"
     this.totalConIva = total;
 
     const area = this.areasResumen.find((a) => a.nombre === 'Facturación');

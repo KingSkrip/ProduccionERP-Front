@@ -13,13 +13,10 @@
 
   <!-- CONTENIDO CON SCROLL -->
   <div class="flex-1 overflow-y-auto">
-    <form class="flex min-h-full flex-col p-4 md:p-6" [formGroup]="composeForm">
-      <!-- PARA (MULTI con buscador) -->
+    <form *ngIf="composeForm" class="flex min-h-full flex-col p-4 md:p-6" [formGroup]="composeForm">
       <mat-form-field>
         <mat-label>Para</mat-label>
-
         <mat-select formControlName="para" multiple (selectionChange)="onSelectChange('para')">
-          <!-- 🔹 TRIGGER con chips -->
           <mat-select-trigger>
             <div class="flex flex-wrap gap-2">
               @for (id of composeForm.value.para || []; track id) {
@@ -51,7 +48,7 @@
             </div>
           </mat-select-trigger>
 
-          <!-- ✅ BUSCADOR (ngx) DENTRO DE mat-option -->
+          <!--  BUSCADOR (ngx) DENTRO DE mat-option -->
           <mat-option>
             <ngx-mat-select-search
               [formControl]="paraFilterCtrl"
@@ -60,7 +57,7 @@
             ></ngx-mat-select-search>
           </mat-option>
 
-          <!-- ✅ LISTA FILTRADA -->
+          <!--  LISTA FILTRADA -->
           <mat-option *ngFor="let u of filteredParaUsers" [value]="u.id">
             <div class="flex items-center gap-3">
               <img
@@ -88,7 +85,7 @@
           }
           @if (!copyFields.bcc) {
             <span
-              class="ml-2 cursor-pointer select-none text-sm font-medium hover:underline  dark:text-white"
+              class="ml-2 cursor-pointer select-none text-sm font-medium hover:underline dark:text-white"
               (click)="showCopyField('bcc'); $event.stopPropagation()"
             >
               Bcc
@@ -240,9 +237,7 @@
         ></textarea>
       </mat-form-field>
 
-      <!-- 🎯 ADJUNTOS COMPACTOS Y RESPONSIVE -->
       <div class="mt-3">
-        <!-- Header con contador y botón -->
         <div class="mb-2 flex items-center justify-between">
           <div class="text-sm font-medium">
             Adjuntos
@@ -268,7 +263,6 @@
           </button>
         </div>
 
-        <!-- Dropzone COMPACTA - Solo visible cuando NO hay archivos -->
         @if (!attachedFiles.length) {
           <div
             class="flex min-h-[60px] items-center justify-center rounded-lg border-2 border-dashed border-black/10 p-3 text-center transition-colors dark:border-gray-100/50"
@@ -296,7 +290,6 @@
               <div
                 class="group flex items-center gap-2 rounded-md bg-white p-1.5 shadow-sm transition-shadow hover:shadow dark:bg-gray-300/20"
               >
-                <!-- Preview / icono MÁS PEQUEÑO -->
                 @if (isImage(f)) {
                   <img
                     class="h-8 w-8 flex-shrink-0 rounded object-cover"
@@ -311,13 +304,11 @@
                   </div>
                 }
 
-                <!-- Info COMPACTA -->
                 <div class="min-w-0 flex-1">
                   <div class="truncate text-xs font-medium">{{ f.name }}</div>
                   <div class="text-[10px] opacity-60">{{ prettySize(f.size) }}</div>
                 </div>
 
-                <!-- Botón quitar más pequeño -->
                 <button
                   mat-icon-button
                   type="button"
@@ -336,7 +327,6 @@
         }
       </div>
 
-      <!-- Input oculto -->
       <input
         #fileInput
         type="file"
@@ -345,16 +335,6 @@
         (change)="onAnySelected($event)"
         accept="*/*"
       />
-
-      <!-- Input oculto para imágenes -->
-      <!-- <input
-        #imageInput
-        type="file"
-        multiple
-        style="display: none"
-        (change)="onImageSelected($event)"
-        accept="image/*"
-      /> -->
     </form>
   </div>
 
@@ -363,18 +343,13 @@
     class="flex-shrink-0 border-t border-black/10 bg-white px-4 py-3 md:px-6 dark:bg-primary-500"
   >
     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div class="-ml-2 hidden md:block">
-        <!-- <button mat-icon-button type="button" (click)="insertImage()" title="Insertar imagen">
-          <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
-        </button> -->
-      </div>
-
       <div class="flex flex-col gap-2 md:flex-row md:items-center">
         <button
           class="order-2 text-black md:order-1 dark:bg-gray-100"
           mat-stroked-button
           type="button"
           (click)="Cancelar()"
+          [disabled]="isOperationInProgress"
         >
           Cancelar
         </button>
@@ -384,18 +359,39 @@
           mat-stroked-button
           type="button"
           (click)="BorradorAndClose()"
+          [disabled]="!isFormValid || isOperationInProgress"
         >
-          <span class="text-black">Guardar como borrador</span>
+          @if (isGuardandoBorrador) {
+            <ng-container>
+              <mat-icon
+                class="mr-1 animate-spin"
+                [svgIcon]="'heroicons_outline:arrow-path'"
+              ></mat-icon>
+              <span class="text-black">Guardando...</span>
+            </ng-container>
+          } @else {
+            <span class="text-black">Guardar como borrador</span>
+          }
         </button>
-
         <button
           class="order-1 md:order-3 dark:bg-gray-800"
           mat-flat-button
           [color]="'primary'"
           type="button"
           (click)="enviar()"
+          [disabled]="!isFormValid || isOperationInProgress"
         >
-          Enviar
+          @if (isEnviando) {
+            <ng-container>
+              <mat-icon
+                class="mr-1 animate-spin"
+                [svgIcon]="'heroicons_outline:arrow-path'"
+              ></mat-icon>
+              <span>Enviando...</span>
+            </ng-container>
+          } @else {
+            <span>Enviar</span>
+          }
         </button>
       </div>
     </div>

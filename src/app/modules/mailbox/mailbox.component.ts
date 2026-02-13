@@ -5,8 +5,8 @@ import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { WebsocketService } from 'app/core/services/websockets/websocket.service';
 import { UserService } from 'app/core/user/user.service';
 import { Subject, takeUntil } from 'rxjs';
-import { MailboxSidebarComponent } from './sidebar/sidebar.component';
 import { MailboxService } from './mailbox.service';
+import { MailboxSidebarComponent } from './sidebar/sidebar.component';
 
 @Component({
   selector: 'mailbox',
@@ -25,62 +25,53 @@ export class MailboxComponent implements OnInit, OnDestroy {
     private _fuseMediaWatcherService: FuseMediaWatcherService,
     private _userService: UserService,
     private _websocketService: WebsocketService,
-     private _mailboxService: MailboxService,
+    private _mailboxService: MailboxService,
   ) {}
 
- ngOnInit(): void {
-  const user = this._userService.user;
+  ngOnInit(): void {
+    const user = this._userService.user;
 
+    if (user?.id) {
+      const token = localStorage.getItem('encrypt') ?? '';
 
+      this._websocketService.connect(Number(user.id), token);
+    }
 
-  if (user?.id) {
-    const token = localStorage.getItem('encrypt') ?? '';
+    // 🔥 PROCESAR EVENTOS WEBSOCKET
+    this._websocketService
+      .getMessages()
+      .pipe(takeUntil(this._unsubscribeAll))
+      .subscribe((msg) => {
+        if (!msg) return;
 
+        switch (msg.type) {
+          case 'workorder.created':
+            // Recargar la lista de correos
+            this._mailboxService.reloadMails();
+            break;
 
+          case 'mail.reply.created':
+            // Actualizar el mail actual si está abierto
+            this._mailboxService.reloadMails();
+            break;
 
-    this._websocketService.connect(Number(user.id), token);
+          case 'mailbox.updated':
+            // Actualizar el estado del item
+            this._mailboxService.reloadMails();
+            break;
+        }
+      });
+
+    this._fuseMediaWatcherService.onMediaChange$
+      .pipe(takeUntil(this._unsubscribeAll))
+      .subscribe(({ matchingAliases }) => {
+        this.drawerMode = matchingAliases.includes('md') ? 'side' : 'over';
+        this.drawerOpened = matchingAliases.includes('md');
+      });
   }
 
-  // 🔥 PROCESAR EVENTOS WEBSOCKET
-  this._websocketService
-    .getMessages()
-    .pipe(takeUntil(this._unsubscribeAll))
-    .subscribe((msg) => {
-      if (!msg) return;
-      
-    
-
-      switch (msg.type) {
-        case 'workorder.created':
-        
-          // Recargar la lista de correos
-          this._mailboxService.reloadMails();
-          break;
-
-        case 'mail.reply.created':
-        
-          // Actualizar el mail actual si está abierto
-          this._mailboxService.reloadMails();
-          break;
-
-        case 'mailbox.updated':
-       
-          // Actualizar el estado del item
-          this._mailboxService.reloadMails();
-          break;
-      }
-    });
-
-  this._fuseMediaWatcherService.onMediaChange$
-    .pipe(takeUntil(this._unsubscribeAll))
-    .subscribe(({ matchingAliases }) => {
-      this.drawerMode = matchingAliases.includes('md') ? 'side' : 'over';
-      this.drawerOpened = matchingAliases.includes('md');
-    });
-}
-
   ngOnDestroy(): void {
-    // ✅ desconectar websocket
+    //  desconectar websocket
     this._websocketService.disconnect();
 
     this._unsubscribeAll.next(null);

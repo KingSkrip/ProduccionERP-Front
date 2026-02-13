@@ -57,16 +57,14 @@ export class MailboxListComponent implements OnInit, OnDestroy {
    * On init
    */
   ngOnInit(): void {
-
-     this._mailboxService.mailsUpdated$
-    .pipe(takeUntil(this._unsubscribeAll))
-    .subscribe((shouldReload) => {
-      if (shouldReload && this.category) {
-       
-        // Recargar la categoría actual
-        this._mailboxService.refreshCurrentFolder();
-      }
-    });
+    this._mailboxService.mailsUpdated$
+      .pipe(takeUntil(this._unsubscribeAll))
+      .subscribe((shouldReload) => {
+        if (shouldReload && this.category) {
+          // Recargar la categoría actual
+          this._mailboxService.refreshCurrentFolder();
+        }
+      });
 
     // Category
     this._mailboxService.category$
@@ -200,7 +198,7 @@ export class MailboxListComponent implements OnInit, OnDestroy {
 
     if (!raw) return null;
 
-    // ✅ si viene "YYYY-MM-DD HH:mm:ss" lo convertimos a ISO local "YYYY-MM-DDTHH:mm:ss"
+    //  si viene "YYYY-MM-DD HH:mm:ss" lo convertimos a ISO local "YYYY-MM-DDTHH:mm:ss"
     if (typeof raw === 'string' && raw.includes(' ') && !raw.includes('T')) {
       return new Date(raw.replace(' ', 'T'));
     }

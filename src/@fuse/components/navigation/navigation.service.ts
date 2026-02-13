@@ -226,13 +226,9 @@ export class FuseNavigationService {
 
 
     getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
-
-        // ✅ SOLO JEFE tiene este menú hijo
         if (subRoleId === SubRoleEnum.JEFE) {
             return [...menuReporteProd_Jefe];
         }
-
-        // otros subroles/roles: sin menú hijo
         return [];
     }
 

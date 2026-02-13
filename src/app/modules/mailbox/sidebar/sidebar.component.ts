@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -39,6 +39,7 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
     private _mailboxService: MailboxService,
     private _matDialog: MatDialog,
     private _fuseNavigationService: FuseNavigationService,
+       private _cdr: ChangeDetectorRef,
   ) {}
 
   // -----------------------------------------------------------------------------------------------------
@@ -99,16 +100,15 @@ export class MailboxSidebarComponent implements OnInit, OnDestroy {
   // @ Public methods
   // -----------------------------------------------------------------------------------------------------
 
-  /**
-   * Open compose dialog
-   */
-  openComposeDialog(): void {
-    // Open the dialog
-    const dialogRef = this._matDialog.open(MailboxComposeComponent);
+/**
+ * Open compose dialog
+ */
+openComposeDialog(): void {
+  // Open the dialog
+  const dialogRef = this._matDialog.open(MailboxComposeComponent);
 
-    dialogRef.afterClosed().subscribe((result) => {});
-  }
-
+  dialogRef.afterClosed().subscribe((result) => {});
+}
   // -----------------------------------------------------------------------------------------------------
   // @ Private methods
   // -----------------------------------------------------------------------------------------------------

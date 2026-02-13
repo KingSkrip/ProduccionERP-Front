@@ -39,7 +39,7 @@
 //     });
 
 //     window.Echo = this.echo;
-//     console.log('✅ Laravel Echo (Reverb) inicializado', {
+//     console.log(' Laravel Echo (Reverb) inicializado', {
 //       host,
 //       port,
 //       scheme,

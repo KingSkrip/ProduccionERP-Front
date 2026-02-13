@@ -230,8 +230,6 @@ export class AppNavigationStoreService {
 
         const isJefe = subRoleId === SubRoleEnum.JEFE;
         const isSuadmin = roleId === RoleEnum.SUADMIN;
-
-        // ✅ JEFE o SUADMIN ven el menú hijo
         if (isJefe || isSuadmin) {
             return [...menuReporteProd_Jefe];
         }

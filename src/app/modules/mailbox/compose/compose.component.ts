@@ -50,44 +50,20 @@ const BlockEmbed: any = Quill.import('blots/block/embed');
 })
 export class MailboxComposeComponent implements OnInit {
   @ViewChild('fileInput') fileInput: any;
-
-  composeForm: UntypedFormGroup;
-  users: SimpleUser[] = [];
-  recentEmojis: string[] = [];
-  paraSearch = '';
-  ccSearch = '';
-  bccSearch = '';
-  private previewMap = new Map<string, string>();
-  trackByFile = (_: number, f: File) => `${f.name}-${f.size}-${f.lastModified}`;
-  filteredParaUsers: SimpleUser[] = [];
-  filteredCcUsers: SimpleUser[] = [];
-  filteredBccUsers: SimpleUser[] = [];
-  copyFields: { cc: boolean; bcc: boolean } = { cc: false, bcc: false };
-  usersById = new Map<number, SimpleUser>();
-  quillModules: any = {
-    toolbar: [
-      ['bold', 'italic', 'underline'],
-      [{ align: [] }, { list: 'ordered' }, { list: 'bullet' }],
-      ['link'],
-      ['clean'],
-    ],
-  };
-
-  // readonly defaultAvatar = 'assets/images/avatars/default-avatar.png';
-
-  paraFilterCtrl = new FormControl('');
-  ccFilterCtrl = new FormControl('');
-  bccFilterCtrl = new FormControl('');
-
+  isEnviando = false;
+  isDragging = false;
   attachedFiles: File[] = [];
-  quillEditor: any;
-  private linkifyTimeout: any;
-
-  // ========== EMOJIS ==========
-  emojiSearch = '';
-  selectedCategory = 'smileys';
-
-  filteredEmojis: string[] = [];
+  isGuardandoBorrador = false;
+  composeForm: UntypedFormGroup;
+  filteredCcUsers: SimpleUser[] = [];
+  ccFilterCtrl = new FormControl('');
+  filteredBccUsers: SimpleUser[] = [];
+  bccFilterCtrl = new FormControl('');
+  paraFilterCtrl = new FormControl('');
+  filteredParaUsers: SimpleUser[] = [];
+  usersById = new Map<number, SimpleUser>();
+  private previewMap = new Map<string, string>();
+  copyFields: { cc: boolean; bcc: boolean } = { cc: false, bcc: false };
 
   constructor(
     public matDialogRef: MatDialogRef<MailboxComposeComponent>,
@@ -105,24 +81,22 @@ export class MailboxComposeComponent implements OnInit {
       Asunto: ['', [Validators.required]],
       body: ['', [Validators.required]],
     });
-
-    // Carga inicial de usuarios
-    this._mailboxService.getAllUsers('', 50).subscribe({
-      next: (res) => {
-        const base = res || [];
-        this.upsertUsers(base);
-
-        this.filteredParaUsers = this.mergeKeepingSelected('para', base);
-        this.filteredCcUsers = this.mergeKeepingSelected('cc', base);
-        this.filteredBccUsers = this.mergeKeepingSelected('bcc', base);
-      },
-      error: console.error,
-    });
-
-    // ✅ CAMBIO: Configurar búsqueda remota que SIEMPRE hace petición al servidor
     this.setupRemoteSearch('para', this.paraFilterCtrl, (list) => (this.filteredParaUsers = list));
     this.setupRemoteSearch('cc', this.ccFilterCtrl, (list) => (this.filteredCcUsers = list));
     this.setupRemoteSearch('bcc', this.bccFilterCtrl, (list) => (this.filteredBccUsers = list));
+    setTimeout(() => {
+      this._mailboxService.getAllUsers('', 50).subscribe({
+        next: (res) => {
+          const base = res || [];
+          this.upsertUsers(base);
+
+          this.filteredParaUsers = this.mergeKeepingSelected('para', base);
+          this.filteredCcUsers = this.mergeKeepingSelected('cc', base);
+          this.filteredBccUsers = this.mergeKeepingSelected('bcc', base);
+        },
+        error: console.error,
+      });
+    }, 0);
   }
 
   ngOnDestroy(): void {
@@ -144,115 +118,6 @@ export class MailboxComposeComponent implements OnInit {
     if (controlName === 'cc') this.filteredCcUsers = merged;
     if (controlName === 'bcc') this.filteredBccUsers = merged;
   }
-
-  // ========== QUILL EDITOR ==========
-  onEditorCreated(quill: any): void {
-    this.quillEditor = quill;
-
-    // ✅ Auto-linkify optimizado con debounce
-    quill.on('text-change', () => {
-      clearTimeout(this.linkifyTimeout);
-      this.linkifyTimeout = setTimeout(() => {
-        const text = quill.getText();
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        const matches = text.match(urlRegex);
-
-        if (matches) {
-          matches.forEach((url: string) => {
-            const index = text.indexOf(url);
-            if (index !== -1) {
-              const currentFormat = quill.getFormat(index, url.length);
-              if (!currentFormat.link) {
-                quill.formatText(index, url.length, 'link', url);
-              }
-            }
-          });
-        }
-      }, 300);
-    });
-
-    quill.root.addEventListener('click', (ev: MouseEvent) => {
-      const el = ev.target as HTMLElement;
-
-      if (el?.classList?.contains('ql-img-remove')) {
-        ev.preventDefault();
-        ev.stopPropagation();
-
-        const wrapper = el.closest('.ql-img-wrap') as HTMLElement | null;
-        if (!wrapper) return;
-
-        const blot = Quill.find(wrapper);
-        if (!blot) return;
-
-        const index = quill.getIndex(blot);
-        quill.deleteText(index, 1, 'user');
-
-        this._snackBar.open('Imagen eliminada', 'OK', { duration: 1200 });
-      }
-    });
-  }
-
-  // ========== FUNCIONES DE BOTONES ==========
-
-  attachFile(): void {
-    this.fileInput.nativeElement.click();
-  }
-
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const files = Array.from(input.files);
-      this.attachedFiles.push(...files);
-
-      const fileNames = files.map((f) => f.name).join(', ');
-      this._snackBar.open(`Archivo(s) adjunto(s): ${fileNames}`, 'OK', {
-        duration: 3000,
-      });
-    }
-    input.value = '';
-  }
-
-  insertLink(): void {
-    if (!this.quillEditor) return;
-
-    const range = this.quillEditor.getSelection();
-    if (!range) {
-      this._snackBar.open('Selecciona el texto donde quieres insertar el enlace', 'OK', {
-        duration: 2000,
-      });
-      return;
-    }
-
-    const url = prompt('Ingresa la URL:');
-    if (url) {
-      this.quillEditor.formatText(range.index, range.length, 'link', url);
-      this._snackBar.open('Enlace insertado', 'OK', { duration: 2000 });
-    }
-  }
-
-  onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0 && this.quillEditor) {
-      const files = Array.from(input.files);
-
-      files.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          const base64Image = e.target.result;
-          const range = this.quillEditor.getSelection(true);
-
-          this.quillEditor.insertEmbed(range.index, 'imageWithDelete', base64Image, 'user');
-          this.quillEditor.setSelection(range.index + 1, 0);
-        };
-        reader.readAsDataURL(file);
-      });
-
-      this._snackBar.open('Imagen(es) insertada(s)', 'OK', { duration: 2000 });
-    }
-    input.value = '';
-  }
-
-  // ========== RESTO DE FUNCIONES ==========
 
   showCopyField(name: string): void {
     if (name !== 'cc' && name !== 'bcc') return;
@@ -276,17 +141,14 @@ export class MailboxComposeComponent implements OnInit {
     const selectedUsers = selectedIds
       .map((id) => this.getUserById(id))
       .filter(Boolean) as SimpleUser[];
-
     const selectedSet = new Set(selectedIds);
     const rest = (results || []).filter((u) => !selectedSet.has(u.id));
-
     const merged = [...selectedUsers, ...rest];
     this.upsertUsers(merged);
 
     return merged;
   }
 
-  // ✅ SOLUCIÓN: Nueva función que SIEMPRE hace petición al servidor
   private setupRemoteSearch(
     controlName: 'para' | 'cc' | 'bcc',
     filterCtrl: FormControl,
@@ -296,17 +158,14 @@ export class MailboxComposeComponent implements OnInit {
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),
-        // ✅ SIEMPRE hace petición, incluso si el valor está vacío
         switchMap((v) => {
           const query = (v || '').trim();
-          // Hacer petición al servidor con el término de búsqueda actual
           return this._mailboxService.getAllUsers(query, 200);
         }),
         tap((res) => this.upsertUsers(res || [])),
       )
       .subscribe({
         next: (res) => {
-          // Combinar resultados del servidor con usuarios ya seleccionados
           const merged = this.mergeKeepingSelected(controlName, res || []);
           setFiltered(merged);
         },
@@ -324,11 +183,6 @@ export class MailboxComposeComponent implements OnInit {
     return `${base}${path}`;
   }
 
-  // onImgError(ev: Event): void {
-  //   const img = ev.target as HTMLImageElement;
-  //   img.src = this.defaultAvatar;
-  // }
-
   removeFrom(controlName: 'para' | 'cc' | 'bcc', id: number, ev?: MouseEvent): void {
     ev?.stopPropagation();
     const ctrl = this.composeForm.get(controlName);
@@ -340,23 +194,33 @@ export class MailboxComposeComponent implements OnInit {
     return Array.from(new Set(nums.filter((n) => Number.isFinite(n))));
   }
 
+  get isFormValid(): boolean {
+    return this.composeForm.valid;
+  }
+
+  get isOperationInProgress(): boolean {
+    return this.isEnviando || this.isGuardandoBorrador;
+  }
+
   enviar(): void {
     if (this.composeForm.invalid) {
       this.composeForm.markAllAsTouched();
+      this._snackBar.open('Por favor completa todos los campos obligatorios', 'OK', {
+        duration: 2500,
+      });
       return;
     }
 
+    if (this.isEnviando) return;
+    this.isEnviando = true;
     const de_id = 1;
-
     const paraIds: number[] = this.uniq(this.composeForm.value.para || []);
     const ccIds: number[] = this.uniq(this.composeForm.value.cc || []);
     const bccIds: number[] = this.uniq(this.composeForm.value.bcc || []);
-
     const paraSet = new Set(paraIds);
     const ccClean = ccIds.filter((id) => !paraSet.has(id));
     const ccSet = new Set(ccClean);
     const bccClean = bccIds.filter((id) => !paraSet.has(id) && !ccSet.has(id));
-
     const paraParticipants: TaskParticipantPayload[] = paraIds.map((id, idx) => ({
       user_id: id,
       role: 'receptor' as const,
@@ -389,20 +253,34 @@ export class MailboxComposeComponent implements OnInit {
     this._mailboxService.createTask(payload, this.attachedFiles).subscribe({
       next: (res) => {
         this._mailboxService.prependMail(res);
+        this._snackBar.open('Mensaje enviado correctamente', 'OK', { duration: 2000 });
         this.matDialogRef.close(res);
       },
-      error: (err) => console.error(err),
+      error: (err) => {
+        console.error('❌ Error enviando mensaje:', err);
+        this._snackBar.open('Error al enviar el mensaje. Inténtalo de nuevo.', 'OK', {
+          duration: 3000,
+        });
+        this.isEnviando = false;
+      },
     });
   }
 
   BorradorAndClose(): void {
-    const de_id = 1;
+    if (this.composeForm.invalid) {
+      this.composeForm.markAllAsTouched();
+      this._snackBar.open('Por favor completa todos los campos obligatorios', 'OK', {
+        duration: 2500,
+      });
+      return;
+    }
 
-    // 👇 MISMO CÓDIGO QUE EN enviar() para construir participants
+    if (this.isGuardandoBorrador) return;
+    this.isGuardandoBorrador = true;
+    const de_id = 1;
     const paraIds: number[] = this.uniq(this.composeForm.value.para || []);
     const ccIds: number[] = this.uniq(this.composeForm.value.cc || []);
     const bccIds: number[] = this.uniq(this.composeForm.value.bcc || []);
-
     const paraSet = new Set(paraIds);
     const ccClean = ccIds.filter((id) => !paraSet.has(id));
     const ccSet = new Set(ccClean);
@@ -434,57 +312,30 @@ export class MailboxComposeComponent implements OnInit {
       status_id: 1,
       titulo: this.composeForm.value.Asunto ?? '(Sin asunto)',
       descripcion: this.composeForm.value.body ?? '',
-      participants: participants.length ? participants : undefined, // 👈 AHORA SÍ SE ENVÍAN
+      participants: participants.length ? participants : undefined,
     };
 
     this._mailboxService.createDraft(payload, this.attachedFiles).subscribe({
       next: (res) => {
         this._snackBar.open('Borrador guardado', 'OK', { duration: 2000 });
-
-        // 👇 ACTUALIZAR LISTA LOCALMENTE
         this._mailboxService.prependMail(res);
-
         this.matDialogRef.close(res);
       },
       error: (err) => {
         console.error('❌ Error guardando borrador:', err);
         this._snackBar.open('No se pudo guardar el borrador', 'OK', { duration: 2500 });
+        this.isGuardandoBorrador = false;
       },
     });
   }
 
   Cancelar(): void {
+    if (this.isOperationInProgress) {
+      this._snackBar.open('Espera a que termine la operación actual', 'OK', { duration: 2000 });
+      return;
+    }
     this.matDialogRef.close(null);
   }
-
-  private matchUser(u: SimpleUser, q: string): boolean {
-    const s = (q || '').trim().toLowerCase();
-    if (!s) return true;
-
-    const nombre = (u.nombre || '').toLowerCase();
-    const correo = (u.correo || '').toLowerCase();
-    return nombre.includes(s) || correo.includes(s);
-  }
-
-  applyFilters(): void {
-    this.filteredParaUsers = this.users.filter((u) => this.matchUser(u, this.paraSearch));
-    this.filteredCcUsers = this.users.filter((u) => this.matchUser(u, this.ccSearch));
-    this.filteredBccUsers = this.users.filter((u) => this.matchUser(u, this.bccSearch));
-  }
-
-  onSearchChange(which: 'para' | 'cc' | 'bcc', value: string): void {
-    if (which === 'para') this.paraSearch = value;
-    if (which === 'cc') this.ccSearch = value;
-    if (which === 'bcc') this.bccSearch = value;
-    this.applyFilters();
-  }
-
-  clearSearch(which: 'para' | 'cc' | 'bcc', ev?: MouseEvent): void {
-    ev?.stopPropagation();
-    this.onSearchChange(which, '');
-  }
-
-  isDragging = false;
 
   attachAny(): void {
     this.fileInput.nativeElement.click();
@@ -519,13 +370,11 @@ export class MailboxComposeComponent implements OnInit {
       this.attachedFiles.map((f) => `${f.name}-${f.size}-${f.lastModified}`),
     );
     const incoming = files.filter((f) => !existing.has(`${f.name}-${f.size}-${f.lastModified}`));
-
     if (!incoming.length) return;
-
     this.attachedFiles.push(...incoming);
-
-    const names = incoming.map((f) => f.name).join(', ');
-    this._snackBar.open(`Adjunto(s): ${names}`, 'OK', { duration: 2500 });
+    const count = incoming.length;
+    const message = count === 1 ? `Se adjuntó 1 archivo` : `Se adjuntaron ${count} archivos`;
+    this._snackBar.open(message, 'OK', { duration: 2500 });
   }
 
   removeFile(file: File): void {
@@ -573,5 +422,51 @@ export class MailboxComposeComponent implements OnInit {
       i++;
     }
     return `${val.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+  }
+
+  onImgError(ev: Event): void {
+    const img = ev.target as HTMLImageElement;
+
+    // Obtener el elemento padre para encontrar el nombre del usuario
+    const parentDiv = img.closest('.flex.items-center');
+    const nameElement = parentDiv?.querySelector('.font-medium');
+    const userName = nameElement?.textContent?.trim() || 'U';
+
+    // Generar avatar con iniciales
+    const initials = this.getInitials(userName);
+    const color = this.stringToColor(userName);
+
+    img.src = this.generateAvatarDataUrl(initials, color);
+  }
+
+  private getInitials(name: string): string {
+    const parts = name.split(' ').filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  private stringToColor(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const hue = hash % 360;
+    return `hsl(${hue}, 65%, 50%)`;
+  }
+
+  private generateAvatarDataUrl(initials: string, bgColor: string): string {
+    const svg = `
+      <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="20" fill="${bgColor}"/>
+        <text x="50%" y="50%" text-anchor="middle" dy=".35em" 
+              font-family="Arial, sans-serif" font-size="16" 
+              font-weight="bold" fill="white">${initials}</text>
+      </svg>
+    `;
+
+    return 'data:image/svg+xml;base64,' + btoa(svg);
   }
 }

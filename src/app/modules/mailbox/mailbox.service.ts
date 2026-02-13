@@ -672,7 +672,7 @@ export class MailboxService {
   //   };
   // }
 
-private normalizeWorkorderToMail(wo: any): any {
+  private normalizeWorkorderToMail(wo: any): any {
     const myEmail = (
       (localStorage.getItem('encrypt_user_email') ??
         localStorage.getItem('userEmail') ??
@@ -714,13 +714,15 @@ private normalizeWorkorderToMail(wo: any): any {
 
     // Si el emisor soy yo, obtener mis datos del localStorage
     if (!finalFromName && wo?.de_id) {
-      const storedUserName = localStorage.getItem('userName') || 
-                             localStorage.getItem('user_name') || 
-                             localStorage.getItem('nombre');
-      const storedUserEmail = localStorage.getItem('userEmail') || 
-                              localStorage.getItem('email') || 
-                              localStorage.getItem('correo');
-      
+      const storedUserName =
+        localStorage.getItem('userName') ||
+        localStorage.getItem('user_name') ||
+        localStorage.getItem('nombre');
+      const storedUserEmail =
+        localStorage.getItem('userEmail') ||
+        localStorage.getItem('email') ||
+        localStorage.getItem('correo');
+
       if (storedUserName) finalFromName = storedUserName.trim();
       if (storedUserEmail) finalFromEmail = storedUserEmail.trim();
     }
@@ -777,9 +779,10 @@ private normalizeWorkorderToMail(wo: any): any {
     const unread = mi0 ? !mi0.read_at : typeof wo.unread === 'boolean' ? wo.unread : false;
 
     // 🔥 FIX: Mejorar construcción del campo `from`
-    const fromContact = finalFromName && finalFromEmail 
-      ? `${finalFromName} <${finalFromEmail}>` 
-      : finalFromName || finalFromEmail || 'Usuario desconocido'; // Fallback mejorado
+    const fromContact =
+      finalFromName && finalFromEmail
+        ? `${finalFromName} <${finalFromEmail}>`
+        : finalFromName || finalFromEmail || 'Usuario desconocido'; // Fallback mejorado
 
     // 🔥 FIX: Mejorar construcción del asunto
     const asunto = wo?.titulo?.trim() || wo?.Asunto?.trim() || '(Sin asunto)';
@@ -810,7 +813,6 @@ private normalizeWorkorderToMail(wo: any): any {
       replies,
     };
   }
-  
 
   getMyEmail(): string {
     // 1) si ya lo tienes en algún lado
@@ -943,7 +945,7 @@ private normalizeWorkorderToMail(wo: any): any {
   // ========================================
 
   /**
-   * ✅ Agregar nuevo correo al principio de la lista (llamado desde WebSocket)
+   *  Agregar nuevo correo al principio de la lista (llamado desde WebSocket)
    */
   prependMail(newMail: any): void {
     const currentMails = this._mails.value || [];
@@ -966,7 +968,7 @@ private normalizeWorkorderToMail(wo: any): any {
   }
 
   /**
-   * ✅ Actualizar correo existente en la lista (llamado desde WebSocket)
+   *  Actualizar correo existente en la lista (llamado desde WebSocket)
    */
   updateMailInList(workorderId: number, changes: any): void {
     const currentMails = this._mails.value || [];
@@ -1024,7 +1026,7 @@ private normalizeWorkorderToMail(wo: any): any {
   }
 
   /**
-   * ✅ Agregar respuesta a un correo (llamado desde WebSocket)
+   *  Agregar respuesta a un correo (llamado desde WebSocket)
    */
   addReplyToMail(workorderId: number, replyData: any): void {
     const currentMails = this._mails.value || [];
@@ -1065,7 +1067,7 @@ private normalizeWorkorderToMail(wo: any): any {
   }
 
   /**
-   * ✅ Refrescar carpeta actual (útil para debugging)
+   *  Refrescar carpeta actual (útil para debugging)
    */
   refreshCurrentFolder(): void {
     const category = this._category.value;

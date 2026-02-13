@@ -19,7 +19,6 @@ import { AcabadoRealTabComponent } from '../../list/tabs/acabadoreal/acabadoreal
 })
 export class AcabadoRealViewComponent {
     constructor() {
-        // console.log('✅ AcabadoRealViewComponent cargado');
     }
 }
 

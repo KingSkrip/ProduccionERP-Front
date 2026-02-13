@@ -195,7 +195,7 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
     // Actualizar UI inmediatamente
     this.mail.folder = apiFolder;
 
-    // ✅ NUEVO: delega al service que ya sabe si usar mailboxItemId o workorderId
+    //  NUEVO: delega al service que ya sabe si usar mailboxItemId o workorderId
     this._mailboxService.moveTo(this.mail, apiFolder as any).subscribe({
       next: () => {
         this._router.navigate(['./'], { relativeTo: this._activatedRoute.parent });
