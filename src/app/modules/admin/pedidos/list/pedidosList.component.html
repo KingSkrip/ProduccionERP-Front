@@ -1,0 +1,61 @@
+<div class="flex min-w-0 flex-auto flex-col">
+  <!-- ENCABEZADO -->
+  <div
+    class="bg-card flex flex-0 flex-col border-b p-6 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8 dark:bg-transparent"
+  >
+    <div class="min-w-0 flex-1">
+      <!-- Title -->
+      <div class="mt-2">
+        <h2
+          class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl"
+        >
+          Pedidos
+        </h2>
+      </div>
+    </div>
+    <!-- Actions -->
+    <div class="mt-6 flex shrink-0 items-center gap-3 sm:ml-4 sm:mt-0">
+      <!-- Filtro de Fecha (solo visible en aprobadas y rechazadas) -->
+      <mat-form-field
+        *ngIf="tabActiva !== 'pendientes'"
+        class="fuse-mat-dense fuse-mat-rounded min-w-48"
+        [subscriptSizing]="'dynamic'"
+      >
+        <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
+        <mat-select [formControl]="filtroFechaControl" placeholder="Filtrar por fecha">
+          <mat-option *ngFor="let opcion of opcionesFecha" [value]="opcion.value">
+            {{ opcion.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Search -->
+      <mat-form-field
+        class="fuse-mat-dense fuse-mat-rounded min-w-64"
+        [subscriptSizing]="'dynamic'"
+      >
+        <mat-icon
+          class="icon-size-5"
+          matPrefix
+          [svgIcon]="'heroicons_outline:magnifying-glass'"
+        ></mat-icon>
+        <input
+          matInput
+          [formControl]="searchControl"
+          [autocomplete]="'off'"
+          [placeholder]="'Buscar...'"
+          #searchInput
+        />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- CUERPO -->
+  <div class="flex flex-auto overflow-hidden">
+    <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
+      <!-- CONTENIDO -->
+
+      <!-- END CONTENIDO -->
+    </div>
+  </div>
+</div>

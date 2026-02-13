@@ -121,6 +121,12 @@ export const appRoutes: Route[] = [
                     { path: 'Soli_Vac', loadChildren: () => import('app/modules/admin/solicitudes/Vacaciones/vacaciones.routes') },
                     //Autorizar pedidos
                     { path: 'AceptPedidos', loadChildren: () => import('app/modules/admin/autorizarpedidos/autpedidos.routes') },
+
+                    //pedidos
+                    { path: 'Pedidos', loadChildren: () => import('app/modules/admin/pedidos/pedidos.routes') },
+                    //estados_cuenta
+                    { path: 'Edos_cuenta', loadChildren: () => import('app/modules/admin/edos_cuenta/edos_cuenta.routes') },
+
                     //Reportes de produccion
                     { path: 'ReportProd', loadChildren: () => import('app/modules/admin/reportes_produccion/reportprod.routes') },
                     { path: 'file-manager', loadChildren: () => import('app/modules/admin/apps/file-manager/file-manager.routes') },
