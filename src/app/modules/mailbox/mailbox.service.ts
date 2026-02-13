@@ -672,7 +672,7 @@ export class MailboxService {
   //   };
   // }
 
-  private normalizeWorkorderToMail(wo: any): any {
+private normalizeWorkorderToMail(wo: any): any {
     const myEmail = (
       (localStorage.getItem('encrypt_user_email') ??
         localStorage.getItem('userEmail') ??
@@ -702,10 +702,28 @@ export class MailboxService {
         })
         .filter(Boolean);
 
-    const fromFU = wo?.de?.firebird_user;
+    // 🔥 FIX: Mejorar extracción de datos del emisor
+    const fromFU = wo?.de?.firebird_user ?? wo?.de?.firebirdUser;
     const fromName = (fromFU?.NOMBRE ?? '').trim();
     const fromEmail = (fromFU?.CORREO ?? '').trim();
     const photoPath = (fromFU?.PHOTO ?? '').toString();
+
+    // 🔥 FIX: Si no hay nombre del emisor, intentar obtenerlo de otras fuentes
+    let finalFromName = fromName;
+    let finalFromEmail = fromEmail;
+
+    // Si el emisor soy yo, obtener mis datos del localStorage
+    if (!finalFromName && wo?.de_id) {
+      const storedUserName = localStorage.getItem('userName') || 
+                             localStorage.getItem('user_name') || 
+                             localStorage.getItem('nombre');
+      const storedUserEmail = localStorage.getItem('userEmail') || 
+                              localStorage.getItem('email') || 
+                              localStorage.getItem('correo');
+      
+      if (storedUserName) finalFromName = storedUserName.trim();
+      if (storedUserEmail) finalFromEmail = storedUserEmail.trim();
+    }
 
     const toList = wo?.para?.firebird_user
       ? (() => {
@@ -723,7 +741,7 @@ export class MailboxService {
 
     // 👇 FILTRAR SOLO ATTACHMENTS DEL MAIL PRINCIPAL (sin reply_id)
     const attachments = (wo?.attachments ?? [])
-      .filter((a: any) => !a.reply_id) // 👈 IMPORTANTE
+      .filter((a: any) => !a.reply_id)
       .map((a: any) => ({
         id: a.id,
         name: a.original_name,
@@ -739,7 +757,7 @@ export class MailboxService {
       attachments: (reply?.attachments ?? []).map((a: any) => ({
         id: a.id,
         name: a.original_name,
-        original_name: a.original_name, // 👈 AGREGAR ESTO
+        original_name: a.original_name,
         type: a.mime_type,
         size: a.size,
         path: a.path,
@@ -758,6 +776,14 @@ export class MailboxService {
     const importantes = mi0 ? !!mi0.is_important : !!wo.importantes;
     const unread = mi0 ? !mi0.read_at : typeof wo.unread === 'boolean' ? wo.unread : false;
 
+    // 🔥 FIX: Mejorar construcción del campo `from`
+    const fromContact = finalFromName && finalFromEmail 
+      ? `${finalFromName} <${finalFromEmail}>` 
+      : finalFromName || finalFromEmail || 'Usuario desconocido'; // Fallback mejorado
+
+    // 🔥 FIX: Mejorar construcción del asunto
+    const asunto = wo?.titulo?.trim() || wo?.Asunto?.trim() || '(Sin asunto)';
+
     return {
       ...wo,
 
@@ -768,7 +794,7 @@ export class MailboxService {
       unread,
 
       from: {
-        contact: fromName && fromEmail ? `${fromName} <${fromEmail}>` : fromName || fromEmail,
+        contact: fromContact,
         avatar: this.userPhoto({ photo: photoPath }),
       },
       to: toList,
@@ -776,14 +802,15 @@ export class MailboxService {
       bcc: bccList,
       date: dateRaw ? new Date(dateRaw) : null,
 
-      Asunto: wo?.titulo ?? wo?.Asunto ?? '(Sin asunto)',
+      Asunto: asunto, // 🔥 FIX: Usar la variable asunto mejorada
       ccCount: ccList.length,
       bccCount: bccList.length,
 
-      attachments, // 👈 SOLO LOS DEL MAIL PRINCIPAL
-      replies, // 👈 REPLIES NORMALIZADAS CON SUS ATTACHMENTS
+      attachments,
+      replies,
     };
   }
+  
 
   getMyEmail(): string {
     // 1) si ya lo tienes en algún lado
