@@ -2661,9 +2661,9 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     tooltip: 'Estados de cuenta',
     type: 'basic',
     icon: 'heroicons_outline:banknotes',
- link: '/apps/Edos_cuenta',
+    link: '/apps/Edos_cuenta',
   },
-   {
+  {
     id: 'usuarios.pedidos',
     title: 'Pedidos',
     tooltip: 'Pedidos',
@@ -4018,9 +4018,9 @@ export const menuColaborador: FuseNavigationItem[] = [
     tooltip: 'Estados de cuenta',
     type: 'basic',
     icon: 'heroicons_outline:banknotes',
- link: '/apps/Edos_cuenta',
+    link: '/apps/Edos_cuenta',
   },
-   {
+  {
     id: 'usuarios.pedidos',
     title: 'Pedidos',
     tooltip: 'Pedidos',
@@ -4080,9 +4080,9 @@ export const menuJefe: FuseNavigationItem[] = [
     tooltip: 'Estados de cuenta',
     type: 'basic',
     icon: 'heroicons_outline:banknotes',
- link: '/apps/Edos_cuenta',
+    link: '/apps/Edos_cuenta',
   },
-   {
+  {
     id: 'usuarios.pedidos',
     title: 'Pedidos',
     tooltip: 'Pedidos',
@@ -4209,5 +4209,42 @@ export const menuReporteProd_Jefe: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:cog',
     link: '/apps/ReportProd/list/procesos',
+  },
+];
+
+export const menuClientes: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
+    type: 'basic',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuenta',
+  },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/Pedidos',
   },
 ];

@@ -8,6 +8,7 @@ import {
   menuReporteProd_Jefe,
   menuRh,
   menuSuAdmin,
+  menuClientes
 } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable, ReplaySubject, tap } from 'rxjs';
 
@@ -208,6 +209,10 @@ export class NavigationService {
         navigation = menuColaborador;
         break;
 
+              case RoleEnum.CLIENTE:
+        navigation = menuClientes;
+        break;
+        
       default:
         navigation = [];
         break;
