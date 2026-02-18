@@ -1,346 +1,131 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, map, switchMap, take, tap, throwError } from 'rxjs';
 import { APP_CONFIG } from 'app/core/config/app-config';
-import { Usuarios } from 'app/modules/admin/cruds/usuarios/usuarios.types';
+import { Observable } from 'rxjs';
 
-
-export interface VacacionSolicitud {
-    id: number;
-    vacacion_id: number;
-    fecha_inicio: string;
-    fecha_fin: string;
-    dias: number;
-    comentarios: string;
-    created_at: string;
-    updated_at: string;
-    vacacion?: {
-        id: number;
-        user_id: number;
-        anio: number;
-        dias_disponibles: number;
-        dias_disfrutados: number;
-        user?: Usuarios;
-    };
+export interface EstadoCuenta {
+  clave: string;
+  nombre: string;
+  rfc: string;
+  status: string;
+  documento: string;
+  fecha_aplicacion: string;
+  fecha_vencimiento: string;
+  cargos: number;
+  abonos: number;
+  saldo: number;
+  total_saldo: number;
+  total: number;
+  total_cargos: number;
+  total_abonos: number;
+  total_saldos: number;
 }
 
-export interface WorkOrder {
-    id: number;
-    solicitante_id: number;
-    aprobador_id: number;
-    status_id: number;
-    titulo: string;
-    descripcion: string;
-    fecha_solicitud: string;
-    comentarios_solicitante: string;
-    departamento_id: number;
-    solicitante?: Usuarios;
-    status?: {
-        id: number;
-        nombre: string;
-    };
+export interface ResumenEstadoCuenta {
+  cliente: {
+    clave: string;
+    nombre: string;
+    rfc: string;
+    status: string;
+  };
+  totales: {
+    cargos: number;
+    abonos: number;
+    saldo_total: number;
+  };
+  documentos: {
+    total: number;
+    vencidos: number;
+    monto_vencido: number;
+  };
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  total?: number;
+  total_cargos?: number;
+  total_abonos?: number;
+  total_saldos?: number;
+  message?: string;
 }
 
 @Injectable({ providedIn: 'root' })
-export class    EdosCuentaService {
-    private _usuarios: BehaviorSubject<Usuarios[] | null> = new BehaviorSubject<Usuarios[] | null>(null);
-    private _solicitudes: BehaviorSubject<any[] | null> = new BehaviorSubject<any[] | null>(null);
-    private apiUrl = APP_CONFIG.apiUrl;
+export class EdosCuentaService {
+  private _apiUrl = `${APP_CONFIG.apiUrl}estados-cuenta`;
 
-    constructor(private _httpClient: HttpClient) { }
+  constructor(private _httpClient: HttpClient) {}
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Accessors
-    // -----------------------------------------------------------------------------------------------------
+  /**
+   * Obtener todos los estados de cuenta del usuario
+   */
+  getEstadosCuenta(): Observable<ApiResponse<EstadoCuenta[]>> {
+    return this._httpClient.get<ApiResponse<EstadoCuenta[]>>(this._apiUrl);
+  }
 
-    get usuarios$(): Observable<Usuarios[]> {
-        return this._usuarios.asObservable();
-    }
+  /**
+   * Obtener resumen de estados de cuenta
+   */
+  getResumen(): Observable<ApiResponse<ResumenEstadoCuenta>> {
+    return this._httpClient.get<ApiResponse<ResumenEstadoCuenta>>(`${this._apiUrl}/resumen`);
+  }
 
-    get solicitudes$(): Observable<any[]> {
-        return this._solicitudes.asObservable();
-    }
+  /**
+   * Obtener estado de cuenta por documento
+   */
+  getEstadoCuenta(documento: string): Observable<ApiResponse<EstadoCuenta>> {
+    return this._httpClient.get<ApiResponse<EstadoCuenta>>(`${this._apiUrl}/${documento}`);
+  }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Public methods - Usuarios
-    // -----------------------------------------------------------------------------------------------------
+  /**
+   * Obtener estados de cuenta por año
+   */
+  getEstadosCuentaPorAnio(anio: number): Observable<ApiResponse<EstadoCuenta[]>> {
+    return this._httpClient.get<ApiResponse<EstadoCuenta[]>>(`${this._apiUrl}/anio/${anio}`);
+  }
 
-    getUsuarios(): Observable<Usuarios[]> {
-        return this._httpClient.get<{ message: string, data: Usuarios[] }>(`${this.apiUrl}colaborador/data`)
-            .pipe(
-                tap(response => this._usuarios.next(response.data)),
-                map(response => response.data),
-                catchError(error => {
-                    console.error('Error al obtener usuarios', error);
-                    return throwError(() => error);
-                })
-            );
-    }
+  /**
+   * Descargar PDF de un estado de cuenta
+   */
+  descargarPDF(documento: string): Observable<Blob> {
+    return this._httpClient.get(`${this._apiUrl}/${documento}/pdf`, {
+      responseType: 'blob',
+    });
+  }
 
-    getUsuarioById(id: string): Observable<Usuarios> {
-        return this._httpClient.get<{ message: string, user: Usuarios }>(`${this.apiUrl}colaborador/suadmin/${id}`)
-            .pipe(
-                map(response => response.user),
-                catchError(error => {
-                    console.error('Error al obtener usuario', error);
-                    return throwError(() => error);
-                })
-            );
-    }
+  /**
+   * Descargar múltiples estados de cuenta
+   */
+  descargarMultiples(documentos: string[]): Observable<Blob> {
+    return this._httpClient.post(
+      `${this._apiUrl}/descargar-multiples`,
+      { documentos },
+      { responseType: 'blob' },
+    );
+  }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Public methods - Vacaciones
-    // -----------------------------------------------------------------------------------------------------
+  /**
+   * Enviar estado de cuenta por email
+   */
+  enviarPorEmail(documento: string, email: string): Observable<ApiResponse<any>> {
+    return this._httpClient.post<ApiResponse<any>>(`${this._apiUrl}/${documento}/enviar-email`, {
+      email,
+    });
+  }
 
-    /**
-     * Obtener todas las solicitudes de vacaciones de mis empleados
-     */
-    getSolicitudesVacaciones(): Observable<any[]> {
-        return this._httpClient.get<{ message: string, data: any }>(`${this.apiUrl}colaboradores/vacaciones/1/edit`)
-            .pipe(
-                tap(response => {
-                    // Procesar datos para extraer TODAS las solicitudes (pendientes, aprobadas y rechazadas)
-                    const solicitudes = this.procesarSolicitudes(response.data);
-                    this._solicitudes.next(solicitudes);
-                }),
-                map(response => this.procesarSolicitudes(response.data)),
-                catchError(error => {
-                    console.error('Error al obtener solicitudes', error);
-                    return throwError(() => error);
-                })
-            );
-    }
+  /**
+   * Actualizar estado de un documento
+   */
+  actualizarEstado(documento: string, status: string): Observable<ApiResponse<any>> {
+    return this._httpClient.patch<ApiResponse<any>>(`${this._apiUrl}/${documento}/estado`, {
+      status,
+    });
+  }
 
-    /**
-     * Procesar los datos del usuario para extraer las solicitudes de vacaciones
-     */
-    private procesarSolicitudes(usuarios: any[]): any[] {
-        const solicitudes = [];
-        
-        if (!usuarios || !Array.isArray(usuarios)) {
-            return [];
-        }
-
-        usuarios.forEach(usuario => {
-            // Buscar TODAS las work orders de tipo "Vacaciones" (pendientes: 5, aprobadas: 3, rechazadas: 4)
-            if (usuario.workorders_solicitadas && Array.isArray(usuario.workorders_solicitadas)) {
-                const solicitudesVacaciones = usuario.workorders_solicitadas.filter(
-                    wo => wo.titulo === 'Vacaciones' && [3, 4, 5].includes(wo.status_id)
-                );
-
-                solicitudesVacaciones.forEach(wo => {
-                    // Buscar el historial de vacaciones correspondiente
-                    let historialVacacion = null;
-                    if (usuario.vacaciones && Array.isArray(usuario.vacaciones)) {
-                        usuario.vacaciones.forEach(vac => {
-                            if (vac.historial && Array.isArray(vac.historial)) {
-                                const hist = vac.historial.find(h => 
-                                    h.vacacion_id === vac.id
-                                );
-                                if (hist) {
-                                    historialVacacion = {
-                                        ...hist,
-                                        dias_disponibles: vac.dias_disponibles,
-                                        dias_disfrutados: vac.dias_disfrutados
-                                    };
-                                }
-                            }
-                        });
-                    }
-
-                    solicitudes.push({
-                        workorder: wo,
-                        usuario: usuario,
-                        historial: historialVacacion
-                    });
-                });
-            }
-        });
-
-        return solicitudes;
-    }
-
-    /**
-     * Aprobar solicitud de vacaciones
-     */
-    aprobarSolicitud(historialId: number): Observable<any> {
-        return this._httpClient.put(`${this.apiUrl}colaboradores/vacaciones/${historialId}/update`, {
-            status_id: 3 // Aprobado
-        }).pipe(
-            tap(() => {
-                // Actualizar la lista local
-                this.actualizarSolicitudLocal(historialId, 3);
-            }),
-            catchError(error => {
-                console.error('Error al aprobar solicitud', error);
-                return throwError(() => error);
-            })
-        );
-    }
-
-    /**
-     * Rechazar solicitud de vacaciones
-     */
-    rechazarSolicitud(historialId: number, comentarios?: string): Observable<any> {
-        return this._httpClient.put(`${this.apiUrl}colaboradores/vacaciones/${historialId}/update`, {
-            status_id: 4, // Rechazado
-            comentarios: comentarios
-        }).pipe(
-            tap(() => {
-                // Actualizar la lista local
-                this.actualizarSolicitudLocal(historialId, 4);
-            }),
-            catchError(error => {
-                console.error('Error al rechazar solicitud', error);
-                return throwError(() => error);
-            })
-        );
-    }
-
-    /**
-     * Actualizar solicitud local después de aprobar/rechazar
-     */
-    private actualizarSolicitudLocal(historialId: number, nuevoStatus: number): void {
-        const solicitudesActuales = this._solicitudes.getValue();
-        if (solicitudesActuales) {
-            // Actualizar el status en lugar de eliminar
-            const solicitudesActualizadas = solicitudesActuales.map(s => {
-                if (s.historial?.id === historialId) {
-                    return {
-                        ...s,
-                        workorder: {
-                            ...s.workorder,
-                            status_id: nuevoStatus
-                        }
-                    };
-                }
-                return s;
-            });
-            this._solicitudes.next(solicitudesActualizadas);
-        }
-    }
-
-    /**
-     * Obtener estadísticas de solicitudes
-     */
-    getEstadisticasSolicitudes(): Observable<any> {
-        return this.solicitudes$.pipe(
-            map(solicitudes => {
-                if (!solicitudes) return { pendientes: 0, aprobadas: 0, rechazadas: 0 };
-                
-                return {
-                    pendientes: solicitudes.filter(s => s.workorder?.status_id === 5).length,
-                    aprobadas: solicitudes.filter(s => s.workorder?.status_id === 3).length,
-                    rechazadas: solicitudes.filter(s => s.workorder?.status_id === 4).length
-                };
-            })
-        );
-    }
-
-    /**
-     * Crear usuario (mantener para compatibilidad)
-     */
-    createUsuario(data: any): Observable<Usuarios> {
-        return this.usuarios$.pipe(
-            take(1),
-            switchMap(usuarios => {
-                const isFormData = data instanceof FormData;
-
-                return this._httpClient.post<{ message: string, user: Usuarios }>(
-                    `${this.apiUrl}colaborador/suadmin`,
-                    data,
-                    isFormData ? { headers: { 'Accept': 'application/json' } } : {}
-                ).pipe(
-                    tap(response => {
-                        const current = usuarios || [];
-                        this._usuarios.next([response.user, ...current]);
-                    }),
-                    map(response => response.user),
-                    catchError(err => {
-                        console.error('Error al crear usuario', err);
-                        return throwError(() => err);
-                    })
-                );
-            })
-        );
-    }
-
-    /**
-     * Actualizar usuario
-     */
-    updateUsuario(id: number, data: FormData | any): Observable<Usuarios> {
-        return this.usuarios$.pipe(
-            take(1),
-            switchMap(usuarios =>
-                this._httpClient.post<{ message: string, user: Usuarios }>(
-                    `${this.apiUrl}colaborador/${id}/update`,
-                    data
-                ).pipe(
-                    tap(response => {
-                        const updatedUser = {
-                            ...response.user,
-                            name: response.user.nombre || response.user.name,
-                            email: response.user.correo || response.user.email
-                        };
-                        const updatedUsuarios = (usuarios || []).map(u =>
-                            u.id === id ? updatedUser : u
-                        );
-                        this._usuarios.next(updatedUsuarios);
-                    }),
-                    map(response => ({
-                        ...response.user,
-                        name: response.user.nombre || response.user.name,
-                        email: response.user.correo || response.user.email
-                    })),
-                    catchError(error => {
-                        console.error('Error al actualizar usuario', error);
-                        return throwError(() => error);
-                    })
-                )
-            )
-        );
-    }
-
-    /**
-     * Eliminar usuario
-     */
-    deleteUsuario(id: number): Observable<boolean> {
-        return this.usuarios$.pipe(
-            take(1),
-            switchMap(usuarios =>
-                this._httpClient.delete<{ message: string }>(`${this.apiUrl}colaborador/${id}`)
-                    .pipe(
-                        tap(() => {
-                            const updatedUsuarios = (usuarios || []).filter(u => u.id !== id);
-                            this._usuarios.next(updatedUsuarios);
-                        }),
-                        map(() => true),
-                        catchError(error => {
-                            console.error('Error al eliminar usuario', error);
-                            return throwError(() => error);
-                        })
-                    )
-            )
-        );
-    }
-
-    /**
-     * Agregar usuario a la lista
-     */
-    addUsuarioToList(newUser: Usuarios): void {
-        const current = this._usuarios.getValue() || [];
-        const userWithAliases = {
-            ...newUser,
-            name: newUser.nombre,
-            email: newUser.correo
-        };
-        this._usuarios.next([userWithAliases, ...current]);
-    }
-
-    /**
-     * Actualizar status de usuario
-     */
-    updateUsuarioStatus(id: number, status_id: number): Observable<any> {
-        return this._httpClient.put(`${this.apiUrl}colaborador/usuarios/${id}/status`, { status_id });
-    }
+  /**
+   * Eliminar estado de cuenta
+   */
+  eliminarEstadoCuenta(documento: string): Observable<ApiResponse<void>> {
+    return this._httpClient.delete<ApiResponse<void>>(`${this._apiUrl}/${documento}`);
+  }
 }

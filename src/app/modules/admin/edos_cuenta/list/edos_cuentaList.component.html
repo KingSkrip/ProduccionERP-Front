@@ -1,61 +1,392 @@
-<div class="flex min-w-0 flex-auto flex-col">
+<div class="flex min-w-0 flex-auto flex-col dark:bg-gray-900">
   <!-- ENCABEZADO -->
   <div
-    class="bg-card flex flex-0 flex-col border-b p-6 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8 dark:bg-transparent"
+    class="bg-card flex flex-0 flex-col px-4 pt-4 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:pt-4 dark:bg-transparent"
   >
     <div class="min-w-0 flex-1">
-      <!-- Title -->
-      <div class="mt-2">
-        <h2
-          class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl"
-        >
-          Estados de cuenta
-        </h2>
-      </div>
+      <h2
+        class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl"
+      >
+        Mis estados de cuenta
+      </h2>
+      <p class="mt-2 text-sm text-gray-600 dark:text-white">
+        Consulta y descarga tus estados de cuenta
+      </p>
     </div>
-    <!-- Actions -->
-    <div class="mt-6 flex shrink-0 items-center gap-3 sm:ml-4 sm:mt-0">
-      <!-- Filtro de Fecha (solo visible en aprobadas y rechazadas) -->
-      <mat-form-field
-        *ngIf="tabActiva !== 'pendientes'"
-        class="fuse-mat-dense fuse-mat-rounded min-w-48"
-        [subscriptSizing]="'dynamic'"
-      >
-        <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
-        <mat-select [formControl]="filtroFechaControl" placeholder="Filtrar por fecha">
-          <mat-option *ngFor="let opcion of opcionesFecha" [value]="opcion.value">
-            {{ opcion.label }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
 
-      <!-- Search -->
-      <mat-form-field
-        class="fuse-mat-dense fuse-mat-rounded min-w-64"
-        [subscriptSizing]="'dynamic'"
-      >
+    <!-- Resumen en tarjetas -->
+    <ng-container *ngIf="!isLoading">
+      <div class="mt-4 grid grid-cols-3 gap-2 sm:ml-6 sm:mt-0 sm:flex sm:flex-shrink-0 sm:gap-4">
+        <div class="min-w-0 rounded-lg bg-blue-200 p-2 sm:p-4 dark:bg-blue-900/20">
+          <div class="text-center text-xs text-blue-600 sm:text-left dark:text-blue-400">
+            Cargos
+          </div>
+          <div
+            class="mt-0.5 truncate text-center text-xs font-bold text-blue-700 sm:text-left sm:text-2xl dark:text-blue-300"
+          >
+            {{ totalCargos | currency: 'MXN' : 'symbol' : '1.2-2' }}
+          </div>
+        </div>
+
+        <div class="min-w-0 rounded-lg bg-green-200 p-2 sm:p-4 dark:bg-green-900/20">
+          <div class="text-center text-xs text-green-600 sm:text-left dark:text-green-400">
+            Abonos
+          </div>
+          <div
+            class="mt-0.5 truncate text-center text-xs font-bold text-green-700 sm:text-left sm:text-2xl dark:text-green-300"
+          >
+            {{ totalAbonos | currency: 'MXN' : 'symbol' : '1.2-2' }}
+          </div>
+        </div>
+
+        <div class="min-w-0 rounded-lg bg-red-200 p-2 sm:p-4 dark:bg-red-900/20">
+          <div class="text-center text-xs text-red-600 sm:text-left dark:text-red-400">Saldo</div>
+          <div
+            class="mt-0.5 truncate text-center text-xs font-bold text-red-700 sm:text-left sm:text-2xl dark:text-red-300"
+          >
+            {{ totalSaldos | currency: 'MXN' : 'symbol' : '1.2-2' }}
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Filtros y acciones -->
+  <div class="bg-white px-4 py-3 sm:border-none sm:px-10 sm:pb-0 dark:bg-gray-900">
+    <div class="flex items-center gap-2">
+      <!-- Búsqueda -->
+      <mat-form-field class="fuse-mat-dense fuse-mat-rounded flex-1" [subscriptSizing]="'dynamic'">
         <mat-icon
           class="icon-size-5"
           matPrefix
-          [svgIcon]="'heroicons_outline:magnifying-glass'"
+          [svgIcon]="'heroicons_solid:magnifying-glass'"
         ></mat-icon>
+
         <input
           matInput
           [formControl]="searchControl"
-          [autocomplete]="'off'"
-          [placeholder]="'Buscar...'"
-          #searchInput
+          autocomplete="off"
+          placeholder="Buscar por documento..."
         />
       </mat-form-field>
+
+      <!-- Limpiar (solo si hay filtros) -->
+      <button
+        *ngIf="hayFiltrosActivos()"
+        mat-icon-button
+        (click)="limpiarFiltros()"
+        class="rounded-full text-red-600 transition-all duration-200 hover:bg-red-600 hover:text-white"
+      >
+        <mat-icon [svgIcon]="'heroicons_outline:x-mark'" class="hover:text-white"></mat-icon>
+      </button>
+
+      <!-- Descargar -->
+      <button
+        mat-icon-button
+        (click)="descargarSeleccionados()"
+        [disabled]="documentosSeleccionados.size === 0"
+        class="rounded-full text-primary-600 transition-all duration-200 hover:bg-primary-500 disabled:text-black disabled:hover:bg-transparent dark:text-white"
+      >
+        <mat-icon
+          [svgIcon]="'heroicons_outline:arrow-down-tray'"
+          class="hover:text-white"
+        ></mat-icon>
+      </button>
     </div>
   </div>
 
   <!-- CUERPO -->
   <div class="flex flex-auto overflow-hidden">
-    <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-      <!-- CONTENIDO -->
+    <div class="flex flex-auto flex-col overflow-y-auto">
+      <div class="p-4 px-5 sm:p-6 md:py-4">
+        <!-- Loading -->
+        <ng-container *ngIf="isLoading">
+          <div class="flex flex-auto flex-col items-center justify-center py-20">
+            <div class="relative h-16 w-16">
+              <div
+                class="absolute inset-0 animate-spin rounded-full border-4 border-gray-200 border-t-primary dark:border-gray-700 dark:border-t-primary-400"
+              ></div>
+            </div>
+            <p class="mt-6 text-sm text-gray-500 dark:text-white">Cargando estados de cuenta...</p>
+          </div>
+        </ng-container>
 
-      <!-- END CONTENIDO -->
+        <!-- Sin resultados -->
+        <ng-container *ngIf="!isLoading && estadosCuentaFiltrados.length === 0">
+          <div class="flex flex-auto flex-col items-center justify-center py-20">
+            <mat-icon
+              class="text-gray-300 icon-size-24 dark:text-gray-700"
+              [svgIcon]="'heroicons_outline:document-text'"
+            ></mat-icon>
+            <div class="mt-6 text-2xl font-semibold tracking-tight text-black dark:text-gray-100">
+              No hay estados de cuenta
+            </div>
+            <div class="mt-2 text-center text-sm text-gray-600 dark:text-white">
+              No se encontraron estados con los filtros seleccionados
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Contenido -->
+        <ng-container *ngIf="!isLoading && estadosCuentaFiltrados.length > 0">
+          <div
+            class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
+          >
+            <!-- Header de tabla — solo visible en md+ -->
+            <div
+              class="hidden border-b border-gray-300 bg-gray-300 px-6 py-3 text-base font-semibold tracking-wider text-black md:grid md:grid-cols-[2.5rem_1fr_1fr_1fr_1fr_1fr_1fr] md:items-center md:gap-4 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            >
+              <div class="flex items-center justify-center">
+                <mat-checkbox
+                  [checked]="todosSeleccionados"
+                  [indeterminate]="documentosSeleccionados.size > 0 && !todosSeleccionados"
+                  (change)="toggleSeleccionTodos()"
+                ></mat-checkbox>
+              </div>
+              <div>Documento</div>
+              <div>Fecha Aplicación</div>
+              <div>Vencimiento</div>
+              <div class="text-right">Cargos</div>
+              <div class="text-right">Abonos</div>
+              <div class="text-right">Saldo</div>
+              <!-- <div class="text-right">Acciones</div> -->
+            </div>
+
+            <!-- Header móvil con "Seleccionar todos" — solo visible en mobile -->
+            <div
+              class="flex items-center gap-2 border-b border-gray-200 px-4 py-2 md:hidden dark:border-gray-700"
+            >
+              <mat-checkbox
+                [checked]="todosSeleccionados"
+                [indeterminate]="documentosSeleccionados.size > 0 && !todosSeleccionados"
+                (change)="toggleSeleccionTodos()"
+              ></mat-checkbox>
+              <span class="text-sm text-gray-600 dark:text-gray-400">
+                {{ todosSeleccionados ? 'Deseleccionar todos' : 'Seleccionar todos' }}
+              </span>
+              <span
+                *ngIf="documentosSeleccionados.size > 0"
+                class="ml-auto text-xs font-semibold text-primary-600 dark:text-primary-400"
+              >
+                {{ documentosSeleccionados.size }} seleccionados
+              </span>
+            </div>
+
+            <!-- Filas de datos -->
+            <div
+              class="max-h-[calc(100vh-31rem)] divide-y divide-gray-100 overflow-y-auto sm:max-h-[calc(100vh-28rem)] dark:divide-gray-800"
+            >
+              <div
+                *ngFor="let ec of estadosCuentaPaginados; trackBy: trackByDocumento"
+                class="px-4 py-4 hover:bg-gray-50 sm:px-6 md:grid md:grid-cols-[2.5rem_1fr_1fr_1fr_1fr_1fr_1fr] md:items-center md:gap-4 dark:hover:bg-gray-800/50"
+              >
+                <!-- Checkbox -->
+                <div class="hidden md:flex md:items-center md:justify-center">
+                  <mat-checkbox
+                    [checked]="documentosSeleccionados.has(ec.documento)"
+                    (change)="toggleSeleccion(ec.documento)"
+                  ></mat-checkbox>
+                </div>
+
+                <!-- Mobile: fila superior con checkbox + documento -->
+                <div class="flex items-start gap-3 md:contents">
+                  <!-- Checkbox solo en mobile -->
+                  <div class="flex items-center pt-0.5 md:hidden">
+                    <mat-checkbox
+                      [checked]="documentosSeleccionados.has(ec.documento)"
+                      (change)="toggleSeleccion(ec.documento)"
+                    ></mat-checkbox>
+                  </div>
+
+                  <!-- Bloque principal: en mobile agrupa todo, en md cada uno es columna -->
+                  <div class="flex flex-1 flex-col gap-3 md:contents">
+                    <!-- Documento -->
+                    <div class="md:col-auto">
+                      <div class="font-semibold text-black dark:text-gray-100">
+                        {{ ec.documento }}
+                      </div>
+                      <!-- <div class="text-xs text-black dark:text-white">{{ ec.rfc }}</div> -->
+                    </div>
+
+                    <!-- Mobile: grid de 2 cols para los datos -->
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm md:contents">
+                      <!-- Fecha Aplicación -->
+                      <div>
+                        <div class="text-sm tracking-wider text-black md:hidden dark:text-white">
+                          Fecha Aplic.
+                        </div>
+                        <div class="text-black dark:text-white">
+                          {{ ec.fecha_aplicacion | date: 'dd/MM/yyyy' }}
+                        </div>
+                      </div>
+
+                      <!-- Vencimiento -->
+                      <div>
+                        <div class="text-sm tracking-wider text-black md:hidden dark:text-white">
+                          Vencimiento
+                        </div>
+                        <div class="text-black dark:text-white">
+                          {{ ec.fecha_vencimiento | date: 'dd/MM/yyyy' }}
+                        </div>
+                        <!-- <div
+                          *ngIf="ec.saldo > 0"
+                          class="text-xs mt-0.5"
+                          [class.text-red-600]="getDiasVencimiento(ec.fecha_vencimiento) < 0"
+                          [class.text-yellow-600]="getDiasVencimiento(ec.fecha_vencimiento) >= 0 && getDiasVencimiento(ec.fecha_vencimiento) <= 7"
+                          [class.text-black dark:text-white]="getDiasVencimiento(ec.fecha_vencimiento) > 7"
+                        >
+                          {{
+                            getDiasVencimiento(ec.fecha_vencimiento) < 0
+                              ? 'Vencido hace ' + Math.abs(getDiasVencimiento(ec.fecha_vencimiento)) + ' días'
+                              : 'Vence en ' + getDiasVencimiento(ec.fecha_vencimiento) + ' días'
+                          }}
+                        </div> -->
+                      </div>
+
+                      <!-- Cargos -->
+                      <div>
+                        <div class="text-sm tracking-wider text-black md:hidden dark:text-white">
+                          Cargos
+                        </div>
+                        <div class="font-medium text-blue-900 md:text-right dark:text-blue-400">
+                          {{ ec.cargos | currency: 'MXN' }}
+                        </div>
+                      </div>
+
+                      <!-- Abonos -->
+                      <div>
+                        <div class="text-sm tracking-wider text-black md:hidden dark:text-white">
+                          Abonos
+                        </div>
+                        <div class="text-green-600 md:text-right dark:text-green-400">
+                          {{ ec.abonos | currency: 'MXN' }}
+                        </div>
+                      </div>
+
+                      <!-- Saldo — ocupa full width en mobile -->
+                      <div class="col-span-2 flex items-center md:col-auto">
+                        <div class="w-full">
+                          <div class="text-sm tracking-wider text-black md:hidden dark:text-white">
+                            Saldo
+                          </div>
+
+                          <div
+                            class="text-lg font-bold md:text-right md:text-base"
+                            [class.text-red-600]="ec.saldo > 0"
+                            [class.text-green-600]="ec.saldo === 0"
+                          >
+                            {{ ec.saldo | currency: 'MXN' : 'symbol' : '1.2-2' }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Acciones -->
+                <!--
+                <div class="md:flex md:justify-end md:gap-1">
+                  <button
+                    mat-icon-button
+                    [matTooltip]="'Descargar PDF'"
+                    (click)="descargarPDF(ec.documento)"
+                  >
+                    <mat-icon
+                      class="icon-size-5"
+                      [svgIcon]="'heroicons_outline:arrow-down-tray'"
+                    ></mat-icon>
+                  </button>
+
+                  <button
+                    mat-icon-button
+                    [matTooltip]="'Enviar por email'"
+                    (click)="enviarEmail(ec.documento)"
+                  >
+                    <mat-icon
+                      class="icon-size-5"
+                      [svgIcon]="'heroicons_outline:envelope'"
+                    ></mat-icon>
+                  </button>
+                </div>
+                -->
+              </div>
+            </div>
+
+            <!-- Paginación -->
+            <div
+              class="sticky bottom-0 z-10 flex flex-col gap-4 border-t border-gray-200 bg-gray-300 px-6 py-4 sm:relative sm:flex-row sm:items-center sm:justify-between dark:border-gray-700 dark:bg-gray-800"
+            >
+              <p
+                class="order-2 text-center text-sm text-black sm:order-1 sm:text-left dark:text-white"
+              >
+                Mostrando
+                <span class="font-semibold text-black dark:text-gray-100">
+                  {{ paginaActual * itemsPorPagina + 1 }}
+                </span>
+                –
+                <span class="font-semibold text-black dark:text-gray-100">
+                  {{ Math.min((paginaActual + 1) * itemsPorPagina, estadosCuentaFiltrados.length) }}
+                </span>
+                de
+                <span class="font-semibold text-black dark:text-gray-100">
+                  {{ estadosCuentaFiltrados.length }}
+                </span>
+                resultados
+              </p>
+
+              <div class="order-1 flex items-center justify-center gap-2 sm:order-2">
+                <!-- Items por página -->
+                <mat-form-field
+                  class="fuse-mat-dense fuse-mat-rounded w-20 flex-shrink-0"
+                  [subscriptSizing]="'dynamic'"
+                >
+                  <mat-select
+                    [(value)]="itemsPorPagina"
+                    (selectionChange)="onItemsPorPaginaChange()"
+                  >
+                    <mat-option [value]="10">10</mat-option>
+                    <mat-option [value]="25">25</mat-option>
+                    <mat-option [value]="50">50</mat-option>
+                    <mat-option [value]="100">100</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <!-- Navegación de páginas -->
+                <button
+                  mat-icon-button
+                  [disabled]="paginaActual === 0"
+                  (click)="paginaAnterior()"
+                  [matTooltip]="'Página anterior'"
+                >
+                  <mat-icon [svgIcon]="'heroicons_outline:chevron-left'"></mat-icon>
+                </button>
+
+                <div class="flex items-center gap-1">
+                  <button
+                    *ngFor="let pagina of paginasVisibles"
+                    mat-button
+                    class="h-9 min-w-9 rounded-md p-0"
+                    [class.bg-primary]="pagina === paginaActual"
+                    [class.text-white]="pagina === paginaActual"
+                    (click)="irAPagina(pagina)"
+                  >
+                    {{ pagina + 1 }}
+                  </button>
+                </div>
+
+                <button
+                  mat-icon-button
+                  [disabled]="paginaActual >= totalPaginas - 1"
+                  (click)="paginaSiguiente()"
+                  [matTooltip]="'Página siguiente'"
+                >
+                  <mat-icon [svgIcon]="'heroicons_outline:chevron-right'"></mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
     </div>
   </div>
 </div>
