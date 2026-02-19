@@ -3,6 +3,7 @@ import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types
 import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
 import {
   menuAdmin,
+  menuAgentes,
   menuClientes,
   menuColaborador,
   menuJefe,
@@ -202,6 +203,10 @@ export class FuseNavigationService {
 
       case RoleEnum.CLIENTE:
         navigation = menuClientes;
+        break;
+
+      case RoleEnum.AGENTE:
+        navigation = menuAgentes;
         break;
 
       default:

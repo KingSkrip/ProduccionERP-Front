@@ -4248,3 +4248,43 @@ export const menuClientes: FuseNavigationItem[] = [
     link: '/apps/Pedidos',
   },
 ];
+
+
+
+
+export const menuAgentes: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
+    type: 'basic',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuenta',
+  },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/Pedidos',
+  },
+];

@@ -3,12 +3,13 @@ import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types
 import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
 import {
   menuAdmin,
+  menuAgentes,
+  menuClientes,
   menuColaborador,
   menuJefe,
   menuReporteProd_Jefe,
   menuRh,
   menuSuAdmin,
-  menuClientes
 } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable, ReplaySubject, tap } from 'rxjs';
 
@@ -209,10 +210,14 @@ export class NavigationService {
         navigation = menuColaborador;
         break;
 
-              case RoleEnum.CLIENTE:
+      case RoleEnum.CLIENTE:
         navigation = menuClientes;
         break;
-        
+
+      case RoleEnum.AGENTE:
+        navigation = menuAgentes;
+        break;
+
       default:
         navigation = [];
         break;
