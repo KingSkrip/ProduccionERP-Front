@@ -34,10 +34,10 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
   navigation: FuseNavigationItem[] = [];
   private _unsubscribeAll: Subject<any> = new Subject<any>();
   appName = APP_CONFIG.appName;
+  navOpened = false;
   @ViewChild('reportProdNav', { static: true })
   reportProdNav!: FuseVerticalNavigationComponent;
   isJacobo: boolean = false;
-  navOpened: boolean = false;
 
   constructor(
     private _activatedRoute: ActivatedRoute,
@@ -59,38 +59,54 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe(({ matchingAliases }) => {
         this.isScreenSmall = !matchingAliases.includes('md');
-
-        this.navOpened = this.isJacobo ? false : !this.isScreenSmall;
       });
 
     // 2️⃣ Obtener rol y subrol del usuario
-    this._userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe((user) => {
-      if (!user) return;
+    this._authService
+      .getUserRole()
+      .pipe(takeUntil(this._unsubscribeAll))
+      .subscribe(({ roleId, subRoleId }) => {
+        this.isJacobo = subRoleId === SubRoleEnum.JACOBO;
 
-      const roleId = user.roleId;
-      const subRoleId = user.sub_permissions?.[0] ?? null;
+        const canSeeChildMenu = subRoleId === SubRoleEnum.JEFE || roleId === RoleEnum.SUADMIN;
 
-      this.isJacobo = subRoleId === SubRoleEnum.JACOBO;
+        if (canSeeChildMenu) {
+          const reportProdNav = this._fuseVerticalNavigationService.getReportProdNavigation(
+            roleId,
+            subRoleId,
+          );
 
-      const canSeeChildMenu = subRoleId === SubRoleEnum.JEFE || roleId === RoleEnum.SUADMIN;
+          this._fuseVerticalNavigationService.storeNavigation('reportprod', reportProdNav);
 
-      if (canSeeChildMenu) {
-        const reportProdNav = this._fuseVerticalNavigationService.getReportProdNavigation(
-          roleId,
-          subRoleId,
-        );
+          this.navigation = this._fuseVerticalNavigationService.getNavigation('reportprod');
+        } else {
+          this._fuseVerticalNavigationService.storeNavigation('reportprod', []);
+          this.navigation = [];
+        }
+      });
 
-        this._fuseVerticalNavigationService.storeNavigation('reportprod', reportProdNav);
+    // 🔥 Solo para Jacobo: cerrar nav hijo al navegar
+    this._router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this._unsubscribeAll),
+      )
+      .subscribe(() => {
+        const user = this._userService.user;
+        const subRoleId = user?.sub_permissions?.[0] ?? null;
+        const isJacobo = subRoleId === SubRoleEnum.JACOBO;
 
-        this.navigation = this._fuseVerticalNavigationService.getNavigation('reportprod');
-      } else {
-        this._fuseVerticalNavigationService.storeNavigation('reportprod', []);
-        this.navigation = [];
-      }
+        if (!isJacobo) return; // 👈 Solo aplica para Jacobo
 
-      // 🔥 Estado inicial del menú
-      this.navOpened = this.isJacobo ? false : !this.isScreenSmall;
-    });
+        const nav =
+          this._fuseNavigationService.getComponent<FuseVerticalNavigationComponent>(
+            'reportProdNav',
+          );
+        if (nav?.opened) {
+          nav.close();
+          this.navOpened = false;
+        }
+      });
 
     // 3️⃣ Escuchar cambios del menú hijo (por si se actualiza)
     this._fuseVerticalNavigationService.onNavigationChanged$
@@ -98,24 +114,6 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
       .subscribe(({ key }) => {
         if (key === 'reportprod') {
           this.navigation = this._fuseVerticalNavigationService.getNavigation('reportprod');
-        }
-      });
-
-    this._router.events
-      .pipe(
-        filter((event) => event instanceof NavigationEnd),
-        takeUntil(this._unsubscribeAll),
-      )
-      .subscribe(() => {
-        if (this.isJacobo) {
-          this.navOpened = false;
-          this.reportProdNav?.close();
-          return;
-        }
-
-        if (this.isScreenSmall) {
-          this.navOpened = false;
-          this.reportProdNav?.close();
         }
       });
   }
