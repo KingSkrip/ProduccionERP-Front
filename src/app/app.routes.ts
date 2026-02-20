@@ -124,8 +124,11 @@ export const appRoutes: Route[] = [
 
                     //pedidos
                     { path: 'Pedidos', loadChildren: () => import('app/modules/admin/pedidos/pedidos.routes') },
+                    { path: 'PedidosCl1', loadChildren: () => import('app/modules/agente/pedidos/pedidos.routes') },
+                    
                     //estados_cuenta
                     { path: 'Edos_cuenta', loadChildren: () => import('app/modules/admin/edos_cuenta/edos_cuenta.routes') },
+                    { path: 'Edos_cuentaCl1', loadChildren: () => import('app/modules/agente/edos_cuenta/edos_cuenta.routes') },
 
                     //Reportes de produccion
                     { path: 'ReportProd', loadChildren: () => import('app/modules/admin/reportes_produccion/reportprod.routes') },

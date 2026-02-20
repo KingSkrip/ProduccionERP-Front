@@ -4277,7 +4277,7 @@ export const menuAgentes: FuseNavigationItem[] = [
     tooltip: 'Estados de cuenta',
     type: 'basic',
     icon: 'heroicons_outline:banknotes',
-    link: '/apps/Edos_cuenta',
+    link: '/apps/Edos_cuentaCl1',
   },
   {
     id: 'usuarios.pedidos',
@@ -4285,6 +4285,6 @@ export const menuAgentes: FuseNavigationItem[] = [
     tooltip: 'Pedidos',
     type: 'basic',
     icon: 'heroicons_outline:shopping-bag',
-    link: '/apps/Pedidos',
+    link: '/apps/PedidosCl1',
   },
 ];
