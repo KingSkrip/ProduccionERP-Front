@@ -6,6 +6,7 @@ import {
   menuAgentes,
   menuClientes,
   menuColaborador,
+  menuJacobo,
   menuJefe,
   menuReporteProd_Jefe,
   menuRh,
@@ -225,11 +226,15 @@ export class NavigationService {
 
     // 2️⃣ Sobrescribir por SUBROL
     if (subRoleId) {
-      // console.log(subRoleId);
       switch (subRoleId) {
         case SubRoleEnum.JEFE:
           navigation = menuJefe;
           break;
+
+        case SubRoleEnum.JACOBO:
+          navigation = menuJacobo;
+          break;
+
         // futuros subroles aquí
       }
     }
@@ -244,12 +249,10 @@ export class NavigationService {
   }
 
   getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
-    //  SOLO JEFE tiene este menú hijo
-    if (subRoleId === SubRoleEnum.JEFE) {
+    if (subRoleId === SubRoleEnum.JEFE || subRoleId === SubRoleEnum.JACOBO) {
       return [...menuReporteProd_Jefe];
     }
 
-    // otros subroles/roles: sin menú hijo
     return [];
   }
 

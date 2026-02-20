@@ -4142,6 +4142,43 @@ export const menuJefe: FuseNavigationItem[] = [
   },
 ];
 
+export const menuJacobo: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+  // =======================
+  // PRODUCCIÓN
+  // =======================
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
 export const menuReporteProd_Jefe: FuseNavigationItem[] = [
   {
     id: 'rp-Inicio',

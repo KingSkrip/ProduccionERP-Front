@@ -6,6 +6,7 @@ import {
   menuAgentes,
   menuClientes,
   menuColaborador,
+  menuJacobo,
   menuJefe,
   menuReporteProd_Jefe,
   menuRh,
@@ -215,11 +216,15 @@ export class AppNavigationStoreService {
 
     // 2️⃣ Sobrescribir por SUBROL
     if (subRoleId) {
-      // console.log(subRoleId);
       switch (subRoleId) {
         case SubRoleEnum.JEFE:
           navigation = menuJefe;
           break;
+
+        case SubRoleEnum.JACOBO:
+          navigation = menuJacobo;
+          break;
+
         // futuros subroles aquí
       }
     }
@@ -235,8 +240,10 @@ export class AppNavigationStoreService {
 
   getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
     const isJefe = subRoleId === SubRoleEnum.JEFE;
+    const isJacobo = subRoleId === SubRoleEnum.JACOBO;
     const isSuadmin = roleId === RoleEnum.SUADMIN;
-    if (isJefe || isSuadmin) {
+
+    if (isJefe || isJacobo || isSuadmin) {
       return [...menuReporteProd_Jefe];
     }
 
