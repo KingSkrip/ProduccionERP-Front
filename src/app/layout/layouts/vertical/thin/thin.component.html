@@ -7,7 +7,7 @@
 class="bg-card dark:bg-gray-900 print:hidden z-[300]"
     [appearance]="isScreenSmall ? 'futuristic' : 'dense'"
      [mode]="isScreenSmall ? 'over' : 'side'" name="mainNavigation"
-    [navigation]="navigation" [opened]="!isScreenSmall">
+    [navigation]="navigation" [opened]="isNavOpen">
 
     <!-- Navigation header hook -->
     <ng-container fuseVerticalNavigationContentHeader>

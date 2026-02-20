@@ -13,4 +13,5 @@ export interface User {
   identity_id?: number;
   firebird_user_id?: string | number;
   firebird_user_clave?: string | number;
+  roleId?: number;
 }
