@@ -4173,7 +4173,7 @@ export const menuJacobo: FuseNavigationItem[] = [
         title: 'Reportes de producción',
         type: 'basic',
         icon: 'heroicons_outline:rectangle-stack',
-        link: '/apps/ReportProd',
+        link: '/apps/ReportesProd',
       },
     ],
   },

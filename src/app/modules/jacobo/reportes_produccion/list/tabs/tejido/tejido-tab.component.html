@@ -1,0 +1,205 @@
+<!-- Tarjetas de resumen - Solo mostrar si hay datos -->
+<div class="md:px-8 md:py-4" *ngIf="!loading && datosFiltrados.length > 0">
+  <!-- Card móvil - Simple y limpio -->
+  <div class="md:hidden">
+    <div class="bg-card rounded-xl border-l-4 border-green-500 px-5 py-4 shadow-sm">
+      <div class="flex items-center justify-between gap-4">
+        <!-- Contenido principal -->
+        <div class="min-w-0 flex-1">
+          <div class="text-secondary mb-2 text-sm font-medium">Cantidad total</div>
+          <div class="flex items-baseline gap-2">
+            <div class="text-3xl font-bold">
+              {{ calcularCantidadTotal() | number: '1.2-2' }}
+            </div>
+            <div class="text-secondary text-sm">kg</div>
+          </div>
+        </div>
+
+        <!-- Icono -->
+        <div class="flex-shrink-0">
+          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10">
+            <mat-icon
+              class="text-green-500 icon-size-6"
+              [svgIcon]="'heroicons_outline:clipboard-document-list'"
+            >
+            </mat-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards desktop -->
+  <div class="hidden grid-cols-3 gap-3 md:grid">
+    <div class="bg-card rounded-xl border-l-4 border-green-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base">Cantidad total</div>
+        <mat-icon
+          class="text-green-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:clipboard-document-list'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ calcularCantidadTotal() | number: '1.2-2' }}</div>
+      <div class="text-secondary text-sm">Kilogramos</div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="loading" class="flex flex-col items-center justify-center px-4 py-16">
+  <div
+    class="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"
+  ></div>
+  <p class="text-secondary">Cargando datos de tejido...</p>
+</div>
+
+<!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
+<div
+  *ngIf="!loading && datosFiltrados.length === 0 && cargaInicial"
+  class="flex flex-col items-center justify-center px-4 py-16"
+>
+  <div class="relative mb-6">
+    <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-sky-500/10">
+      <mat-icon
+        class="text-sky-500/40 icon-size-12"
+        [svgIcon]="'heroicons_outline:clipboard-document-list'"
+      ></mat-icon>
+    </div>
+  </div>
+
+  <h3 class="mb-2 text-xl font-bold">No hay datos de tejido</h3>
+  <p class="text-secondary mb-4 max-w-md text-center">
+    No se encontraron registros con los filtros seleccionados.
+    <br />Intenta ajustar tus criterios de búsqueda o seleccionar otro departamento.
+  </p>
+
+  <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
+    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+    Limpiar filtros
+  </button>
+</div>
+
+<!-- Tabla -->
+<div
+  class="mt-6 overflow-x-hidden md:overflow-x-auto md:px-8 md:pb-8"
+  *ngIf="!loading && datosFiltrados.length > 0"
+>
+  <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">
+    <thead class="bg-gray-50 dark:bg-gray-700">
+      <tr>
+        <th
+          class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Departamento
+        </th>
+        <th
+          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Piezas
+        </th>
+        <th
+          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Cantidad (kg)
+        </th>
+      </tr>
+    </thead>
+
+    <tbody class="divide-y">
+      <ng-container *ngFor="let grupo of datosAgrupados; let i = index">
+        <!-- Fila Departamento -->
+        <tr
+          class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+          (click)="toggleDepartamento(i)"
+        >
+          <td class="px-3 py-2 md:px-6 md:py-4">
+            <div class="flex items-center gap-3">
+              <mat-icon
+                class="transition-transform icon-size-4"
+                [ngClass]="{ 'rotate-90': grupo.expandido }"
+                [svgIcon]="'heroicons_outline:chevron-right'"
+              ></mat-icon>
+
+              <mat-icon
+                class="text-sky-500 icon-size-5"
+                [svgIcon]="'heroicons_outline:building-office'"
+              ></mat-icon>
+
+              <div>
+                <div class="font-semibold capitalize">
+                  {{ grupo.departamento | lowercase }}
+                </div>
+
+                <div class="text-secondary text-xs">{{ grupo.procesos.length }} procesos</div>
+              </div>
+            </div>
+          </td>
+
+          <td class="px-3 py-2 text-right md:px-6 md:py-4">
+            <span class="text-lg font-bold text-sky-600">
+              {{ grupo.piezasTotal | number: '1.2-2' }}
+            </span>
+          </td>
+
+          <td class="px-3 py-2 text-right md:px-6 md:py-4">
+            <span class="text-lg font-bold text-green-600 dark:text-green-400">
+              {{ grupo.cantidadTotal | number: '1.2-2' }}
+            </span>
+          </td>
+        </tr>
+
+        <!-- Filas Procesos -->
+        <tr
+          *ngFor="let proceso of grupo.procesos"
+          [style.display]="grupo.expandido ? 'table-row' : 'none'"
+          class="bg-gray-50 dark:bg-gray-800/50"
+        >
+          <td class="px-6 py-3 pl-20">
+            <div class="flex items-center gap-3">
+              <mat-icon
+                class="text-gray-400 icon-size-4"
+                [svgIcon]="'heroicons_outline:cog-8-tooth'"
+              >
+              </mat-icon>
+
+              <span class="text-secondary text-sm capitalize">
+                {{ proceso.proceso | lowercase }}
+              </span>
+            </div>
+          </td>
+
+          <!-- PIEZAS del proceso -->
+          <td class="px-6 py-3 text-right">
+            <span class="text-sm font-medium text-sky-600">
+              {{ proceso.piezas | number: '1.2-2' }}
+            </span>
+          </td>
+
+          <!-- CANTIDAD del proceso -->
+          <td class="px-6 py-3 text-right">
+            <span class="text-sm font-medium text-green-600 dark:text-green-400">
+              {{ proceso.cantidad | number: '1.2-2' }}
+            </span>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+
+    <!-- TOTAL GENERAL -->
+    <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-700">
+      <tr>
+        <!-- Label ocupa 2 columnas -->
+        <td class="px-3 py-2 text-right text-base md:px-6 md:py-4" colspan="2">Total general:</td>
+
+        <!-- Total hasta la derecha (última columna) -->
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg text-green-600 dark:text-green-400">
+            {{ calcularCantidadTotal() | number: '1.2-2' }}
+          </span>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<!-- VISTA TEJIDO -->
