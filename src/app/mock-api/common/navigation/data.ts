@@ -4248,6 +4248,75 @@ export const menuReporteProd_Jefe: FuseNavigationItem[] = [
     link: '/apps/ReportProd/list/procesos',
   },
 ];
+export const menuReporteProd_Jacobo: FuseNavigationItem[] = [
+  {
+    id: 'rp-Inicio',
+    title: 'Resumen',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/apps/ReportesProd/list/inicio',
+  },
+  // {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja general',
+  //   tooltip: 'Bandeja general',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
+
+  {
+    id: 'rp-facturado',
+    title: 'Facturado',
+    type: 'basic',
+    icon: 'heroicons_outline:document-check',
+    link: '/apps/ReportesProd/list/facturado',
+  },
+  {
+    id: 'rp-tejido',
+    title: 'Tejido',
+    type: 'basic',
+    icon: 'heroicons_outline:aguja',
+    link: '/apps/ReportesProd/list/tejido',
+  },
+  {
+    id: 'rp-tintoreria',
+    title: 'Tintorería',
+    type: 'basic',
+    icon: 'heroicons_outline:beaker',
+    link: '/apps/ReportesProd/list/tintoreria',
+  },
+  {
+    id: 'rp-acabado-real',
+    title: 'Acabado real',
+    type: 'basic',
+    icon: 'heroicons_outline:cog-6-tooth',
+    link: '/apps/ReportesProd/list/acabado-real',
+  },
+  {
+    id: 'rp-estampado',
+    title: 'Estampado',
+    type: 'basic',
+    icon: 'heroicons_outline:paint-brush',
+    link: '/apps/ReportesProd/list/estampado',
+  },
+
+  {
+    id: 'rp-Procesos',
+    title: 'Procesos',
+    type: 'basic',
+    icon: 'heroicons_outline:cog',
+    link: '/apps/ReportesProd/list/procesos',
+  },
+];
 
 export const menuClientes: FuseNavigationItem[] = [
   // =======================
@@ -4285,9 +4354,6 @@ export const menuClientes: FuseNavigationItem[] = [
     link: '/apps/Pedidos',
   },
 ];
-
-
-
 
 export const menuAgentes: FuseNavigationItem[] = [
   // =======================

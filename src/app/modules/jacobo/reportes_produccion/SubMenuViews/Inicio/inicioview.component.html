@@ -1,5 +1,5 @@
 <!-- INICIO - VISTA RESUMEN CON LOADERS -->
-<div class="mx-auto max-w-[1600px] p-4 md:p-6">
+<div class="w-full px-6 pt-6 md:pt-2">
   <!-- Header -->
   <div class="mb-6 md:mb-8">
     <!-- Toggle Vista -->
@@ -40,6 +40,7 @@
       <div
         class="h-px flex-1 bg-gradient-to-r from-transparent via-green-300 to-transparent dark:via-green-700"
       ></div>
+
       <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
         <mat-icon
           svgIcon="heroicons_outline:banknotes"
@@ -58,8 +59,27 @@
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
         <!-- TOTAL -->
         <div
-          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
+          class="bg-card relative flex flex-auto cursor-pointer flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
+          matRipple
+          (click)="abrirComposerFacturado('total')"
         >
+          <!-- Botón 3 puntos — stop propagation para no abrir el dialog -->
+          <div class="absolute right-2 top-2 z-10">
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="menuTotal"
+              (click)="$event.stopPropagation()"
+            >
+              <mat-icon class="icon-size-5">more_vert</mat-icon>
+            </button>
+            <mat-menu #menuTotal="matMenu">
+              <button mat-menu-item (click)="abrirComposerFacturado('total')">
+                <mat-icon>open_in_full</mat-icon>
+                <span>Ver detalle</span>
+              </button>
+            </mat-menu>
+          </div>
+
           <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
             <mat-icon
               class="text-green-500 opacity-25 icon-size-24 dark:text-green-400"
@@ -74,25 +94,6 @@
                 {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
               </div>
             </div>
-            <!-- <div class="-mt-2 ml-auto">
-              <button mat-icon-button [matMenuTriggerFor]="previousStatementMenu">
-                <mat-icon
-                  class="icon-size-5"
-                  [svgIcon]="'heroicons_mini:ellipsis-vertical'"
-                ></mat-icon>
-              </button>
-              <mat-menu #previousStatementMenu="matMenu">
-                <button mat-menu-item>
-                  <span class="flex items-center">
-                    <mat-icon
-                      class="mr-3 icon-size-5"
-                      [svgIcon]="'heroicons_outline:printer'"
-                    ></mat-icon>
-                    <span>Imprimir</span>
-                  </span>
-                </button>
-              </mat-menu>
-            </div> -->
           </div>
 
           <!-- Loader o contenido -->
@@ -106,12 +107,6 @@
                 {{ totalFacturacion | currency: 'MXN' }}
               </div>
             </div>
-            <!-- <div class="mx-6 my-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Facturas IVA</div>
-              <div class="mt-2 text-3xl font-medium leading-none">
-                {{ facturasSinIva }}
-              </div>
-            </div> -->
           </div>
 
           <ng-template #loaderTemplate>
@@ -123,8 +118,26 @@
 
         <!-- Peso total -->
         <div
-          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
+          class="bg-card relative flex flex-auto cursor-pointer flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
+          matRipple
+          (click)="abrirComposerFacturado('peso')"
         >
+          <div class="absolute right-2 top-2 z-10">
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="menuPeso"
+              (click)="$event.stopPropagation()"
+            >
+              <mat-icon class="icon-size-5">more_vert</mat-icon>
+            </button>
+            <mat-menu #menuPeso="matMenu">
+              <button mat-menu-item (click)="abrirComposerFacturado('peso')">
+                <mat-icon>open_in_full</mat-icon>
+                <span>Ver detalle</span>
+              </button>
+            </mat-menu>
+          </div>
+
           <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
             <mat-icon
               class="text-purple-500 opacity-25 icon-size-24 dark:text-purple-400"
@@ -139,23 +152,6 @@
                 {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
               </div>
             </div>
-            <!-- <div class="-mt-2 ml-auto">
-              <button mat-icon-button [matMenuTriggerFor]="currentStatementMenu">
-                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'">
-                </mat-icon>
-              </button>
-              <mat-menu #currentStatementMenu="matMenu">
-                <button mat-menu-item>
-                  <span class="flex items-center">
-                    <mat-icon
-                      class="mr-3 icon-size-5"
-                      [svgIcon]="'heroicons_outline:printer'"
-                    ></mat-icon>
-                    <span>Imprimir</span>
-                  </span>
-                </button>
-              </mat-menu>
-            </div> -->
           </div>
 
           <!-- Loader o contenido -->
@@ -167,9 +163,15 @@
               <div class="text-secondary text-sm font-medium leading-none">Peso total</div>
 
               <div class="mt-2 text-2xl font-medium leading-none">
-                <ng-container *ngIf="cantidadesPorUnidadArray?.length; else sinCantidades">
-                  <div *ngFor="let item of cantidadesPorUnidadArray" class="mb-1">
+                <ng-container *ngIf="resumenPesoFacturacion.items.length; else sinCantidades">
+                  <div *ngFor="let item of resumenPesoFacturacion.items" class="mb-1">
                     {{ item.um }}: {{ formatValue(item.cant, 'decimal') }}
+                    <span *ngIf="!item.esKG" class="text-base text-gray-500">
+                      ({{ formatValue(item.kgEquivalente, 'decimal') }} KG)
+                    </span>
+                  </div>
+                  <div class="mt-1 text-sm text-gray-500">
+                    Total: {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
                   </div>
                 </ng-container>
 
@@ -187,62 +189,6 @@
           </ng-template>
         </div>
       </div>
-
-      <!-- COLUMNA DERECHA: Gráfica -->
-      <!-- <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl shadow">
-        <div class="flex flex-col p-6 pb-4">
-          <div class="flex items-center justify-between">
-            <div class="flex flex-col">
-              <div class="mr-4 truncate text-lg font-medium leading-6 tracking-tight">
-                Facturación
-              </div>
-              <div class="text-secondary font-medium">
-                Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }} -
-                {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
-              </div>
-            </div>
-            <div class="ml-2">
-              <div class="flex flex-col leading-tight">
-                <span class="text-secondary text-sm font-medium"> Total: </span>
-                <span class="text-secondary text-sm font-medium">
-                  {{ totalFacturacion | currency: 'MXN' }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          *ngIf="loadingGraficaFacturacion"
-          class="flex flex-1 items-center justify-center py-12"
-        >
-          <div class="flex flex-col items-center gap-3">
-            <mat-spinner diameter="48"></mat-spinner>
-            <span class="text-sm text-gray-500">Cargando gráfica...</span>
-          </div>
-        </div>
-        <div *ngIf="!loadingGraficaFacturacion && accountBalanceOptions?.series?.[0]?.data?.length">
-          <apx-chart
-            class="h-full w-full flex-auto"
-            [chart]="accountBalanceOptions.chart"
-            [fill]="accountBalanceOptions.fill"
-            [series]="accountBalanceOptions.series"
-            [stroke]="accountBalanceOptions.stroke"
-            [tooltip]="accountBalanceOptions.tooltip"
-            [xaxis]="accountBalanceOptions.xaxis"
-            [legend]="accountBalanceOptions.legend"
-          >
-          </apx-chart>
-        </div>
-        <div
-          *ngIf="!loadingGraficaFacturacion && !accountBalanceOptions?.series?.[0]?.data?.length"
-          class="text-secondary flex flex-1 items-center justify-center p-6"
-        >
-          <div class="text-center">
-            <mat-icon class="mb-2 text-4xl text-gray-300">bar_chart</mat-icon>
-            <p>Sin datos para graficar en el rango seleccionado.</p>
-          </div>
-        </div>
-      </div> -->
     </div>
 
     <!-- Distribución de procesos -->
@@ -254,11 +200,8 @@
         <mat-icon
           svgIcon="heroicons_outline:chart-bar"
           class="text-black icon-size-5 dark:text-blue-400"
-        >
-        </mat-icon>
-        <span class="text-sm font-semibold uppercase tracking-wide">
-          Distribución de procesos
-        </span>
+        ></mat-icon>
+        <span class="text-sm font-semibold uppercase tracking-wide">Distribución de procesos</span>
       </div>
       <div
         class="h-px flex-1 bg-gradient-to-r from-transparent via-blue-300 to-transparent dark:via-blue-700"
@@ -267,63 +210,6 @@
 
     <!-- GRAFICA CUARTETO Detalles de Tejido, Tintorería, Estampados y Acabado -->
     <div class="mt-6 w-full">
-      <!-- Gráfica comentada -->
-      <!-- <div
-    class="bg-card flex flex-col overflow-hidden rounded-2xl p-4 shadow sm:p-6 xl:col-span-4"
-  >
-    <div class="flex flex-col gap-1">
-      <div class="text-base font-medium leading-6 tracking-tight sm:text-lg">
-        Distribución de procesos
-      </div>
-
-      <div class="text-secondary text-sm font-medium">
-        Periodo:
-        {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }}
-        -
-        {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
-      </div>
-    </div>
-
-    <div class="mt-4 flex-1">
-      <div
-        *ngIf="loadingDistribucionProcesos"
-        class="flex h-[380px] items-center justify-center"
-      >
-        <div class="flex flex-col items-center gap-3">
-          <mat-spinner diameter="48"></mat-spinner>
-          <span class="text-sm text-gray-500">Cargando distribución...</span>
-        </div>
-      </div>
-
-      <apx-chart
-        *ngIf="!loadingDistribucionProcesos && chartDistribucionProcesos"
-        class="block w-full"
-        [series]="chartDistribucionProcesos.series"
-        [chart]="chartDistribucionProcesos.chart"
-        [plotOptions]="chartDistribucionProcesos.plotOptions"
-        [colors]="chartDistribucionProcesos.colors"
-        [dataLabels]="chartDistribucionProcesos.dataLabels"
-        [stroke]="chartDistribucionProcesos.stroke"
-        [xaxis]="chartDistribucionProcesos.xaxis"
-        [yaxis]="chartDistribucionProcesos.yaxis"
-        [fill]="chartDistribucionProcesos.fill"
-        [tooltip]="chartDistribucionProcesos.tooltip"
-        [legend]="chartDistribucionProcesos.legend"
-      >
-      </apx-chart>
-
-      <div
-        *ngIf="!loadingDistribucionProcesos && !chartDistribucionProcesos"
-        class="flex h-[260px] items-center justify-center text-gray-400 sm:h-[320px] lg:h-[380px]"
-      >
-        <div class="text-center">
-          <mat-icon class="mb-2 text-5xl sm:text-6xl">insights</mat-icon>
-          <p class="text-sm sm:text-base">Sin datos para graficar</p>
-        </div>
-      </div>
-    </div>
-  </div> -->
-
       <!-- Cards en 2 columnas responsive -->
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <!-- TEJIDO -->
@@ -331,25 +217,39 @@
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
-          <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
-            <svg width="260" height="70" viewBox="0 0 260 70" fill="none">
-              <path
-                d="M0 40 C 40 20, 80 60, 120 40 S 200 20, 260 40"
-                stroke="rgb(34 197 94)"
-                stroke-width="8"
-                stroke-linecap="round"
-              />
-            </svg>
+          <div class="pointer-events-none absolute bottom-0 right-0 -m-6 h-24 w-24">
+            <mat-icon
+              class="text-blue-500 opacity-25 icon-size-24 dark:text-blue-400"
+              [svgIcon]="'heroicons_outline:check-circle'"
+            >
+            </mat-icon>
           </div>
 
-          <!-- Header -->
-          <div class="relative z-10 flex items-start justify-between">
-            <div
-              class="flex flex-wrap items-start gap-1 truncate text-lg font-medium leading-6 tracking-tight"
+          <!-- Botón 3 puntos -->
+          <div class="absolute right-2 top-2 z-50">
+            <button
+              mat-icon-button
+              class="flex h-10 w-10 items-center justify-center"
+              [matMenuTriggerFor]="menuTejido"
+              (click)="$event.stopPropagation()"
             >
+              <mat-icon class="text-gray-400">more_vert</mat-icon>
+            </button>
+          </div>
+
+          <mat-menu #menuTejido="matMenu">
+            <button mat-menu-item (click)="abrirTejido()">
+              <mat-icon>open_in_full</mat-icon>
+              <span>Ver detalle por día</span>
+            </button>
+          </mat-menu>
+
+          <!-- Header -->
+          <div class="flex items-start justify-between pr-12">
+            <div class="flex flex-wrap gap-1 text-lg font-medium tracking-tight">
               <span>Tejido</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-400 dark:text-gray-400"
+                class="flex flex-wrap gap-1 text-xs text-gray-400"
                 *ngFor="let detalle of detallesTejido"
               >
                 - {{ detalle.proceso | lowercase | titlecase }}
@@ -364,22 +264,19 @@
 
           <!-- Contenido -->
           <ng-container *ngIf="!loadingDetallesProcesos">
-            <div class="relative z-10 flex flex-col" *ngFor="let detalle of detallesTejido">
-              <div class="-mx-6 flex flex-row flex-wrap">
-                <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-sm font-medium leading-none text-black dark:text-white">
-                    Cantidad
-                  </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
-                    {{ formatValue(detalle.cantidad, 'decimal') }} kg
+            <div class="mt-4 flex flex-col" *ngFor="let detalle of detallesTejido">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col items-center">
+                  <div class="text-sm text-gray-500">Cantidad</div>
+                  <div class="mt-2 text-2xl font-semibold sm:text-3xl">
+                    {{ formatValue(detalle.cantidad, 'decimal') }}
+                    <span class="text-base font-normal text-gray-400">kg</span>
                   </div>
                 </div>
 
-                <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-sm font-medium leading-none text-black dark:text-white">
-                    Piezas
-                  </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+                <div class="flex flex-col items-center">
+                  <div class="text-sm text-gray-500">Piezas</div>
+                  <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
                 </div>
@@ -393,31 +290,40 @@
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
-          <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
-            <svg
-              width="260"
-              height="70"
-              viewBox="0 0 260 70"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          <div class="pointer-events-none absolute bottom-0 right-0 -m-6 h-24 w-24">
+            <mat-icon
+              class="text-red-500 opacity-25 icon-size-24 dark:text-red-400"
+              [svgIcon]="'heroicons_outline:check-circle'"
             >
-              <path
-                d="M0 50 C 25 30, 50 30, 75 50 S 125 70, 150 50 S 200 30, 225 50 S 250 70, 260 50"
-                stroke="rgb(59 130 246)"
-                stroke-width="8"
-                stroke-linecap="round"
-              />
-            </svg>
+            </mat-icon>
           </div>
 
-          <!-- Header -->
-          <div class="relative z-10 flex items-start justify-between">
-            <div
-              class="flex flex-wrap items-start gap-1 truncate text-lg font-medium leading-6 tracking-tight"
+          <!-- Botón 3 puntos -->
+          <div class="absolute right-2 top-2 z-50">
+            <button
+              mat-icon-button
+              class="flex h-10 w-10 items-center justify-center"
+              [matMenuTriggerFor]="menuTintoreria"
+              (click)="$event.stopPropagation()"
             >
-              <span>Tintorería </span>
+              <mat-icon class="text-gray-400">more_vert</mat-icon>
+            </button>
+          </div>
+
+          <!-- Menu -->
+          <mat-menu #menuTintoreria="matMenu">
+            <button mat-menu-item (click)="abrirTintoreria()">
+              <mat-icon>open_in_full</mat-icon>
+              <span>Ver detalle por día</span>
+            </button>
+          </mat-menu>
+
+          <!-- Header -->
+          <div class="flex items-start justify-between pr-12">
+            <div class="flex flex-wrap gap-1 text-lg font-medium tracking-tight">
+              <span>Tintorería</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-400 dark:text-gray-400"
+                class="flex flex-wrap gap-1 text-xs text-gray-400"
                 *ngFor="let detalle of detallesTintoreria"
               >
                 - {{ detalle.proceso | lowercase | titlecase }}
@@ -432,21 +338,19 @@
 
           <!-- Contenido -->
           <ng-container *ngIf="!loadingDetallesProcesos">
-            <div class="relative z-10 flex flex-col" *ngFor="let detalle of detallesTintoreria">
-              <div class="-mx-6 flex flex-row flex-wrap">
-                <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-sm font-medium leading-none text-black dark:text-white">
-                    Cantidad
-                  </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
-                    {{ formatValue(detalle.cantidad, 'decimal') }} kg
+            <div class="mt-4 flex flex-col" *ngFor="let detalle of detallesTintoreria">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col items-center">
+                  <div class="text-sm text-gray-500">Cantidad</div>
+                  <div class="mt-2 text-2xl font-semibold sm:text-3xl">
+                    {{ formatValue(detalle.cantidad, 'decimal') }}
+                    <span class="text-base font-normal text-gray-400">kg</span>
                   </div>
                 </div>
-                <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-sm font-medium leading-none text-black dark:text-white">
-                    Piezas
-                  </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+
+                <div class="flex flex-col items-center">
+                  <div class="text-sm text-gray-500">Piezas</div>
+                  <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
                 </div>
@@ -460,25 +364,40 @@
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
-          <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
-            <svg width="260" height="70" viewBox="0 0 260 70" fill="none">
-              <path
-                d="M0 40 Q 65 10, 130 40 T 260 40"
-                stroke="rgb(168 85 247)"
-                stroke-width="8"
-                stroke-linecap="round"
-              />
-            </svg>
+          <div class="pointer-events-none absolute bottom-0 right-0 -m-6 h-24 w-24">
+            <mat-icon
+              class="text-cyan-500 opacity-25 icon-size-24 dark:text-cyan-400"
+              [svgIcon]="'heroicons_outline:check-circle'"
+            >
+            </mat-icon>
           </div>
 
-          <!-- Header -->
-          <div class="relative z-10 flex items-start justify-between">
-            <div
-              class="flex flex-wrap items-start gap-1 truncate text-lg font-medium leading-6 tracking-tight"
+          <!-- Botón 3 puntos -->
+          <div class="absolute right-2 top-2 z-50">
+            <button
+              mat-icon-button
+              class="flex h-10 w-10 items-center justify-center"
+              [matMenuTriggerFor]="menuEstampado"
+              (click)="$event.stopPropagation()"
             >
+              <mat-icon class="text-gray-400">more_vert</mat-icon>
+            </button>
+          </div>
+
+          <!-- Menu -->
+          <mat-menu #menuEstampado="matMenu">
+            <button mat-menu-item (click)="abrirEstampado()">
+              <mat-icon>open_in_full</mat-icon>
+              <span>Ver detalle por día</span>
+            </button>
+          </mat-menu>
+
+          <!-- Header -->
+          <div class="flex items-start justify-between pr-12">
+            <div class="flex flex-wrap gap-1 text-lg font-medium tracking-tight">
               <span>Estampado</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-400 dark:text-gray-400"
+                class="flex flex-wrap gap-1 text-xs text-gray-400"
                 *ngFor="let detalle of detallesEstampados"
               >
                 - {{ detalle.proceso | lowercase | titlecase }}
@@ -493,21 +412,19 @@
 
           <!-- Contenido -->
           <ng-container *ngIf="!loadingDetallesProcesos">
-            <div class="relative z-10 flex flex-col" *ngFor="let detalle of detallesEstampados">
-              <div class="-mx-6 flex flex-row flex-wrap">
-                <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-sm font-medium leading-none text-black dark:text-white">
-                    Cantidad
-                  </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
-                    {{ formatValue(detalle.cantidad, 'decimal') }} kg
+            <div class="mt-4 flex flex-col" *ngFor="let detalle of detallesEstampados">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col items-center">
+                  <div class="text-sm text-gray-500">Cantidad</div>
+                  <div class="mt-2 text-2xl font-semibold sm:text-3xl">
+                    {{ formatValue(detalle.cantidad, 'decimal') }}
+                    <span class="text-base font-normal text-gray-400">kg</span>
                   </div>
                 </div>
-                <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-sm font-medium leading-none text-black dark:text-white">
-                    Piezas
-                  </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+
+                <div class="flex flex-col items-center">
+                  <div class="text-sm text-gray-500">Piezas</div>
+                  <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
                 </div>
@@ -521,25 +438,40 @@
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
-          <div class="pointer-events-none absolute right-0 top-4 z-0 opacity-60">
-            <svg width="260" height="70" viewBox="0 0 260 70" fill="none">
-              <path
-                d="M0 25 C 40 30, 80 45, 120 50 S 200 60, 260 55"
-                stroke="rgb(239 68 68)"
-                stroke-width="8"
-                stroke-linecap="round"
-              />
-            </svg>
+          <div class="pointer-events-none absolute bottom-0 right-0 -m-6 h-24 w-24">
+            <mat-icon
+              class="text-yellow-500 opacity-25 icon-size-24 dark:text-yellow-400"
+              [svgIcon]="'heroicons_outline:check-circle'"
+            >
+            </mat-icon>
           </div>
 
-          <!-- Header -->
-          <div class="relative z-10 flex items-start justify-between">
-            <div
-              class="flex flex-wrap items-start gap-1 truncate text-lg font-medium leading-6 tracking-tight"
+          <!-- Botón 3 puntos -->
+          <div class="absolute right-2 top-2 z-50">
+            <button
+              mat-icon-button
+              class="flex h-10 w-10 items-center justify-center"
+              [matMenuTriggerFor]="menuAcabado"
+              (click)="$event.stopPropagation()"
             >
+              <mat-icon class="text-gray-400">more_vert</mat-icon>
+            </button>
+          </div>
+
+          <!-- Menu -->
+          <mat-menu #menuAcabado="matMenu">
+            <button mat-menu-item (click)="abrirAcabado()">
+              <mat-icon>open_in_full</mat-icon>
+              <span>Ver detalle por día</span>
+            </button>
+          </mat-menu>
+
+          <!-- Header -->
+          <div class="flex items-start justify-between pr-12">
+            <div class="flex flex-wrap gap-1 text-lg font-medium tracking-tight">
               <span>Acabado real</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-400 dark:text-gray-400"
+                class="flex flex-wrap gap-1 text-xs text-gray-400"
                 *ngFor="let detalle of detallesAcabado"
               >
                 - {{ detalle.proceso | lowercase | titlecase }}
@@ -554,21 +486,19 @@
 
           <!-- Contenido -->
           <ng-container *ngIf="!loadingDetallesProcesos">
-            <div class="relative z-10 flex flex-col" *ngFor="let detalle of detallesAcabado">
-              <div class="-mx-6 flex flex-row flex-wrap">
-                <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-sm font-medium leading-none text-black dark:text-white">
-                    Cantidad
-                  </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
-                    {{ formatValue(detalle.cantidad, 'decimal') }} kg
+            <div class="mt-4 flex flex-col" *ngFor="let detalle of detallesAcabado">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col items-center">
+                  <div class="text-sm text-gray-500">Cantidad</div>
+                  <div class="mt-2 text-2xl font-semibold sm:text-3xl">
+                    {{ formatValue(detalle.cantidad, 'decimal') }}
+                    <span class="text-base font-normal text-gray-400">kg</span>
                   </div>
                 </div>
-                <div class="mx-6 my-3 flex flex-col">
-                  <div class="text-sm font-medium leading-none text-black dark:text-white">
-                    Piezas
-                  </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+
+                <div class="flex flex-col items-center">
+                  <div class="text-sm text-gray-500">Piezas</div>
+                  <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
                 </div>
@@ -932,7 +862,7 @@
       </div>
 
       <!-- GRÁFICA DE LÍNEAS MÚLTIPLES -->
-      <div class="mt-4 flex flex-auto flex-col" style="min-height: 320px">
+      <div class="mt-4 flex flex-auto flex-col" style="min-height: 320px; width: 100%">
         <!-- Loader -->
         <div *ngIf="loadingEmbarquesTejido" class="flex h-full items-center justify-center py-12">
           <div class="flex flex-col items-center gap-3">
@@ -944,7 +874,8 @@
         <!-- Gráfica -->
         <apx-chart
           *ngIf="!loadingEmbarquesTejido && chartEmbarquesTejido"
-          class="h-full w-full flex-auto"
+          class="block h-full w-full flex-auto"
+          style="width: 100% !important"
           [chart]="chartEmbarquesTejido.chart"
           [colors]="chartEmbarquesTejido.colors"
           [series]="chartEmbarquesTejido.series"

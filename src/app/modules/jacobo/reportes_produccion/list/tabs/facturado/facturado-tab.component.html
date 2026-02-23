@@ -60,18 +60,32 @@
           ></mat-icon>
         </div>
 
-        <div class="flex flex-wrap gap-2">
-          <div
-            *ngFor="let unidad of calcularCantidadTotalPorUnidad() | keyvalue"
-            class="inline-flex items-baseline gap-1 dark:text-purple-300"
+        <div
+          *ngFor="let item of calcularCantidadTotalPorUnidad()"
+          class="flex items-baseline justify-between py-0.5"
+        >
+          <span class="text-[11px] uppercase tracking-wide text-gray-400">
+            {{ item.um }}
+            <span *ngIf="!item.esKG" class="text-[10px] text-gray-500">
+              ≈ {{ item.kgEquivalente | number: '1.2-2' }} kg
+            </span>
+          </span>
+          <span class="text-lg font-extrabold tabular-nums leading-none dark:text-purple-300">
+            {{ item.cant | number: '1.2-2' }}
+          </span>
+        </div>
+
+        <div
+          class="mt-2 flex items-baseline justify-between border-t border-dashed border-gray-600/30 pt-2"
+        >
+          <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+            >Total KG</span
           >
-            <span class="text-lg font-extrabold tabular-nums leading-none">
-              {{ unidad.value | number: '1.2-2' }}
-            </span>
-            <span class="text-[11px] uppercase tracking-wide opacity-80">
-              {{ unidad.key }}
-            </span>
-          </div>
+          <span
+            class="text-lg font-extrabold tabular-nums leading-none text-purple-600 dark:text-purple-400"
+          >
+            {{ totalKGFacturado | number: '1.2-2' }}
+          </span>
         </div>
       </div>
     </div>
@@ -80,7 +94,7 @@
     <div class="hidden grid-cols-4 gap-4 md:grid">
       <!-- cantidad -->
       <div
-        class="bg-card overflow-hidden rounded-xl border-t-4 border-purple-500 shadow-sm transition-shadow "
+        class="bg-card overflow-hidden rounded-xl border-t-4 border-purple-500 shadow-sm transition-shadow"
       >
         <div
           class="bg-gradient-to-br from-purple-50/50 to-transparent p-5 dark:from-purple-900/20 dark:to-transparent"
@@ -90,29 +104,26 @@
               class="text-purple-500 icon-size-6"
               [svgIcon]="'heroicons_outline:cube'"
             ></mat-icon>
+            <div class="mt-1 text-xs text-gray-500">
+              Total: {{ totalKGFacturado | number: '1.2-2' }} KG
+            </div>
             <span class="text-xs font-medium uppercase text-purple-600 dark:text-purple-400"
               >Cantidad</span
             >
           </div>
-          <div class="flex flex-wrap gap-2">
-            <div
-              *ngFor="let unidad of calcularCantidadTotalPorUnidad() | keyvalue"
-              class="inline-flex items-baseline"
+
+          <div *ngFor="let item of calcularCantidadTotalPorUnidad()">
+            <span class="text-2xl font-bold">{{ item.um }}: {{ item.cant | number: '1.2-2' }}</span>
+            <span *ngIf="!item.esKG" class="ml-1 text-sm text-gray-400"
+              >({{ item.kgEquivalente | number: '1.2-2' }} KG)</span
             >
-              <span class="text-2xl font-bold">
-                {{ unidad.value | number: '1.2-2' }}
-              </span>
-              <span class="ml-1 text-xs uppercase text-gray-500">
-                {{ unidad.key }}
-              </span>
-            </div>
           </div>
         </div>
       </div>
 
       <!-- Subtotal -->
       <div
-        class="bg-card overflow-hidden rounded-xl border-t-4 border-orange-500 shadow-sm transition-shadow "
+        class="bg-card overflow-hidden rounded-xl border-t-4 border-orange-500 shadow-sm transition-shadow"
       >
         <div
           class="bg-gradient-to-br from-orange-50/50 to-transparent p-5 dark:from-orange-900/20 dark:to-transparent"
@@ -136,7 +147,7 @@
 
       <!-- IVA -->
       <div
-        class="bg-card overflow-hidden rounded-xl border-t-4 border-sky-500 shadow-sm transition-shadow "
+        class="bg-card overflow-hidden rounded-xl border-t-4 border-sky-500 shadow-sm transition-shadow"
       >
         <div
           class="bg-gradient-to-br from-blue-50/50 to-transparent p-5 dark:from-blue-900/20 dark:to-transparent"
@@ -158,7 +169,7 @@
 
       <!-- total-->
       <div
-        class="bg-card overflow-hidden rounded-xl border-t-4 border-green-500 shadow-sm transition-shadow "
+        class="bg-card overflow-hidden rounded-xl border-t-4 border-green-500 shadow-sm transition-shadow"
       >
         <div
           class="bg-gradient-to-br from-green-50/50 to-transparent p-5 dark:from-green-900/20 dark:to-transparent"
@@ -409,7 +420,7 @@
           <th
             class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
           >
-           Subtotal
+            Subtotal
           </th>
           <th
             class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
@@ -545,16 +556,29 @@
           <td class="px-3 py-2 text-right text-base md:px-6 md:py-4" colspan="1">Total general:</td>
           <td class="px-3 py-2 text-right md:px-6 md:py-4">
             <div
-              *ngFor="let unidad of calcularCantidadTotalPorUnidad() | keyvalue"
-              class="mb-1 flex items-baseline justify-end gap-1"
+              *ngFor="let item of calcularCantidadTotalPorUnidad()"
+              class="flex items-baseline justify-between py-0.5"
             >
-              <span class="text-lg font-bold text-purple-600 dark:text-purple-400">
-                {{ unidad.value | number: '1.2-2' }}
+              <span class="text-[11px] uppercase tracking-wide text-gray-400">
+                {{ item.um }}
+                <span *ngIf="!item.esKG" class="text-[10px] text-gray-500"
+                  >≈ {{ item.kgEquivalente | number: '1.2-2' }} kg</span
+                >
               </span>
-
-              <span class="text-sm uppercase text-black dark:text-white">
-                {{ unidad.key }}
+              <span class="text-lg font-extrabold tabular-nums leading-none dark:text-purple-300">
+                {{ item.cant | number: '1.2-2' }}
               </span>
+            </div>
+            <div
+              class="mt-2 flex items-baseline justify-between border-t border-dashed border-gray-600/30 pt-2"
+            >
+              <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+                >Total KG</span
+              >
+              <span
+                class="text-lg font-extrabold tabular-nums leading-none text-purple-600 dark:text-purple-400"
+                >{{ totalKGFacturado | number: '1.2-2' }}</span
+              >
             </div>
           </td>
 

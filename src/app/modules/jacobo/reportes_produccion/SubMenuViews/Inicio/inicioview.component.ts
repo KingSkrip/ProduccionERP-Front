@@ -3,6 +3,7 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -12,7 +13,6 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ApexOptions } from 'apexcharts';
-// import { ResumenWebsocketService } from 'app/core/services/websockets/resumenwebsocket.service';
 import { FinanceService } from 'app/modules/admin/dashboards/finance/finance.service';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { filter, map, Subject, takeUntil } from 'rxjs';
@@ -24,6 +24,14 @@ import {
   RevisadoTejido,
   SaldosTejido,
 } from '../../reportprod.service';
+import { ComposerAcabadoRealComponent } from './Composer/AcabadoReal/composeracabadoreal.component';
+import { ComposerEstampadoComponent } from './Composer/Estampado/composerestampado.component';
+import {
+  ComposerFacturadoComponent,
+  ModoComposer,
+} from './Composer/Facturado/composerfacturado.component';
+import { ComposerTejidoComponent } from './Composer/Tejido/composertejido.component';
+import { ComposerTintoreriaComponent } from './Composer/Tintoreria/composertintoreria.component';
 import { AreaResumen } from './types/areas.types';
 import { ClienteAgrupado, FacturaDetalle } from './types/facturacion.types';
 
@@ -270,26 +278,10 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private breakpointObserver: BreakpointObserver,
     private _financeService: FinanceService,
-    // private resumenwebsocket: ResumenWebsocketService,
+    private _dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
-    // this.resumenwebsocket.listenReportesActualizados((event) => {
-    //   this.wsRefresh$.next(event);
-    // });
-
-    // this.wsRefresh$
-    //   .pipe(
-    //     takeUntil(this.destroy$),
-    //     // 👇 si llegan varios en corto, solo refresca 1 vez
-    //     debounceTime(500),
-    //   )
-    //   .subscribe((event) => {
-    //     console.log('🔔 Reportes actualizados:', event);
-    //     this.cargarTodasLasAreas({ silent: true });
-    //     // this.mostrarNotificacion(event.mensaje);
-    //   });
-
     this.breakpointObserver
       .observe([Breakpoints.Handset])
       .pipe(takeUntil(this.destroy$))
@@ -378,6 +370,13 @@ export class InicioViewComponent implements OnInit, OnDestroy {
           this.procesarEstampados(datos.estampados);
           this.procesarAcabado(datos.acabado);
           this.crearGraficaDistribucionProcesos(datos);
+
+          this.sharedData.actualizarTejidoPorDia(datos.tejidoPorDia ?? []);
+this.sharedData.actualizarTintoreriaPorDia(datos.tintoreriaPorDia ?? []);
+this.sharedData.actualizarEstampadoPorDia(datos.estampadoPorDia ?? []);
+this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
+
+
           if (!silent) {
             this.loadingFacturacion = false;
             this.loadingGraficaFacturacion = false;
@@ -988,38 +987,37 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const payload = resp?.data ?? resp;
     if (!payload) return;
     const tot = payload.totales ?? {};
-    const detalle: FacturaDetalle[] = payload.detalle ?? [];
-    const cant = Number(tot.cant) || 0;
-    const total = Number(tot.total) || 0;
 
     const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
     if (!area || area.metrics.length < 2) return;
-    area.metrics[0].value = cant;
-    area.metrics[1].value = total;
+
+    area.metrics[0].value = this.resumenPesoFacturacion.totalKG;
+    area.metrics[1].value = Number(tot.total) || 0;
+  }
+
+  get resumenPesoFacturacion() {
+    const RATES: { [key: string]: number } = {
+      KG: 1,
+      KGS: 1,
+      LB: 0.453592,
+      LBS: 0.453592,
+      OZ: 0.0283495,
+      G: 0.001,
+      GR: 0.001,
+    };
+
+    const items = Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => {
+      const rate = RATES[um.toUpperCase()] ?? 0;
+      return { um, cant, kgEquivalente: cant * rate, esKG: rate === 1 };
+    });
+
+    const totalKG = items.reduce((sum, i) => sum + i.kgEquivalente, 0);
+
+    return { items, totalKG };
   }
 
   get cantidadesPorUnidadArray() {
-    const unidades = Object.entries(this.cantidadesPorUnidad || {});
-    let totalKG = 0;
-
-    // Convertir todas las unidades a KG y sumarlas
-    unidades.forEach(([um, cant]) => {
-      const umUpper = um.toUpperCase();
-
-      if (umUpper === 'KG' || umUpper === 'KGS') {
-        totalKG += cant;
-      } else if (umUpper === 'LB' || umUpper === 'LBS') {
-        totalKG += cant * 0.453592; // Convertir LB a KG
-      } else if (umUpper === 'OZ') {
-        totalKG += cant * 0.0283495; // Convertir OZ a KG
-      } else if (umUpper === 'G' || umUpper === 'GR') {
-        totalKG += cant * 0.001; // Convertir G a KG
-      }
-      // Si hay otras unidades que no son de peso, las ignoramos para el total de KG
-    });
-
-    // Retornar solo el total en KG
-    return [{ um: 'KG', cant: totalKG }];
+    return Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => ({ um, cant }));
   }
 
   get totalFacturacion(): number {
@@ -1597,5 +1595,42 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     this.crearGraficaEmbarquesTejido(this.datosEmbarquesCompletos);
     this.actualizarMetricasEmbarquesGrafica();
     this.cdr.markForCheck();
+  }
+
+  abrirComposerFacturado(modo: ModoComposer): void {
+    this._dialog.open(ComposerFacturadoComponent, {
+      data: { modo },
+      // Móvil: pantalla completa | Desktop: dialog normal
+      width: window.innerWidth < 768 ? '100vw' : '820px',
+      height: window.innerWidth < 768 ? '100dvh' : 'auto',
+      maxWidth: window.innerWidth < 768 ? '100vw' : '95vw',
+      maxHeight: window.innerWidth < 768 ? '100dvh' : '90vh',
+      panelClass:
+        window.innerWidth < 768 ? ['fuse-dialog', 'dialog-fullscreen-mobile'] : ['fuse-dialog'],
+    });
+  }
+
+  private _dialogConfig() {
+    const isMobile = window.innerWidth < 768;
+    return {
+      width: isMobile ? '100vw' : '600px',
+      height: isMobile ? '100dvh' : 'auto',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100dvh' : '90vh',
+      panelClass: isMobile ? ['fuse-dialog', 'dialog-fullscreen-mobile'] : ['fuse-dialog'],
+    };
+  }
+
+  abrirTejido(): void {
+    this._dialog.open(ComposerTejidoComponent, { ...this._dialogConfig(), data: {} });
+  }
+  abrirTintoreria(): void {
+    this._dialog.open(ComposerTintoreriaComponent, { ...this._dialogConfig(), data: {} });
+  }
+  abrirEstampado(): void {
+    this._dialog.open(ComposerEstampadoComponent, { ...this._dialogConfig(), data: {} });
+  }
+  abrirAcabado(): void {
+    this._dialog.open(ComposerAcabadoRealComponent, { ...this._dialogConfig(), data: {} });
   }
 }

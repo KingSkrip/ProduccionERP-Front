@@ -1,0 +1,244 @@
+<div class="composer-facturado flex h-full flex-col">
+
+  <!-- ───── HEADER ───── -->
+  <div class="flex flex-shrink-0 items-center justify-between border-b md:px-6 md:py-4">
+    <div class="flex items-center gap-3">
+
+      <!-- Ícono según modo -->
+      <div
+        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+        [class.bg-green-100]="modo === 'total'"
+        [class.dark:bg-green-900]="modo === 'total'"
+        [class.bg-purple-100]="modo === 'peso'"
+        [class.dark:bg-purple-900]="modo === 'peso'"
+      >
+        <mat-icon
+          [class.text-green-600]="modo === 'total'"
+          [class.text-purple-600]="modo === 'peso'"
+          [svgIcon]="modo === 'total' ? 'heroicons_outline:currency-dollar' : 'heroicons_outline:scale'"
+        ></mat-icon>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold leading-tight">
+          {{ modo === 'total' ? 'Facturado del periodo' : 'Peso facturado por día' }}
+        </h2>
+        <p class="text-secondary mt-0.5 text-xs leading-none">
+          {{ filtros?.fechaInicio | date: 'dd/MM/yyyy' }} &mdash;
+          {{ filtros?.fechaFin | date: 'dd/MM/yyyy' }}
+        </p>
+      </div>
+    </div>
+
+    <button mat-icon-button matTooltip="Cerrar" (click)="cerrar()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- ───── CONTENIDO ───── -->
+  <div class="flex-auto overflow-y-auto">
+
+    <!-- SPINNER -->
+    <ng-container *ngIf="loading">
+      <div class="flex h-64 items-center justify-center">
+        <mat-spinner diameter="44"></mat-spinner>
+      </div>
+    </ng-container>
+
+    <!-- ══════════════════════════════════════
+         MODO: TOTAL  (importes del periodo)
+    ══════════════════════════════════════ -->
+    <ng-container *ngIf="!loading && modo === 'total'">
+
+      <!-- KPIs principales -->
+      <!-- <div class="grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700">
+
+        <div class="flex flex-col gap-1 bg-card px-6 py-5">
+          <span class="text-secondary text-xs font-medium uppercase tracking-widest">Facturas</span>
+          <span class="text-4xl font-bold tabular-nums">{{ totalesFacturado?.facturas ?? 0 }}</span>
+        </div>
+
+        <div class="flex flex-col gap-1 bg-card px-6 py-5">
+          <span class="text-secondary text-xs font-medium uppercase tracking-widest">Importe neto</span>
+          <span class="text-4xl font-bold tabular-nums text-green-600 dark:text-green-400">
+            {{ totalesFacturado?.importe | currency: 'MXN' : 'symbol' : '1.0-0' }}
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-1 bg-card px-6 py-5">
+          <span class="text-secondary text-xs font-medium uppercase tracking-widest">IVA</span>
+          <span class="text-3xl font-semibold tabular-nums text-amber-600 dark:text-amber-400">
+            {{ totalesFacturado?.impuestos | currency: 'MXN' : 'symbol' : '1.0-0' }}
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-1 bg-card px-6 py-5">
+          <span class="text-secondary text-xs font-medium uppercase tracking-widest">Total c/IVA</span>
+          <span class="text-3xl font-bold tabular-nums text-green-700 dark:text-green-300">
+            {{ totalesFacturado?.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+          </span>
+        </div>
+
+      </div> -->
+
+      <mat-divider></mat-divider>
+
+      <!-- Desglose por día — importes -->
+      <div class="px-6 py-4">
+        <p class="text-secondary mb-4 text-xs font-semibold uppercase tracking-widest">
+          Desglose por día
+        </p>
+
+        <div class="flex flex-col gap-3">
+          <ng-container *ngFor="let dia of subtotalesPorDia">
+            <div class="rounded-xl border bg-card px-5 py-4 shadow-sm transition-shadow hover:shadow-md">
+
+              <!-- Fecha + facturas -->
+              <div class="mb-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-secondary icon-size-4">calendar_today</mat-icon>
+                  <span class="font-semibold">
+                    {{ dia.fecha | date: 'EEEE dd \'de\' MMMM' : '' : 'es-MX' | titlecase }}
+                  </span>
+                </div>
+                <span class="rounded-full bg-gray-100 px-3 py-0.5 text-xs font-medium dark:bg-gray-700">
+                  {{ dia.facturas }} {{ dia.facturas === 1 ? 'factura' : 'facturas' }}
+                </span>
+              </div>
+
+              <!-- Barra de progreso visual -->
+              <div class="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+                <div
+                  class="h-full rounded-full bg-green-500 transition-all duration-700"
+                  [style.width.%]="totalesFacturado?.total ? (dia.total / totalesFacturado!.total) * 100 : 0"
+                ></div>
+              </div>
+
+              <!-- Importes -->
+              <div class="grid grid-cols-3 gap-2">
+                <div class="flex flex-col">
+                  <span class="text-secondary text-xs">Importe</span>
+                  <span class="text-sm font-semibold">
+                    {{ dia.importe | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                  </span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-secondary text-xs">IVA</span>
+                  <span class="text-sm font-semibold text-amber-600">
+                    {{ dia.impuestos | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                  </span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-secondary text-xs">Total</span>
+                  <span class="text-sm font-bold text-green-600 dark:text-green-400">
+                    {{ dia.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ══════════════════════════════════════
+         MODO: PESO  (cantidades por día)
+    ══════════════════════════════════════ -->
+    <ng-container *ngIf="!loading && modo === 'peso'">
+
+<!-- KPIs de peso -->
+<div class="flex flex-col gap-px bg-gray-200 dark:bg-gray-700 sm:grid sm:grid-cols-2">
+
+  <!-- Total KG -->
+  <div class="flex flex-col gap-1 bg-card px-6 py-5">
+    <span class="text-secondary text-xs font-medium uppercase tracking-widest">Total KG</span>
+    <span class="text-3xl font-bold tabular-nums text-purple-600 dark:text-purple-400 sm:text-4xl">
+      {{ totalesFacturado?.cant | number: '1.2-2' }}
+    </span>
+    <span class="text-secondary text-xs">kilogramos facturados</span>
+  </div>
+
+  <!-- Por unidad -->
+  <div class="flex flex-col gap-2 bg-card px-6 py-5">
+    <span class="text-secondary text-xs font-medium uppercase tracking-widest">Por unidad</span>
+    <div class="flex flex-col gap-2 pt-1">
+      <ng-container *ngFor="let um of resumenUMs">
+        <div class="flex items-center justify-between gap-4">
+          <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+            {{ um.um }}
+          </span>
+          <span class="text-base font-bold tabular-nums">{{ um.cant | number: '1.2-2' }}</span>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+</div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Desglose por día — peso -->
+      <div class="px-6 py-4">
+        <p class="text-secondary mb-4 text-xs font-semibold uppercase tracking-widest">
+          Peso por día
+        </p>
+
+        <div class="flex flex-col gap-3">
+          <ng-container *ngFor="let dia of subtotalesPorDia">
+            <div class="rounded-xl border bg-card px-5 py-4 shadow-sm transition-shadow hover:shadow-md">
+
+              <!-- Fecha + facturas -->
+              <div class="mb-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-secondary icon-size-4">calendar_today</mat-icon>
+                  <span class="font-semibold">
+                    {{ dia.fecha | date: 'EEEE dd \'de\' MMMM' : '' : 'es-MX' | titlecase }}
+                  </span>
+                </div>
+                <span class="rounded-full bg-purple-100 px-3 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                  {{ dia.facturas }} {{ dia.facturas === 1 ? 'factura' : 'facturas' }}
+                </span>
+              </div>
+
+              <!-- Barra de progreso visual -->
+              <div class="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+                <div
+                  class="h-full rounded-full bg-purple-500 transition-all duration-700"
+                  [style.width.%]="totalesFacturado?.cant ? (dia.cant / totalesFacturado!.cant) * 100 : 0"
+                ></div>
+              </div>
+
+              <!-- Peso -->
+              <div class="flex items-end justify-between">
+                <div class="flex flex-col">
+                  <span class="text-secondary text-xs">Cantidad del día</span>
+                  <span class="text-2xl font-bold tabular-nums text-purple-600 dark:text-purple-400">
+                    {{ dia.cant | number: '1.2-2' }}
+                    <span class="text-base font-normal text-gray-500">KG</span>
+                  </span>
+                </div>
+                <div class="text-right">
+                  <span class="text-secondary text-xs">% del periodo</span>
+                  <p class="text-sm font-semibold">
+                    {{ totalesFacturado?.cant ? ((dia.cant / totalesFacturado!.cant) * 100 | number: '1.1-1') : '0' }}%
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+    </ng-container>
+
+  </div>
+
+  <!-- ───── FOOTER ───── -->
+  <div class="flex flex-shrink-0 items-center justify-end border-t px-6 py-3">
+    <button mat-stroked-button (click)="cerrar()">Cerrar</button>
+  </div>
+
+</div>

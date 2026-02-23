@@ -1,15 +1,16 @@
 import { Routes } from '@angular/router';
 import { ReportProdListComponent } from './list/reportprodList.component';
 import { ReportProdLayoutComponent } from 'app/layout/layouts/vertical/ReportProd/reportprod.component';
-
-// Importa todos los views
+import { InicioViewComponent } from './SubMenuViews/Inicio/inicioview.component';
+import { FacturadoViewComponent } from './SubMenuViews/facturado/facturadoview.component';
 import { TejidoViewComponent } from './SubMenuViews/tejido/tejidoview.component';
 import { TintoreriaViewComponent } from './SubMenuViews/tintoreria/tintoreriaview.component';
 import { EstampadoViewComponent } from './SubMenuViews/estampado/estampadoview.component';
-import { InicioViewComponent } from './SubMenuViews/Inicio/inicioview.component';
-import { FacturadoViewComponent } from './SubMenuViews/facturado/facturadoview.component';
-import { AcabadoRealViewComponent } from './SubMenuViews/acabadoreal/acabadorealview.component';
 import { ProcesosViewComponent } from './SubMenuViews/procesos/procesosview.component';
+import { AcabadoRealViewComponent } from './SubMenuViews/acabadoreal/acabadorealview.component';
+
+// Importa todos los views
+
 
 export default [
   {

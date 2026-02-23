@@ -8,6 +8,7 @@ import {
   menuColaborador,
   menuJacobo,
   menuJefe,
+  menuReporteProd_Jacobo,
   menuReporteProd_Jefe,
   menuRh,
   menuSuAdmin,
@@ -243,8 +244,10 @@ export class AppNavigationStoreService {
     const isJacobo = subRoleId === SubRoleEnum.JACOBO;
     const isSuadmin = roleId === RoleEnum.SUADMIN;
 
-    if (isJefe || isJacobo || isSuadmin) {
+    if (isJefe && isSuadmin) {
       return [...menuReporteProd_Jefe];
+    } else if (isJacobo && isSuadmin) {
+      return [...menuReporteProd_Jacobo];
     }
 
     return [];

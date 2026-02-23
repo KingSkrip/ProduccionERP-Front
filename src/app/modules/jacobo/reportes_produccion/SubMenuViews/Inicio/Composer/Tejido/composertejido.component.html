@@ -1,0 +1,116 @@
+<div class="flex h-full flex-col" style="min-width: 480px">
+  <!-- HEADER -->
+  <div class="flex flex-shrink-0 items-center justify-between border-b px-6 py-4">
+    <div class="flex items-center gap-3">
+      <div
+        class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900"
+      >
+        <mat-icon
+          class="text-blue-600 dark:text-blue-400"
+          svgIcon="heroicons_outline:squares-2x2"
+        ></mat-icon>
+      </div>
+      <div>
+        <h2 class="text-lg font-semibold leading-tight">Tejido por día</h2>
+        <p class="text-secondary mt-0.5 text-xs">
+          {{ filtros?.fechaInicio | date: 'dd/MM/yyyy' }} —
+          {{ filtros?.fechaFin | date: 'dd/MM/yyyy' }}
+        </p>
+      </div>
+    </div>
+    <button mat-icon-button matTooltip="Cerrar" (click)="cerrar()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700">
+    <div class="bg-card flex flex-col gap-1 px-6 py-5">
+      <span class="text-secondary text-xs font-medium uppercase tracking-widest">Total KG</span>
+      <span class="text-3xl font-bold tabular-nums text-blue-600 dark:text-blue-400">
+        {{ loading ? '—' : (totalCantidad | number: '1.2-2') }}
+      </span>
+      <span class="text-secondary text-xs">kilogramos tejidos</span>
+    </div>
+    <div class="bg-card flex flex-col gap-1 px-6 py-5">
+      <span class="text-secondary text-xs font-medium uppercase tracking-widest">Total Piezas</span>
+      <span class="text-3xl font-bold tabular-nums">
+        {{ loading ? '—' : (totalPiezas | number: '1.0-0') }}
+      </span>
+      <span class="text-secondary text-xs">piezas procesadas</span>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- CONTENIDO -->
+  <div class="flex-auto overflow-y-auto">
+    <ng-container *ngIf="loading">
+      <div class="flex h-48 items-center justify-center">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!loading">
+      <div class="px-6 py-4">
+        <p class="text-secondary mb-4 text-xs font-semibold uppercase tracking-widest">
+          Desglose por día
+        </p>
+
+        <div class="flex flex-col gap-3">
+          <div
+            *ngFor="let dia of datosPorDia"
+            class="bg-card rounded-xl border px-5 py-4 shadow-sm transition-shadow hover:shadow-md"
+          >
+            <div class="mb-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <mat-icon class="text-secondary icon-size-4">calendar_today</mat-icon>
+                <span class="font-semibold">
+                  {{ dia.FECHA | date: "EEEE dd 'de' MMMM" : '' : 'es-MX' | titlecase }}
+                </span>
+              </div>
+              <span
+                class="rounded-full bg-blue-100 px-3 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+              >
+                {{ dia.PIEZAS | number: '1.0-0' }} pzs
+              </span>
+            </div>
+
+            <!-- Barra progreso -->
+            <div
+              class="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700"
+            >
+              <div
+                class="h-full rounded-full bg-blue-500 transition-all duration-700"
+                [style.width.%]="getPct(dia.CANTIDAD)"
+              ></div>
+            </div>
+
+            <div class="flex items-end justify-between">
+              <div class="flex flex-col">
+                <span class="text-secondary text-xs">Cantidad del día</span>
+                <span class="text-2xl font-bold tabular-nums text-blue-600 dark:text-blue-400">
+                  {{ dia.CANTIDAD | number: '1.2-2' }}
+                  <span class="text-base font-normal text-gray-500">KG</span>
+                </span>
+              </div>
+              <div class="text-right">
+                <span class="text-secondary text-xs">% del periodo</span>
+                <p class="text-sm font-semibold">{{ getPct(dia.CANTIDAD) | number: '1.1-1' }}%</p>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="datosPorDia.length === 0" class="text-secondary py-10 text-center text-sm">
+            Sin datos para el periodo seleccionado
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="flex flex-shrink-0 items-center justify-end border-t px-6 py-3">
+    <button mat-stroked-button (click)="cerrar()">Cerrar</button>
+  </div>
+</div>

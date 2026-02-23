@@ -230,29 +230,41 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
     return total;
   }
 
-  calcularCantidadTotalPorUnidad(): { [key: string]: number } {
-    let totalKG = 0;
+  calcularCantidadTotalPorUnidad(): {
+    um: string;
+    cant: number;
+    kgEquivalente: number;
+    esKG: boolean;
+  }[] {
+    const RATES: { [key: string]: number } = {
+      KG: 1,
+      KGS: 1,
+      LB: 0.453592,
+      LBS: 0.453592,
+      OZ: 0.0283495,
+      G: 0.001,
+      GR: 0.001,
+    };
+
+    const totales: { [key: string]: number } = {};
 
     this.datosAgrupados.forEach((grupo) => {
-      Object.entries(grupo.cantidadesPorUnidad).forEach(([unidad, cantidad]) => {
-        const unidadUpper = unidad.toUpperCase();
-
-        // Convertir todo a KG
-        if (unidadUpper === 'KG' || unidadUpper === 'KGS') {
-          totalKG += cantidad;
-        } else if (unidadUpper === 'LB' || unidadUpper === 'LBS') {
-          totalKG += cantidad * this.CONVERSION_RATES.LB_TO_KG;
-        } else if (unidadUpper === 'OZ') {
-          totalKG += cantidad * this.CONVERSION_RATES.OZ_TO_KG;
-        } else if (unidadUpper === 'G' || unidadUpper === 'GR') {
-          totalKG += cantidad * this.CONVERSION_RATES.G_TO_KG;
-        }
-        // Otras unidades se ignoran para el cálculo de peso
+      Object.entries(grupo.cantidadesPorUnidad).forEach(([um, cant]) => {
+        if (!totales[um]) totales[um] = 0;
+        totales[um] += cant;
       });
     });
 
-    // Retornar solo KG
-    return { KG: totalKG };
+    return Object.entries(totales)
+      .map(([um, cant]) => {
+        const rate = RATES[um.toUpperCase()] ?? 0;
+        return { um, cant, kgEquivalente: cant * rate, esKG: rate === 1 };
+      })
+      .sort((a, b) => b.kgEquivalente - a.kgEquivalente);
+  }
+
+  get totalKGFacturado(): number {
+    return this.calcularCantidadTotalPorUnidad().reduce((sum, i) => sum + i.kgEquivalente, 0);
   }
 
   calcularImporteTotal(): number {

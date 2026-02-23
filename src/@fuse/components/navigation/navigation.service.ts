@@ -8,6 +8,7 @@ import {
   menuColaborador,
   menuJacobo,
   menuJefe,
+  menuReporteProd_Jacobo,
   menuReporteProd_Jefe,
   menuRh,
   menuSuAdmin,
@@ -240,8 +241,10 @@ export class FuseNavigationService {
   }
 
   getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
-    if (subRoleId === SubRoleEnum.JEFE || subRoleId === SubRoleEnum.JACOBO) {
+    if (subRoleId === SubRoleEnum.JEFE) {
       return [...menuReporteProd_Jefe];
+    } else if (subRoleId === SubRoleEnum.JACOBO) {
+      return [...menuReporteProd_Jacobo];
     }
 
     return [];
