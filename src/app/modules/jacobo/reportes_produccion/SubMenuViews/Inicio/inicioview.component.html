@@ -13,8 +13,8 @@
         [class.dark:text-white]="vistaActual !== 'general'"
         class="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200"
       >
-        <mat-icon class="h-5 w-5 text-lg">grid_view</mat-icon>
-        General
+        <mat-icon class="h-5 w-5 text-base">grid_view</mat-icon>
+        <span class="text-base font-semibold">General</span>
       </button>
       <button
         (click)="cambiarVista('detalle')"
@@ -26,7 +26,7 @@
         class="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200"
       >
         <mat-icon class="h-5 w-5 text-lg">format_list_bulleted</mat-icon>
-        Detalle
+        <span class="text-base font-semibold">Detalle</span>
       </button>
     </div>
   </div>
@@ -159,17 +159,27 @@
             *ngIf="!loadingFacturacion; else loaderConIva"
           >
             <div class="mx-6 my-3 flex w-full flex-col">
-
-              <div class="mt-2 text-2xl font-medium leading-none">
+              <div class="mt-2 font-medium leading-none">
                 <ng-container *ngIf="resumenPesoFacturacion.items.length; else sinCantidades">
-                  <div *ngFor="let item of resumenPesoFacturacion.items" class="mb-1">
-                    {{ item.um }}: {{ formatValue(item.cant, 'decimal') }}
-                    <span *ngIf="!item.esKG" class="text-base text-gray-500">
-                      ({{ formatValue(item.kgEquivalente, 'decimal') }} KG)
-                    </span>
-                  </div>
-                  <div class="mt-1 text-sm text-gray-500">
-                    Total: {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
+                  <!-- Contenedor dos columnas -->
+                  <div class="flex w-full items-center">
+                    <!-- Izquierda: items -->
+                    <div class="flex w-1/3 flex-col gap-1 text-2xl">
+                      <div *ngFor="let item of resumenPesoFacturacion.items">
+                        {{ item.um }}: {{ formatValue(item.cant, 'decimal') }}
+                        <span *ngIf="!item.esKG" class="text-black dark:text-white">
+                          = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Derecha: total centrado en su mitad -->
+                    <div class="flex w-1/2 flex-col items-center justify-center">
+                      <div class="text-3xl font-bold text-black dark:text-white">
+                        {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
+                      </div>
+                      <div class="text-sm text-purple-600">Total</div>
+                    </div>
                   </div>
                 </ng-container>
 
@@ -243,18 +253,15 @@
           </mat-menu>
 
           <!-- Header -->
-<div class="flex items-center justify-between pr-12">
-  <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
-    <span>Tejido</span>
+          <div class="flex items-center justify-between pr-12">
+            <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
+              <span>Tejido</span>
 
-    <span
-      class="text-sm text-gray-400"
-      *ngFor="let detalle of detallesTejido"
-    >
-      - {{ detalle.proceso | lowercase | titlecase }}
-    </span>
-  </div>
-</div>
+              <span class="text-sm text-gray-400" *ngFor="let detalle of detallesTejido">
+                - {{ detalle.proceso | lowercase | titlecase }}
+              </span>
+            </div>
+          </div>
 
           <!-- Loader -->
           <div *ngIf="loadingDetallesProcesos" class="flex items-center justify-center py-6">
@@ -319,12 +326,9 @@
 
           <!-- Header -->
           <div class="flex items-start justify-between pr-12">
-              <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
+            <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
               <span>Tintorería</span>
-              <div
-                 class="text-sm text-gray-400"
-                *ngFor="let detalle of detallesTintoreria"
-              >
+              <div class="text-sm text-gray-400" *ngFor="let detalle of detallesTintoreria">
                 - {{ detalle.proceso | lowercase | titlecase }}
               </div>
             </div>
@@ -393,12 +397,9 @@
 
           <!-- Header -->
           <div class="flex items-start justify-between pr-12">
-              <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
+            <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
               <span>Estampado</span>
-              <div
-                 class="text-sm text-gray-400"
-                *ngFor="let detalle of detallesEstampados"
-              >
+              <div class="text-sm text-gray-400" *ngFor="let detalle of detallesEstampados">
                 - {{ detalle.proceso | lowercase | titlecase }}
               </div>
             </div>
@@ -467,12 +468,9 @@
 
           <!-- Header -->
           <div class="flex items-start justify-between pr-12">
-              <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
+            <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
               <span>Acabado real</span>
-              <div
-                 class="text-sm text-gray-400"
-                *ngFor="let detalle of detallesAcabado"
-              >
+              <div class="text-sm text-gray-400" *ngFor="let detalle of detallesAcabado">
                 - {{ detalle.proceso | lowercase | titlecase }}
               </div>
             </div>
