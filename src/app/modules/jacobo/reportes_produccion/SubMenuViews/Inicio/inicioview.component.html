@@ -35,6 +35,8 @@
   <!-- VISTA GENERAL -->
   <!-- ========================================= -->
   <div *ngIf="vistaActual === 'general'">
+
+
     <!-- FACTURACION -->
     <div class="my-8 flex items-center gap-4">
       <div
@@ -70,12 +72,12 @@
               [matMenuTriggerFor]="menuTotal"
               (click)="$event.stopPropagation()"
             >
-              <mat-icon class="icon-size-5">more_vert</mat-icon>
+              <mat-icon class="text-black icon-size-5 dark:text-white">more_vert</mat-icon>
             </button>
             <mat-menu #menuTotal="matMenu">
               <button mat-menu-item (click)="abrirComposerFacturado('total')">
-                <mat-icon>open_in_full</mat-icon>
-                <span>Ver detalle</span>
+                <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
+                <span class="text-black dark:text-white">Ver detalles</span>
               </button>
             </mat-menu>
           </div>
@@ -102,7 +104,7 @@
             *ngIf="!loadingFacturacion; else loaderTemplate"
           >
             <div class="mx-6 my-3 flex flex-col">
-              <div class="mt-2 text-3xl font-medium leading-none">
+              <div class="text-2xl md:text-3xl font-medium leading-none">
                 {{ totalFacturacion | currency: 'MXN' }}
               </div>
             </div>
@@ -127,12 +129,12 @@
               [matMenuTriggerFor]="menuPeso"
               (click)="$event.stopPropagation()"
             >
-              <mat-icon class="icon-size-5">more_vert</mat-icon>
+              <mat-icon class="text-black icon-size-5 dark:text-white">more_vert</mat-icon>
             </button>
             <mat-menu #menuPeso="matMenu">
               <button mat-menu-item (click)="abrirComposerFacturado('peso')">
-                <mat-icon>open_in_full</mat-icon>
-                <span>Ver detalle</span>
+                <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
+                <span class="text-black dark:text-white">Ver detalles</span>
               </button>
             </mat-menu>
           </div>
@@ -159,26 +161,29 @@
             *ngIf="!loadingFacturacion; else loaderConIva"
           >
             <div class="mx-6 my-3 flex w-full flex-col">
-              <div class="mt-2 font-medium leading-none">
+              <div class="font-medium leading-none">
                 <ng-container *ngIf="resumenPesoFacturacion.items.length; else sinCantidades">
+
                   <!-- Contenedor dos columnas -->
-                  <div class="flex w-full items-center">
-                    <!-- Izquierda: items -->
-                    <div class="flex w-1/3 flex-col gap-1 text-2xl">
-                      <div *ngFor="let item of resumenPesoFacturacion.items">
+                  <div class="flex w-full flex-col items-start gap-2 sm:flex-row sm:items-center">
+                    <!-- Items: KG, LB, etc. -->
+                    <div class="flex flex-col gap-1 md:w-1/3">
+                      <div *ngFor="let item of resumenPesoFacturacion.items" class=" md:text-3xl text-2xl font-medium leading-none">
                         {{ item.um }}: {{ formatValue(item.cant, 'decimal') }}
-                        <span *ngIf="!item.esKG" class="text-black dark:text-white">
+                        <span *ngIf="!item.esKG" class="text-black dark:text-white md:text-2xl text-xl font-medium leading-none">
                           = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
                         </span>
                       </div>
                     </div>
 
-                    <!-- Derecha: total centrado en su mitad -->
-                    <div class="flex w-1/2 flex-col items-center justify-center">
-                      <div class="text-3xl font-bold text-black dark:text-white">
+                    <!-- Total -->
+                    <div
+                      class="flex flex-row items-center gap-2 sm:w-1/2 sm:flex-col sm:items-center sm:justify-center"
+                    >
+                      <div class="md:text-2xl md:font-bold text-black dark:text-white text-xl font-medium leading-none">
                         {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
                       </div>
-                      <div class="text-sm text-purple-600">Total</div>
+                      <div class="text-base md:text-base text-purple-600">Total</div>
                     </div>
                   </div>
                 </ng-container>
@@ -234,21 +239,22 @@
           </div>
 
           <!-- Botón 3 puntos -->
-          <div class="absolute right-2 top-2 z-50">
-            <button
-              mat-icon-button
-              class="flex h-10 w-10 items-center justify-center"
-              [matMenuTriggerFor]="menuTejido"
-              (click)="$event.stopPropagation()"
-            >
-              <mat-icon class="text-gray-400">more_vert</mat-icon>
-            </button>
-          </div>
+<!-- Botón 3 puntos -->
+<div class="absolute right-2 top-2 z-10">
+  <button
+    mat-icon-button
+    class="flex h-10 w-10 items-center justify-center"
+    [matMenuTriggerFor]="menuTejido"
+    (click)="$event.stopPropagation()"
+  >
+    <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
+  </button>
+</div>
 
           <mat-menu #menuTejido="matMenu">
             <button mat-menu-item (click)="abrirTejido()">
-              <mat-icon>open_in_full</mat-icon>
-              <span>Ver detalle por día</span>
+              <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
+              <span class="text-black dark:text-white">Ver detalles</span>
             </button>
           </mat-menu>
 
@@ -305,22 +311,22 @@
           </div>
 
           <!-- Botón 3 puntos -->
-          <div class="absolute right-2 top-2 z-50">
+          <div class="absolute right-2 top-2 z-10">
             <button
               mat-icon-button
               class="flex h-10 w-10 items-center justify-center"
               [matMenuTriggerFor]="menuTintoreria"
               (click)="$event.stopPropagation()"
             >
-              <mat-icon class="text-gray-400">more_vert</mat-icon>
+              <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
             </button>
           </div>
 
           <!-- Menu -->
           <mat-menu #menuTintoreria="matMenu">
             <button mat-menu-item (click)="abrirTintoreria()">
-              <mat-icon>open_in_full</mat-icon>
-              <span>Ver detalle por día</span>
+              <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
+              <span class="text-black dark:text-white">Ver detalles</span>
             </button>
           </mat-menu>
 
@@ -376,22 +382,22 @@
           </div>
 
           <!-- Botón 3 puntos -->
-          <div class="absolute right-2 top-2 z-50">
+          <div class="absolute right-2 top-2 z-10">
             <button
               mat-icon-button
               class="flex h-10 w-10 items-center justify-center"
               [matMenuTriggerFor]="menuEstampado"
               (click)="$event.stopPropagation()"
             >
-              <mat-icon class="text-gray-400">more_vert</mat-icon>
+              <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
             </button>
           </div>
 
           <!-- Menu -->
           <mat-menu #menuEstampado="matMenu">
             <button mat-menu-item (click)="abrirEstampado()">
-              <mat-icon>open_in_full</mat-icon>
-              <span>Ver detalle por día</span>
+              <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
+              <span class="text-black dark:text-white">Ver detalles</span>
             </button>
           </mat-menu>
 
@@ -447,22 +453,22 @@
           </div>
 
           <!-- Botón 3 puntos -->
-          <div class="absolute right-2 top-2 z-50">
+          <div class="absolute right-2 top-2 z-10">
             <button
               mat-icon-button
               class="flex h-10 w-10 items-center justify-center"
               [matMenuTriggerFor]="menuAcabado"
               (click)="$event.stopPropagation()"
             >
-              <mat-icon class="text-gray-400">more_vert</mat-icon>
+              <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
             </button>
           </div>
 
           <!-- Menu -->
           <mat-menu #menuAcabado="matMenu">
             <button mat-menu-item (click)="abrirAcabado()">
-              <mat-icon>open_in_full</mat-icon>
-              <span>Ver detalle por día</span>
+              <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
+              <span class="text-black dark:text-white">Ver detalles</span>
             </button>
           </mat-menu>
 
