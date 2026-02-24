@@ -1613,7 +1613,7 @@ this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
   private _dialogConfig() {
     const isMobile = window.innerWidth < 768;
     return {
-      width: isMobile ? '100vw' : '600px',
+      width: isMobile ? '100vw' : '820px',
       height: isMobile ? '100dvh' : 'auto',
       maxWidth: isMobile ? '100vw' : '95vw',
       maxHeight: isMobile ? '100dvh' : '90vh',

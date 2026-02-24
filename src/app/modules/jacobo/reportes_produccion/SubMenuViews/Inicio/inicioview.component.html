@@ -102,7 +102,6 @@
             *ngIf="!loadingFacturacion; else loaderTemplate"
           >
             <div class="mx-6 my-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Total</div>
               <div class="mt-2 text-3xl font-medium leading-none">
                 {{ totalFacturacion | currency: 'MXN' }}
               </div>
@@ -160,7 +159,6 @@
             *ngIf="!loadingFacturacion; else loaderConIva"
           >
             <div class="mx-6 my-3 flex w-full flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Peso total</div>
 
               <div class="mt-2 text-2xl font-medium leading-none">
                 <ng-container *ngIf="resumenPesoFacturacion.items.length; else sinCantidades">
@@ -245,17 +243,18 @@
           </mat-menu>
 
           <!-- Header -->
-          <div class="flex items-start justify-between pr-12">
-            <div class="flex flex-wrap gap-1 text-lg font-medium tracking-tight">
-              <span>Tejido</span>
-              <div
-                class="flex flex-wrap gap-1 text-xs text-gray-400"
-                *ngFor="let detalle of detallesTejido"
-              >
-                - {{ detalle.proceso | lowercase | titlecase }}
-              </div>
-            </div>
-          </div>
+<div class="flex items-center justify-between pr-12">
+  <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
+    <span>Tejido</span>
+
+    <span
+      class="text-sm text-gray-400"
+      *ngFor="let detalle of detallesTejido"
+    >
+      - {{ detalle.proceso | lowercase | titlecase }}
+    </span>
+  </div>
+</div>
 
           <!-- Loader -->
           <div *ngIf="loadingDetallesProcesos" class="flex items-center justify-center py-6">
@@ -267,15 +266,15 @@
             <div class="mt-4 flex flex-col" *ngFor="let detalle of detallesTejido">
               <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col items-center">
-                  <div class="text-sm text-gray-500">Cantidad</div>
+                  <div class="text-sm text-black dark:text-white">Cantidad</div>
                   <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.cantidad, 'decimal') }}
-                    <span class="text-base font-normal text-gray-400">kg</span>
+                    <span class="text-base font-normal text-black dark:text-white">kg</span>
                   </div>
                 </div>
 
                 <div class="flex flex-col items-center">
-                  <div class="text-sm text-gray-500">Piezas</div>
+                  <div class="text-sm text-black dark:text-white">Piezas</div>
                   <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
@@ -320,10 +319,10 @@
 
           <!-- Header -->
           <div class="flex items-start justify-between pr-12">
-            <div class="flex flex-wrap gap-1 text-lg font-medium tracking-tight">
+              <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
               <span>Tintorería</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-400"
+                 class="text-sm text-gray-400"
                 *ngFor="let detalle of detallesTintoreria"
               >
                 - {{ detalle.proceso | lowercase | titlecase }}
@@ -341,15 +340,15 @@
             <div class="mt-4 flex flex-col" *ngFor="let detalle of detallesTintoreria">
               <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col items-center">
-                  <div class="text-sm text-gray-500">Cantidad</div>
+                  <div class="text-sm text-black dark:text-white">Cantidad</div>
                   <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.cantidad, 'decimal') }}
-                    <span class="text-base font-normal text-gray-400">kg</span>
+                    <span class="text-base font-normal text-black dark:text-white">kg</span>
                   </div>
                 </div>
 
                 <div class="flex flex-col items-center">
-                  <div class="text-sm text-gray-500">Piezas</div>
+                  <div class="text-sm text-black dark:text-white">Piezas</div>
                   <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
@@ -394,10 +393,10 @@
 
           <!-- Header -->
           <div class="flex items-start justify-between pr-12">
-            <div class="flex flex-wrap gap-1 text-lg font-medium tracking-tight">
+              <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
               <span>Estampado</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-400"
+                 class="text-sm text-gray-400"
                 *ngFor="let detalle of detallesEstampados"
               >
                 - {{ detalle.proceso | lowercase | titlecase }}
@@ -415,15 +414,15 @@
             <div class="mt-4 flex flex-col" *ngFor="let detalle of detallesEstampados">
               <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col items-center">
-                  <div class="text-sm text-gray-500">Cantidad</div>
+                  <div class="text-sm text-black dark:text-white">Cantidad</div>
                   <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.cantidad, 'decimal') }}
-                    <span class="text-base font-normal text-gray-400">kg</span>
+                    <span class="text-base font-normal text-black dark:text-white">kg</span>
                   </div>
                 </div>
 
                 <div class="flex flex-col items-center">
-                  <div class="text-sm text-gray-500">Piezas</div>
+                  <div class="text-sm text-black dark:text-white">Piezas</div>
                   <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
@@ -468,10 +467,10 @@
 
           <!-- Header -->
           <div class="flex items-start justify-between pr-12">
-            <div class="flex flex-wrap gap-1 text-lg font-medium tracking-tight">
+              <div class="flex flex-wrap items-center gap-1 text-xl tracking-tight">
               <span>Acabado real</span>
               <div
-                class="flex flex-wrap gap-1 text-xs text-gray-400"
+                 class="text-sm text-gray-400"
                 *ngFor="let detalle of detallesAcabado"
               >
                 - {{ detalle.proceso | lowercase | titlecase }}
@@ -489,15 +488,15 @@
             <div class="mt-4 flex flex-col" *ngFor="let detalle of detallesAcabado">
               <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col items-center">
-                  <div class="text-sm text-gray-500">Cantidad</div>
+                  <div class="text-sm text-black dark:text-white">Cantidad</div>
                   <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.cantidad, 'decimal') }}
-                    <span class="text-base font-normal text-gray-400">kg</span>
+                    <span class="text-base font-normal text-black dark:text-white">kg</span>
                   </div>
                 </div>
 
                 <div class="flex flex-col items-center">
-                  <div class="text-sm text-gray-500">Piezas</div>
+                  <div class="text-sm text-black dark:text-white">Piezas</div>
                   <div class="mt-2 text-2xl font-semibold sm:text-3xl">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
