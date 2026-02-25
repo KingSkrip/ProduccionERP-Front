@@ -35,10 +35,8 @@
   <!-- VISTA GENERAL -->
   <!-- ========================================= -->
   <div *ngIf="vistaActual === 'general'">
-
-
     <!-- FACTURACION -->
-    <div class="my-8 flex items-center gap-4">
+    <div *ngIf="esVisible('Facturación')" class="my-8 flex items-center gap-4">
       <div
         class="h-px flex-1 bg-gradient-to-r from-transparent via-green-300 to-transparent dark:via-green-700"
       ></div>
@@ -56,7 +54,7 @@
     </div>
 
     <!-- GRAFICA FACTURACION -->
-    <div class="mt-8 grid w-full grid-cols-1 gap-8">
+    <div *ngIf="esVisible('Facturación')" class="mt-8 grid w-full grid-cols-1 gap-8">
       <!-- COLUMNA IZQUIERDA: 3 cards apiladas -->
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
         <!-- TOTAL -->
@@ -104,7 +102,7 @@
             *ngIf="!loadingFacturacion; else loaderTemplate"
           >
             <div class="mx-6 my-3 flex flex-col">
-              <div class="text-2xl md:text-3xl font-medium leading-none">
+              <div class="text-2xl font-medium leading-none md:text-3xl">
                 {{ totalFacturacion | currency: 'MXN' }}
               </div>
             </div>
@@ -163,14 +161,19 @@
             <div class="mx-6 my-3 flex w-full flex-col">
               <div class="font-medium leading-none">
                 <ng-container *ngIf="resumenPesoFacturacion.items.length; else sinCantidades">
-
                   <!-- Contenedor dos columnas -->
                   <div class="flex w-full flex-col items-start gap-2 sm:flex-row sm:items-center">
                     <!-- Items: KG, LB, etc. -->
                     <div class="flex flex-col gap-1 md:w-1/3">
-                      <div *ngFor="let item of resumenPesoFacturacion.items" class=" md:text-3xl text-2xl font-medium leading-none">
+                      <div
+                        *ngFor="let item of resumenPesoFacturacion.items"
+                        class="text-2xl font-medium leading-none md:text-3xl"
+                      >
                         {{ item.um }}: {{ formatValue(item.cant, 'decimal') }}
-                        <span *ngIf="!item.esKG" class="text-black dark:text-white md:text-2xl text-xl font-medium leading-none">
+                        <span
+                          *ngIf="!item.esKG"
+                          class="text-xl font-medium leading-none text-black md:text-2xl dark:text-white"
+                        >
                           = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
                         </span>
                       </div>
@@ -180,10 +183,12 @@
                     <div
                       class="flex flex-row items-center gap-2 sm:w-1/2 sm:flex-col sm:items-center sm:justify-center"
                     >
-                      <div class="md:text-2xl md:font-bold text-black dark:text-white text-xl font-medium leading-none">
+                      <div
+                        class="text-xl font-medium leading-none text-black md:text-2xl md:font-bold dark:text-white"
+                      >
                         {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
                       </div>
-                      <div class="text-base md:text-base text-purple-600">Total</div>
+                      <div class="text-base text-purple-600 md:text-base">Total</div>
                     </div>
                   </div>
                 </ng-container>
@@ -205,7 +210,7 @@
     </div>
 
     <!-- Distribución de procesos -->
-    <div class="my-8 flex items-center gap-4">
+    <div *ngIf="esVisible('Distribución de procesos')" class="my-8 flex items-center gap-4">
       <div
         class="h-px flex-1 bg-gradient-to-r from-transparent via-blue-300 to-transparent dark:via-blue-700"
       ></div>
@@ -227,6 +232,7 @@
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <!-- TEJIDO -->
         <div
+          *ngIf="esVisible('Tejido')"
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
@@ -239,17 +245,17 @@
           </div>
 
           <!-- Botón 3 puntos -->
-<!-- Botón 3 puntos -->
-<div class="absolute right-2 top-2 z-10">
-  <button
-    mat-icon-button
-    class="flex h-10 w-10 items-center justify-center"
-    [matMenuTriggerFor]="menuTejido"
-    (click)="$event.stopPropagation()"
-  >
-    <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
-  </button>
-</div>
+          <!-- Botón 3 puntos -->
+          <div class="absolute right-2 top-2 z-10">
+            <button
+              mat-icon-button
+              class="flex h-10 w-10 items-center justify-center"
+              [matMenuTriggerFor]="menuTejido"
+              (click)="$event.stopPropagation()"
+            >
+              <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
+            </button>
+          </div>
 
           <mat-menu #menuTejido="matMenu">
             <button mat-menu-item (click)="abrirTejido()">
@@ -299,6 +305,7 @@
 
         <!-- TINTORERÍA -->
         <div
+          *ngIf="esVisible('Tintorería')"
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
@@ -370,6 +377,7 @@
 
         <!-- ESTAMPADOS -->
         <div
+          *ngIf="esVisible('Estampados')"
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
@@ -441,6 +449,7 @@
 
         <!-- ACABADO REAL -->
         <div
+          *ngIf="esVisible('Acabado real')"
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
@@ -513,7 +522,13 @@
     </div>
 
     <!-- CARDS DE 4 (Producción, Revisado, Por revisar, Saldos) -->
-    <div class="mt-6 grid w-full grid-cols-1 gap-8 sm:grid-cols-2 md:mt-8 lg:grid-cols-4">
+    <div
+      class="mt-6 grid w-full grid-cols-1 gap-8 sm:grid-cols-2 md:mt-8 lg:grid-cols-4"
+      *ngIf="
+        !terminoBusqueda ||
+        (areasResumenGeneralFiltradas && areasResumenGeneralFiltradas.length > 0)
+      "
+    >
       <!-- Producción de tejido -->
       <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
         <div class="flex items-center justify-center">
@@ -833,7 +848,10 @@
     </div>
 
     <!-- Card de Embarques - Gráfica de líneas múltiples -->
-    <div class="bg-card my-6 flex flex-auto flex-col overflow-hidden rounded-2xl shadow">
+    <div
+      *ngIf="esVisible('Embarques')"
+      class="bg-card my-6 flex flex-auto flex-col overflow-hidden rounded-2xl shadow"
+    >
       <!-- Header con título -->
       <div class="m-6 mb-0 flex items-start justify-between">
         <div class="flex flex-col">
@@ -934,55 +952,104 @@
         </div>
       </div>
     </div>
+
+    <div
+      *ngIf="terminoBusqueda && !hayResultadosGeneral"
+      class="flex flex-col items-center justify-center px-4 py-16"
+    >
+      <div class="relative mb-6">
+        <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-black/10">
+          <mat-icon
+            class="text-black/40 icon-size-12"
+            [svgIcon]="'heroicons_outline:document-check'"
+          ></mat-icon>
+        </div>
+      </div>
+      <h3 class="mb-2 text-xl font-bold">Sin resultados</h3>
+      <p class="mb-4 max-w-md text-center text-black dark:text-white">
+        No se encontraron secciones con "<strong>{{ terminoBusqueda }}</strong
+        >". <br />Intenta con otro término de búsqueda.
+      </p>
+      <button mat-stroked-button class="rounded-xl" (click)="limpiarBusqueda()">
+        <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+        Limpiar búsqueda
+      </button>
+    </div>
   </div>
 
   <!-- ========================================= -->
   <!-- VISTA DETALLE -->
   <!-- ========================================= -->
   <div *ngIf="vistaActual === 'detalle'">
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-      <div
-        *ngFor="let area of areasResumen"
-        class="rounded-2xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md md:p-6 dark:bg-gray-800"
-      >
-        <!-- Header del área -->
-        <div class="mb-5 flex items-center gap-3 border-b-2 border-gray-100 pb-4">
-          <div
-            [style.background]="area.color"
-            class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl md:h-12 md:w-12"
-          >
-            <mat-icon class="h-5 w-5 text-xl text-white md:h-6 md:w-6 md:text-2xl">
-              {{ area.icon }}
-            </mat-icon>
-          </div>
-          <h2 class="line-clamp-2 text-base font-bold text-black md:text-lg dark:text-white">
-            {{ area.nombre }}
-          </h2>
+    <!-- Empty state cuando búsqueda no da resultados -->
+    <div
+      *ngIf="terminoBusqueda && areasResumenFiltradas.length === 0; else gridAreas"
+      class="flex flex-col items-center justify-center px-4 py-16"
+    >
+      <div class="relative mb-6">
+        <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-black/10">
+          <mat-icon
+            class="text-black/40 icon-size-12"
+            [svgIcon]="'heroicons_outline:document-check'"
+          ></mat-icon>
         </div>
+      </div>
+      <h3 class="mb-2 text-xl font-bold">Sin resultados</h3>
+      <p class="mb-4 max-w-md text-center text-black dark:text-white">
+        No se encontraron registros con "<strong>{{ terminoBusqueda }}</strong
+        >". <br />Intenta con otro término de búsqueda.
+      </p>
+      <button mat-stroked-button class="rounded-xl" (click)="limpiarBusqueda()">
+        <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+        Limpiar búsqueda
+      </button>
+    </div>
 
-        <!-- Métricas del área -->
-        <div class="space-y-3 md:space-y-4">
-          <div
-            *ngFor="let metric of area.metrics"
-            class="flex items-center justify-between rounded-xl bg-gray-100 p-3 transition-colors hover:bg-gray-200 md:p-4 dark:bg-gray-500 dark:hover:bg-gray-400"
-          >
-            <span class="text-xs font-medium text-black md:text-sm dark:text-white">
-              {{ metric.label }}
-            </span>
+    <ng-template #gridAreas>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+        <div
+          *ngFor="let area of areasResumenFiltradas"
+          class="rounded-2xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md md:p-6 dark:bg-gray-800"
+        >
+          <!-- Header del área -->
+          <div class="mb-5 flex items-center gap-3 border-b-2 border-gray-100 pb-4">
+            <div
+              [style.background]="area.color"
+              class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl md:h-12 md:w-12"
+            >
+              <mat-icon class="h-5 w-5 text-xl text-white md:h-6 md:w-6 md:text-2xl">
+                {{ area.icon }}
+              </mat-icon>
+            </div>
+            <h2 class="line-clamp-2 text-base font-bold text-black md:text-lg dark:text-white">
+              {{ area.nombre }}
+            </h2>
+          </div>
 
-            <div class="text-right">
-              <mat-spinner *ngIf="area.loading" diameter="24"></mat-spinner>
-              <span
-                *ngIf="!area.loading"
-                class="text-base font-bold text-black md:text-lg dark:text-white"
-              >
-                {{ formatValue(metric.value, metric.format) }}
+          <!-- Métricas del área -->
+          <div class="space-y-3 md:space-y-4">
+            <div
+              *ngFor="let metric of area.metrics"
+              class="flex items-center justify-between rounded-xl bg-gray-100 p-3 transition-colors hover:bg-gray-200 md:p-4 dark:bg-gray-500 dark:hover:bg-gray-400"
+            >
+              <span class="text-xs font-medium text-black md:text-sm dark:text-white">
+                {{ metric.label }}
               </span>
+
+              <div class="text-right">
+                <mat-spinner *ngIf="area.loading" diameter="24"></mat-spinner>
+                <span
+                  *ngIf="!area.loading"
+                  class="text-base font-bold text-black md:text-lg dark:text-white"
+                >
+                  {{ formatValue(metric.value, metric.format) }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </ng-template>
   </div>
 </div>
 <!-- FIN VISTA RESUMEN CON LOADERS -->

@@ -608,7 +608,7 @@
       <div class="w-full pb-6 md:px-2">
         <router-outlet></router-outlet>
       </div>
-      <ng-container *ngIf="!isLoading && datosFiltrados.length === 0">
+      <!-- <ng-container *ngIf="!isLoading && datosFiltrados.length === 0">
         <div class="flex flex-auto flex-col items-center justify-center p-8">
           <div class="relative">
             <div
@@ -636,7 +636,7 @@
             Restablecer filtros
           </button>
         </div>
-      </ng-container>
+      </ng-container> -->
       <ng-container *ngIf="!isLoading && datosFiltrados.length > 0">
         <div class="w-full pb-2 md:px-2"></div>
       </ng-container>

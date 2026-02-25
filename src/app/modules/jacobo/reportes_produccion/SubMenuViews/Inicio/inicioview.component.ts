@@ -1,6 +1,6 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,13 +9,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ApexOptions } from 'apexcharts';
-import { FinanceService } from 'app/modules/admin/dashboards/finance/finance.service';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { filter, map, Subject, takeUntil } from 'rxjs';
+import { filter, Subject, takeUntil } from 'rxjs';
 import { SharedDataService } from '../../list/shared-data.service';
 import {
   PorRevisarTejido,
@@ -61,6 +60,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   totalFacturas = 0;
   cantidadTotal = 0;
   impuestosTotal = 0;
+  terminoBusqueda = '';
   importeTotalSinIva = 0;
   loadingFacturacion = true;
   loadingSaldosTejido = true;
@@ -213,7 +213,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     private sharedData: SharedDataService,
     private cdr: ChangeDetectorRef,
     private breakpointObserver: BreakpointObserver,
-    private _financeService: FinanceService,
     private _dialog: MatDialog,
   ) {}
 
@@ -253,6 +252,11 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     });
     this.cargarTodasLasAreas();
+
+    this.sharedData.filtrosGlobales$.pipe(takeUntil(this.destroy$)).subscribe((filtros) => {
+      this.terminoBusqueda = (filtros.busqueda || '').toLowerCase();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnDestroy(): void {
@@ -1294,5 +1298,99 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   }
   abrirAcabado(): void {
     this._dialog.open(ComposerAcabadoRealComponent, { ...this._dialogConfig(), data: {} });
+  }
+
+  get datosAgrupadosFiltrados(): ClienteAgrupado[] {
+    if (!this.terminoBusqueda) return this.datosAgrupados;
+    const term = this.terminoBusqueda.toLowerCase();
+    return this.datosAgrupados.filter(
+      (cliente) =>
+        cliente.cliente?.toLowerCase().includes(term) ||
+        cliente.facturas?.some(
+          (f) => f.factura?.toLowerCase().includes(term) || f.um?.toLowerCase().includes(term),
+        ),
+    );
+  }
+
+  get hayResultados(): boolean {
+    return this.datosAgrupadosFiltrados.length > 0;
+  }
+
+  get areasResumenFiltradas(): AreaResumen[] {
+    if (!this.terminoBusqueda) return this.areasResumen;
+    return this.areasResumen.filter(
+      (area) =>
+        area.nombre.toLowerCase().includes(this.terminoBusqueda) ||
+        area.metrics?.some((m) => m.label.toLowerCase().includes(this.terminoBusqueda)),
+    );
+  }
+
+  limpiarBusqueda(): void {
+    this.sharedData.actualizarFiltros({ busqueda: '' });
+  }
+
+  get areasResumenGeneralFiltradas() {
+    if (!this.terminoBusqueda) return null;
+    const term = this.terminoBusqueda.toLowerCase();
+    return this.areasResumen.filter(
+      (a) =>
+        a.nombre.toLowerCase().includes(term) ||
+        a.metrics?.some((m) => m.label.toLowerCase().includes(term)),
+    );
+  }
+
+  get seccionesVisibles(): Set<string> {
+    if (!this.terminoBusqueda) {
+      return new Set([
+        'Facturación',
+        'Distribución de procesos',
+        'Tejido',
+        'Tintorería',
+        'Estampados',
+        'Acabado real',
+        'Producción tejido',
+        'Tejido revisado',
+        'Por revisar',
+        'Saldos',
+        'Embarques',
+      ]);
+    }
+    const term = this.terminoBusqueda.toLowerCase();
+
+    const nombres: { [key: string]: string[] } = {
+      Facturación: ['facturación', 'facturacion', 'total', 'peso', 'factura'],
+      Tejido: ['tejido'],
+      Tintorería: ['tintorería', 'tintoreria', 'teñido', 'tenido', 'tintor'],
+      Estampados: ['estampados', 'estampado'],
+      'Acabado real': ['acabado', 'acabado real', 'control de calidad', 'calidad'],
+      'Producción tejido': ['producción', 'produccion', 'produccion tejido', 'tejido'],
+      'Tejido revisado': ['revisado', 'tejido revisado', 'tejido'],
+      'Por revisar': ['por revisar', 'revisar'],
+      Saldos: ['saldos', 'saldo'],
+      Embarques: ['embarques', 'embarque'],
+    };
+
+    const visible = new Set<string>();
+    for (const [seccion, keywords] of Object.entries(nombres)) {
+      if (keywords.some((k) => k.includes(term) || term.includes(k))) {
+        visible.add(seccion);
+      }
+    }
+
+    // Si alguna sección de procesos es visible, mostrar también el divider
+    const seccionesProcesos = ['Tejido', 'Tintorería', 'Estampados', 'Acabado real'];
+    if (seccionesProcesos.some((s) => visible.has(s))) {
+      visible.add('Distribución de procesos');
+    }
+
+    return visible;
+  }
+
+  esVisible(seccion: string): boolean {
+    return this.seccionesVisibles.has(seccion);
+  }
+
+  get hayResultadosGeneral(): boolean {
+    return !this.terminoBusqueda || this.seccionesVisibles.size > 0;
   }
 }
