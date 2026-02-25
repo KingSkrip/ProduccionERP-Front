@@ -56,13 +56,10 @@ import { ClienteAgrupado, FacturaDetalle } from './types/facturacion.types';
   ],
 })
 export class InicioViewComponent implements OnInit, OnDestroy {
-  ivaTotal = 0;
   totalConIva = 0;
   isMobile = false;
   totalFacturas = 0;
   cantidadTotal = 0;
-  facturasConIva = 0;
-  facturasSinIva = 0;
   impuestosTotal = 0;
   importeTotalSinIva = 0;
   loadingFacturacion = true;
@@ -75,22 +72,18 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   loadingGraficaFacturacion = true;
   loadingDistribucionProcesos = true;
   datosEmbarquesCompletos: any[] = [];
-  accountBalanceOptions!: ApexOptions;
   private destroy$ = new Subject<void>();
   datosAgrupados: ClienteAgrupado[] = [];
-  private wsRefresh$ = new Subject<any>();
   datosSaldosCompletos: SaldosTejido[] = [];
   filtros$ = this.sharedData.filtrosGlobales$;
   chartSaldosTejido: ApexOptions | null = null;
   datosRevisadoCompletos: RevisadoTejido[] = [];
   chartRevisadoTejido: ApexOptions | null = null;
-  tipoEmbarqueSeleccionado: string | null = null;
   vistaActual: 'general' | 'detalle' = 'general';
   chartEmbarquesTejido: ApexOptions | null = null;
   articuloSeleccionadoSaldos: string | null = null;
   chartProduccionTejido: ApexOptions | null = null;
   chartPorRevisarTejido: ApexOptions | null = null;
-  @ViewChild('chartEmbarques') chartEmbarques: any;
   datosProduccionCompletos: ProduccionTejido[] = [];
   datosPorRevisarCompletos: PorRevisarTejido[] = [];
   articuloSeleccionadoRevisado: string | null = null;
@@ -99,63 +92,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   articuloSeleccionadoProduccion: string | null = null;
   articuloSeleccionadoPorRevisar: string | null = null;
   tipoEmbarqueSeleccionadoGrafica: string | null = null;
-  @ViewChild(MatSort) recentTransactionsTableMatSort!: MatSort;
-  private readonly CONVERSION_RATES = {
-    LB_TO_KG: 0.453592,
-    KG_TO_LB: 2.20462,
-    OZ_TO_G: 28.3495,
-    G_TO_OZ: 0.035274,
-  };
-
-  data: any = {
-    previousStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
-    currentStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
-    accountBalance: { growRate: 0, ami: 0, series: [] },
-    recentTransactions: [],
-  };
-
-  rangoTexto$ = this.filtros$.pipe(
-    map((f) => {
-      const opts: Intl.DateTimeFormatOptions = {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      };
-      const hoy = new Date();
-
-      switch (f.rangoFecha) {
-        case 'todos':
-          return 'Todos los registros';
-        case 'hoy':
-          return `Hoy - ${hoy.toLocaleDateString('es-MX', opts)}`;
-        case 'ayer': {
-          const ayer = new Date();
-          ayer.setDate(ayer.getDate() - 1);
-          return `Ayer - ${ayer.toLocaleDateString('es-MX', opts)}`;
-        }
-        case 'mes_actual': {
-          const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-          return `${inicioMes.toLocaleDateString('es-MX', opts)} - ${hoy.toLocaleDateString('es-MX', opts)}`;
-        }
-        case 'mes_anterior': {
-          const inicio = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-          const fin = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
-          return `${inicio.toLocaleDateString('es-MX', opts)} - ${fin.toLocaleDateString('es-MX', opts)}`;
-        }
-        case 'fecha_especifica':
-          return f.fechaInicio
-            ? `Fecha: ${f.fechaInicio.toLocaleDateString('es-MX', opts)}`
-            : 'Seleccionar fecha';
-        case 'periodo':
-          return f.fechaInicio && f.fechaFin
-            ? `${f.fechaInicio.toLocaleDateString('es-MX', opts)} - ${f.fechaFin.toLocaleDateString('es-MX', opts)}`
-            : 'Periodo de fechas';
-        default:
-          return 'Mes actual';
-      }
-    }),
-  );
-
   areasResumen: AreaResumen[] = [
     {
       nombre: 'Facturación',
@@ -303,10 +239,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       const payload = facturado?.data ?? facturado;
       const detalle = payload?.detalle ?? [];
       if (!detalle.length) {
-        this.data.previousStatement = { date: '', limit: 0, spent: 0, minimum: 0 };
-        this.data.currentStatement = { date: '', limit: 0, spent: 0, minimum: 0 };
-        this.data.accountBalance = { growRate: 0, ami: 0, series: [] };
-        this._prepareChartData();
         this.cdr.markForCheck();
         return;
       }
@@ -318,9 +250,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       const toExclusive = new Date(to);
       toExclusive.setHours(0, 0, 0, 0);
       toExclusive.setDate(toExclusive.getDate() + 1);
-      this.setCardsFacturadoPorFiltro(detalle, from, toExclusive);
-      this.procesarFacturadoParaGrafica(detalle);
-      this._prepareChartData();
       this.cdr.markForCheck();
     });
     this.cargarTodasLasAreas();
@@ -329,7 +258,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    // this.resumenwebsocket.stopListening();
   }
 
   private cargarTodasLasAreas(opts?: { silent?: boolean }): void {
@@ -372,10 +300,9 @@ export class InicioViewComponent implements OnInit, OnDestroy {
           this.crearGraficaDistribucionProcesos(datos);
 
           this.sharedData.actualizarTejidoPorDia(datos.tejidoPorDia ?? []);
-this.sharedData.actualizarTintoreriaPorDia(datos.tintoreriaPorDia ?? []);
-this.sharedData.actualizarEstampadoPorDia(datos.estampadoPorDia ?? []);
-this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
-
+          this.sharedData.actualizarTintoreriaPorDia(datos.tintoreriaPorDia ?? []);
+          this.sharedData.actualizarEstampadoPorDia(datos.estampadoPorDia ?? []);
+          this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
 
           if (!silent) {
             this.loadingFacturacion = false;
@@ -511,27 +438,6 @@ this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
 
   trackByFn(index: number, item: any): any {
     return item?.id ?? index;
-  }
-
-  private sumarPeriodo(detalle: any[], from: Date, to: Date) {
-    let total = 0;
-    let importe = 0;
-    let impuestos = 0;
-    let facturas = 0;
-
-    for (const item of detalle) {
-      const f = this.getFechaFactura(item);
-      if (!f) continue;
-
-      if (f >= from && f < to) {
-        total += this.toNum(item.total);
-        importe += this.toNum(item.importe);
-        impuestos += this.toNum(item.impuestos);
-        facturas += 1;
-      }
-    }
-
-    return { total, importe, impuestos, facturas };
   }
 
   private toNum(v: any): number {
@@ -956,33 +862,6 @@ this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
    * FACTURADO
    */
 
-  private procesarFacturado1(resp: any): void {
-    const payload = resp?.data ?? resp;
-    if (!payload) return;
-
-    const tot = payload.totales ?? {};
-    const detalle: FacturaDetalle[] = payload.detalle ?? [];
-
-    const subtotal = Number(tot.importe) || 0;
-    const impuestos = Number(tot.impuestos) || 0;
-    const cant = Number(tot.cant) || 0;
-    const total = Number(tot.total) || 0;
-
-    const cantidadTotal =
-      Number(tot.cant) || detalle.reduce((sum, x) => sum + (Number(x.cant) || 0), 0);
-
-    //  Guarda total con IVA para el card "Total"
-    this.totalConIva = total;
-
-    const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
-    if (area) {
-      area.metrics[0].value = subtotal; // Subtotal
-      area.metrics[1].value = impuestos; // IVA
-      area.metrics[2].value = cantidadTotal; // Cantidad total
-      area.metrics[2].value = cant; // Cantidad total
-    }
-  }
-
   private procesarFacturado(resp: any): void {
     const payload = resp?.data ?? resp;
     if (!payload) return;
@@ -1035,173 +914,6 @@ this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
     return isNaN(d.getTime()) ? null : d;
   }
 
-  private _prepareChartData(): void {
-    const cConIva = '#0ea5e9';
-    const cSinIva = '#f97316';
-
-    this.accountBalanceOptions = {
-      chart: {
-        animations: { speed: 400, animateGradually: { enabled: false } },
-        fontFamily: 'inherit',
-        foreColor: 'inherit',
-        width: '100%',
-        height: 320,
-        type: 'area',
-        sparkline: { enabled: true },
-        toolbar: { show: false },
-        defaultLocale: 'es',
-        locales: [
-          {
-            name: 'es',
-            options: {
-              months: [
-                'enero',
-                'febrero',
-                'marzo',
-                'abril',
-                'mayo',
-                'junio',
-                'julio',
-                'agosto',
-                'septiembre',
-                'octubre',
-                'noviembre',
-                'diciembre',
-              ],
-              shortMonths: [
-                'ene',
-                'feb',
-                'mar',
-                'abr',
-                'may',
-                'jun',
-                'jul',
-                'ago',
-                'sep',
-                'oct',
-                'nov',
-                'dic',
-              ],
-              days: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
-              shortDays: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
-              toolbar: {
-                exportToSVG: 'Descargar SVG',
-                exportToPNG: 'Descargar PNG',
-                exportToCSV: 'Descargar CSV',
-                selection: 'Selección',
-                selectionZoom: 'Zoom selección',
-                zoomIn: 'Acercar',
-                zoomOut: 'Alejar',
-                pan: 'Mover',
-                reset: 'Reset',
-              },
-            },
-          },
-        ],
-      },
-      colors: [cConIva, cSinIva],
-      stroke: {
-        curve: 'smooth',
-        width: 2,
-      },
-
-      series: this.data?.accountBalance?.series ?? [],
-
-      fill: {
-        type: 'gradient',
-        colors: [cConIva, cSinIva],
-        gradient: {
-          shadeIntensity: 0.2,
-          opacityFrom: 0.35,
-          opacityTo: 0.05,
-          stops: [0, 90, 100],
-        },
-      },
-
-      xaxis: { type: 'datetime' },
-
-      legend: {
-        show: true,
-        position: 'top',
-        horizontalAlign: 'left',
-        markers: {
-          size: 8,
-          strokeWidth: 0,
-          fillColors: [cConIva, cSinIva],
-        },
-      },
-
-      tooltip: {
-        shared: true,
-        followCursor: true,
-        theme: 'dark',
-        x: { format: 'dd MMM yyyy' },
-        y: {
-          formatter: (value: number) =>
-            new Intl.NumberFormat('es-MX', {
-              style: 'currency',
-              currency: 'MXN',
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            }).format(value),
-        },
-      },
-    };
-  }
-
-  private procesarFacturadoParaGrafica(detalle: any[]): void {
-    const getFecha = (x: any) => x.fecha || x.FECHA || x.fechaFactura || x.fecha_timbrado;
-    const getFactura = (x: any) => x.factura || x.FACTURA || x.cve_doc || x.CVE_DOC;
-    const porFactura = new Map<string, { ts: number; iva: number; subtotal: number }>();
-    for (const item of detalle) {
-      const folio = String(getFactura(item) ?? '').trim();
-      if (!folio) continue;
-      const raw = getFecha(item);
-      if (!raw) continue;
-      const d = new Date(String(raw).replace(' ', 'T'));
-      if (isNaN(d.getTime())) continue;
-      const dayKey = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-      const subtotal = this.toNum(item.importe);
-      const iva = this.toNum(item.impuestos);
-      if (!porFactura.has(folio)) porFactura.set(folio, { ts: dayKey, iva, subtotal });
-    }
-
-    const porDia = new Map<number, { iva: number; subtotal: number }>();
-    for (const v of porFactura.values()) {
-      const prev = porDia.get(v.ts) ?? { iva: 0, subtotal: 0 };
-      prev.iva += v.iva;
-      prev.subtotal += v.subtotal;
-      porDia.set(v.ts, prev);
-    }
-
-    const days = Array.from(porDia.entries()).sort((a, b) => a[0] - b[0]);
-    this.data.accountBalance = {
-      growRate: 0,
-      ami: days.length ? days.reduce((s, [, v]) => s + v.iva, 0) / days.length : 0,
-      series: [
-        { name: 'IVA', data: days.map(([ts, v]) => [ts, v.iva]) },
-        { name: 'Subtotal', data: days.map(([ts, v]) => [ts, v.subtotal]) },
-      ],
-    };
-  }
-
-  private setCardsFacturadoPorFiltro(detalle: any[], from: Date, to: Date): void {
-    const r = this.sumarPeriodo(detalle, from, to);
-    this.data.previousStatement = {
-      date: to.toISOString(),
-      limit: r.importe,
-      spent: r.facturas,
-      minimum: r.impuestos,
-    };
-
-    this.data.currentStatement = {
-      date: to.toISOString(),
-      limit: r.impuestos,
-      spent: r.facturas,
-      minimum: r.impuestos,
-    };
-  }
-
   private onFacturadoLoaded(resp: any): void {
     const payload = resp?.data ?? resp;
     const tot = payload?.totales ?? {};
@@ -1210,9 +922,6 @@ this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
     this.importeTotalSinIva = Number(tot.importe) || 0;
     this.impuestosTotal = Number(tot.impuestos) || 0;
     this.totalConIva = Number(tot.total) || 0;
-
-    this.ivaTotal = this.impuestosTotal || this.totalConIva - this.importeTotalSinIva;
-
     this.totalFacturas = Number(tot.facturas) || 0;
     this.cantidadTotal = Number(tot.cant) || 0;
     this.cantidadesPorUnidad = {};
@@ -1231,21 +940,6 @@ this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
       const imp = Number((x as any).impuestos) || 0;
       if (imp > 0) conIva++;
       else sinIva++;
-    }
-    this.facturasConIva = conIva;
-    this.facturasSinIva = sinIva;
-    if (detalle.length) {
-      const filtros = this.sharedData.obtenerFiltros();
-      const busqueda = (filtros.busqueda ?? '').toLowerCase().trim();
-      const detalleFiltrado = !busqueda
-        ? detalle
-        : detalle.filter(
-            (x) =>
-              (x.cliente ?? '').toLowerCase().includes(busqueda) ||
-              (x.factura ?? '').toLowerCase().includes(busqueda),
-          );
-    } else {
-      this.datosAgrupados = [];
     }
   }
 
@@ -1533,38 +1227,6 @@ this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
   calcularArticulosEmbarquesCard(): number {
     const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
     return area?.metrics[2]?.value || 0;
-  }
-
-  seleccionarTipoEmbarque(tipo: string): void {
-    const t = this.norm(tipo);
-    this.tipoEmbarqueSeleccionado = this.tipoEmbarqueSeleccionado === t ? null : t;
-    this.actualizarMetricasEmbarques();
-  }
-
-  private actualizarMetricasEmbarques(): void {
-    const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
-    if (!area) return;
-
-    const datosFiltrados = this.tipoEmbarqueSeleccionado
-      ? this.datosEmbarquesCompletos.filter(
-          (d) => this.norm(d.TIPO) === this.tipoEmbarqueSeleccionado,
-        )
-      : this.datosEmbarquesCompletos;
-
-    const totalEmbarcado = datosFiltrados.reduce(
-      (sum, item) => sum + (Number(item.CANTIDAD) || 0),
-      0,
-    );
-    const TIPOS_FIJOS = ['PRIMERA', 'PREFERIDA', 'SEGUNDA', 'ORILLAS', 'RETAZO', 'MUESTRAS'];
-    const tipos = TIPOS_FIJOS.length;
-    const articulos = new Set(datosFiltrados.map((item) => String(item.ARTICULO ?? '').trim()))
-      .size;
-
-    area.metrics[0].value = totalEmbarcado;
-    area.metrics[1].value = tipos;
-    area.metrics[2].value = articulos;
-
-    this.cdr.markForCheck();
   }
 
   private procesarEmbarques(data: any[]): void {
