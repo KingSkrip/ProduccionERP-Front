@@ -36,7 +36,7 @@
   <!-- ========================================= -->
   <div *ngIf="vistaActual === 'general'">
     <!-- FACTURACION -->
-    <div class="my-8 flex items-center gap-4">
+    <div *ngIf="esVisible('Facturación')" class="my-8 flex items-center gap-4">
       <div
         class="h-px flex-1 bg-gradient-to-r from-transparent via-green-300 to-transparent dark:via-green-700"
       ></div>
@@ -53,7 +53,7 @@
     </div>
 
     <!-- GRAFICA FACTURACION -->
-    <div class="mt-8 grid w-full grid-cols-1 gap-8">
+    <div *ngIf="esVisible('Facturación')" class="mt-8 grid w-full grid-cols-1 gap-8">
       <!-- COLUMNA IZQUIERDA: 3 cards apiladas -->
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
         <!-- TOTAL -->
@@ -246,7 +246,7 @@
     </div>
 
     <!-- Distribución de procesos -->
-    <div class="my-8 flex items-center gap-4">
+    <div *ngIf="esVisible('Distribución de procesos')" class="my-8 flex items-center gap-4">
       <div
         class="h-px flex-1 bg-gradient-to-r from-transparent via-blue-300 to-transparent dark:via-blue-700"
       ></div>
@@ -328,6 +328,7 @@
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <!-- TEJIDO -->
         <div
+          *ngIf="esVisible('Tejido')"
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
@@ -390,6 +391,7 @@
 
         <!-- TINTORERÍA -->
         <div
+          *ngIf="esVisible('Tintorería')"
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
@@ -457,6 +459,7 @@
 
         <!-- ESTAMPADOS -->
         <div
+          *ngIf="esVisible('Estampados')"
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
@@ -518,6 +521,7 @@
 
         <!-- ACABADO REAL -->
         <div
+          *ngIf="esVisible('Acabado real')"
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
         >
           <!-- Decoración -->
@@ -582,7 +586,10 @@
     <!-- CARDS DE 4 (Producción, Revisado, Por revisar, Saldos) -->
     <div class="mt-6 grid w-full grid-cols-1 gap-8 sm:grid-cols-2 md:mt-8 lg:grid-cols-4">
       <!-- Producción de tejido -->
-      <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+      <div
+        *ngIf="esVisible('Producción tejido')"
+        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
+      >
         <div class="flex items-center justify-center">
           <div class="text-center text-lg font-medium leading-6 tracking-tight">
             Producción de tejido
@@ -660,7 +667,10 @@
       </div>
 
       <!-- Revisado de tejido -->
-      <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+      <div
+        *ngIf="esVisible('Tejido revisado')"
+        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
+      >
         <div class="flex items-center justify-center">
           <div class="text-center text-lg font-medium leading-6 tracking-tight">
             Revisado de tejido
@@ -741,7 +751,10 @@
       </div>
 
       <!-- Por revisar -->
-      <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+      <div
+        *ngIf="esVisible('Por revisar')"
+        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
+      >
         <div class="flex items-center justify-center">
           <div class="text-center text-lg font-medium leading-6 tracking-tight">Por revisar</div>
         </div>
@@ -820,7 +833,10 @@
       </div>
 
       <!-- Saldos -->
-      <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+      <div
+        *ngIf="esVisible('Saldos')"
+        class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow"
+      >
         <div class="flex items-center justify-center">
           <div class="text-center text-lg font-medium leading-6 tracking-tight">Saldos</div>
         </div>
@@ -900,7 +916,10 @@
     </div>
 
     <!-- Card de Embarques - Gráfica de líneas múltiples -->
-    <div class="bg-card my-6 flex flex-auto flex-col overflow-hidden rounded-2xl shadow">
+    <div
+      *ngIf="esVisible('Embarques')"
+      class="bg-card my-6 flex flex-auto flex-col overflow-hidden rounded-2xl shadow"
+    >
       <!-- Header con título -->
       <div class="m-6 mb-0 flex items-start justify-between">
         <div class="flex flex-col">
@@ -1000,15 +1019,62 @@
         </div>
       </div>
     </div>
+
+    <div
+      *ngIf="terminoBusqueda && !hayResultadosGeneral"
+      class="flex flex-col items-center justify-center px-4 py-16"
+    >
+      <div class="relative mb-6">
+        <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-black/10">
+          <mat-icon
+            class="text-black/40 icon-size-12"
+            [svgIcon]="'heroicons_outline:document-check'"
+          ></mat-icon>
+        </div>
+      </div>
+      <h3 class="mb-2 text-xl font-bold">Sin resultados</h3>
+      <p class="mb-4 max-w-md text-center text-black dark:text-white">
+        No se encontraron secciones con "<strong>{{ terminoBusqueda }}</strong
+        >". <br />Intenta con otro término de búsqueda.
+      </p>
+      <button mat-stroked-button class="rounded-xl" (click)="limpiarBusqueda()">
+        <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+        Limpiar búsqueda
+      </button>
+    </div>
   </div>
 
   <!-- ========================================= -->
   <!-- VISTA DETALLE -->
   <!-- ========================================= -->
   <div *ngIf="vistaActual === 'detalle'">
+    <!-- Empty state -->
+    <div
+      *ngIf="terminoBusqueda && areasResumenFiltradas.length === 0; else gridAreas"
+      class="flex flex-col items-center justify-center px-4 py-16"
+    >
+      <div class="relative mb-6">
+        <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-black/10">
+          <mat-icon
+            class="text-black/40 icon-size-12"
+            [svgIcon]="'heroicons_outline:document-check'"
+          ></mat-icon>
+        </div>
+      </div>
+      <h3 class="mb-2 text-xl font-bold">Sin resultados</h3>
+      <p class="mb-4 max-w-md text-center text-black dark:text-white">
+        No se encontraron registros con "<strong>{{ terminoBusqueda }}</strong
+        >". <br />Intenta con otro término de búsqueda.
+      </p>
+      <button mat-stroked-button class="rounded-xl" (click)="limpiarBusqueda()">
+        <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+        Limpiar búsqueda
+      </button>
+    </div>
+
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
       <div
-        *ngFor="let area of areasResumen"
+        *ngFor="let area of areasResumenFiltradas"
         class="rounded-2xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md md:p-6 dark:bg-gray-800"
       >
         <!-- Header del área -->

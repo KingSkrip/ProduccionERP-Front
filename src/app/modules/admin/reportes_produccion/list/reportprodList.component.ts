@@ -352,29 +352,34 @@ export class ReportProdListComponent implements OnInit, OnDestroy {
         this.procesosUnicos = Array.from(procesosSet).sort();
     }
 
-    configurarFiltros(): void {
-        this.searchControl.valueChanges
-            .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
-            .subscribe(valor => {
-                this._sharedDataService.actualizarFiltros({ busqueda: valor || '' });
-                this.aplicarFiltrosProcesos();
-            });
+  configurarFiltros(): void {
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
+      .subscribe((valor) => {
+        this._sharedDataService.actualizarFiltros({ busqueda: valor || '' });
+        this.aplicarFiltrosProcesos();
+      });
 
-        this.deptoControl.valueChanges
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(valor => {
-                this._sharedDataService.actualizarFiltros({ departamento: valor || '' });
-                this.aplicarFiltrosProcesos();
-            });
+    this.deptoControl.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((valor) => {
+      this._sharedDataService.actualizarFiltros({ departamento: valor || '' });
+      this.aplicarFiltrosProcesos();
+    });
 
-        this.procesoControl.valueChanges
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(valor => {
-                this._sharedDataService.actualizarFiltros({ proceso: valor || '' });
-                this.aplicarFiltrosProcesos();
-            });
-    }
+    this.procesoControl.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((valor) => {
+      this._sharedDataService.actualizarFiltros({ proceso: valor || '' });
+      this.aplicarFiltrosProcesos();
+    });
 
+    this._sharedDataService.filtrosGlobales$
+      .pipe(takeUntil(this._unsubscribeAll))
+      .subscribe((filtros) => {
+        if (this.searchControl.value !== filtros.busqueda) {
+          this.searchControl.setValue(filtros.busqueda, { emitEvent: false });
+        }
+        this._cd.markForCheck();
+      });
+  }
+  
     togglePanelFiltros(): void {
         this.mostrarPanelFiltros = !this.mostrarPanelFiltros;
         this._cd.markForCheck();

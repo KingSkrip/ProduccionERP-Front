@@ -56,6 +56,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   facturasConIva = 0;
   facturasSinIva = 0;
   impuestosTotal = 0;
+  terminoBusqueda = '';
   importeTotalSinIva = 0;
   loadingFacturacion = true;
   loadingSaldosTejido = true;
@@ -289,6 +290,11 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     //     this.cargarTodasLasAreas({ silent: true });
     //     // this.mostrarNotificacion(event.mensaje);
     //   });
+
+    this.sharedData.filtrosGlobales$.pipe(takeUntil(this.destroy$)).subscribe((filtros) => {
+      this.terminoBusqueda = (filtros.busqueda || '').toLowerCase();
+      this.cdr.markForCheck();
+    });
 
     this.breakpointObserver
       .observe([Breakpoints.Handset])
@@ -1597,5 +1603,98 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     this.crearGraficaEmbarquesTejido(this.datosEmbarquesCompletos);
     this.actualizarMetricasEmbarquesGrafica();
     this.cdr.markForCheck();
+  }
+
+  get datosAgrupadosFiltrados(): ClienteAgrupado[] {
+    if (!this.terminoBusqueda) return this.datosAgrupados;
+    const term = this.terminoBusqueda.toLowerCase();
+    return this.datosAgrupados.filter(
+      (cliente) =>
+        cliente.cliente?.toLowerCase().includes(term) ||
+        cliente.facturas?.some(
+          (f) => f.factura?.toLowerCase().includes(term) || f.um?.toLowerCase().includes(term),
+        ),
+    );
+  }
+
+  get hayResultados(): boolean {
+    return this.datosAgrupadosFiltrados.length > 0;
+  }
+
+  get areasResumenFiltradas(): AreaResumen[] {
+    if (!this.terminoBusqueda) return this.areasResumen;
+    return this.areasResumen.filter(
+      (area) =>
+        area.nombre.toLowerCase().includes(this.terminoBusqueda) ||
+        area.metrics?.some((m) => m.label.toLowerCase().includes(this.terminoBusqueda)),
+    );
+  }
+
+  limpiarBusqueda(): void {
+    this.sharedData.actualizarFiltros({ busqueda: '' });
+  }
+
+  get areasResumenGeneralFiltradas() {
+    if (!this.terminoBusqueda) return null;
+    const term = this.terminoBusqueda.toLowerCase();
+    return this.areasResumen.filter(
+      (a) =>
+        a.nombre.toLowerCase().includes(term) ||
+        a.metrics?.some((m) => m.label.toLowerCase().includes(term)),
+    );
+  }
+
+  get seccionesVisibles(): Set<string> {
+    if (!this.terminoBusqueda) {
+      return new Set([
+        'Facturación',
+        'Distribución de procesos',
+        'Tejido',
+        'Tintorería',
+        'Estampados',
+        'Acabado real',
+        'Producción tejido',
+        'Tejido revisado',
+        'Por revisar',
+        'Saldos',
+        'Embarques',
+      ]);
+    }
+    const term = this.terminoBusqueda.toLowerCase();
+
+    const nombres: { [key: string]: string[] } = {
+      Facturación: ['facturación', 'facturacion', 'total', 'peso', 'factura'],
+      Tejido: ['tejido'],
+      Tintorería: ['tintorería', 'tintoreria', 'teñido', 'tenido', 'tintor'],
+      Estampados: ['estampados', 'estampado'],
+      'Acabado real': ['acabado', 'acabado real', 'control de calidad', 'calidad'],
+      'Producción tejido': ['producción', 'produccion', 'produccion tejido', 'tejido'],
+      'Tejido revisado': ['revisado', 'tejido revisado', 'tejido'],
+      'Por revisar': ['por revisar', 'revisar'],
+      Saldos: ['saldos', 'saldo'],
+      Embarques: ['embarques', 'embarque'],
+    };
+
+    const visible = new Set<string>();
+    for (const [seccion, keywords] of Object.entries(nombres)) {
+      if (keywords.some((k) => k.includes(term) || term.includes(k))) {
+        visible.add(seccion);
+      }
+    }
+
+    const seccionesProcesos = ['Tejido', 'Tintorería', 'Estampados', 'Acabado real'];
+    if (seccionesProcesos.some((s) => visible.has(s))) {
+      visible.add('Distribución de procesos');
+    }
+
+    return visible;
+  }
+
+  esVisible(seccion: string): boolean {
+    return this.seccionesVisibles.has(seccion);
+  }
+
+  get hayResultadosGeneral(): boolean {
+    return !this.terminoBusqueda || this.seccionesVisibles.size > 0;
   }
 }
