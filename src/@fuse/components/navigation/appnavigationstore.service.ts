@@ -12,6 +12,7 @@ import {
   menuReporteProd_Jefe,
   menuRh,
   menuSuAdmin,
+  menuSuAdmin_Admin,
 } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable } from 'rxjs';
 
@@ -226,6 +227,10 @@ export class AppNavigationStoreService {
           navigation = menuJacobo;
           break;
 
+        case SubRoleEnum.ADMIN:
+          navigation = menuSuAdmin_Admin;
+          break;
+
         // futuros subroles aquí
       }
     }
@@ -243,11 +248,12 @@ export class AppNavigationStoreService {
     const isJefe = subRoleId === SubRoleEnum.JEFE;
     const isJacobo = subRoleId === SubRoleEnum.JACOBO;
     const isSuadmin = roleId === RoleEnum.SUADMIN;
+    const isAdmin = subRoleId === SubRoleEnum.ADMIN;
 
-    if (isJefe && isSuadmin) {
-      return [...menuReporteProd_Jefe];
-    } else if (isJacobo && isSuadmin) {
+    if (isSuadmin && isJacobo) {
       return [...menuReporteProd_Jacobo];
+    } else if (isSuadmin && isJefe || isAdmin) {
+      return [...menuReporteProd_Jefe];
     }
 
     return [];

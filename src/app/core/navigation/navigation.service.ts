@@ -12,6 +12,7 @@ import {
   menuReporteProd_Jefe,
   menuRh,
   menuSuAdmin,
+  menuSuAdmin_Admin,
 } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable, ReplaySubject, tap } from 'rxjs';
 
@@ -234,6 +235,10 @@ export class NavigationService {
 
         case SubRoleEnum.JACOBO:
           navigation = menuJacobo;
+          break;
+
+        case SubRoleEnum.ADMIN:
+          navigation = menuSuAdmin_Admin;
           break;
 
         // futuros subroles aquí

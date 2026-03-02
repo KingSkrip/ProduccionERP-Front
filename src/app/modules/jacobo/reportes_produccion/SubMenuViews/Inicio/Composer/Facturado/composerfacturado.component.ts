@@ -106,20 +106,25 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
     return Array.from(mapa.entries()).map(([um, cant]) => ({ um, cant }));
   }
 
-  private _agruparPorDia(detalle: FacturadoDetalle[]): SubtotalPorDia[] {
-    const mapa = new Map<string, SubtotalPorDia>();
-    for (const item of detalle) {
-      const fecha = item.fecha?.substring(0, 10) ?? 'Sin fecha';
-      if (!mapa.has(fecha)) {
-        mapa.set(fecha, { fecha, facturas: 0, cant: 0, importe: 0, impuestos: 0, total: 0 });
-      }
-      const dia = mapa.get(fecha)!;
-      dia.facturas += 1;
-      dia.cant += item.cant ?? 0;
-      dia.importe += item.importe ?? 0;
-      dia.impuestos += item.impuestos ?? 0;
-      dia.total += item.total ?? 0;
+private _agruparPorDia(detalle: FacturadoDetalle[]): SubtotalPorDia[] {
+  const mapa = new Map<string, SubtotalPorDia>();
+  for (const item of detalle) {
+    const fecha = item.fecha?.substring(0, 10) ?? 'Sin fecha';
+    if (!mapa.has(fecha)) {
+      mapa.set(fecha, { fecha, facturas: 0, cant: 0, importe: 0, impuestos: 0, total: 0 });
     }
-    return Array.from(mapa.values()).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    const dia = mapa.get(fecha)!;
+    dia.facturas += 1;
+    dia.cant += item.cant ?? 0;
+    dia.importe += item.importe ?? 0;
+    dia.total += item.total ?? 0;
   }
+
+  // Calcular IVA derivado: total - importe
+  for (const dia of mapa.values()) {
+    dia.impuestos = dia.total - dia.importe;
+  }
+
+  return Array.from(mapa.values()).sort((a, b) => a.fecha.localeCompare(b.fecha));
+}
 }
