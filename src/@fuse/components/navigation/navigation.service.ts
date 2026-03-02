@@ -223,6 +223,14 @@ export class FuseNavigationService {
         case SubRoleEnum.JEFE:
           navigation = menuJefe;
           break;
+           case SubRoleEnum.JAIME:
+          navigation = menuJefe;
+          break;
+        case SubRoleEnum.SABU:
+          navigation = menuJefe;
+          break;
+
+          
 
         case SubRoleEnum.JACOBO:
           navigation = menuJacobo;

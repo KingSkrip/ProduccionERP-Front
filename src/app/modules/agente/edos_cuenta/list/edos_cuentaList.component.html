@@ -207,18 +207,21 @@
                     {{ cliente.documentos.length }}
                   </div>
                 </div>
+
                 <div class="hidden text-right md:block">
                   <div class="text-base font-semibold text-black dark:text-white">Cargos</div>
                   <div class="text-sm text-blue-700 dark:text-blue-400">
                     {{ cliente.total_cargos | currency: 'MXN' : 'symbol' : '1.0-0' }}
                   </div>
                 </div>
+
                 <div class="hidden text-right md:block">
                   <div class="text-base font-semibold text-black dark:text-white">Abonos</div>
                   <div class="text-sm text-green-600 dark:text-green-400">
                     {{ cliente.total_abonos | currency: 'MXN' : 'symbol' : '1.0-0' }}
                   </div>
                 </div>
+
                 <div class="hidden text-right md:block">
                   <div class="text-base font-semibold text-black dark:text-white">Saldo total</div>
                   <div

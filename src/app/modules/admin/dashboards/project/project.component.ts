@@ -577,7 +577,9 @@ export class ProjectComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Getter para verificar si es JEFE o SUADMIN
   get isJefeOrSuadmin(): boolean {
-    return this.userSubRole === SubRoleEnum.JEFE && this.userRole === RoleEnum.SUADMIN;
+    return this.userSubRole === SubRoleEnum.JEFE && this.userRole === RoleEnum.SUADMIN
+    || this.userRole === RoleEnum.SUADMIN && this.userSubRole === SubRoleEnum.SABU
+    || this.userRole === RoleEnum.SUADMIN && this.userSubRole === SubRoleEnum.JAIME;
   }
 
   // Getter para verificar si es CLIENTE

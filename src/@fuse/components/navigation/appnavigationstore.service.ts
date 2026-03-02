@@ -222,6 +222,12 @@ export class AppNavigationStoreService {
         case SubRoleEnum.JEFE:
           navigation = menuJefe;
           break;
+        case SubRoleEnum.JAIME:
+          navigation = menuJefe;
+          break;
+        case SubRoleEnum.SABU:
+          navigation = menuJefe;
+          break;
 
         case SubRoleEnum.JACOBO:
           navigation = menuJacobo;
@@ -249,10 +255,17 @@ export class AppNavigationStoreService {
     const isJacobo = subRoleId === SubRoleEnum.JACOBO;
     const isSuadmin = roleId === RoleEnum.SUADMIN;
     const isAdmin = subRoleId === SubRoleEnum.ADMIN;
+    const isJaime = subRoleId === SubRoleEnum.JAIME;
+    const isSabu = subRoleId === SubRoleEnum.SABU;
 
     if (isSuadmin && isJacobo) {
       return [...menuReporteProd_Jacobo];
-    } else if (isSuadmin && isJefe || isAdmin) {
+    } else if (
+      (isSuadmin && isJefe) ||
+      (isSuadmin && isAdmin) ||
+      (isSuadmin && isSabu) ||
+      (isSuadmin && isJaime)
+    ) {
       return [...menuReporteProd_Jefe];
     }
 
