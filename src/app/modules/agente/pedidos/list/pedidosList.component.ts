@@ -69,46 +69,38 @@ export const fadeIn = trigger('fadeIn', [
 })
 export class PedidosListComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<void>();
-
-  searchControl    = new FormControl('');
-  estadoControl    = new FormControl('todos');
+  searchControl = new FormControl('');
+  estadoControl = new FormControl('todos');
   condicionControl = new FormControl('todas');
-
-  searchSignal   = signal('');
-  estadoSignal   = signal('todos');
+  searchSignal = signal('');
+  estadoSignal = signal('todos');
   condicionSignal = signal('todas');
-
-  mostrarPanelFiltros   = false;
+  mostrarPanelFiltros = false;
   mostrarPanelFiltrosPc = false;
-
-  // Cliente expandido (acordeón de clientes)
   clienteExpandido = signal<string | null>(null);
-  // Pedido expandido dentro del cliente
-  pedidoExpandido  = signal<string | null>(null);
-
-  pedidos   = signal<Pedido[]>([]);
-  cargando  = signal(false);
+  pedidoExpandido = signal<string | null>(null);
+  pedidos = signal<Pedido[]>([]);
+  cargando = signal(false);
   descargando = signal<string | null>(null);
-
   opcionesEstado = [
-    { value: 'todos',    label: 'Todos los estados' },
-    { value: 'Completo', label: 'Completo' },
-    { value: 'Parcial',  label: 'Parcial' },
-    { value: 'Sin Def.', label: 'Sin definir' },
+    { value: 'todos', label: 'Todos los estados' },
+    { value: 'Completo', label: 'Entregados' },
+    { value: 'Parcial', label: 'En proceso' },
+    { value: 'Sin Def.', label: 'Sin autorizar' },
   ];
-
   opcionesCondicion = [
-    { value: 'todas',       label: 'Todas las condiciones' },
-    { value: 'Credito',     label: 'Crédito' },
+    { value: 'todas', label: 'Todas las condiciones' },
+    { value: 'Credito', label: 'Crédito' },
     { value: 'Sin definir', label: 'Sin definir' },
   ];
-
-  // Pedidos filtrados flat
+  blobCache: Blob | null = null;
+  blobCacheKey = '';
+  private _cancelarPreparacion$ = new Subject<void>();
+  isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   private pedidosFiltradosFlat = computed(() => {
-    const texto    = this.searchSignal().toLowerCase();
-    const estado   = this.estadoSignal();
+    const texto = this.searchSignal().toLowerCase();
+    const estado = this.estadoSignal();
     const condicion = this.condicionSignal();
-
     return this.pedidos().filter((p) => {
       const coincideTexto =
         !texto ||
@@ -116,14 +108,12 @@ export class PedidosListComponent implements OnInit, OnDestroy {
         (p.referencia ?? '').toLowerCase().includes(texto) ||
         (p.nombre ?? '').toLowerCase().includes(texto);
 
-      const coincideEstado    = estado === 'todos'  || p.status    === estado;
+      const coincideEstado = estado === 'todos' || p.status === estado;
       const coincideCondicion = condicion === 'todas' || p.condicion === condicion;
 
       return coincideTexto && coincideEstado && coincideCondicion;
     });
   });
-
-  // Agrupados por cliente
   clientesConPedidos = computed((): ClienteConPedidos[] => {
     const mapa = new Map<string, ClienteConPedidos>();
 
@@ -132,13 +122,13 @@ export class PedidosListComponent implements OnInit, OnDestroy {
 
       if (!mapa.has(key)) {
         mapa.set(key, {
-          cve_clie:    p.cve_clie,
-          nombre:      p.nombre,
-          pedidos:     [],
+          cve_clie: p.cve_clie,
+          nombre: p.nombre,
+          pedidos: [],
           totalPedidos: 0,
-          completos:   0,
-          parciales:   0,
-          sinDef:      0,
+          completos: 0,
+          parciales: 0,
+          sinDef: 0,
         });
       }
 
@@ -149,8 +139,6 @@ export class PedidosListComponent implements OnInit, OnDestroy {
       else if (p.status === 'Parcial') cliente.parciales++;
       else cliente.sinDef++;
     }
-
-    // Ordenar clientes por nombre
     return Array.from(mapa.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
   });
 
@@ -179,6 +167,8 @@ export class PedidosListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
+    this._cancelarPreparacion$.next();
+    this._cancelarPreparacion$.complete();
   }
 
   togglePanelFiltros(): void {
@@ -193,14 +183,14 @@ export class PedidosListComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    this.mostrarPanelFiltros   = false;
+    this.mostrarPanelFiltros = false;
     this.mostrarPanelFiltrosPc = false;
     this._cd.markForCheck();
   }
 
   filtrosActivosCount(): number {
     let count = 0;
-    if (this.estadoControl.value    !== 'todos')  count++;
+    if (this.estadoControl.value !== 'todos') count++;
     if (this.condicionControl.value !== 'todas') count++;
     return count;
   }
@@ -267,11 +257,38 @@ export class PedidosListComponent implements OnInit, OnDestroy {
       .descargarPDF(cvePed)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: (blob) => {
-          const url  = URL.createObjectURL(blob);
+        next: async (blob) => {
+          const fileName = `pedido-${cvePed}.pdf`;
+
+          // Intenta compartir si el navegador lo soporta
+          if (navigator.share && navigator.canShare) {
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+            if (navigator.canShare({ files: [file] })) {
+              try {
+                await navigator.share({
+                  title: `Pedido ${cvePed}`,
+                  text: `Aquí está el pedido ${cvePed}`,
+                  files: [file],
+                });
+                this.descargando.set(null);
+                return;
+              } catch (err) {
+                // Si el usuario cancela el share, no hacer nada
+                if ((err as DOMException).name !== 'AbortError') {
+                  console.warn('Share falló, descargando...', err);
+                } else {
+                  this.descargando.set(null);
+                  return;
+                }
+              }
+            }
+          }
+
+          // Fallback: descarga normal
+          const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
-          link.href     = url;
-          link.download = `pedido-${cvePed}.pdf`;
+          link.href = url;
+          link.download = fileName;
           link.click();
           URL.revokeObjectURL(url);
           this.descargando.set(null);
@@ -283,6 +300,140 @@ export class PedidosListComponent implements OnInit, OnDestroy {
       });
   }
 
-  trackByClie(_i: number, c: ClienteConPedidos): string { return c.cve_clie; }
-  trackByCve (_i: number, p: Pedido): string             { return p.cve_ped;  }
+  trackByClie(_i: number, c: ClienteConPedidos): string {
+    return c.cve_clie;
+  }
+  trackByCve(_i: number, p: Pedido): string {
+    return p.cve_ped;
+  }
+
+  totalPedidos = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.totalPedidos, 0));
+  totalEntregados = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.completos, 0));
+  totalEnProceso = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.parciales, 0));
+  totalSinAutorizar = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.sinDef, 0));
+
+  expandirTodos(): void {
+    const todos = this.clientesConPedidos().map((c) => c.cve_clie);
+    const hayAlgunExpandido = todos.some((id) => this.estaClienteExpandido(id));
+
+    if (hayAlgunExpandido) {
+      this.clienteExpandido.set(null);
+    } else {
+      this.clienteExpandido.set(todos[0] ?? null);
+    }
+  }
+  getTotalKilosCliente(cliente: ClienteConPedidos): number {
+    return cliente.pedidos.reduce((s, p) => s + this.getKilosPedido(p), 0);
+  }
+
+  getKilosPedido(pedido: Pedido): number {
+    const kgArt = (pedido.articulos ?? []).reduce((s, a) => s + Number(a.CANTIDAD ?? 0), 0);
+    const kgCard = (pedido.cardigans ?? []).reduce((s, c) => s + Number(c.CANTIDAD ?? 0), 0);
+    return kgArt + kgCard;
+  }
+  totalKilos = computed(() =>
+    this.clientesConPedidos().reduce(
+      (s, c) => s + c.pedidos.reduce((sp, p) => sp + this.getKilosPedido(p), 0),
+      0,
+    ),
+  );
+
+  // ── Selección múltiple de clientes ──
+  clientesSeleccionados = signal<Set<string>>(new Set());
+
+  toggleSeleccionCliente(event: Event, cveClie: string): void {
+    event.stopPropagation();
+    this.clientesSeleccionados.update((set) => {
+      const nuevo = new Set(set);
+      if (nuevo.has(cveClie)) {
+        nuevo.delete(cveClie);
+      } else {
+        nuevo.add(cveClie);
+      }
+      return nuevo;
+    });
+    this.invalidarCache();
+    this._cd.markForCheck();
+  }
+
+  estaSeleccionado(cveClie: string): boolean {
+    return this.clientesSeleccionados().has(cveClie);
+  }
+
+  limpiarSeleccion(): void {
+    this.clientesSeleccionados.set(new Set());
+    this.blobCache = null;
+    this.blobCacheKey = '';
+    this._cd.markForCheck();
+  }
+
+  totalSeleccionados = computed(() => this.clientesSeleccionados().size);
+
+  async compartirSeleccionados(): Promise<void> {
+    if (!this.blobCache || this.descargando() === '__multi__') return;
+
+    const fileName = `pedidos-${Date.now()}.pdf`;
+    const file = new File([this.blobCache], fileName, { type: 'application/pdf' });
+
+    try {
+      await navigator.share({ title: 'Pedidos', files: [file] });
+      this.limpiarSeleccion();
+    } catch (err) {
+      if ((err as DOMException).name !== 'AbortError') {
+        this._snackBar.open('No se pudo compartir el PDF', 'Cerrar', { duration: 4000 });
+      }
+    }
+  }
+
+  private invalidarCache(): void {
+    this._cancelarPreparacion$.next();
+    this.blobCache = null;
+    this.blobCacheKey = '';
+    this.descargando.set(null);
+
+    if (this.clientesSeleccionados().size > 0) {
+      this.prepararPDFEnBackground();
+    }
+    this._cd.markForCheck();
+  }
+
+  private prepararPDFEnBackground(): void {
+    const pedidosIds = this.clientesConPedidos()
+      .filter((c) => this.clientesSeleccionados().has(c.cve_clie))
+      .flatMap((c) => c.pedidos.map((p) => p.cve_ped));
+
+    if (pedidosIds.length === 0) return;
+
+    const cacheKey = pedidosIds.slice().sort().join(',');
+    if (this.blobCacheKey === cacheKey && this.blobCache) return;
+
+    this.descargando.set('__multi__');
+    this._cd.markForCheck();
+
+    this._pedidosService
+      .descargarMultiples(pedidosIds)
+      .pipe(takeUntil(this._cancelarPreparacion$))
+      .subscribe({
+        next: (blob) => {
+          // Verificar que la selección no cambió
+          const idsActuales = this.clientesConPedidos()
+            .filter((c) => this.clientesSeleccionados().has(c.cve_clie))
+            .flatMap((c) => c.pedidos.map((p) => p.cve_ped))
+            .sort()
+            .join(',');
+
+          if (idsActuales !== cacheKey) return;
+
+          this.blobCache = new Blob([blob], { type: 'application/pdf' });
+          this.blobCacheKey = cacheKey;
+          this.descargando.set(null);
+          this._cd.markForCheck();
+        },
+        error: () => {
+          this._snackBar.open('Error al preparar PDF', 'Cerrar', { duration: 4000 });
+          this.descargando.set(null);
+          this._cd.markForCheck();
+        },
+      });
+  }
 }

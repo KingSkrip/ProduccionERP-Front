@@ -1,3 +1,4 @@
+import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -31,7 +32,22 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { ClienteAgrupado, EdosCuentaService, EstadoCuenta, ResumenEstadoCuenta } from '../edos_cuenta.service';
+import {
+  ClienteAgrupado,
+  EdosCuentaService,
+  EstadoCuenta,
+  ResumenEstadoCuenta,
+} from '../edos_cuenta.service';
+
+export const slideDown = trigger('slideDown', [
+  transition(':enter', [
+    style({ opacity: 0, transform: 'translateY(8px) scale(0.98)' }),
+    animate('150ms ease-out', style({ opacity: 1, transform: 'translateY(0) scale(1)' })),
+  ]),
+  transition(':leave', [
+    animate('120ms ease-in', style({ opacity: 0, transform: 'translateY(8px) scale(0.98)' })),
+  ]),
+]);
 
 @Component({
   selector: 'edos_cuenta-list',
@@ -63,33 +79,25 @@ import { ClienteAgrupado, EdosCuentaService, EstadoCuenta, ResumenEstadoCuenta }
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'es-MX' }],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: fuseAnimations,
+  animations: [...fuseAnimations, slideDown],
 })
 export class EdosCuentaListComponent implements OnInit, OnDestroy {
-  // Data
   estadosCuenta: EstadoCuenta[] = [];
   clientesAgrupados: ClienteAgrupado[] = [];
   clientesAgrupadosFiltrados: ClienteAgrupado[] = [];
   resumen: ResumenEstadoCuenta | null = null;
-
-  // Loading
   isLoading = true;
-  isLoadingResumen = false;
-
-  // Search & filters
   searchControl = new FormControl('');
   filtroEstado = new FormControl<string>('todos');
-
-  // Totales globales
   totalCargos = 0;
   totalAbonos = 0;
   totalSaldos = 0;
-
-  // Selection
   documentosSeleccionados: Set<string> = new Set();
-
-  // Utils
   Math = Math;
+  compartiendo = false;
+  blobCache: Blob | null = null;
+  blobCacheKey = '';
+  private _cancelarPreparacion$ = new Subject<void>();
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
   constructor(
@@ -108,6 +116,8 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this._unsubscribeAll.next(null);
     this._unsubscribeAll.complete();
+    this._cancelarPreparacion$.next();
+    this._cancelarPreparacion$.complete();
   }
 
   cargarEstadosCuenta(): void {
@@ -162,9 +172,7 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
 
     this.clientesAgrupadosFiltrados = this.clientesAgrupados
       .map((cliente) => {
-        // Filtrar documentos del cliente
         let docs = [...cliente.documentos];
-
         if (searchTerm) {
           docs = docs.filter(
             (ec) =>
@@ -173,7 +181,6 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
               cliente.rfc.toLowerCase().includes(searchTerm),
           );
         }
-
         if (estado && estado !== 'todos') {
           docs = docs.filter((ec) => {
             if (estado === 'pagado') return ec.saldo === 0;
@@ -183,7 +190,6 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
             return true;
           });
         }
-
         return { ...cliente, documentos: docs };
       })
       .filter(
@@ -217,6 +223,7 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
     } else {
       cliente.documentos.forEach((ec) => this.documentosSeleccionados.add(ec.documento));
     }
+    this.invalidarCache();
     this._cdr.markForCheck();
   }
 
@@ -238,6 +245,7 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
     } else {
       this.documentosSeleccionados.add(documento);
     }
+    this.invalidarCache();
     this._cdr.markForCheck();
   }
 
@@ -251,34 +259,29 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
     return !!this.searchControl.value || this.filtroEstado.value !== 'todos';
   }
 
-  descargarSeleccionados(): void {
-    const documentos = Array.from(this.documentosSeleccionados);
-    this._edosCuentaService.descargarMultiples(documentos).subscribe({
-      next: (blob) => {
-        const fecha = new Date().toISOString().split('T')[0];
-        this.descargarArchivo(blob, `estados-cuenta-${fecha}.pdf`);
-        this.mostrarExito('PDFs descargados correctamente');
-        this.documentosSeleccionados.clear();
-        this._cdr.markForCheck();
-      },
-      error: () => this.mostrarError('Error al descargar PDFs'),
-    });
+  limpiarSeleccionCompleta(): void {
+    this.documentosSeleccionados.clear();
+    this.blobCache = null;
+    this.blobCacheKey = '';
+    this._cdr.markForCheck();
   }
 
-  descargarPDF(documento: string): void {
-    this._edosCuentaService.descargarPDF(documento).subscribe({
-      next: (blob) => {
-        this.descargarArchivo(blob, `estado-cuenta-${documento}.pdf`);
-        this.mostrarExito('PDF descargado correctamente');
-      },
-      error: () => this.mostrarError('Error al descargar PDF'),
-    });
-  }
+  // Llamado sincrónicamente desde el click — navigator.share() funciona aquí
+  async compartirPDF(): Promise<void> {
+    if (!this.blobCache || this.compartiendo) return;
 
-  getDiasVencimiento(fechaVenc: string): number {
-    const hoy = new Date();
-    const vencimiento = new Date(fechaVenc);
-    return Math.ceil((vencimiento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+    const fecha = new Date().toISOString().split('T')[0];
+    const fileName = `estados-cuenta-${fecha}.pdf`;
+    const file = new File([this.blobCache], fileName, { type: 'application/pdf' });
+
+    try {
+      await navigator.share({ title: 'Estados de cuenta', files: [file] });
+      this.limpiarSeleccionCompleta();
+    } catch (err) {
+      if ((err as DOMException).name !== 'AbortError') {
+        this.mostrarError('No se pudo compartir el PDF');
+      }
+    }
   }
 
   getEstadoDocumento(ec: EstadoCuenta): { texto: string; clase: string } {
@@ -297,23 +300,56 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
     return item.documento;
   }
 
-  private descargarArchivo(blob: Blob, nombreArchivo: string): void {
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = nombreArchivo;
-    link.click();
-    window.URL.revokeObjectURL(url);
+  private invalidarCache(): void {
+    this._cancelarPreparacion$.next();
+    this.blobCache = null;
+    this.blobCacheKey = '';
+    this.compartiendo = false;
+    if (this.documentosSeleccionados.size > 0) {
+      this.prepararPDFEnBackground();
+    }
+    this._cdr.markForCheck();
   }
 
-  private mostrarExito(mensaje: string): void {
-    this._snackBar.open(mensaje, 'Cerrar', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      panelClass: ['snackbar-success'],
-    });
+  private prepararPDFEnBackground(): void {
+    const documentos = Array.from(this.documentosSeleccionados);
+    const cacheKey = documentos.slice().sort().join(',');
+
+    if (this.blobCacheKey === cacheKey && this.blobCache) return;
+
+    this.compartiendo = true;
+    this._cdr.markForCheck();
+
+    this._edosCuentaService
+      .descargarMultiples(documentos)
+      .pipe(takeUntil(this._cancelarPreparacion$)) // ← se cancela si cambia selección
+      .subscribe({
+        next: (blob) => {
+          // Verificar que la selección no cambió mientras esperábamos
+          const seleccionActual = Array.from(this.documentosSeleccionados).sort().join(',');
+          if (seleccionActual !== cacheKey) return; // selección cambió, ignorar
+
+          this.blobCache = new Blob([blob], { type: 'application/pdf' });
+          this.blobCacheKey = cacheKey;
+          this.compartiendo = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.mostrarError('Error al preparar PDF');
+          this.compartiendo = false;
+          this._cdr.markForCheck();
+        },
+      });
   }
+
+  // private mostrarExito(mensaje: string): void {
+  //   this._snackBar.open(mensaje, 'Cerrar', {
+  //     duration: 3000,
+  //     horizontalPosition: 'end',
+  //     verticalPosition: 'top',
+  //     panelClass: ['snackbar-success'],
+  //   });
+  // }
 
   private mostrarError(mensaje: string): void {
     this._snackBar.open(mensaje, 'Cerrar', {

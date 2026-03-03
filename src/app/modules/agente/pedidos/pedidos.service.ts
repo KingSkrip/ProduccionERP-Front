@@ -18,28 +18,28 @@ export interface ClienteConPedidos {
 export interface Partida {
   CVE_PED: string;
   ARTICULO: string;
-  CANTIDAD: number;
+  CANTIDAD: number | string;
 }
 
 export interface Cardigan {
   CVE_PED: string;
   DESCRIPCION: string;
-  CANTIDAD: number;
+  CANTIDAD: number | string;
 }
 
 export interface Pedido {
   id: number;
   anio: number;
-  cve_ped: string;       // = columna PEDIDO del SP (ej: 260181)
-  pedido_n: string;      // = PEDIDON (ej: 181)
-  cve_clie: string;      // = CVE_CTE sanitizado (ej: "122")
-  nombre: string;        // = CLIENTE
-  referencia: string;    // = REFERENCIA
+  cve_ped: string; // = columna PEDIDO del SP (ej: 260181)
+  pedido_n: string; // = PEDIDON (ej: 181)
+  cve_clie: string; // = CVE_CTE sanitizado (ej: "122")
+  nombre: string; // = CLIENTE
+  referencia: string; // = REFERENCIA
   tipo_venta: string;
-  estatus: string;       // ACTIVO / etc
+  estatus: string; // ACTIVO / etc
   autorizado: string;
-  condicion: string;     // "Credito" | "Sin definir"
-  credito: string;       // "SI" | "NO"
+  condicion: string; // "Credito" | "Sin definir"
+  credito: string; // "SI" | "NO"
   dias_credito: number;
   agente: string;
   fecha_elab: string | null;
@@ -47,8 +47,8 @@ export interface Pedido {
   fecha_pago: string | null;
   usuario: string;
   observaciones: string;
-  status: string;        // "Completo" | "Parcial" | "Sin Def."
-  partidas: Partida[];
+  status: string; // "Completo" | "Parcial" | "Sin Def."
+  articulos: Partida[];
   cardigans: Cardigan[];
 }
 
@@ -97,7 +97,11 @@ export class PedidosService {
   }
 
   descargarMultiples(pedidos: string[]): Observable<Blob> {
-    return this._httpClient.post(`${this._apiUrl}/descargar-multiples`, { pedidos }, { responseType: 'blob' });
+    return this._httpClient.post(
+      `${this._apiUrl}/descargar-multiples`,
+      { pedidos },
+      { responseType: 'blob' },
+    );
   }
 
   enviarPorEmail(cvePed: string, email: string): Observable<ApiResponse<void>> {

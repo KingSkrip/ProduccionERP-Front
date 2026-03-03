@@ -67,16 +67,6 @@
         />
       </mat-form-field>
 
-      <!-- Filtro estado -->
-      <!-- <mat-form-field class="fuse-mat-dense fuse-mat-rounded w-36" [subscriptSizing]="'dynamic'">
-        <mat-select [formControl]="filtroEstado" (selectionChange)="aplicarFiltros()">
-          <mat-option value="todos">Todos</mat-option>
-          <mat-option value="pendiente">Pendientes</mat-option>
-          <mat-option value="vencido">Vencidos</mat-option>
-          <mat-option value="pagado">Pagados</mat-option>
-        </mat-select>
-      </mat-form-field> -->
-
       <!-- Expandir/colapsar todos -->
       <button
         mat-icon-button
@@ -97,16 +87,17 @@
         <mat-icon [svgIcon]="'heroicons_outline:x-mark'" class="hover:text-white"></mat-icon>
       </button>
 
-      <!-- Descargar seleccionados -->
+      <!-- Compartir seleccionados -->
       <button
         mat-icon-button
-        (click)="descargarSeleccionados()"
-        [disabled]="documentosSeleccionados.size === 0"
+        (click)="compartirPDF()"
+        [disabled]="documentosSeleccionados.size === 0 || compartiendo || !blobCache"
         [matTooltip]="documentosSeleccionados.size + ' documentos seleccionados'"
         class="rounded-full text-primary-600 transition-all duration-200 hover:bg-primary-500 disabled:text-black disabled:hover:bg-transparent dark:text-white"
       >
         <mat-icon
-          [svgIcon]="'heroicons_outline:arrow-down-tray'"
+          [class.animate-spin]="compartiendo"
+          [svgIcon]="compartiendo ? 'heroicons_outline:arrow-path' : 'heroicons_outline:share'"
           class="hover:text-white"
         ></mat-icon>
       </button>
@@ -174,7 +165,10 @@
                       <span class="text-base font-bold text-gray-900 dark:text-white">
                         {{ cliente.nombre }}
                       </span>
-                      <span class="text-xs text-black md:text-sm dark:text-white">
+                      <span
+                        *ngIf="cliente.rfc && cliente.rfc.trim() !== ''"
+                        class="text-xs text-black md:text-sm dark:text-white"
+                      >
                         RFC: {{ cliente.rfc }}
                       </span>
                     </div>
@@ -410,6 +404,51 @@
           </div>
         </ng-container>
       </div>
+    </div>
+
+    <!-- BARRA FLOTANTE SELECCIÓN -->
+    <div
+      *ngIf="documentosSeleccionados.size > 0"
+      class="fixed bottom-10 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-2xl dark:bg-gray-100"
+      [@slideDown]
+    >
+      <span class="text-sm font-medium text-white dark:text-gray-900">
+        {{ documentosSeleccionados.size }} doc{{
+          documentosSeleccionados.size !== 1 ? 's' : ''
+        }}
+        seleccionado{{ documentosSeleccionados.size !== 1 ? 's' : '' }}
+      </span>
+
+      <!-- Preparando en background -->
+      <div *ngIf="compartiendo" class="flex items-center gap-2 text-white dark:text-gray-900">
+        <mat-icon
+          class="animate-spin icon-size-5"
+          svgIcon="heroicons_outline:arrow-path"
+        ></mat-icon>
+        <span class="text-sm">Preparando...</span>
+      </div>
+
+      <!-- Listo — click síncrono = navigator.share() funciona -->
+      <button
+        *ngIf="!compartiendo"
+        mat-flat-button
+        class="h-9 min-w-[140px] justify-center rounded-xl px-4 text-white"
+        [class.bg-primary]="!blobCache"
+        [class.bg-green-600]="!!blobCache"
+        [disabled]="!blobCache"
+        (click)="compartirPDF()"
+      >
+        <mat-icon class="mr-1 icon-size-5" svgIcon="heroicons_outline:share"></mat-icon>
+        <span>{{ blobCache ? 'Compartir PDF' : 'Preparando...' }}</span>
+      </button>
+
+      <button
+        mat-icon-button
+        class="text-white hover:text-red-400 dark:text-gray-900"
+        (click)="limpiarSeleccionCompleta()"
+      >
+        <mat-icon class="icon-size-4" svgIcon="heroicons_outline:x-mark"></mat-icon>
+      </button>
     </div>
   </div>
 </div>
