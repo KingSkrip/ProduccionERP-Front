@@ -5,12 +5,12 @@ import {
   Component,
   OnDestroy,
   OnInit,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { fuseAnimations } from '@fuse/animations';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { fuseAnimations } from '@fuse/animations';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ReportProdService } from '../../../reportprod.service';
@@ -35,7 +35,7 @@ interface DatoAgrupado {
   imports: [CommonModule, MatIconModule, MatButtonModule],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: fuseAnimations
+  animations: fuseAnimations,
 })
 export class AcabadoRealTabComponent implements OnInit, OnDestroy {
   datos: any[] = [];
@@ -50,14 +50,14 @@ export class AcabadoRealTabComponent implements OnInit, OnDestroy {
     private _cd: ChangeDetectorRef,
     private _reportService: ReportProdService,
     private _snackBar: MatSnackBar,
-    private _sharedDataService: SharedDataService
+    private _sharedDataService: SharedDataService,
   ) {}
 
   ngOnInit(): void {
     // Escuchar cambios en filtros globales (búsqueda, departamento, proceso)
     this._sharedDataService.filtrosGlobales$
       .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe(filtros => {
+      .subscribe((filtros) => {
         if (this.cargaInicial) {
           this.aplicarFiltrosLocales(filtros);
         }
@@ -67,7 +67,7 @@ export class AcabadoRealTabComponent implements OnInit, OnDestroy {
     this._sharedDataService.recargarDatos$
       .pipe(
         takeUntil(this._unsubscribeAll),
-        filter(recargar => recargar === true)
+        filter((recargar) => recargar === true),
       )
       .subscribe(() => {
         const filtros = this._sharedDataService.obtenerFiltros();
@@ -92,7 +92,7 @@ export class AcabadoRealTabComponent implements OnInit, OnDestroy {
     const deptoSeleccionado = filtros.departamento || '';
     const procesoSeleccionado = filtros.proceso || '';
 
-    this.datosFiltrados = this.datos.filter(item => {
+    this.datosFiltrados = this.datos.filter((item) => {
       const coincideBusqueda =
         !busqueda ||
         item.departamento?.toLowerCase().includes(busqueda) ||
@@ -113,36 +113,34 @@ export class AcabadoRealTabComponent implements OnInit, OnDestroy {
     this._cd.markForCheck();
 
     // 🔥 Endpoint: /reportes-produccion/acabado
-    this._reportService
-      .getAcabado(fechaInicio || undefined, fechaFin || undefined)
-      .subscribe({
-        next: data => {
-          this.datos = data || [];
-          this.cargaInicial = true;
+    this._reportService.getAcabado(fechaInicio || undefined, fechaFin || undefined).subscribe({
+      next: (data) => {
+        this.datos = data || [];
+        this.cargaInicial = true;
 
-          // Aplicar filtros actuales después de cargar datos
-          const filtros = this._sharedDataService.obtenerFiltros();
-          this.aplicarFiltrosLocales(filtros);
+        // Aplicar filtros actuales después de cargar datos
+        const filtros = this._sharedDataService.obtenerFiltros();
+        this.aplicarFiltrosLocales(filtros);
 
-          // 🔥 Guardar en servicio compartido (ACABADO)
-          // Si hiciste versión con filtrados, usa actualizarAcabado(data, this.datosFiltrados)
-          this._sharedDataService.actualizarAcabado(data, this.datosFiltrados);
+        // 🔥 Guardar en servicio compartido (ACABADO)
+        // Si hiciste versión con filtrados, usa actualizarAcabado(data, this.datosFiltrados)
+        this._sharedDataService.actualizarAcabado(data, this.datosFiltrados);
 
-          this.loading = false;
-          this._cd.markForCheck();
-        },
-        error: () => {
-          this.loading = false;
-          this._snackBar.open('Error al cargar Acabado Real', 'Cerrar', { duration: 3000 });
-          this._cd.markForCheck();
-        }
-      });
+        this.loading = false;
+        this._cd.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this._snackBar.open('Error al cargar Acabado Real', 'Cerrar', { duration: 3000 });
+        this._cd.markForCheck();
+      },
+    });
   }
 
   agruparDatosPorDepartamento(): void {
     const map = new Map<string, DatoAgrupado>();
 
-    this.datosFiltrados.forEach(item => {
+    this.datosFiltrados.forEach((item) => {
       const depto = item.departamento;
       const cantidad = Number(item.CANTIDAD) || 0;
       const piezas = Number(item.PIEZAS) || 0;
@@ -153,7 +151,7 @@ export class AcabadoRealTabComponent implements OnInit, OnDestroy {
           procesos: [],
           cantidadTotal: 0,
           piezasTotal: 0,
-          expandido: false
+          expandido: false,
         });
       }
 
@@ -161,7 +159,7 @@ export class AcabadoRealTabComponent implements OnInit, OnDestroy {
       grupo.procesos.push({
         proceso: item.proceso,
         cantidad,
-        piezas
+        piezas,
       });
 
       grupo.cantidadTotal += cantidad;
@@ -188,7 +186,7 @@ export class AcabadoRealTabComponent implements OnInit, OnDestroy {
     this._sharedDataService.actualizarFiltros({
       busqueda: '',
       departamento: '',
-      proceso: ''
+      proceso: '',
     });
   }
 }
