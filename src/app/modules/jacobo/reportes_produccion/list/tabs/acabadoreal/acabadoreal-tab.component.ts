@@ -29,7 +29,7 @@ interface DatoAgrupado {
 }
 
 @Component({
-  selector: 'tabs-acabado-real',
+  selector: 'tabs-acabado-realjc',
   templateUrl: './acabadoreal-tab.component.html',
   standalone: true,
   imports: [CommonModule, MatIconModule, MatButtonModule],

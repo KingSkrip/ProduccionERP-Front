@@ -4,7 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { FacturadoTabComponent } from '../../list/tabs/facturado/facturado-tab.compoonent';
 
 @Component({
-  selector: 'facturado-view',
+  selector: 'facturado-viewjc',
   templateUrl: './facturadoview.component.html',
   styleUrls: ['./facturadoview.component.scss'],
   standalone: true,

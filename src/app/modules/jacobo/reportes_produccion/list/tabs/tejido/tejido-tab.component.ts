@@ -22,7 +22,7 @@ interface DatoAgrupado {
 }
 
 @Component({
-    selector: 'tabs-tejido-tab',
+    selector: 'tabs-tejido-tabjc',
     templateUrl: './tejido-tab.component.html',
     standalone: true,
     imports: [

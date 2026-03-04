@@ -93,13 +93,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   articuloSeleccionadoPorRevisar: string | null = null;
   tipoEmbarqueSeleccionadoGrafica: string | null = null;
   @ViewChild(MatSort) recentTransactionsTableMatSort!: MatSort;
-  private readonly CONVERSION_RATES = {
-    LB_TO_KG: 0.453592,
-    KG_TO_LB: 2.20462,
-    OZ_TO_G: 28.3495,
-    G_TO_OZ: 0.035274,
-  };
-
   data: any = {
     previousStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
     currentStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
@@ -265,32 +258,18 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     },
   ];
 
+  z200Oculto: boolean = false;
   constructor(
     private reportService: ReportProdService,
     private sharedData: SharedDataService,
     private cdr: ChangeDetectorRef,
     private breakpointObserver: BreakpointObserver,
     private _financeService: FinanceService,
+
     // private resumenwebsocket: ResumenWebsocketService,
   ) {}
 
   ngOnInit(): void {
-    // this.resumenwebsocket.listenReportesActualizados((event) => {
-    //   this.wsRefresh$.next(event);
-    // });
-
-    // this.wsRefresh$
-    //   .pipe(
-    //     takeUntil(this.destroy$),
-    //     // 👇 si llegan varios en corto, solo refresca 1 vez
-    //     debounceTime(500),
-    //   )
-    //   .subscribe((event) => {
-    //     console.log('🔔 Reportes actualizados:', event);
-    //     this.cargarTodasLasAreas({ silent: true });
-    //     // this.mostrarNotificacion(event.mensaje);
-    //   });
-
     this.sharedData.filtrosGlobales$.pipe(takeUntil(this.destroy$)).subscribe((filtros) => {
       this.terminoBusqueda = (filtros.busqueda || '').toLowerCase();
       this.cdr.markForCheck();
@@ -338,6 +317,11 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     });
     this.cargarTodasLasAreas();
+    this.reportService.getEstadoOculto(200).subscribe({
+      next: (oculto) => {
+        this.z200Oculto = oculto;
+      },
+    });
   }
 
   ngOnDestroy(): void {
@@ -1696,5 +1680,53 @@ export class InicioViewComponent implements OnInit, OnDestroy {
 
   get hayResultadosGeneral(): boolean {
     return !this.terminoBusqueda || this.seccionesVisibles.size > 0;
+  }
+
+  toggleOcultar(id: number): void {
+    this.reportService.toggleOcultar(id).subscribe({
+      next: (oculto) => {
+        console.log('Nuevo estado:', oculto);
+
+        // Aquí actualizas tu UI
+        const item = this.data.find((x) => x.id === id);
+        if (item) {
+          item.oculto = oculto;
+        }
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
+
+  verificarZ200Oculto(): void {
+    const Z200_ID = 200; // el id real que estés usando
+
+    this.reportService.toggleOcultar(Z200_ID).subscribe({
+      next: (oculto) => {
+        this.z200Oculto = oculto;
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
+  toggleZ200(): void {
+    // Optimistic update instantáneo
+    this.z200Oculto = !this.z200Oculto;
+    this.cdr.markForCheck();
+
+    this.reportService.toggleOcultar(200).subscribe({
+      next: (oculto) => {
+        if (oculto !== this.z200Oculto) {
+          this.z200Oculto = oculto;
+          this.cdr.markForCheck();
+        }
+      },
+      error: () => {
+        // Revertir si falla
+        this.z200Oculto = !this.z200Oculto;
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

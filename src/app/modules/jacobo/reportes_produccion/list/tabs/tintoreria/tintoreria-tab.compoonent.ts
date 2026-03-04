@@ -22,7 +22,7 @@ interface DatoAgrupado {
 }
 
 @Component({
-    selector: 'tabs-tintoreria-tab',
+    selector: 'tabs-tintoreria-tabjc',
     templateUrl: './tintoreria-tab.component.html',
     standalone: true,
     imports: [

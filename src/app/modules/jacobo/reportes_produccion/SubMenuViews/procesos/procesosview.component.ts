@@ -8,7 +8,7 @@ import { SaldosTabComponent } from '../../list/tabs/saldos/saldos.component';
 import { EmbarquesTabComponent } from '../../list/tabs/embarques/embarques.component';
 
 @Component({
-    selector: 'Procesos-view',
+    selector: 'Procesos-viewjc',
     templateUrl: './procesosview.component.html',
     styleUrls: ['./procesosview.component.scss'],
     standalone: true,
@@ -16,10 +16,6 @@ import { EmbarquesTabComponent } from '../../list/tabs/embarques/embarques.compo
         CommonModule,
         MatIconModule,
         MatTabsModule,
-        ProcesosTabComponent,
-        PorRevisarTabComponent,
-        SaldosTabComponent,
-        EmbarquesTabComponent
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })

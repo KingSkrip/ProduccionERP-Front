@@ -10,7 +10,7 @@ import { TejidoRevisadoTabComponent } from '../../list/tabs/revisado/tejido-revi
 import { TejidoTabComponent } from '../../list/tabs/tejido/tejido-tab.component';
 
 @Component({
-  selector: 'tejido-view',
+  selector: 'tejido-viewjc',
   templateUrl: './tejidoview.component.html',
   styleUrls: ['./tejidoview.component.scss'],
   standalone: true,

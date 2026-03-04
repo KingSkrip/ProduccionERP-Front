@@ -18,7 +18,7 @@ import { ReportProdService } from '../../../reportprod.service';
 import { SharedDataService } from '../../shared-data.service';
 
 @Component({
-    selector: 'tabs-produccion-tejido',
+    selector: 'tabs-produccion-tejidojc',
     templateUrl: './produccion-tejido.component.html',
     standalone: true,
     imports: [

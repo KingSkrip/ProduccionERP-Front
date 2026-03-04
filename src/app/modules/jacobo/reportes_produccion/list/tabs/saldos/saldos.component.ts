@@ -18,7 +18,7 @@ import { ReportProdService } from '../../../reportprod.service';
 import { SharedDataService } from '../../shared-data.service';
 
 @Component({
-    selector: 'tabs-saldos',
+    selector: 'tabs-saldosjc',
     templateUrl: './saldos.component.html',
     standalone: true,
     imports: [

@@ -34,7 +34,7 @@ interface DatoAgrupado {
 }
 
 @Component({
-    selector: 'tabs-estampados-tab',
+    selector: 'tabs-estampados-tabjc',
     templateUrl: './estampados-tab.component.html',
     standalone: true,
     imports: [

@@ -67,6 +67,12 @@ export interface AcabadoResumen {
   PIEZAS: number | string;
 }
 
+export interface ToggleOcultarResponse {
+  success: boolean;
+  oculto: boolean;
+  message?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ReportProdService {
   private readonly apiUrl = APP_CONFIG.apiUrl;
@@ -276,14 +282,13 @@ export class ReportProdService {
     }
 
     return this._httpClient
-      .get<{ success: boolean; data: any[] }>(
-        `${this.apiUrl}reportes-produccion/entregado-embarques`,
-        { params },
-      )
+      .get<{
+        success: boolean;
+        data: any[];
+      }>(`${this.apiUrl}reportes-produccion/entregado-embarques`, { params })
       .pipe(
         map((resp) => {
-
-          return resp.data || []; 
+          return resp.data || [];
         }),
         catchError((err) => {
           console.error('🔧 SERVICE: Error en petición:', err);
@@ -474,7 +479,7 @@ export class ReportProdService {
    * 🚀 NUEVO: Obtener TODOS los reportes en una sola petición
    */
   getAllReports(fechaInicio: Date, fechaFin: Date, silent = false): Observable<any> {
-      const context = new HttpContext().set(SILENT_HTTP, silent);
+    const context = new HttpContext().set(SILENT_HTTP, silent);
     let params = new HttpParams();
 
     const formatoFirebird = (fecha: Date, esInicio: boolean): string => {
@@ -490,12 +495,41 @@ export class ReportProdService {
       .set('fecha_fin', formatoFirebird(fechaFin, false));
 
     return this._httpClient
-      .get<{ success: boolean; data: any }>(`${this.apiUrl}reportes-produccion/all`, { params, context })
+      .get<{
+        success: boolean;
+        data: any;
+      }>(`${this.apiUrl}reportes-produccion/all`, { params, context })
       .pipe(
         map((resp) => resp.data),
         catchError((err) => {
           console.error('Error al obtener todos los reportes', err);
           return throwError(() => new Error(err.message || 'Error desconocido'));
+        }),
+      );
+  }
+
+  /**
+   * 🔥 POST → Ocultar / Desocultar elemento por z200_id
+   */
+  toggleOcultar(z200Id: string | number): Observable<boolean> {
+    return this._httpClient
+      .post<ToggleOcultarResponse>(`${this.apiUrl}reportes-produccion/ocultar/${z200Id}`, {})
+      .pipe(
+        map((resp) => resp.oculto),
+        catchError((err) => {
+          console.error('Error al ocultar/desocultar elemento', err);
+          return throwError(() => new Error(err.message || 'Error desconocido'));
+        }),
+      );
+  }
+  getEstadoOculto(z200Id: number): Observable<boolean> {
+    return this._httpClient
+      .get<{ oculto: boolean }>(`${this.apiUrl}reportes-produccion/ocultar/${z200Id}`)
+      .pipe(
+        map((resp) => resp.oculto),
+        catchError((err) => {
+          console.error(err);
+          return throwError(() => err);
         }),
       );
   }

@@ -18,7 +18,7 @@ import { ReportProdService } from '../../../reportprod.service';
 import { SharedDataService } from '../../shared-data.service';
 
 @Component({
-    selector: 'tabs-por-revisar',
+    selector: 'tabs-por-revisarjc',
     templateUrl: './porrevisar-tab.component.html',
     standalone: true,
     imports: [

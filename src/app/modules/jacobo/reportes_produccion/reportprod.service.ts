@@ -12,6 +12,12 @@ export interface TejidoResumen {
   PIEZAS: number | string;
 }
 
+export interface ToggleOcultarResponse {
+  success: boolean;
+  oculto: boolean;
+  message?: string;
+}
+
 export interface ReporteProduccion {
   depto: number;
   departamento: string;
@@ -629,6 +635,32 @@ export class ReportProdService {
       .pipe(
         map((r) => r.data),
         catchError((err) => throwError(() => new Error(err.message))),
+      );
+  }
+
+  /**
+   * 🔥 POST → Ocultar / Desocultar elemento por z200_id
+   */
+  toggleOcultar(z200Id: string | number): Observable<boolean> {
+    return this._httpClient
+      .post<ToggleOcultarResponse>(`${this.apiUrl}reportes-produccion/ocultar/${z200Id}`, {})
+      .pipe(
+        map((resp) => resp.oculto),
+        catchError((err) => {
+          console.error('Error al ocultar/desocultar elemento', err);
+          return throwError(() => new Error(err.message || 'Error desconocido'));
+        }),
+      );
+  }
+  getEstadoOculto(z200Id: number): Observable<boolean> {
+    return this._httpClient
+      .get<{ oculto: boolean }>(`${this.apiUrl}reportes-produccion/ocultar/${z200Id}`)
+      .pipe(
+        map((resp) => resp.oculto),
+        catchError((err) => {
+          console.error(err);
+          return throwError(() => err);
+        }),
       );
   }
 }

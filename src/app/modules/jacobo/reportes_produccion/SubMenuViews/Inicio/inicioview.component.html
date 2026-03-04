@@ -59,11 +59,9 @@
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
         <!-- TOTAL -->
         <div
-          class="bg-card relative flex flex-auto cursor-pointer flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
-          matRipple
-          (click)="abrirComposerFacturado('total')"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
         >
-          <!-- Botón 3 puntos — stop propagation para no abrir el dialog -->
+          <!-- Botón 3 puntos -->
           <div class="absolute right-2 top-2 z-10">
             <button
               mat-icon-button
@@ -80,13 +78,16 @@
             </mat-menu>
           </div>
 
+          <!-- Icono fondo -->
           <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
             <mat-icon
               class="text-green-500 opacity-25 icon-size-24 dark:text-green-400"
               [svgIcon]="'heroicons_outline:check-circle'"
             ></mat-icon>
           </div>
-          <div class="flex items-center">
+
+          <!-- Header -->
+          <div class="flex items-start justify-between">
             <div class="flex flex-col">
               <div class="truncate text-lg font-medium leading-6 tracking-tight">Total</div>
               <div class="text-sm font-medium text-green-600">
@@ -98,12 +99,43 @@
 
           <!-- Loader o contenido -->
           <div
-            class="-mx-6 mt-4 flex flex-row flex-wrap"
+            class="-mx-6 mt-4 flex flex-row flex-wrap items-end"
             *ngIf="!loadingFacturacion; else loaderTemplate"
           >
-            <div class="mx-6 my-3 flex flex-col">
-              <div class="text-2xl font-medium leading-none md:text-3xl">
+            <!-- Total general -->
+            <div class="mx-6 mb-3 flex flex-col">
+              <div class="text-secondary text-sm font-medium leading-none">Total</div>
+              <div class="mt-2 text-3xl font-medium leading-none">
                 {{ totalFacturacion | currency: 'MXN' }}
+              </div>
+            </div>
+
+            <!-- Separador -->
+            <div class="mx-2 mb-3 h-10 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+            <!-- Z200 -->
+            <div class="mb-1 flex flex-col">
+              <div class="text-secondary text-sm font-medium leading-none">Z200</div>
+
+              <div class="flex items-center">
+                <span class="text-3xl font-medium leading-none">
+                  <ng-container *ngIf="!z200Oculto">132</ng-container>
+                  <ng-container *ngIf="z200Oculto">
+                    <span class="select-none font-medium text-black dark:text-white">******</span>
+                  </ng-container>
+                </span>
+
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="ml-2 flex items-center justify-center p-0"
+                  (click)="toggleZ200()"
+                >
+                  <mat-icon
+                    class="text-black dark:text-white"
+                    [svgIcon]="z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'"
+                  ></mat-icon>
+                </button>
               </div>
             </div>
           </div>
@@ -119,7 +151,6 @@
         <div
           class="bg-card relative flex flex-auto cursor-pointer flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
           matRipple
-          (click)="abrirComposerFacturado('peso')"
         >
           <div class="absolute right-2 top-2 z-10">
             <button

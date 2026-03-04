@@ -21,7 +21,7 @@ import { ReportProdService } from '../../../reportprod.service';
 import { SharedDataService } from '../../shared-data.service';
 
 @Component({
-    selector: 'tabs-embarques',
+    selector: 'tabs-embarquesjc',
     templateUrl: './embarques.component.html',
     standalone: true,
     imports: [

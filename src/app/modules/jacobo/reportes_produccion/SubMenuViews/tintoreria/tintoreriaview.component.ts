@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { TintoreriaTabComponent } from '../../list/tabs/tintoreria/tintoreria-tab.compoonent';
 
 @Component({
-  selector: 'tintoreria-view',
+  selector: 'tintoreria-viewjc',
   templateUrl: './tintoreriaview.component.html',
   styleUrls: ['./tintoreriaview.component.scss'],
   standalone: true,

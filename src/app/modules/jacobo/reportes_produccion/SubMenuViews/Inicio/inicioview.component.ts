@@ -64,6 +64,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   importeTotalSinIva = 0;
   loadingFacturacion = true;
   loadingSaldosTejido = true;
+  z200Oculto: boolean = false;
   loadingRevisadoTejido = true;
   loadingEmbarquesTejido = true;
   loadingPorRevisarTejido = true;
@@ -1392,5 +1393,50 @@ export class InicioViewComponent implements OnInit, OnDestroy {
 
   get hayResultadosGeneral(): boolean {
     return !this.terminoBusqueda || this.seccionesVisibles.size > 0;
+  }
+
+  toggleOcultar(id: number): void {
+    this.reportService.toggleOcultar(id).subscribe({
+      next: (oculto) => {
+        console.log('Nuevo estado:', oculto);
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
+
+  verificarZ200Oculto(): void {
+    const Z200_ID = 200; // el id real que estés usando
+
+    this.reportService.toggleOcultar(Z200_ID).subscribe({
+      next: (oculto) => {
+        this.z200Oculto = oculto;
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
+  toggleZ200(): void {
+    // Optimistic update - cambia inmediatamente sin esperar al servidor
+    this.z200Oculto = !this.z200Oculto;
+    this.cdr.markForCheck();
+
+    const Z200_ID = 200;
+    this.reportService.toggleOcultar(Z200_ID).subscribe({
+      next: (oculto) => {
+        // Si el servidor devuelve algo diferente, corregimos
+        if (oculto !== this.z200Oculto) {
+          this.z200Oculto = oculto;
+          this.cdr.markForCheck();
+        }
+      },
+      error: (err) => {
+        // Revertir si hay error
+        this.z200Oculto = !this.z200Oculto;
+        this.cdr.markForCheck();
+        console.error('Error al toggle Z200:', err);
+      },
+    });
   }
 }

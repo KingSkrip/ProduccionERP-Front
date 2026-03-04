@@ -5,7 +5,7 @@ import { ProcesosTabComponent } from '../../list/tabs/procesos/procesos-tab.comp
 import { AcabadoRealTabComponent } from '../../list/tabs/acabadoreal/acabadoreal-tab.component';
 
 @Component({
-    selector: 'acabado-real-view',
+    selector: 'acabado-real-viewjc',
     templateUrl: './acabadorealview.component.html',
     styleUrls: ['./acabadorealview.component.scss'],
     standalone: true,

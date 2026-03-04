@@ -38,7 +38,7 @@ interface ClienteAgrupado {
 }
 
 @Component({
-  selector: 'tabs-facturado-tab',
+  selector: 'tabs-facturado-tabjc',
   templateUrl: './facturado-tab.component.html',
   standalone: true,
   imports: [CommonModule, MatProgressSpinnerModule, MatIconModule, MatButtonModule],

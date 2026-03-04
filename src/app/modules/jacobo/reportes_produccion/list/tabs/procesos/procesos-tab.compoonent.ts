@@ -14,7 +14,7 @@ interface DatoAgrupado {
 }
 
 @Component({
-    selector: 'tabs-procesos-tab',
+    selector: 'tabs-procesos-tabjc',
     templateUrl: './procesos-tab.component.html',
     standalone: true,
     imports: [

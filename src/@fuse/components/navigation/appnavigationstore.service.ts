@@ -264,7 +264,8 @@ export class AppNavigationStoreService {
       (isSuadmin && isJefe) ||
       (isSuadmin && isAdmin) ||
       (isSuadmin && isSabu) ||
-      (isSuadmin && isJaime)
+      (isSuadmin && isJaime) ||
+      (isSuadmin)
     ) {
       return [...menuReporteProd_Jefe];
     }

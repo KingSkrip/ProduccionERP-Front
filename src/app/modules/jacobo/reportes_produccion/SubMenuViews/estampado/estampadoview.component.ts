@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { EstampadosTabComponent } from '../../list/tabs/estampados/estampados-tab.compoonent';
 
 @Component({
-  selector: 'estampado-view',
+  selector: 'estampado-viewjc',
   templateUrl: './estampadoview.component.html',
   styleUrls: ['./estampadoview.component.scss'],
   standalone: true,
