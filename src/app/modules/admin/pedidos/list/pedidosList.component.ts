@@ -68,6 +68,16 @@ export const fadeIn = trigger('fadeIn', [
   animations: [...fuseAnimations, slideDown, fadeIn],
 })
 export class PedidosListComponent implements OnInit, OnDestroy {
+
+
+  // Share/cache
+pedidosSeleccionados: Set<string> = new Set();
+compartiendo = false;
+blobCache: Blob | null = null;
+blobCacheKey = '';
+private _cancelarPreparacion$ = new Subject<void>();
+
+
   private _destroy$ = new Subject<void>();
 
   // Controles de filtros de texto/select
@@ -182,10 +192,12 @@ export class PedidosListComponent implements OnInit, OnDestroy {
       .subscribe((val) => this.condicionSignal.set(val ?? 'todas'));
   }
 
-  ngOnDestroy(): void {
-    this._destroy$.next();
-    this._destroy$.complete();
-  }
+ngOnDestroy(): void {
+  this._destroy$.next();
+  this._destroy$.complete();
+  this._cancelarPreparacion$.next();
+  this._cancelarPreparacion$.complete();
+}
 
   // ══════════════ Panel toggles ══════════════
 
@@ -373,27 +385,114 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     return this.pedidoExpandido() === cvePed;
   }
 
-  descargarPDF(cvePed: string): void {
-    this.descargando.set(cvePed);
-    this._pedidosService
-      .descargarPDF(cvePed)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (blob) => {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `pedido-${cvePed}.pdf`;
-          link.click();
-          URL.revokeObjectURL(url);
-          this.descargando.set(null);
-        },
-        error: () => {
-          this._snackBar.open('Error al descargar el PDF', 'Cerrar', { duration: 4000 });
-          this.descargando.set(null);
-        },
-      });
+ descargarPDF(cvePed: string): void {
+  this.descargando.set(cvePed);
+  this._pedidosService
+    .descargarPDF(cvePed)
+    .pipe(takeUntil(this._destroy$))
+    .subscribe({
+      next: async (blob) => {
+        const fileName = `pedido-${cvePed}.pdf`;
+        const file = new File([blob], fileName, { type: 'application/pdf' });
+        try {
+          await navigator.share({ title: `Pedido ${cvePed}`, files: [file] });
+        } catch (err) {
+          if ((err as DOMException).name !== 'AbortError') {
+            this._snackBar.open('No se pudo compartir el PDF', 'Cerrar', { duration: 4000 });
+          }
+        }
+        this.descargando.set(null);
+      },
+      error: () => {
+        this._snackBar.open('Error al descargar el PDF', 'Cerrar', { duration: 4000 });
+        this.descargando.set(null);
+      },
+    });
+}
+
+toggleSeleccionPedido(event: Event, cvePed: string): void {
+  event.stopPropagation();
+  if (this.pedidosSeleccionados.has(cvePed)) {
+    this.pedidosSeleccionados.delete(cvePed);
+  } else {
+    this.pedidosSeleccionados.add(cvePed);
   }
+  this.invalidarCache();
+  this._cd.markForCheck();
+}
+
+private invalidarCache(): void {
+  this._cancelarPreparacion$.next();
+  this.blobCache = null;
+  this.blobCacheKey = '';
+  this.compartiendo = false;
+
+  if (this.pedidosSeleccionados.size > 0) {
+    this.prepararPDFEnBackground();
+  }
+  this._cd.markForCheck();
+}
+
+private prepararPDFEnBackground(): void {
+  const pedidosIds = Array.from(this.pedidosSeleccionados);
+  const cacheKey = pedidosIds.slice().sort().join(',');
+
+  if (this.blobCacheKey === cacheKey && this.blobCache) return;
+
+  this.compartiendo = true;
+  this._cd.markForCheck();
+
+  this._pedidosService
+    .descargarMultiples(pedidosIds)
+    .pipe(takeUntil(this._cancelarPreparacion$))
+    .subscribe({
+      next: (blob) => {
+        const idsActuales = Array.from(this.pedidosSeleccionados).sort().join(',');
+        if (idsActuales !== cacheKey) return;
+
+        this.blobCache = new Blob([blob], { type: 'application/pdf' });
+        this.blobCacheKey = cacheKey;
+        this.compartiendo = false;
+        this._cd.markForCheck();
+      },
+      error: () => {
+        this._snackBar.open('Error al preparar PDF', 'Cerrar', { duration: 4000 });
+        this.compartiendo = false;
+        this._cd.markForCheck();
+      },
+    });
+}
+
+estaSeleccionado(cvePed: string): boolean {
+  return this.pedidosSeleccionados.has(cvePed);
+}
+
+totalSeleccionados(): number {
+  return this.pedidosSeleccionados.size;
+}
+
+limpiarSeleccion(): void {
+  this.pedidosSeleccionados.clear();
+  this.blobCache = null;
+  this.blobCacheKey = '';
+  this._cd.markForCheck();
+}
+
+async compartirSeleccionados(): Promise<void> {
+  if (!this.blobCache || this.compartiendo) return;
+
+  const fileName = `pedidos-${Date.now()}.pdf`;
+  const file = new File([this.blobCache], fileName, { type: 'application/pdf' });
+
+  try {
+    await navigator.share({ title: 'Pedidos', files: [file] });
+    this.limpiarSeleccion();
+  } catch (err) {
+    if ((err as DOMException).name !== 'AbortError') {
+      this._snackBar.open('No se pudo compartir el PDF', 'Cerrar', { duration: 4000 });
+    }
+  }
+}
 
   trackByCve(_i: number, pedido: Pedido): string {
     return pedido.cve_ped;
@@ -408,4 +507,16 @@ export class PedidosListComponent implements OnInit, OnDestroy {
   esSinDef(p: Pedido) {
     return p.status?.startsWith('Sin');
   }
+
+
+  getKilosPedido(pedido: Pedido): number {
+  // ya existe en el servicio de Agente, agrégalo aquí igual
+  const kgArt = (pedido.articulos ?? []).reduce((s, a) => s + Number(a.CANTIDAD ?? 0), 0);
+  const kgCard = (pedido.cardigans ?? []).reduce((s, c) => s + Number(c.CANTIDAD ?? 0), 0);
+  return kgArt + kgCard;
+}
+
+totalKilos = computed(() =>
+  this.pedidosFiltrados().reduce((s, p) => s + this.getKilosPedido(p), 0),
+);
 }

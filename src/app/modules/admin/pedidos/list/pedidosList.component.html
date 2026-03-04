@@ -1,31 +1,91 @@
-<div class="flex min-w-0 flex-auto flex-col">
+<div class="flex min-w-0 flex-auto flex-col dark:bg-gray-900">
+  <!-- ===== ENCABEZADO ===== -->
   <div
-    class="bg-card flex flex-0 flex-col border-b px-6 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8 dark:bg-transparent"
+    class="bg-card flex flex-0 flex-col px-4 pt-4 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:pt-4 dark:bg-transparent"
   >
-    <div class="flex flex-col">
-      <h2 class="mt-1 text-3xl font-extrabold tracking-tight md:text-4xl">Mis pedidos</h2>
-      <p class="text-secondary text-sm font-semibold tracking-widest md:text-base">
-        Consulta y verfica tus pedidos
-      </p>
+    <div class="min-w-0 flex-1">
+      <h2
+        class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl"
+      >
+        Mis pedidos
+      </h2>
+      <p class="mt-2 text-sm text-gray-600 dark:text-white">Consulta y verifica tus pedidos</p>
     </div>
 
-    <!-- Filtros PC -->
-    <div class="mt-5 hidden flex-wrap items-center gap-3 sm:mt-0 sm:flex">
+    <!-- Tarjetas resumen -->
+    <ng-container *ngIf="!cargando()">
+      <div class="mt-4 grid grid-cols-4 gap-2 sm:ml-6 sm:mt-0 sm:flex sm:flex-shrink-0 sm:gap-4">
+        <div class="hidden min-w-0 rounded-lg bg-gray-100 p-2 sm:p-4 md:block dark:bg-gray-800/50">
+          <div class="text-center text-xs text-gray-600 sm:text-left dark:text-black dark:text-white">Total</div>
+          <div
+            class="mt-0.5 truncate text-center text-xs font-bold text-gray-700 sm:text-left sm:text-2xl dark:text-gray-300"
+          >
+            {{ resumen().total }}
+          </div>
+        </div>
+
+        <div class="min-w-0 rounded-lg bg-green-200 p-2 sm:p-4 dark:bg-green-900/20">
+          <div class="text-center text-xs text-green-600 sm:text-left dark:text-green-400">
+            Entregados
+          </div>
+          <div
+            class="mt-0.5 truncate text-center text-xs font-bold text-green-700 sm:text-left sm:text-2xl dark:text-green-300"
+          >
+            {{ resumen().completos }}
+          </div>
+        </div>
+
+        <div class="min-w-0 rounded-lg bg-amber-200 p-2 sm:p-4 dark:bg-amber-900/20">
+          <div class="text-center text-xs text-amber-600 sm:text-left dark:text-amber-400">
+            En proceso
+          </div>
+          <div
+            class="mt-0.5 truncate text-center text-xs font-bold text-amber-700 sm:text-left sm:text-2xl dark:text-amber-300"
+          >
+            {{ resumen().parciales }}
+          </div>
+        </div>
+
+        <div class="min-w-0 rounded-lg bg-red-200 p-2 sm:p-4 dark:bg-red-900/20">
+          <div class="text-center text-xs text-red-600 sm:text-left dark:text-red-400">
+            Sin autorizar
+          </div>
+          <div
+            class="mt-0.5 truncate text-center text-xs font-bold text-red-700 sm:text-left sm:text-2xl dark:text-red-300"
+          >
+            {{ resumen().sinDef }}
+          </div>
+        </div>
+
+        <div class="min-w-0 rounded-lg bg-blue-200 p-2 sm:p-4 dark:bg-blue-900/20">
+          <div class="text-center text-xs text-blue-600 sm:text-left dark:text-blue-400">
+            Kg totales
+          </div>
+          <div
+            class="mt-0.5 truncate text-center text-xs font-bold text-blue-700 sm:text-left sm:text-2xl dark:text-blue-300"
+          >
+            {{ totalKilos() | number: '1.0-0' }}
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ===== FILTROS ===== -->
+  <div class="bg-white px-4 py-3 sm:border-none sm:px-10 sm:pb-0 dark:bg-gray-900">
+    <div class="flex items-center gap-2">
       <!-- Búsqueda -->
-      <mat-form-field
-        class="fuse-mat-dense fuse-mat-rounded min-w-56"
-        [subscriptSizing]="'dynamic'"
-      >
+      <mat-form-field class="fuse-mat-dense fuse-mat-rounded flex-1" [subscriptSizing]="'dynamic'">
         <mat-icon
-          class="icon-size-4"
+          class="icon-size-5"
           matPrefix
-          svgIcon="heroicons_outline:magnifying-glass"
+          svgIcon="heroicons_solid:magnifying-glass"
         ></mat-icon>
         <input
           matInput
           [formControl]="searchControl"
           autocomplete="off"
-          placeholder="Pedido, referencia…"
+          placeholder="Buscar pedido o referencia..."
         />
         <button
           *ngIf="searchControl.value"
@@ -37,24 +97,21 @@
         </button>
       </mat-form-field>
 
-      <!-- Botón de filtros avanzados -->
-      <div class="relative">
+      <!-- Filtros PC -->
+      <div class="relative hidden sm:block">
         <button
           mat-stroked-button
           class="h-10 rounded-3xl border-2 bg-primary-500 px-5 transition-all hover:border-primary/40"
-          [class.border-primary]="filtrosActivosCount() > 0"
           (click)="togglePanelFiltrosPc()"
         >
           <span class="flex w-full items-center gap-2">
             <mat-icon
               class="text-white icon-size-5"
-              [class.text-primary]="filtrosActivosCount() > 0"
               svgIcon="heroicons_outline:adjustments-horizontal"
             ></mat-icon>
-            <span class="text-sm font-medium text-white">Filtros</span>
             <span
               *ngIf="filtrosActivosCount() > 0"
-              class="ml-1 rounded-full bg-primary px-2 py-0.5 text-xs font-semibold leading-none text-white"
+              class="ml-1 rounded-full bg-white px-2 py-0.5 text-sm font-semibold leading-none text-black text-primary dark:text-white"
             >
               {{ filtrosActivosCount() }}
             </span>
@@ -66,45 +123,22 @@
           </span>
         </button>
 
-        <!-- Panel desplegable PC -->
         <div
           *ngIf="mostrarPanelFiltrosPc"
-          class="absolute right-0 top-full z-50 mt-2 flex max-h-[calc(70vh-70px)] min-h-0 w-[480px] flex-col rounded-2xl border-2 bg-white shadow-2xl dark:bg-gray-800"
+          class="absolute right-0 top-full z-50 mt-2 w-80 rounded-2xl border-2 bg-white shadow-2xl dark:bg-gray-800"
           [@slideDown]
         >
-          <!-- Header -->
-          <div class="flex-shrink-0 border-b bg-gradient-to-r from-primary/5 to-transparent p-4">
+          <div class="border-b p-4">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                  <mat-icon
-                    class="text-primary-500 icon-size-5"
-                    svgIcon="heroicons_outline:funnel"
-                  ></mat-icon>
-                </div>
-                <h3 class="text-lg font-semibold">Filtros avanzados</h3>
-              </div>
-              <button
-                mat-icon-button
-                (click)="togglePanelFiltrosPc()"
-                class="hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
+              <h3 class="text-lg font-semibold">Filtros avanzados</h3>
+              <button mat-icon-button (click)="togglePanelFiltrosPc()">
                 <mat-icon class="icon-size-5" svgIcon="heroicons_outline:x-mark"></mat-icon>
               </button>
             </div>
           </div>
-
-          <!-- Contenido scrolleable -->
-          <div class="min-h-0 flex-1 space-y-5 overflow-y-auto p-5">
-            <!-- SECCIÓN: ESTADO -->
+          <div class="space-y-4 p-4">
             <div>
-              <div class="mb-3 flex items-center gap-2">
-                <mat-icon
-                  class="text-primary icon-size-5"
-                  svgIcon="heroicons_outline:tag"
-                ></mat-icon>
-                <h4 class="font-semibold">Estado</h4>
-              </div>
+              <p class="mb-1 text-sm">Estado</p>
               <mat-form-field class="w-full" appearance="outline">
                 <mat-select [formControl]="estadoControl">
                   <mat-option *ngFor="let op of opcionesEstado" [value]="op.value">{{
@@ -113,16 +147,8 @@
                 </mat-select>
               </mat-form-field>
             </div>
-
-            <!-- SECCIÓN: CONDICIÓN DE PAGO -->
-            <div class="border-t pt-3">
-              <div class="mb-3 flex items-center gap-2">
-                <mat-icon
-                  class="text-primary icon-size-5"
-                  svgIcon="heroicons_outline:credit-card"
-                ></mat-icon>
-                <h4 class="font-semibold">Condición de pago</h4>
-              </div>
+            <div>
+              <p class="mb-1 text-sm">Condición de pago</p>
               <mat-form-field class="w-full" appearance="outline">
                 <mat-select [formControl]="condicionControl">
                   <mat-option *ngFor="let op of opcionesCondicion" [value]="op.value">{{
@@ -132,83 +158,48 @@
               </mat-form-field>
             </div>
           </div>
-
-          <!-- Footer -->
-          <div class="flex-shrink-0 border-t bg-gray-50 p-4 dark:bg-gray-900/50">
+          <div class="border-t bg-gray-50 p-4 dark:bg-gray-900/50">
             <div class="flex gap-3">
               <button
                 mat-button
-                class="h-11 flex-1 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                class="h-10 flex-1 rounded-xl text-red-600"
                 (click)="limpiarFiltros()"
               >
-                <mat-icon class="mr-2 icon-size-5" svgIcon="heroicons_outline:x-circle"></mat-icon>
                 Limpiar
               </button>
               <button
                 mat-flat-button
                 color="primary"
-                class="h-11 flex-1 rounded-xl shadow-lg"
+                class="h-10 flex-1 rounded-xl"
                 (click)="aplicarFiltrosPc()"
               >
-                <mat-icon class="mr-2 icon-size-5" svgIcon="heroicons_outline:check"></mat-icon>
-                Aplicar filtros
+                Aplicar
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Indicador de filtros activos -->
-      <div *ngIf="filtrosActivosCount() > 0" class="flex items-center gap-2 text-sm">
-        <mat-icon
-          class="text-base icon-size-4 dark:text-blue-600"
-          svgIcon="heroicons_outline:funnel"
-        ></mat-icon>
-        <span class="text-base text-gray-600 dark:text-white">
-          <span class="text-base font-semibold dark:text-blue-600">{{
-            filtrosActivosCount()
-          }}</span>
-          filtro(s) activo(s)
-        </span>
-        <button
-          mat-button
-          class="ml-2 h-7 rounded-lg bg-red-500/40 text-base"
-          (click)="limpiarFiltros()"
-        >
-          Limpiar todos
-        </button>
-      </div>
+      <!-- Limpiar -->
+      <button
+        *ngIf="filtrosActivosCount() > 0"
+        mat-icon-button
+        (click)="limpiarFiltros()"
+        class="rounded-full text-red-600 transition-all hover:bg-red-600 hover:text-white"
+      >
+        <mat-icon svgIcon="heroicons_outline:x-mark"></mat-icon>
+      </button>
 
-      <button mat-icon-button matTooltip="Recargar pedidos" (click)="cargarPedidos()">
+      <!-- Recargar -->
+      <button mat-icon-button matTooltip="Recargar" (click)="cargarPedidos()">
         <mat-icon class="icon-size-5" svgIcon="heroicons_outline:arrow-path"></mat-icon>
       </button>
-    </div>
-  </div>
 
-  <!-- ===== BARRA MÓVIL STICKY ===== -->
-  <div class="sticky top-0 z-30 bg-white sm:hidden dark:bg-gray-900">
-    <div class="flex items-center gap-2 px-3 py-2">
-      <mat-form-field
-        class="fuse-mat-dense flex-1"
-        appearance="outline"
-        [subscriptSizing]="'dynamic'"
-      >
-        <mat-icon
-          matPrefix
-          class="text-gray-400 icon-size-5"
-          svgIcon="heroicons_outline:magnifying-glass"
-        ></mat-icon>
-        <input
-          matInput
-          [formControl]="searchControl"
-          [autocomplete]="'off'"
-          placeholder="Buscar pedido…"
-        />
-      </mat-form-field>
+      <!-- Filtro móvil -->
       <button
         mat-mini-fab
         color="primary"
-        class="relative shadow-md"
+        class="sm:hidden"
         (click)="togglePanelFiltros()"
         [matBadge]="filtrosActivosCount()"
         matBadgeSize="small"
@@ -220,7 +211,14 @@
     </div>
   </div>
 
-  <!-- Overlay oscuro móvil -->
+  <!-- Overlay PC -->
+  <div
+    *ngIf="mostrarPanelFiltrosPc"
+    class="fixed inset-0 z-40"
+    (click)="togglePanelFiltrosPc()"
+  ></div>
+
+  <!-- Overlay móvil -->
   <div
     *ngIf="mostrarPanelFiltros"
     class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm sm:hidden"
@@ -228,56 +226,35 @@
     [@fadeIn]
   ></div>
 
-  <!-- Panel de filtros móvil - desde abajo -->
+  <!-- Panel móvil -->
   <div
     *ngIf="mostrarPanelFiltros"
-    class="bg-card fixed bottom-0 left-0 right-0 z-50 flex max-h-[85vh] flex-col rounded-t-3xl shadow-2xl sm:hidden"
+    class="bg-card fixed bottom-0 left-0 right-0 z-50 flex max-h-[85vh] flex-col rounded-t-3xl pb-10 shadow-2xl sm:hidden"
   >
-    <!-- Header -->
     <div class="flex items-center justify-between border-b p-4">
       <h2 class="text-lg font-semibold">Filtros avanzados</h2>
       <button mat-icon-button (click)="togglePanelFiltros()">
         <mat-icon svgIcon="heroicons_outline:x-mark"></mat-icon>
       </button>
     </div>
-
-    <!-- Contenido scrolleable -->
-    <div class="flex-1 space-y-5 overflow-y-auto p-4">
-      <!-- ESTADO -->
-      <div>
-        <div class="mb-3 flex items-center gap-2">
-          <mat-icon class="text-primary icon-size-5" svgIcon="heroicons_outline:tag"></mat-icon>
-          <h3 class="text-sm font-medium">Estado</h3>
-        </div>
-        <mat-form-field class="w-full" appearance="outline">
-          <mat-select [formControl]="estadoControl">
-            <mat-option *ngFor="let op of opcionesEstado" [value]="op.value">{{
-              op.label
-            }}</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <!-- CONDICIÓN DE PAGO -->
-      <div>
-        <div class="mb-3 flex items-center gap-2">
-          <mat-icon
-            class="text-primary icon-size-5"
-            svgIcon="heroicons_outline:credit-card"
-          ></mat-icon>
-          <h3 class="text-sm font-medium">Condición de pago</h3>
-        </div>
-        <mat-form-field class="w-full" appearance="outline">
-          <mat-select [formControl]="condicionControl">
-            <mat-option *ngFor="let op of opcionesCondicion" [value]="op.value">{{
-              op.label
-            }}</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
+    <div class="flex-1 space-y-4 overflow-y-auto p-4">
+      <mat-form-field class="w-full" appearance="outline">
+        <mat-label>Estado</mat-label>
+        <mat-select [formControl]="estadoControl">
+          <mat-option *ngFor="let op of opcionesEstado" [value]="op.value">{{
+            op.label
+          }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="w-full" appearance="outline">
+        <mat-label>Condición</mat-label>
+        <mat-select [formControl]="condicionControl">
+          <mat-option *ngFor="let op of opcionesCondicion" [value]="op.value">{{
+            op.label
+          }}</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
-
-    <!-- Footer -->
     <div class="bg-card border-t p-4">
       <div class="flex gap-2">
         <button mat-stroked-button class="h-11 flex-1 rounded-full" (click)="limpiarFiltros()">
@@ -295,233 +272,406 @@
     </div>
   </div>
 
-  <!-- Overlay para cerrar panel PC -->
-  <div
-    *ngIf="mostrarPanelFiltrosPc"
-    class="fixed inset-0 z-40"
-    (click)="togglePanelFiltrosPc()"
-  ></div>
-
-
+  <!-- ===== CUERPO ===== -->
   <div class="flex flex-auto overflow-hidden">
-    <div class="flex flex-auto flex-col overflow-y-auto px-4 pb-20 sm:px-8">
-      <!-- Loading -->
-      <ng-container *ngIf="cargando()">
-        <div class="flex flex-auto flex-col items-center justify-center py-20">
-          <div class="relative h-16 w-16">
-            <div
-              class="absolute inset-0 animate-spin rounded-full border-4 border-gray-200 border-t-primary dark:border-gray-700 dark:border-t-primary-400"
-            ></div>
+    <div class="flex flex-auto flex-col overflow-y-auto">
+      <div class="p-4 px-5 sm:p-6 md:py-4">
+        <!-- Loading -->
+        <ng-container *ngIf="cargando()">
+          <div class="flex flex-auto flex-col items-center justify-center py-20">
+            <div class="relative h-16 w-16">
+              <div
+                class="absolute inset-0 animate-spin rounded-full border-4 border-gray-200 border-t-primary dark:border-gray-700 dark:border-t-primary-400"
+              ></div>
+            </div>
+            <p class="mt-6 text-sm text-gray-500 dark:text-white">Cargando mis pedidos...</p>
           </div>
-          <p class="mt-6 text-sm text-gray-500 dark:text-white">Cargando mis pedidos...</p>
-        </div>
-      </ng-container>
+        </ng-container>
 
-      <!-- Datos vacíos -->
-      <div
-        *ngIf="!cargando() && pedidosFiltrados().length === 0"
-        class="flex flex-col items-center justify-center py-20 text-center"
-      >
-        <mat-icon
-          svgIcon="heroicons_outline:inbox"
-          class="mb-3 text-gray-300 icon-size-16 dark:text-gray-600"
-        ></mat-icon>
-        <p class="text-default text-base font-bold">No se encontraron pedidos</p>
-        <p class="text-secondary mt-1 text-sm">Intenta cambiar los filtros de búsqueda</p>
-        <button mat-stroked-button class="mt-4" (click)="limpiarFiltros()">
-          <mat-icon svgIcon="heroicons_outline:arrow-path" class="mr-1 icon-size-4"></mat-icon>
-          Limpiar filtros
-        </button>
-      </div>
-
-      <!-- Lista de pedidos -->
-      <div *ngIf="!cargando()" class="mt-4 flex flex-col gap-3">
-        <div
-          *ngFor="let pedido of pedidosFiltrados(); trackBy: trackByCve"
-          class="bg-card overflow-hidden rounded-2xl border shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700"
-          [class.border-primary]="estaExpandido(pedido.cve_ped)"
-          [class.ring-1]="estaExpandido(pedido.cve_ped)"
-        >
-          <!-- Cabecera del pedido -->
-          <div
-            class="flex cursor-pointer select-none items-center gap-3 px-4 py-4 hover:bg-hover sm:gap-5 sm:px-5"
-            (click)="toggleExpand(pedido.cve_ped)"
-          >
-            <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span class="text-default text-sm font-bold">Pedido: {{ pedido.cve_ped }}</span>
-              <span *ngIf="pedido.referencia" class="text-secondary truncate text-xs"
-                >Referencia: {{ pedido.referencia }}</span
-              >
-              <span *ngIf="!pedido.referencia" class="text-hint text-xs italic"
-                >Sin referencia</span
-              >
+        <!-- Sin resultados -->
+        <ng-container *ngIf="!cargando() && pedidosFiltrados().length === 0">
+          <div class="flex flex-auto flex-col items-center justify-center py-20">
+            <mat-icon
+              class="text-gray-300 icon-size-24 dark:text-gray-700"
+              svgIcon="heroicons_outline:inbox"
+            ></mat-icon>
+            <div class="mt-6 text-2xl font-semibold tracking-tight text-black dark:text-gray-100">
+              No hay pedidos
             </div>
-
-            <div class="text-secondary hidden items-center gap-1 text-xs sm:flex">
-              <mat-icon class="icon-size-4" svgIcon="heroicons_outline:user"></mat-icon>
-              <span>{{ pedido.agente || 'Sin agente' }}</span>
+            <div class="mt-2 text-center text-sm text-gray-600 dark:text-white">
+              No se encontraron pedidos con los filtros seleccionados
             </div>
-
-            <div class="text-secondary hidden items-center gap-1 text-xs sm:flex">
-              <mat-icon
-                class="icon-size-4"
-                [svgIcon]="
-                  pedido.credito === 'SI'
-                    ? 'heroicons_outline:credit-card'
-                    : 'heroicons_outline:clock'
-                "
-              ></mat-icon>
-              <span>{{ pedido.condicion || 'Sin definir' }}</span>
-              <span *ngIf="pedido.dias_credito > 0" class="text-hint"
-                >({{ pedido.dias_credito }}d)</span
-              >
-            </div>
-
-            <div
-              *ngIf="pedido.fecha_elab"
-              class="text-secondary hidden items-center gap-1 text-xs md:flex"
-            >
-              <mat-icon class="icon-size-4" svgIcon="heroicons_outline:calendar"></mat-icon>
-              <span>{{ pedido.fecha_elab }}</span>
-            </div>
-
-            <div class="text-secondary hidden items-center gap-1 text-xs lg:flex">
-              <mat-icon class="icon-size-4" svgIcon="heroicons_outline:truck"></mat-icon>
-              <span *ngIf="pedido.fecha_entrega">{{ pedido.fecha_entrega }}</span>
-              <span *ngIf="!pedido.fecha_entrega" class="text-hint">—</span>
-            </div>
-
-            <div
-              *ngIf="pedido.articulos?.length > 0"
-              class="text-secondary hidden items-center gap-1 text-xs xl:flex"
-            >
-              <mat-icon class="icon-size-4" svgIcon="heroicons_outline:squares-2x2"></mat-icon>
-              <span>{{ pedido.articulos.length }} art.</span>
-            </div>
-
-            <button
-              mat-icon-button
-              class="text-secondary flex-shrink-0"
-              matTooltip="Descargar PDF"
-              [disabled]="descargando() === pedido.cve_ped"
-              (click)="$event.stopPropagation(); descargarPDF(pedido.cve_ped)"
-            >
-              <mat-icon
-                class="icon-size-5"
-                [svgIcon]="
-                  descargando() === pedido.cve_ped
-                    ? 'heroicons_outline:arrow-path'
-                    : 'heroicons_outline:arrow-down-tray'
-                "
-              ></mat-icon>
-            </button>
-
-            <button
-              mat-icon-button
-              class="text-secondary flex-shrink-0"
-              [matTooltip]="estaExpandido(pedido.cve_ped) ? 'Ocultar detalle' : 'Ver detalle'"
-              (click)="$event.stopPropagation(); toggleExpand(pedido.cve_ped)"
-            >
-              <mat-icon
-                class="transition-transform duration-200 icon-size-5"
-                [class.rotate-180]="estaExpandido(pedido.cve_ped)"
-                svgIcon="heroicons_outline:chevron-down"
-              ></mat-icon>
+            <button mat-stroked-button class="mt-4" (click)="limpiarFiltros()">
+              <mat-icon svgIcon="heroicons_outline:arrow-path" class="mr-1 icon-size-4"></mat-icon>
+              Limpiar filtros
             </button>
           </div>
+        </ng-container>
 
-          <!-- Info extra móvil -->
-          <div
-            class="text-secondary flex gap-4 border-t px-5 py-2 text-xs sm:hidden dark:border-gray-700"
-          >
-            <span class="flex items-center gap-1">
-              <mat-icon class="icon-size-3" svgIcon="heroicons_outline:credit-card"></mat-icon>
-              {{ pedido.condicion || 'Sin definir' }}
-            </span>
-            <span *ngIf="pedido.fecha_elab" class="flex items-center gap-1">
-              <mat-icon class="icon-size-3" svgIcon="heroicons_outline:calendar"></mat-icon>
-              {{ pedido.fecha_elab }}
-            </span>
-          </div>
-
-          <!-- Panel colapsable -->
-          <div
-            *ngIf="estaExpandido(pedido.cve_ped)"
-            class="border-t px-4 pb-5 pt-4 sm:px-5 dark:border-gray-700"
-          >
+        <!-- ===== LISTA ===== -->
+        <ng-container *ngIf="!cargando() && pedidosFiltrados().length > 0">
+          <div class="mb-15 space-y-3">
             <div
-              class="mb-5 flex flex-wrap items-center gap-4 rounded-2xl bg-gray-50 px-4 py-3 dark:bg-gray-800/40"
+              *ngFor="let pedido of pedidosFiltrados(); trackBy: trackByCve"
+              class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
             >
-              <div *ngIf="pedido.agente" class="flex items-center gap-1.5">
-                <mat-icon
-                  class="text-gray-400 icon-size-4"
-                  svgIcon="heroicons_outline:user"
-                ></mat-icon>
-                <span class="text-default text-xs font-semibold">{{ pedido.agente }}</span>
-              </div>
-              <div *ngIf="pedido.fecha_elab" class="flex items-center gap-1.5">
-                <mat-icon
-                  class="text-gray-400 icon-size-4"
-                  svgIcon="heroicons_outline:calendar"
-                ></mat-icon>
-                <span class="text-secondary text-xs">Elab.</span>
-                <span class="text-default text-xs font-semibold">{{ pedido.fecha_elab }}</span>
-              </div>
-              <div *ngIf="pedido.fecha_entrega" class="flex items-center gap-1.5">
-                <mat-icon
-                  class="text-gray-400 icon-size-4"
-                  svgIcon="heroicons_outline:truck"
-                ></mat-icon>
-                <span class="text-secondary text-xs">Entrega</span>
-                <span class="text-default text-xs font-semibold">{{ pedido.fecha_entrega }}</span>
-              </div>
-              <div *ngIf="pedido.fecha_pago" class="flex items-center gap-1.5">
-                <mat-icon
-                  class="text-gray-400 icon-size-4"
-                  svgIcon="heroicons_outline:banknotes"
-                ></mat-icon>
-                <span class="text-secondary text-xs">Pago</span>
-                <span class="text-default text-xs font-semibold">{{ pedido.fecha_pago }}</span>
-              </div>
-            </div>
-
-            <div *ngIf="pedido.articulos?.length > 0" class="mb-4">
-              <p class="text-secondary mb-2 text-xs font-bold uppercase tracking-wider">
-                Artículos
-              </p>
-              <div class="flex flex-col gap-1.5">
-                <div
-                  *ngFor="let a of pedido.articulos"
-                  class="flex items-center justify-between border-l-4 border-primary bg-primary/5 py-2 pl-3 pr-4 dark:bg-primary/10"
-                >
-                  <span class="text-default text-sm font-medium">{{ a.ARTICULO }}</span>
-                  <span class="text-sm font-extrabold tabular-nums text-primary"
-                    >{{ a.CANTIDAD }} kg</span
+              <!-- ── CABECERA PEDIDO ── -->
+              <div
+                class="cursor-pointer transition-colors hover:bg-gray-50 md:grid md:grid-cols-[2rem_1fr_repeat(5,minmax(90px,1fr))_1.5rem] md:items-center md:gap-6 md:px-8 md:py-5 dark:hover:bg-gray-800/50"
+                (click)="toggleExpand(pedido.cve_ped)"
+              >
+                <!-- MÓVIL -->
+                <div class="flex items-center gap-3 px-4 py-4 md:contents">
+                  <!-- Checkbox móvil -->
+                  <div
+                    class="flex h-10 w-10 flex-shrink-0 items-center justify-center md:hidden"
+                    (click)="toggleSeleccionPedido($event, pedido.cve_ped)"
                   >
-                </div>
-              </div>
-            </div>
+                    <div
+                      class="flex h-6 w-6 items-center justify-center rounded-md border-2 transition-all"
+                      [class.border-primary]="estaSeleccionado(pedido.cve_ped)"
+                      [class.bg-primary]="estaSeleccionado(pedido.cve_ped)"
+                      [class.border-gray-300]="!estaSeleccionado(pedido.cve_ped)"
+                      [class.dark:border-gray-600]="!estaSeleccionado(pedido.cve_ped)"
+                    >
+                      <mat-icon
+                        *ngIf="estaSeleccionado(pedido.cve_ped)"
+                        class="text-white icon-size-4"
+                        svgIcon="heroicons_outline:check"
+                      ></mat-icon>
+                    </div>
+                  </div>
 
-            <div *ngIf="pedido.cardigans?.length > 0">
-              <p class="text-secondary mb-2 text-xs font-bold uppercase tracking-wider">
-                Cardigans
-              </p>
-              <div class="flex flex-col gap-1.5">
-                <div
-                  *ngFor="let c of pedido.cardigans"
-                  class="flex items-center justify-between border-l-4 border-purple-400 bg-purple-50 py-2 pl-3 pr-4 dark:bg-purple-900/20"
-                >
-                  <span class="text-default text-sm font-medium">{{ c.DESCRIPCION }}</span>
+                  <!-- Checkbox desktop -->
+                  <div
+                    class="hidden md:flex md:h-8 md:w-8 md:items-center md:justify-center"
+                    (click)="toggleSeleccionPedido($event, pedido.cve_ped)"
+                  >
+                    <div
+                      class="flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all"
+                      [class.border-primary]="estaSeleccionado(pedido.cve_ped)"
+                      [class.bg-primary]="estaSeleccionado(pedido.cve_ped)"
+                      [class.border-gray-300]="!estaSeleccionado(pedido.cve_ped)"
+                      [class.dark:border-gray-600]="!estaSeleccionado(pedido.cve_ped)"
+                    >
+                      <mat-icon
+                        *ngIf="estaSeleccionado(pedido.cve_ped)"
+                        class="text-white icon-size-3"
+                        svgIcon="heroicons_outline:check"
+                      ></mat-icon>
+                    </div>
+                  </div>
+
+                  <!-- Nombre / referencia -->
+                  <div class="min-w-0 flex-1">
+                    <span class="text-base font-bold text-black dark:text-white">
+                      {{ pedido.cve_ped }}
+                    </span>
+                    <div class="text-sm text-black dark:text-white">
+                      <span *ngIf="pedido.referencia">{{ pedido.referencia }}</span>
+                      <span *ngIf="!pedido.referencia" class="italic text-black dark:text-white"
+                        >Sin referencia</span
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Info rápida móvil -->
+                  <div class="flex flex-col items-end gap-0.5 md:hidden">
+                    <span class="text-xs text-black dark:text-white">
+                      {{ pedido.condicion || 'Sin condición' }}
+                    </span>
+                    <span
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
+                      [class.bg-green-100]="pedido.status === 'Completo'"
+                      [class.text-green-700]="pedido.status === 'Completo'"
+                      [class.bg-amber-100]="pedido.status === 'Parcial'"
+                      [class.text-amber-700]="pedido.status === 'Parcial'"
+                      [class.bg-red-100]="
+                        pedido.status !== 'Completo' && pedido.status !== 'Parcial'
+                      "
+                      [class.text-red-700]="
+                        pedido.status !== 'Completo' && pedido.status !== 'Parcial'
+                      "
+                    >
+                      <ng-container [ngSwitch]="pedido.status">
+                        <ng-container *ngSwitchCase="'Completo'">Entregado</ng-container>
+                        <ng-container *ngSwitchCase="'Parcial'">En proceso</ng-container>
+                        <ng-container *ngSwitchDefault>Sin autorizar</ng-container>
+                      </ng-container>
+                    </span>
+                  </div>
+
+                  <!-- Chevron móvil -->
+                  <mat-icon
+                    class="flex-shrink-0 text-black dark:text-white transition-transform duration-200 icon-size-5 md:hidden"
+                    [class.rotate-90]="estaExpandido(pedido.cve_ped)"
+                    svgIcon="heroicons_outline:chevron-right"
+                  ></mat-icon>
+                </div>
+
+                <!-- Elaboración (desktop)
+                <div class="hidden text-right md:block">
+                  <div class="dark:white text-base text-black">Elaboración</div>
+                  <div class="text-sm font-semibold text-black dark:text-white">
+                    {{ pedido.fecha_elab || '—' }}
+                  </div>
+                </div>
+
+                Entrega (desktop)
+                <div class="hidden text-right md:block">
+                  <div class="dark:white text-base text-black">Entrega</div>
+                  <div class="text-sm font-semibold text-black dark:text-white">
+                    {{ pedido.fecha_entrega || '—' }}
+                  </div>
+                </div> -->
+
+                <!-- Condición (desktop) -->
+                <div class="hidden text-right md:block">
+                  <div class="dark:white text-base text-black">Condición</div>
+                  <div class="text-sm font-semibold text-black dark:text-white">
+                    {{ pedido.condicion || 'Sin definir' }}
+                  </div>
+                </div>
+
+                <!-- Agente (desktop) -->
+                <div class="hidden text-right md:block">
+                  <div class="dark:white text-base text-black">Agente</div>
+                  <div class="truncate text-sm font-semibold text-black dark:text-white">
+                    {{ pedido.agente || '—' }}
+                  </div>
+                </div>
+
+                <!-- Estatus (desktop) -->
+                <div class="hidden text-right md:block">
+                  <div class="dark:white text-base text-black">Estatus</div>
                   <span
-                    class="text-sm font-extrabold tabular-nums text-purple-600 dark:text-purple-400"
-                    >{{ c.CANTIDAD }} kg</span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-semibold"
+                    [class.text-green-700]="pedido.status === 'Completo'"
+                    [class.dark:text-green-400]="pedido.status === 'Completo'"
+                    [class.text-amber-700]="pedido.status === 'Parcial'"
+                    [class.dark:text-amber-400]="pedido.status === 'Parcial'"
+                    [class.text-red-700]="
+                      pedido.status !== 'Completo' && pedido.status !== 'Parcial'
+                    "
+                    [class.dark:text-red-400]="
+                      pedido.status !== 'Completo' && pedido.status !== 'Parcial'
+                    "
                   >
+                    <ng-container [ngSwitch]="pedido.status">
+                      <ng-container *ngSwitchCase="'Completo'">Entregado</ng-container>
+                      <ng-container *ngSwitchCase="'Parcial'">En proceso</ng-container>
+                      <ng-container *ngSwitchDefault>Sin autorizar</ng-container>
+                    </ng-container>
+                  </span>
+                </div>
+
+                <!-- Kg (desktop) -->
+                <div class="hidden text-right md:block">
+                  <div class="text-sm font-semibold tracking-wide text-blue-600">Kg totales</div>
+                  <div class="text-lg font-bold text-blue-700 dark:text-blue-300">
+                    {{ getKilosPedido(pedido) | number: '1.0-0' }} kg
+                  </div>
+                </div>
+
+                <!-- Acciones (desktop) -->
+                <div class="hidden md:flex md:items-center md:justify-end md:gap-1">
+                  <!-- <button
+                    mat-icon-button
+                    matTooltip="Compartir PDF"
+                    [disabled]="descargando() === pedido.cve_ped"
+                    (click)="$event.stopPropagation(); descargarPDF(pedido.cve_ped)"
+                  >
+                    <mat-icon
+                      class="icon-size-4"
+                      [svgIcon]="
+                        descargando() === pedido.cve_ped
+                          ? 'heroicons_outline:arrow-path'
+                          : 'heroicons_outline:share'
+                      "
+                    ></mat-icon>
+                  </button> -->
+                  <mat-icon
+                    class="flex-shrink-0 text-black dark:text-white transition-transform duration-200 icon-size-5"
+                    [class.rotate-90]="estaExpandido(pedido.cve_ped)"
+                    svgIcon="heroicons_outline:chevron-right"
+                  ></mat-icon>
+                </div>
+              </div>
+
+              <!-- ── DETALLE EXPANDIDO ── -->
+              <div
+                *ngIf="estaExpandido(pedido.cve_ped)"
+                class="border-t border-gray-100 bg-gray-50/50 px-4 pb-4 pt-3 sm:px-8 dark:border-gray-800 dark:bg-gray-800/20"
+              >
+                <!-- Meta -->
+                <div
+                  class="mb-4 flex flex-wrap gap-4 rounded-xl bg-white px-4 py-3 shadow-sm dark:bg-gray-800/40"
+                >
+                  <div *ngIf="pedido.agente" class="flex items-center gap-1.5">
+                    <mat-icon
+                      class="text-sm text-black icon-size-4 dark:text-white"
+                      svgIcon="heroicons_outline:user"
+                    ></mat-icon>
+                    <span class="text-sm font-semibold text-black dark:text-white">{{
+                      pedido.agente
+                    }}</span>
+                  </div>
+                  <div *ngIf="pedido.fecha_elab" class="flex items-center gap-1.5">
+                    <mat-icon
+                      class="text-sm text-black icon-size-4 dark:text-white"
+                      svgIcon="heroicons_outline:calendar"
+                    ></mat-icon>
+                    <span class="text-sm text-black dark:text-white">Elab.</span>
+                    <span class="text-sm font-semibold text-black dark:text-white">{{
+                      pedido.fecha_elab
+                    }}</span>
+                  </div>
+                  <div *ngIf="pedido.fecha_entrega" class="flex items-center gap-1.5">
+                    <mat-icon
+                      class="text-sm text-black icon-size-4 dark:text-white"
+                      svgIcon="heroicons_outline:truck"
+                    ></mat-icon>
+                    <span class="text-sm text-black dark:text-white">Entrega</span>
+                    <span class="text-sm font-semibold text-black dark:text-white">{{
+                      pedido.fecha_entrega
+                    }}</span>
+                  </div>
+                  <div *ngIf="pedido.fecha_pago" class="flex items-center gap-1.5">
+                    <mat-icon
+                      class="text-sm text-black icon-size-4 dark:text-white"
+                      svgIcon="heroicons_outline:banknotes"
+                    ></mat-icon>
+                    <span class="text-sm text-black dark:text-white">Pago</span>
+                    <span class="text-sm font-semibold text-black dark:text-white">{{
+                      pedido.fecha_pago
+                    }}</span>
+                  </div>
+                  <div *ngIf="pedido.observaciones" class="flex items-center gap-1.5">
+                    <mat-icon
+                      class="text-sm text-black icon-size-4 dark:text-white"
+                      svgIcon="heroicons_outline:chat-bubble-left"
+                    ></mat-icon>
+                    <span class="text-sm text-black dark:text-white">{{
+                      pedido.observaciones
+                    }}</span>
+                  </div>
+                </div>
+
+                <!-- Artículos -->
+                <div *ngIf="pedido.articulos?.length > 0" class="mb-3">
+                  <p
+                    class="mb-2 text-xs font-bold uppercase tracking-wider text-black dark:text-white"
+                  >
+                    Artículos
+                  </p>
+                  <div class="flex flex-col gap-1">
+                    <div
+                      *ngFor="let a of pedido.articulos"
+                      class="flex flex-col gap-0.5 border-l-4 border-primary bg-primary/5 py-2 pl-3 pr-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <span class="text-sm font-medium">{{ a.ARTICULO }}</span>
+                      <span
+                        class="text-sm font-extrabold tabular-nums text-primary sm:ml-4 sm:flex-shrink-0"
+                      >
+                        {{ a.CANTIDAD }} kg
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cardigans -->
+                <div *ngIf="pedido.cardigans?.length > 0">
+                  <p
+                    class="mb-2 text-xs font-bold uppercase tracking-wider text-black dark:text-white"
+                  >
+                    Cardigans
+                  </p>
+                  <div class="flex flex-col gap-1">
+                    <div
+                      *ngFor="let c of pedido.cardigans"
+                      class="flex flex-col gap-0.5 border-l-4 border-purple-400 bg-purple-50 py-2 pl-3 pr-4 sm:flex-row sm:items-center sm:justify-between dark:bg-purple-900/20"
+                    >
+                      <span class="text-sm font-medium">{{ c.DESCRIPCION }}</span>
+                      <span
+                        class="text-sm font-extrabold tabular-nums text-purple-600 dark:text-purple-400"
+                      >
+                        {{ c.CANTIDAD }} kg
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Acción móvil PDF -->
+                <div class="mt-3 flex items-center justify-end gap-2 md:hidden">
+                  <button
+                    mat-icon-button
+                    matTooltip="Compartir PDF"
+                    [disabled]="descargando() === pedido.cve_ped"
+                    (click)="$event.stopPropagation(); descargarPDF(pedido.cve_ped)"
+                  >
+                    <mat-icon
+                      class="icon-size-4"
+                      [svgIcon]="
+                        descargando() === pedido.cve_ped
+                          ? 'heroicons_outline:arrow-path'
+                          : 'heroicons_outline:share'
+                      "
+                    ></mat-icon>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </ng-container>
       </div>
+    </div>
+
+    <!-- ── BARRA FLOTANTE SELECCIÓN ── -->
+    <div
+      *ngIf="totalSeleccionados() > 0"
+      class="fixed bottom-10 md:bottom-20 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-2xl dark:bg-gray-100"
+      [@slideDown]
+    >
+      <span
+        class="flex-1 whitespace-normal text-center text-sm font-medium leading-tight text-white sm:text-left dark:text-gray-900"
+      >
+        {{ totalSeleccionados() }} pedido{{ totalSeleccionados() !== 1 ? 's' : '' }} seleccionado{{
+          totalSeleccionados() !== 1 ? 's' : ''
+        }}
+      </span>
+
+      <!-- Preparando en background -->
+      <div *ngIf="compartiendo" class="flex items-center gap-2 text-white dark:text-gray-900">
+        <mat-icon
+          class="animate-spin icon-size-5"
+          svgIcon="heroicons_outline:arrow-path"
+        ></mat-icon>
+        <span class="text-sm">Preparando...</span>
+      </div>
+
+      <!-- Listo -->
+      <button
+        *ngIf="!compartiendo"
+        mat-flat-button
+        class="h-9 min-w-[160px] justify-center rounded-xl px-5 text-white"
+        [class.bg-primary]="!blobCache"
+        [class.bg-green-600]="!!blobCache"
+        [disabled]="!blobCache"
+        (click)="compartirSeleccionados()"
+      >
+        <mat-icon class="mr-2 icon-size-5" svgIcon="heroicons_outline:share"></mat-icon>
+        <span>{{ blobCache ? 'Compartir PDF' : 'Preparando...' }}</span>
+      </button>
+
+      <button
+        mat-icon-button
+        class="text-black hover:text-red-500 dark:hover:text-red-500"
+        (click)="limpiarSeleccion()"
+      >
+        <mat-icon class="icon-size-4" svgIcon="heroicons_outline:x-mark"></mat-icon>
+      </button>
     </div>
   </div>
 </div>
+
+<!-- PEDIDOS -->

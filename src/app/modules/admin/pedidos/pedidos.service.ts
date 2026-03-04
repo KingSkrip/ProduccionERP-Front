@@ -38,7 +38,7 @@ export interface Pedido {
   usuario: string;
   observaciones: string;
   status: string;        // "Completo" | "Parcial" | "Sin Def."
-  partidas: Partida[];
+ articulos: Partida[];
   cardigans: Cardigan[];
 }
 

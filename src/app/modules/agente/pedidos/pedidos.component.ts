@@ -6,7 +6,7 @@ import {
 import { RouterOutlet } from '@angular/router';
 
 @Component({
-    selector: 'pedidos',
+    selector: 'pedidosagente',
     templateUrl: './pedidos.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,

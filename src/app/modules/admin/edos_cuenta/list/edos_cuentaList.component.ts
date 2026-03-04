@@ -1,3 +1,4 @@
+import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -5,7 +6,6 @@ import {
   Component,
   OnDestroy,
   OnInit,
-  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -33,6 +33,16 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { EdosCuentaService, EstadoCuenta, ResumenEstadoCuenta } from '../edos_cuenta.service';
+
+export const slideDown = trigger('slideDown', [
+  transition(':enter', [
+    style({ opacity: 0, transform: 'translateY(8px) scale(0.98)' }),
+    animate('150ms ease-out', style({ opacity: 1, transform: 'translateY(0) scale(1)' })),
+  ]),
+  transition(':leave', [
+    animate('120ms ease-in', style({ opacity: 0, transform: 'translateY(8px) scale(0.98)' })),
+  ]),
+]);
 
 @Component({
   selector: 'edos_cuenta-list',
@@ -64,17 +74,15 @@ import { EdosCuentaService, EstadoCuenta, ResumenEstadoCuenta } from '../edos_cu
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'es-MX' }],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: fuseAnimations,
+  animations: [...fuseAnimations, slideDown],
 })
 export class EdosCuentaListComponent implements OnInit, OnDestroy {
-  @ViewChild('searchInput') searchInput: any;
-
   // Data
   estadosCuenta: EstadoCuenta[] = [];
   estadosCuentaFiltrados: EstadoCuenta[] = [];
   resumen: ResumenEstadoCuenta | null = null;
 
-  // Loading states
+  // Loading
   isLoading = true;
   isLoadingResumen = false;
 
@@ -91,16 +99,21 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
   paginasVisibles: number[] = [];
 
   // Totales
-  totalCargos: number = 0;
-  totalAbonos: number = 0;
-  totalSaldos: number = 0;
+  totalCargos = 0;
+  totalAbonos = 0;
+  totalSaldos = 0;
 
   // Selection
   documentosSeleccionados: Set<string> = new Set();
   todosSeleccionados = false;
 
-  // Utils
+  // Share/cache
+  compartiendo = false;
+  blobCache: Blob | null = null;
+  blobCacheKey = '';
+
   Math = Math;
+  private _cancelarPreparacion$ = new Subject<void>();
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
   constructor(
@@ -119,14 +132,12 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this._unsubscribeAll.next(null);
     this._unsubscribeAll.complete();
+    this._cancelarPreparacion$.next();
+    this._cancelarPreparacion$.complete();
   }
 
-  /**
-   * Cargar estados de cuenta
-   */
   cargarEstadosCuenta(): void {
     this.isLoading = true;
-
     this._edosCuentaService
       .getEstadosCuenta()
       .pipe(takeUntil(this._unsubscribeAll))
@@ -135,9 +146,9 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
           if (response.success) {
             this.estadosCuenta = response.data;
             this.estadosCuentaFiltrados = [...this.estadosCuenta];
-            this.totalCargos = response.total_cargos ?? 0; // 👈
-            this.totalAbonos = response.total_abonos ?? 0; // 👈
-            this.totalSaldos = response.total_saldos ?? 0; // 👈
+            this.totalCargos = response.total_cargos ?? 0;
+            this.totalAbonos = response.total_abonos ?? 0;
+            this.totalSaldos = response.total_saldos ?? 0;
             this.extraerAniosDisponibles();
             this.aplicarFiltros();
             this.calcularPaginacion();
@@ -145,8 +156,7 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           this._cdr.markForCheck();
         },
-        error: (error) => {
-          console.error('Error al cargar estados de cuenta:', error);
+        error: () => {
           this.mostrarError('Error al cargar estados de cuenta');
           this.isLoading = false;
           this._cdr.markForCheck();
@@ -154,49 +164,33 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Cargar resumen
-   */
   cargarResumen(): void {
     this.isLoadingResumen = true;
-
     this._edosCuentaService
       .getResumen()
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
         next: (response) => {
-          if (response.success) {
-            this.resumen = response.data;
-          }
+          if (response.success) this.resumen = response.data;
           this.isLoadingResumen = false;
           this._cdr.markForCheck();
         },
-        error: (error) => {
-          console.error('Error al cargar resumen:', error);
+        error: () => {
           this.isLoadingResumen = false;
           this._cdr.markForCheck();
         },
       });
   }
 
-  /**
-   * Setup búsqueda
-   */
   setupSearch(): void {
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
-      .subscribe(() => {
-        this.aplicarFiltros();
-      });
+      .subscribe(() => this.aplicarFiltros());
   }
 
-  /**
-   * Aplicar filtros
-   */
   aplicarFiltros(): void {
     let filtrados = [...this.estadosCuenta];
 
-    // Filtro de búsqueda
     const searchTerm = this.searchControl.value?.toLowerCase() || '';
     if (searchTerm) {
       filtrados = filtrados.filter(
@@ -207,15 +201,12 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Filtro por año
     if (this.filtroAnio.value) {
-      filtrados = filtrados.filter((ec) => {
-        const anio = new Date(ec.fecha_aplicacion).getFullYear();
-        return anio === this.filtroAnio.value;
-      });
+      filtrados = filtrados.filter(
+        (ec) => new Date(ec.fecha_aplicacion).getFullYear() === this.filtroAnio.value,
+      );
     }
 
-    // Filtro por estado
     const estado = this.filtroEstado.value;
     if (estado && estado !== 'todos') {
       const hoy = new Date();
@@ -233,44 +224,25 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
-  /**
-   * Extraer años disponibles de los documentos
-   */
   extraerAniosDisponibles(): void {
     const anios = new Set<number>();
-    this.estadosCuenta.forEach((ec) => {
-      const anio = new Date(ec.fecha_aplicacion).getFullYear();
-      anios.add(anio);
-    });
+    this.estadosCuenta.forEach((ec) => anios.add(new Date(ec.fecha_aplicacion).getFullYear()));
     this.aniosDisponibles = Array.from(anios).sort((a, b) => b - a);
   }
 
-  /**
-   * Calcular paginación
-   */
   calcularPaginacion(): void {
     this.totalPaginas = Math.ceil(this.estadosCuentaFiltrados.length / this.itemsPorPagina);
-
-    // Calcular páginas visibles
     const maxPaginas = 5;
     const inicio = Math.max(0, this.paginaActual - Math.floor(maxPaginas / 2));
     const fin = Math.min(this.totalPaginas, inicio + maxPaginas);
-
     this.paginasVisibles = Array.from({ length: fin - inicio }, (_, i) => inicio + i);
   }
 
-  /**
-   * Obtener documentos paginados
-   */
   get estadosCuentaPaginados(): EstadoCuenta[] {
     const inicio = this.paginaActual * this.itemsPorPagina;
-    const fin = inicio + this.itemsPorPagina;
-    return this.estadosCuentaFiltrados.slice(inicio, fin);
+    return this.estadosCuentaFiltrados.slice(inicio, inicio + this.itemsPorPagina);
   }
 
-  /**
-   * Navegación de paginación
-   */
   paginaAnterior(): void {
     if (this.paginaActual > 0) {
       this.paginaActual--;
@@ -299,9 +271,7 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
-  /**
-   * Selección de documentos
-   */
+  // ── Selección ──
   toggleSeleccion(documento: string): void {
     if (this.documentosSeleccionados.has(documento)) {
       this.documentosSeleccionados.delete(documento);
@@ -309,6 +279,7 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
       this.documentosSeleccionados.add(documento);
     }
     this.actualizarEstadoSeleccionTodos();
+    this.invalidarCache();
     this._cdr.markForCheck();
   }
 
@@ -316,118 +287,102 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
     if (this.todosSeleccionados) {
       this.documentosSeleccionados.clear();
     } else {
-      this.estadosCuentaPaginados.forEach((ec) => {
-        this.documentosSeleccionados.add(ec.documento);
-      });
+      this.estadosCuentaPaginados.forEach((ec) => this.documentosSeleccionados.add(ec.documento));
     }
     this.actualizarEstadoSeleccionTodos();
+    this.invalidarCache();
     this._cdr.markForCheck();
   }
 
   actualizarEstadoSeleccionTodos(): void {
-    const todosPaginadosSeleccionados = this.estadosCuentaPaginados.every((ec) =>
-      this.documentosSeleccionados.has(ec.documento),
-    );
-    this.todosSeleccionados = todosPaginadosSeleccionados && this.estadosCuentaPaginados.length > 0;
+    const paginados = this.estadosCuentaPaginados;
+    this.todosSeleccionados =
+      paginados.length > 0 &&
+      paginados.every((ec) => this.documentosSeleccionados.has(ec.documento));
   }
 
-  /**
-   * Descargar PDF individual
-   */
-  descargarPDF(documento: string): void {
-    this._edosCuentaService.descargarPDF(documento).subscribe({
-      next: (blob) => {
-        this.descargarArchivo(blob, `estado-cuenta-${documento}.pdf`);
-        this.mostrarExito('PDF descargado correctamente');
-      },
-      error: (error) => {
-        console.error('Error al descargar PDF:', error);
-        this.mostrarError('Error al descargar PDF');
-      },
-    });
+  limpiarSeleccion(): void {
+    this.documentosSeleccionados.clear();
+    this.todosSeleccionados = false;
+    this.blobCache = null;
+    this.blobCacheKey = '';
+    this._cdr.markForCheck();
   }
 
-  /**
-   * Descargar múltiples PDFs
-   */
-  descargarSeleccionados(): void {
-    // if (this.documentosSeleccionados.size === 0) {
-    //   this.mostrarError('Selecciona al menos un documento');
-    //   return;
-    // }
+  // Click síncrono — navigator.share() funciona aquí
+  async compartirSeleccionados(): Promise<void> {
+    if (!this.blobCache || this.compartiendo) return;
 
+    const fecha = new Date().toISOString().split('T')[0];
+    const fileName = `estados-cuenta-${fecha}.pdf`;
+    const file = new File([this.blobCache], fileName, { type: 'application/pdf' });
+
+    try {
+      await navigator.share({ title: 'Estados de cuenta', files: [file] });
+      this.limpiarSeleccion();
+    } catch (err) {
+      if ((err as DOMException).name !== 'AbortError') {
+        this.mostrarError('No se pudo compartir el PDF');
+      }
+    }
+  }
+
+  // ── Cache / background ──
+  private invalidarCache(): void {
+    this._cancelarPreparacion$.next();
+    this.blobCache = null;
+    this.blobCacheKey = '';
+    this.compartiendo = false;
+
+    if (this.documentosSeleccionados.size > 0) {
+      this.prepararPDFEnBackground();
+    }
+    this._cdr.markForCheck();
+  }
+
+  private prepararPDFEnBackground(): void {
     const documentos = Array.from(this.documentosSeleccionados);
+    const cacheKey = documentos.slice().sort().join(',');
 
-    this._edosCuentaService.descargarMultiples(documentos).subscribe({
-      next: (blob) => {
-        const fecha = new Date().toISOString().split('T')[0];
-        this.descargarArchivo(blob, `estados-cuenta-${fecha}.pdf`);
-        this.mostrarExito('PDFs descargados correctamente');
-        this.documentosSeleccionados.clear();
-        this.todosSeleccionados = false;
-        this._cdr.markForCheck();
-      },
-      error: (error) => {
-        console.error('Error al descargar PDFs:', error);
-        this.mostrarError('Error al descargar PDFs');
-      },
-    });
+    if (this.blobCacheKey === cacheKey && this.blobCache) return;
+
+    this.compartiendo = true;
+    this._cdr.markForCheck();
+
+    this._edosCuentaService
+      .descargarMultiples(documentos)
+      .pipe(takeUntil(this._cancelarPreparacion$))
+      .subscribe({
+        next: (blob) => {
+          const seleccionActual = Array.from(this.documentosSeleccionados).sort().join(',');
+          if (seleccionActual !== cacheKey) return;
+
+          this.blobCache = new Blob([blob], { type: 'application/pdf' });
+          this.blobCacheKey = cacheKey;
+          this.compartiendo = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.mostrarError('Error al preparar PDF');
+          this.compartiendo = false;
+          this._cdr.markForCheck();
+        },
+      });
   }
 
-  /**
-   * Enviar por email
-   */
-  enviarEmail(documento: string): void {
-    const email = prompt('Ingresa el email de destino:');
-    if (!email) return;
-
-    this._edosCuentaService.enviarPorEmail(documento, email).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.mostrarExito('Email enviado correctamente');
-        }
-      },
-      error: (error) => {
-        console.error('Error al enviar email:', error);
-        this.mostrarError('Error al enviar email');
-      },
-    });
-  }
-
-  /**
-   * Determinar estado visual del documento
-   */
-  getEstadoDocumento(ec: EstadoCuenta): {
-    texto: string;
-    clase: string;
-  } {
-    if (ec.saldo === 0) {
-      return { texto: 'Pagado', clase: 'text-green-600 bg-green-100' };
-    }
-
+  // ── Utils ──
+  getEstadoDocumento(ec: EstadoCuenta): { texto: string; clase: string } {
+    if (ec.saldo === 0) return { texto: 'Pagado', clase: 'text-green-600 bg-green-100' };
     const hoy = new Date();
-    const fechaVenc = new Date(ec.fecha_vencimiento);
-
-    if (fechaVenc < hoy) {
+    if (new Date(ec.fecha_vencimiento) < hoy)
       return { texto: 'Vencido', clase: 'text-red-600 bg-red-100' };
-    }
-
     return { texto: 'Pendiente', clase: 'text-yellow-600 bg-yellow-100' };
   }
 
-  /**
-   * Calcular días hasta vencimiento
-   */
   getDiasVencimiento(fechaVenc: string): number {
-    const hoy = new Date();
-    const vencimiento = new Date(fechaVenc);
-    const diff = vencimiento.getTime() - hoy.getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return Math.ceil((new Date(fechaVenc).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   }
 
-  /**
-   * Limpiar filtros
-   */
   limpiarFiltros(): void {
     this.searchControl.setValue('');
     this.filtroAnio.setValue(null);
@@ -435,21 +390,16 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
     this.aplicarFiltros();
   }
 
-  /**
-   * Helper para descargar archivo
-   */
-  private descargarArchivo(blob: Blob, nombreArchivo: string): void {
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = nombreArchivo;
-    link.click();
-    window.URL.revokeObjectURL(url);
+  hayFiltrosActivos(): boolean {
+    return (
+      !!this.searchControl.value || !!this.filtroAnio.value || this.filtroEstado.value !== 'todos'
+    );
   }
 
-  /**
-   * Mostrar notificaciones
-   */
+  trackByDocumento(_: number, item: EstadoCuenta): string {
+    return item.documento;
+  }
+
   private mostrarExito(mensaje: string): void {
     this._snackBar.open(mensaje, 'Cerrar', {
       duration: 3000,
@@ -466,16 +416,5 @@ export class EdosCuentaListComponent implements OnInit, OnDestroy {
       verticalPosition: 'top',
       panelClass: ['snackbar-error'],
     });
-  }
-
-  // Agregar este método al final del componente, antes del último }
-  trackByDocumento(index: number, item: EstadoCuenta): string {
-    return item.documento;
-  }
-
-  hayFiltrosActivos(): boolean {
-    return (
-      !!this.searchControl.value || !!this.filtroAnio.value || this.filtroEstado.value !== 'todos'
-    );
   }
 }
