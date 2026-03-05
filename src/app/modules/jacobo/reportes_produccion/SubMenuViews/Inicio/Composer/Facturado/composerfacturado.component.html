@@ -113,21 +113,21 @@
               <!-- Importes -->
               <div class="grid grid-cols-3 gap-2">
                 <div class="flex flex-col">
-                  <span class="text-xs text-black dark:text-white">Importe</span>
+                  <span class="text-xs text-black dark:text-white">Subtotal</span>
                   <span class="text-sm font-semibold">
-                    {{ dia.importe | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                    {{ dia.importe | currency: 'MXN' : 'symbol' : '1.2-2' }}
                   </span>
                 </div>
                 <div class="flex flex-col">
                   <span class="text-xs text-black dark:text-white">IVA</span>
                   <span class="text-sm font-semibold text-amber-600">
-                    {{ dia.impuestos | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                    {{ dia.impuestos | currency: 'MXN' : 'symbol' : '1.2-2' }}
                   </span>
                 </div>
                 <div class="flex flex-col">
                   <span class="text-xs text-black dark:text-white">Total</span>
                   <span class="text-sm font-bold text-green-600 dark:text-green-400">
-                    {{ dia.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                    {{ dia.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
                   </span>
                 </div>
               </div>
