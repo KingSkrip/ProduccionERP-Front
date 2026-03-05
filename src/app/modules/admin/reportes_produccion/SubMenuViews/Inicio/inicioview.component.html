@@ -58,17 +58,18 @@
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
         <!-- TOTAL -->
         <div
-          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-4 pb-3 shadow"
         >
-          <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
+          <!-- Icono fondo -->
+          <div class="absolute bottom-0 right-0 -m-4 h-20 w-20">
             <mat-icon
-              class="text-green-500 opacity-25 icon-size-24 dark:text-green-400"
+              class="text-green-500 opacity-25 icon-size-20 dark:text-green-400"
               [svgIcon]="'heroicons_outline:check-circle'"
             ></mat-icon>
           </div>
 
           <!-- Header -->
-          <div class="flex items-start justify-between">
+          <div class="flex items-start justify-between pr-8">
             <div class="flex flex-col">
               <div class="truncate text-lg font-medium leading-6 tracking-tight">Total</div>
               <div class="text-sm font-medium text-green-600">
@@ -79,52 +80,141 @@
           </div>
 
           <!-- Loader o contenido -->
-          <div
-            class="-mx-6 mt-4 flex flex-row flex-wrap items-end"
-            *ngIf="!loadingFacturacion; else loaderTemplate"
-          >
-            <!-- Total general -->
-            <div class="mx-6 mb-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Total</div>
-              <div class="mt-2 text-3xl font-medium leading-none">
-                {{ totalFacturacion | currency: 'MXN' }}
-              </div>
-            </div>
+          <div *ngIf="!loadingFacturacion; else loaderTemplate">
+            <!-- MÓVIL: layout mejorado -->
+            <div class="flex flex-col gap-0 md:hidden">
+              <!-- Fila superior: Total Z100 + Z200 lado a lado -->
+              <div class="flex flex-row items-start gap-0">
+                <!-- Total Z100 -->
+                <div class="mt-2 flex flex-1 flex-col py-2 pr-3">
+                  <div class="text-secondary text-xs font-medium tracking-wide">Total</div>
+                  <div class="mt-1 break-all text-lg font-semibold leading-tight">
+                    {{ totalFacturacion | currency: 'MXN' }}
+                  </div>
+                </div>
 
-            <!-- Separador -->
-            <div class="mx-2 mb-3 h-10 w-px bg-gray-200 dark:bg-gray-700"></div>
+                <!-- Separador vertical -->
+                <div class="mx-1 mt-2 h-10 w-px self-center bg-gray-200 dark:bg-gray-700"></div>
 
-            <!-- Z200 -->
-            <div class="mb-1 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Z200</div>
-
-              <div class="flex items-center">
-                <!-- Número / Asteriscos -->
-                <div class="flex items-center">
-                  <span class="text-3xl font-medium leading-none">
+                <!-- Z200 -->
+                <div class="flex flex-1 flex-col py-2 pl-3">
+                  <!-- Label + ojito juntos en la misma línea -->
+                  <div class="flex items-center gap-1">
+                    <div class="text-secondary text-xs font-medium uppercase tracking-wide">
+                      Z200
+                    </div>
+                    <button
+                      type="button"
+                      class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700"
+                      (click)="toggleZ200()"
+                    >
+                      <mat-icon
+                        class="text-black icon-size-4 dark:text-white"
+                        [svgIcon]="
+                          z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'
+                        "
+                      ></mat-icon>
+                    </button>
+                  </div>
+                  <!-- Valor solo, sin ojito -->
+                  <div class="break-all text-lg font-semibold leading-tight">
                     <ng-container *ngIf="!z200Oculto">
-                      {{ facturasSinIva }}
+                      {{ notasVentaTotal | currency: 'MXN' }}
                     </ng-container>
                     <ng-container *ngIf="z200Oculto">
-                      <span class="select-none font-medium text-black dark:text-white">
+                      <span class="select-none font-medium text-black dark:text-white">******</span>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Separador horizontal -->
+              <div class="h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+
+              <!-- Total general destacado -->
+              <div class="mt-2 flex flex-col rounded-xl py-3">
+                <div class="text-xs font-semibold text-green-600 dark:text-green-400">
+                  Total general
+                </div>
+                <div class="mt-1">
+                  <span class="text-black break-all text-lg font-semibold leading-none dark:text-white">
+                    <ng-container *ngIf="!z200Oculto">
+                      {{ totalFacturacion + notasVentaTotal | currency: 'MXN' }}
+                    </ng-container>
+                    <ng-container *ngIf="z200Oculto">
+                      <span class="select-none font-bold text-green-600 dark:text-green-400">
                         ******
                       </span>
                     </ng-container>
                   </span>
                 </div>
+              </div>
+            </div>
 
-                <!-- Botón -->
-                <button
-                  mat-icon-button
-                  type="button"
-                  class="P-0 ml-2 flex items-center justify-center"
-                  (click)="toggleZ200()"
-                >
-                  <mat-icon
-                    class="text-black dark:text-white"
-                    [svgIcon]="z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'"
-                  ></mat-icon>
-                </button>
+            <!-- DESKTOP: layout 3 columnas -->
+            <div class="hidden md:flex md:flex-row md:items-center md:gap-0">
+              <!-- Col 1: Total Z100 -->
+              <div class="mt-8 flex flex-1 flex-col justify-center px-2">
+                <div class="text-secondary text-sm font-medium leading-none">Total</div>
+                <div class="mt-2 break-all text-xl font-medium leading-none">
+                  {{ totalFacturacion | currency: 'MXN' }}
+                </div>
+              </div>
+
+              <!-- Separador vertical -->
+              <div class="mt-8 h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+              <!-- Col 2: Z200 -->
+              <div class="mt-8 flex flex-1 flex-col justify-center px-2">
+                <div class="text-secondary text-sm font-medium leading-none">Z200</div>
+                <div class="flex flex-row items-center gap-2 leading-none">
+                  <!-- Valor -->
+                  <span class="mt-2 text-xl font-medium leading-none">
+                    <ng-container *ngIf="!z200Oculto">
+                      {{ notasVentaTotal | currency: 'MXN' }}
+                    </ng-container>
+                    <ng-container *ngIf="z200Oculto">
+                      <span class="select-none font-medium text-black dark:text-white">******</span>
+                    </ng-container>
+                  </span>
+
+                  <!-- Botón en columna fija, overflow hidden para que no afecte altura -->
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="flex items-center justify-center p-0"
+                      style="width: 16px; height: 16px; min-width: unset; min-height: unset"
+                      (click)="toggleZ200()"
+                    >
+                      <mat-icon
+                        class="text-black dark:text-white"
+                        style="font-size: 16px; width: 16px; height: 16px; line-height: 1"
+                        [svgIcon]="
+                          z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'
+                        "
+                      ></mat-icon>
+                    </button>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Separador vertical -->
+              <div class="mt-8 h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+              <!-- Col 3: Total general -->
+              <div class="mt-8 flex flex-1 flex-col justify-center px-2">
+                <div class="text-secondary text-sm font-medium leading-none">Total general</div>
+                <div class="mt-2 flex items-center gap-2">
+                  <span class="text-xl font-medium leading-none text-green-500 dark:text-green-400">
+                    <ng-container *ngIf="!z200Oculto">
+                      {{ totalFacturacion + notasVentaTotal | currency: 'MXN' }}
+                    </ng-container>
+                    <ng-container *ngIf="z200Oculto">
+                      <span class="select-none font-medium text-black dark:text-white">******</span>
+                    </ng-container>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -181,7 +271,7 @@
             <div class="mx-6 my-3 flex w-full flex-col">
               <div class="text-secondary text-sm font-medium leading-none">Peso total</div>
 
-              <div class="mt-2 text-2xl font-medium leading-none">
+              <div class="mt-2 text-xl font-medium leading-none">
                 <ng-container *ngIf="cantidadesPorUnidadArray?.length; else sinCantidades">
                   <div *ngFor="let item of cantidadesPorUnidadArray" class="mb-1">
                     {{ item.um }}: {{ formatValue(item.cant, 'decimal') }}
@@ -386,7 +476,7 @@
                   <div class="text-sm font-medium leading-none text-black dark:text-white">
                     Cantidad
                   </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+                  <div class="mt-2 text-xl font-medium leading-none">
                     {{ formatValue(detalle.cantidad, 'decimal') }} kg
                   </div>
                 </div>
@@ -395,7 +485,7 @@
                   <div class="text-sm font-medium leading-none text-black dark:text-white">
                     Piezas
                   </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+                  <div class="mt-2 text-xl font-medium leading-none">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
                 </div>
@@ -455,7 +545,7 @@
                   <div class="text-sm font-medium leading-none text-black dark:text-white">
                     Cantidad
                   </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+                  <div class="mt-2 text-xl font-medium leading-none">
                     {{ formatValue(detalle.cantidad, 'decimal') }} kg
                   </div>
                 </div>
@@ -463,7 +553,7 @@
                   <div class="text-sm font-medium leading-none text-black dark:text-white">
                     Piezas
                   </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+                  <div class="mt-2 text-xl font-medium leading-none">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
                 </div>
@@ -517,7 +607,7 @@
                   <div class="text-sm font-medium leading-none text-black dark:text-white">
                     Cantidad
                   </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+                  <div class="mt-2 text-xl font-medium leading-none">
                     {{ formatValue(detalle.cantidad, 'decimal') }} kg
                   </div>
                 </div>
@@ -525,7 +615,7 @@
                   <div class="text-sm font-medium leading-none text-black dark:text-white">
                     Piezas
                   </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+                  <div class="mt-2 text-xl font-medium leading-none">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
                 </div>
@@ -579,7 +669,7 @@
                   <div class="text-sm font-medium leading-none text-black dark:text-white">
                     Cantidad
                   </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+                  <div class="mt-2 text-xl font-medium leading-none">
                     {{ formatValue(detalle.cantidad, 'decimal') }} kg
                   </div>
                 </div>
@@ -587,7 +677,7 @@
                   <div class="text-sm font-medium leading-none text-black dark:text-white">
                     Piezas
                   </div>
-                  <div class="mt-2 text-3xl font-medium leading-none">
+                  <div class="mt-2 text-xl font-medium leading-none">
                     {{ formatValue(detalle.piezas, 'number') }}
                   </div>
                 </div>

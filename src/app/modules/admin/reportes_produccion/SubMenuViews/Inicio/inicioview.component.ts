@@ -60,6 +60,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   importeTotalSinIva = 0;
   loadingFacturacion = true;
   loadingSaldosTejido = true;
+  notasVentaTotal: number = 0;
   loadingRevisadoTejido = true;
   loadingEmbarquesTejido = true;
   loadingPorRevisarTejido = true;
@@ -1239,6 +1240,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     } else {
       this.datosAgrupados = [];
     }
+
+    this.notasVentaTotal = Number(payload?.notas_venta?.total) || 0;
   }
 
   /**

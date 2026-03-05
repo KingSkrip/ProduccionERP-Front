@@ -16,7 +16,11 @@
     <ng-container *ngIf="!cargando()">
       <div class="mt-4 grid grid-cols-4 gap-2 sm:ml-6 sm:mt-0 sm:flex sm:flex-shrink-0 sm:gap-4">
         <div class="hidden min-w-0 rounded-lg bg-gray-100 p-2 sm:p-4 md:block dark:bg-gray-800/50">
-          <div class="text-center text-xs text-gray-600 sm:text-left dark:text-black dark:text-white">Total</div>
+          <div
+            class="text-center text-xs text-gray-600 sm:text-left dark:text-black dark:text-white"
+          >
+            Total
+          </div>
           <div
             class="mt-0.5 truncate text-center text-xs font-bold text-gray-700 sm:text-left sm:text-2xl dark:text-gray-300"
           >
@@ -241,17 +245,17 @@
       <mat-form-field class="w-full" appearance="outline">
         <mat-label>Estado</mat-label>
         <mat-select [formControl]="estadoControl">
-          <mat-option *ngFor="let op of opcionesEstado" [value]="op.value">{{
-            op.label
-          }}</mat-option>
+          <mat-option *ngFor="let op of opcionesEstado" [value]="op.value">
+            {{ op.label }}
+          </mat-option>
         </mat-select>
       </mat-form-field>
       <mat-form-field class="w-full" appearance="outline">
         <mat-label>Condición</mat-label>
         <mat-select [formControl]="condicionControl">
-          <mat-option *ngFor="let op of opcionesCondicion" [value]="op.value">{{
-            op.label
-          }}</mat-option>
+          <mat-option *ngFor="let op of opcionesCondicion" [value]="op.value">
+            {{ op.label }}
+          </mat-option>
         </mat-select>
       </mat-form-field>
     </div>
@@ -403,7 +407,7 @@
 
                   <!-- Chevron móvil -->
                   <mat-icon
-                    class="flex-shrink-0 text-black dark:text-white transition-transform duration-200 icon-size-5 md:hidden"
+                    class="flex-shrink-0 text-black transition-transform duration-200 icon-size-5 md:hidden dark:text-white"
                     [class.rotate-90]="estaExpandido(pedido.cve_ped)"
                     svgIcon="heroicons_outline:chevron-right"
                   ></mat-icon>
@@ -411,7 +415,7 @@
 
                 <!-- Elaboración (desktop)
                 <div class="hidden text-right md:block">
-                  <div class="dark:white text-base text-black">Elaboración</div>
+                  <div class="dark:text-white text-base text-black">Elaboración</div>
                   <div class="text-sm font-semibold text-black dark:text-white">
                     {{ pedido.fecha_elab || '—' }}
                   </div>
@@ -419,7 +423,7 @@
 
                 Entrega (desktop)
                 <div class="hidden text-right md:block">
-                  <div class="dark:white text-base text-black">Entrega</div>
+                  <div class="dark:text-white text-base text-black">Entrega</div>
                   <div class="text-sm font-semibold text-black dark:text-white">
                     {{ pedido.fecha_entrega || '—' }}
                   </div>
@@ -427,7 +431,7 @@
 
                 <!-- Condición (desktop) -->
                 <div class="hidden text-right md:block">
-                  <div class="dark:white text-base text-black">Condición</div>
+                  <div class="dark:text-white text-base text-black">Condición</div>
                   <div class="text-sm font-semibold text-black dark:text-white">
                     {{ pedido.condicion || 'Sin definir' }}
                   </div>
@@ -435,7 +439,7 @@
 
                 <!-- Agente (desktop) -->
                 <div class="hidden text-right md:block">
-                  <div class="dark:white text-base text-black">Agente</div>
+                  <div class="dark:text-white text-base text-black">Agente</div>
                   <div class="truncate text-sm font-semibold text-black dark:text-white">
                     {{ pedido.agente || '—' }}
                   </div>
@@ -443,7 +447,7 @@
 
                 <!-- Estatus (desktop) -->
                 <div class="hidden text-right md:block">
-                  <div class="dark:white text-base text-black">Estatus</div>
+                  <div class="dark:text-white text-base text-black">Estatus</div>
                   <span
                     class="inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-semibold"
                     [class.text-green-700]="pedido.status === 'Completo'"
@@ -491,7 +495,7 @@
                     ></mat-icon>
                   </button> -->
                   <mat-icon
-                    class="flex-shrink-0 text-black dark:text-white transition-transform duration-200 icon-size-5"
+                    class="flex-shrink-0 text-black transition-transform duration-200 icon-size-5 dark:text-white"
                     [class.rotate-90]="estaExpandido(pedido.cve_ped)"
                     svgIcon="heroicons_outline:chevron-right"
                   ></mat-icon>
@@ -629,7 +633,7 @@
     <!-- ── BARRA FLOTANTE SELECCIÓN ── -->
     <div
       *ngIf="totalSeleccionados() > 0"
-      class="fixed bottom-10 md:bottom-20 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-2xl dark:bg-gray-100"
+      class="fixed bottom-10 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-2xl md:bottom-20 dark:bg-gray-100"
       [@slideDown]
     >
       <span

@@ -59,7 +59,7 @@
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
         <!-- TOTAL -->
         <div
-          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-4 pb-3 shadow"
         >
           <!-- Botón 3 puntos -->
           <div class="absolute right-2 top-2 z-10">
@@ -79,15 +79,15 @@
           </div>
 
           <!-- Icono fondo -->
-          <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
+          <div class="absolute bottom-0 right-0 -m-4 h-20 w-20">
             <mat-icon
-              class="text-green-500 opacity-25 icon-size-24 dark:text-green-400"
+              class="text-green-500 opacity-25 icon-size-20 dark:text-green-400"
               [svgIcon]="'heroicons_outline:check-circle'"
             ></mat-icon>
           </div>
 
           <!-- Header -->
-          <div class="flex items-start justify-between">
+          <div class="flex items-start justify-between pr-8">
             <div class="flex flex-col">
               <div class="truncate text-lg font-medium leading-6 tracking-tight">Total</div>
               <div class="text-sm font-medium text-green-600">
@@ -98,44 +98,136 @@
           </div>
 
           <!-- Loader o contenido -->
-          <div
-            class="-mx-6 mt-4 flex flex-row flex-wrap items-end"
-            *ngIf="!loadingFacturacion; else loaderTemplate"
-          >
-            <!-- Total general -->
-            <div class="mx-6 mb-3 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Total</div>
-              <div class="mt-2 text-3xl font-medium leading-none">
-                {{ totalFacturacion | currency: 'MXN' }}
+          <div *ngIf="!loadingFacturacion; else loaderTemplate">
+            <!-- MÓVIL: layout mejorado -->
+            <div class="flex flex-col gap-0 md:hidden">
+              <!-- Fila superior: Total Z100 + Z200 lado a lado -->
+              <div class="flex flex-row items-start gap-0">
+                <!-- Total Z100 -->
+                <div class="mt-2 flex flex-1 flex-col py-2 pr-3">
+                  <div class="text-secondary text-xs font-medium tracking-wide">Total</div>
+                  <div class="mt-1 break-all text-lg font-semibold leading-tight">
+                    {{ totalFacturacion | currency: 'MXN' }}
+                  </div>
+                </div>
+
+                <!-- Separador vertical -->
+                <div class="mx-1 mt-2 h-10 w-px self-center bg-gray-200 dark:bg-gray-700"></div>
+
+                <!-- Z200 -->
+                <div class="flex flex-1 flex-col py-2 pl-3">
+                  <!-- Label + ojito juntos en la misma línea -->
+                  <div class="flex items-center gap-1">
+                    <div class="text-secondary text-xs font-medium uppercase tracking-wide">
+                      Z200
+                    </div>
+                    <button
+                      type="button"
+                      class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700"
+                      (click)="toggleZ200()"
+                    >
+                      <mat-icon
+                        class="text-black icon-size-4 dark:text-white"
+                        [svgIcon]="
+                          z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'
+                        "
+                      ></mat-icon>
+                    </button>
+                  </div>
+                  <!-- Valor solo, sin ojito -->
+                  <div class="break-all text-lg font-semibold leading-tight">
+                    <ng-container *ngIf="!z200Oculto">
+                      {{ notasVentaTotal | currency: 'MXN' }}
+                    </ng-container>
+                    <ng-container *ngIf="z200Oculto">
+                      <span class="select-none font-medium text-black dark:text-white">******</span>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Separador horizontal -->
+              <div class="h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+
+              <!-- Total general destacado -->
+              <div class="mt-2 flex flex-col rounded-xl px-3 py-3">
+                <div class="text-xs font-semibold text-green-600 dark:text-green-400">
+                  Total general
+                </div>
+                <div class="mt-1">
+                  <span class="text-dark break-all text-xl font-bold leading-none dark:text-white">
+                    <ng-container *ngIf="!z200Oculto">
+                      {{ totalFacturacion + notasVentaTotal | currency: 'MXN' }}
+                    </ng-container>
+                    <ng-container *ngIf="z200Oculto">
+                      <span class="select-none font-bold text-green-600 dark:text-green-400">
+                        ******
+                      </span>
+                    </ng-container>
+                  </span>
+                </div>
               </div>
             </div>
 
-            <!-- Separador -->
-            <div class="mx-2 mb-3 h-10 w-px bg-gray-200 dark:bg-gray-700"></div>
+            <!-- DESKTOP: layout 3 columnas -->
+            <div class="hidden md:flex md:flex-row md:items-center md:gap-0">
+              <!-- Col 1: Total Z100 -->
+              <div class="flex flex-1 flex-col px-2">
+                <div class="text-secondary text-sm font-medium leading-none">Total</div>
+                <div class="mt-2 break-all text-2xl font-bold leading-none">
+                  {{ totalFacturacion | currency: 'MXN' }}
+                </div>
+              </div>
 
-            <!-- Z200 -->
-            <div class="mb-1 flex flex-col">
-              <div class="text-secondary text-sm font-medium leading-none">Z200</div>
+              <!-- Separador vertical -->
+              <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
 
-              <div class="flex items-center">
-                <span class="text-3xl font-medium leading-none">
-                  <ng-container *ngIf="!z200Oculto">132</ng-container>
-                  <ng-container *ngIf="z200Oculto">
-                    <span class="select-none font-medium text-black dark:text-white">******</span>
-                  </ng-container>
-                </span>
+              <!-- Col 2: Z200 -->
+              <div class="flex flex-1 flex-col px-4">
+                <div class="text-secondary text-sm font-medium leading-none">Z200</div>
+                <div class="mt-2 flex items-center">
+                  <span class="text-2xl font-bold leading-none">
+                    <ng-container *ngIf="!z200Oculto">{{
+                      notasVentaTotal | currency: 'MXN'
+                    }}</ng-container>
+                    <ng-container *ngIf="z200Oculto">
+                      <span class="select-none font-medium text-black dark:text-white">******</span>
+                    </ng-container>
+                  </span>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="ml-1 flex items-center justify-center p-0"
+                    (click)="toggleZ200()"
+                  >
+                    <mat-icon
+                      class="text-black dark:text-white"
+                      [svgIcon]="
+                        z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'
+                      "
+                    ></mat-icon>
+                  </button>
+                </div>
+              </div>
 
-                <button
-                  mat-icon-button
-                  type="button"
-                  class="ml-2 flex items-center justify-center p-0"
-                  (click)="toggleZ200()"
-                >
-                  <mat-icon
-                    class="text-black dark:text-white"
-                    [svgIcon]="z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'"
-                  ></mat-icon>
-                </button>
+              <!-- Separador vertical -->
+              <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+              <!-- Col 3: Total general -->
+              <div class="flex flex-1 flex-col px-4">
+                <div class="text-secondary text-sm font-medium leading-none">Total general</div>
+                <div class="mt-2 flex items-center gap-2">
+                  <span
+                    class="break-all text-2xl font-bold leading-none text-green-500 dark:text-green-400"
+                  >
+                    <ng-container *ngIf="!z200Oculto">{{
+                      totalFacturacion + notasVentaTotal | currency: 'MXN'
+                    }}</ng-container>
+                    <ng-container *ngIf="z200Oculto">
+                      <span class="select-none font-medium text-black dark:text-white">******</span>
+                    </ng-container>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -149,7 +241,7 @@
 
         <!-- Peso total -->
         <div
-          class="bg-card relative flex flex-auto cursor-pointer flex-col overflow-hidden rounded-2xl p-6 pb-3 pr-3 shadow"
+          class="bg-card relative flex flex-auto cursor-pointer flex-col overflow-hidden rounded-2xl p-4 pb-3 shadow"
           matRipple
         >
           <div class="absolute right-2 top-2 z-10">
@@ -168,13 +260,15 @@
             </mat-menu>
           </div>
 
-          <div class="absolute bottom-0 right-0 -m-6 h-24 w-24">
+          <div class="absolute bottom-0 right-0 -m-4 h-20 w-20">
             <mat-icon
-              class="text-purple-500 opacity-25 icon-size-24 dark:text-purple-400"
+              class="text-purple-500 opacity-25 icon-size-20 dark:text-purple-400"
               [svgIcon]="'heroicons_outline:check-circle'"
             ></mat-icon>
           </div>
-          <div class="flex items-center">
+
+          <!-- Header -->
+          <div class="flex items-start justify-between pr-8">
             <div class="flex flex-col">
               <div class="truncate text-lg font-medium leading-6 tracking-tight">Peso total</div>
               <div class="text-sm font-medium text-purple-600">
@@ -185,50 +279,84 @@
           </div>
 
           <!-- Loader o contenido -->
-          <div
-            class="-mx-6 mt-4 flex flex-row flex-wrap"
-            *ngIf="!loadingFacturacion; else loaderConIva"
-          >
-            <div class="mx-6 my-3 flex w-full flex-col">
-              <div class="font-medium leading-none">
-                <ng-container *ngIf="resumenPesoFacturacion.items.length; else sinCantidades">
-                  <!-- Contenedor dos columnas -->
-                  <div class="flex w-full flex-col items-start gap-2 sm:flex-row sm:items-center">
-                    <!-- Items: KG, LB, etc. -->
-                    <div class="flex flex-col gap-1 md:w-1/3">
-                      <div
-                        *ngFor="let item of resumenPesoFacturacion.items"
-                        class="text-2xl font-medium leading-none md:text-3xl"
-                      >
-                        {{ item.um }}: {{ formatValue(item.cant, 'decimal') }}
-                        <span
-                          *ngIf="!item.esKG"
-                          class="text-xl font-medium leading-none text-black md:text-2xl dark:text-white"
-                        >
-                          = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Total -->
+          <div class="mt-4" *ngIf="!loadingFacturacion; else loaderConIva">
+            <ng-container *ngIf="resumenPesoFacturacion.items.length; else sinCantidades">
+              <!-- MÓVIL -->
+              <div class="flex flex-col gap-0 md:hidden">
+                <!-- Unidades lado a lado -->
+                <div class="flex flex-row items-start gap-0">
+                  <div class="flex flex-1 flex-col gap-1 py-2 pr-3">
                     <div
-                      class="flex flex-row items-center gap-2 sm:w-1/2 sm:flex-col sm:items-center sm:justify-center"
+                      *ngFor="let item of resumenPesoFacturacion.items"
+                      class="mb-1 flex flex-col"
                     >
-                      <div
-                        class="text-xl font-medium leading-none text-black md:text-2xl md:font-bold dark:text-white"
-                      >
-                        {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
+                      <div class="flex items-baseline gap-1">
+                        <span class="text-secondary text-xs font-medium uppercase tracking-wide"
+                          >{{ item.um }}:</span
+                        >
+                        <span class="break-all text-lg font-semibold leading-tight">{{
+                          formatValue(item.cant, 'decimal')
+                        }}</span>
                       </div>
-                      <div class="text-base text-purple-600 md:text-base">Total</div>
+                      <span *ngIf="!item.esKG" class="ml-1 text-sm font-normal text-gray-400">
+                        = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
+                      </span>
                     </div>
                   </div>
-                </ng-container>
 
-                <ng-template #sinCantidades>
-                  <span class="text-secondary text-sm font-medium leading-none">—</span>
-                </ng-template>
+                  <!-- Separador vertical -->
+                  <div class="mx-1 h-12 w-px self-center bg-gray-200 dark:bg-gray-700"></div>
+
+                  <!-- Total KG -->
+                  <div class="flex flex-1 flex-col py-2 pl-3">
+                    <div class="text-xs font-medium text-purple-600 dark:text-purple-400">
+                      Total general
+                    </div>
+                    <div class="mt-1 break-all text-lg font-semibold leading-tight">
+                      {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+
+              <!-- DESKTOP: 3 columnas -->
+              <div class="hidden md:flex md:flex-row md:items-center md:gap-0">
+                <!-- Col 1: unidades -->
+                <div class="flex flex-1 flex-col gap-2 px-2">
+                  <div
+                    *ngFor="let item of resumenPesoFacturacion.items"
+                    class="flex items-baseline gap-2"
+                  >
+                    <span class="text-secondary text-sm font-medium leading-none"
+                      >{{ item.um }}:</span
+                    >
+                    <span class="text-2xl font-bold leading-none">{{
+                      formatValue(item.cant, 'decimal')
+                    }}</span>
+                    <span *ngIf="!item.esKG" class="text-xl font-normal text-black dark:text-white">
+                      = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Separador -->
+                <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+                <!-- Col 2: Total -->
+                <div class="flex flex-1 flex-col px-4">
+                  <div class="text-secondary text-sm font-medium leading-none">Total general</div>
+                  <div
+                    class="mt-2 break-all text-2xl font-bold leading-none text-purple-500 dark:text-purple-400"
+                  >
+                    {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #sinCantidades>
+              <span class="text-secondary text-sm font-medium leading-none">—</span>
+            </ng-template>
           </div>
 
           <ng-template #loaderConIva>

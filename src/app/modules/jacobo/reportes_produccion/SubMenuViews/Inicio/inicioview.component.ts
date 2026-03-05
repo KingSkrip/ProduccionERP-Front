@@ -65,6 +65,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   loadingFacturacion = true;
   loadingSaldosTejido = true;
   z200Oculto: boolean = false;
+  notasVentaTotal: number = 0;
   loadingRevisadoTejido = true;
   loadingEmbarquesTejido = true;
   loadingPorRevisarTejido = true;
@@ -912,12 +913,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     return this.getMetric('Facturación', 2);
   }
 
-  private getFechaFactura(item: any): Date | null {
-    const raw = item.fecha || item.FECHA || item.fechaFactura || item.fecha_timbrado;
-    if (!raw) return null;
-    const d = new Date(raw);
-    return isNaN(d.getTime()) ? null : d;
-  }
 
   private onFacturadoLoaded(resp: any): void {
     const payload = resp?.data ?? resp;
@@ -946,6 +941,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       if (imp > 0) conIva++;
       else sinIva++;
     }
+    this.notasVentaTotal = Number(payload?.notas_venta?.total) || 0;
   }
 
   /**
