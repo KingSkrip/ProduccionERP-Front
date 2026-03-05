@@ -18,9 +18,9 @@ import { TejidoTabComponent } from '../../list/tabs/tejido/tejido-tab.component'
     CommonModule,
     MatIconModule,
     MatTabsModule,
-    TejidoTabComponent,
-    ProduccionTabComponent,
-    TejidoRevisadoTabComponent,
+    // TejidoTabComponent,
+    // ProduccionTabComponent,
+    // TejidoRevisadoTabComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
