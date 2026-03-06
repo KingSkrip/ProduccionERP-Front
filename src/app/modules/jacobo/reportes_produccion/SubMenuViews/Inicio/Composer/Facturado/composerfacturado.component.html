@@ -52,35 +52,47 @@
     ══════════════════════════════════════ -->
     <ng-container *ngIf="!loading && modo === 'total'">
       <!-- KPIs principales -->
-      <!-- <div class="grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700">
+      <div class="mt-2 grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700">
+        <ng-container *ngIf="notasVentaTotal">
+          <div class="bg-card flex flex-col items-center justify-center gap-1 py-3">
+            <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">
+              Z200
+            </span>
+            <span
+              class="text-base md:text-2xl font-bold tabular-nums text-blue-600 dark:text-blue-400"
+            >
+              {{ notasVentaTotal.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
+            </span>
+          </div>
+        </ng-container>
 
-        <div class="flex flex-col gap-1 bg-card px-6 py-5">
-          <span class="text-black dark:text-white text-xs font-medium uppercase tracking-widest">Facturas</span>
-          <span class="text-4xl font-bold tabular-nums">{{ totalesFacturado?.facturas ?? 0 }}</span>
-        </div>
-
-        <div class="flex flex-col gap-1 bg-card px-6 py-5">
-          <span class="text-black dark:text-white text-xs font-medium uppercase tracking-widest">Importe neto</span>
-          <span class="text-4xl font-bold tabular-nums text-green-600 dark:text-green-400">
-            {{ totalesFacturado?.importe | currency: 'MXN' : 'symbol' : '1.0-0' }}
+        <div class="bg-card flex flex-col items-center justify-center gap-1 py-3">
+          <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">
+            Total
+          </span>
+          <span
+            class="text-base md:text-2xl font-bold tabular-nums text-green-700  dark:text-green-300"
+          >
+            {{ totalesFacturado?.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
           </span>
         </div>
+      </div>
 
-        <div class="flex flex-col gap-1 bg-card px-6 py-5">
-          <span class="text-black dark:text-white text-xs font-medium uppercase tracking-widest">IVA</span>
-          <span class="text-3xl font-semibold tabular-nums text-amber-600 dark:text-amber-400">
-            {{ totalesFacturado?.impuestos | currency: 'MXN' : 'symbol' : '1.0-0' }}
-          </span>
-        </div>
-
-        <div class="flex flex-col gap-1 bg-card px-6 py-5">
-          <span class="text-black dark:text-white text-xs font-medium uppercase tracking-widest">Total c/IVA</span>
-          <span class="text-3xl font-bold tabular-nums text-green-700 dark:text-green-300">
-            {{ totalesFacturado?.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
-          </span>
-        </div>
-
-      </div> -->
+      <!-- Total General — fila completa debajo -->
+      <div class="h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+      <div class="bg-card flex flex-col items-center justify-center gap-1 py-3">
+        <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">
+          Total General
+        </span>
+        <span
+          class="text-base md:text-2xl font-bold tabular-nums text-purple-600 dark:text-purple-400"
+        >
+          {{
+            (notasVentaTotal?.total ?? 0) + (totalesFacturado?.total ?? 0)
+              | currency: 'MXN' : 'symbol' : '1.2-2'
+          }}
+        </span>
+      </div>
 
       <mat-divider></mat-divider>
 
@@ -91,7 +103,7 @@
         </p>
 
         <div class="flex flex-col gap-3">
-          <ng-container *ngFor="let dia of subtotalesPorDia">
+          <ng-container *ngFor="let dia of diasUnificados">
             <div
               class="bg-card rounded-xl border px-5 py-4 shadow-sm transition-shadow hover:shadow-md"
             >
@@ -104,33 +116,55 @@
                   </span>
                 </div>
                 <span
+                  *ngIf="dia.tieneFacturas"
                   class="rounded-full bg-gray-100 px-3 py-0.5 text-xs font-medium dark:bg-gray-700"
                 >
                   {{ dia.facturas }} {{ dia.facturas === 1 ? 'factura' : 'facturas' }}
                 </span>
               </div>
 
-              <!-- Importes -->
-              <div class="grid grid-cols-3 gap-2">
-                <div class="flex flex-col">
-                  <span class="text-xs text-black dark:text-white">Subtotal</span>
-                  <span class="text-sm font-semibold">
-                    {{ dia.importe | currency: 'MXN' : 'symbol' : '1.2-2' }}
+              <!-- Importes — solo si tiene facturas -->
+              <ng-container *ngIf="dia.tieneFacturas">
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="flex flex-col">
+                    <span class="text-xs text-black dark:text-white">Subtotal</span>
+                    <span class="text-sm font-semibold">
+                      {{ dia.importe | currency: 'MXN' : 'symbol' : '1.2-2' }}
+                    </span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs text-black dark:text-white">IVA</span>
+                    <span class="text-sm font-semibold text-amber-600">
+                      {{ dia.impuestos | currency: 'MXN' : 'symbol' : '1.2-2' }}
+                    </span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs text-black dark:text-white">Total</span>
+                    <span class="text-sm font-bold text-green-600 dark:text-green-400">
+                      {{ dia.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
+                    </span>
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- Z200 del día -->
+              <ng-container *ngIf="dia.notasVenta as nv">
+                <mat-divider *ngIf="dia.tieneFacturas" class="my-3"></mat-divider>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <mat-icon class="text-blue-500 icon-size-4">receipt</mat-icon>
+                    <span class="text-xs font-medium text-black dark:text-white">Z200</span>
+                    <span
+                      class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                    >
+                      {{ nv.registros }} {{ nv.registros === 1 ? 'nota' : 'notas' }}
+                    </span>
+                  </div>
+                  <span class="text-sm font-bold text-blue-600 dark:text-blue-400">
+                    {{ nv.total_nv | currency: 'MXN' : 'symbol' : '1.2-2' }}
                   </span>
                 </div>
-                <div class="flex flex-col">
-                  <span class="text-xs text-black dark:text-white">IVA</span>
-                  <span class="text-sm font-semibold text-amber-600">
-                    {{ dia.impuestos | currency: 'MXN' : 'symbol' : '1.2-2' }}
-                  </span>
-                </div>
-                <div class="flex flex-col">
-                  <span class="text-xs text-black dark:text-white">Total</span>
-                  <span class="text-sm font-bold text-green-600 dark:text-green-400">
-                    {{ dia.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
-                  </span>
-                </div>
-              </div>
+              </ng-container>
             </div>
           </ng-container>
         </div>
@@ -142,50 +176,104 @@
     ══════════════════════════════════════ -->
     <ng-container *ngIf="!loading && modo === 'peso'">
       <!-- KPIs de peso -->
-      <div class="flex flex-col gap-px bg-gray-200 sm:grid sm:grid-cols-2 dark:bg-gray-700">
-        <!-- Total KG -->
-        <div class="bg-card flex h-full flex-col px-6 py-5">
-          <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">
-            Total KG
-          </span>
+      <div class="flex flex-col gap-px bg-gray-200 dark:bg-gray-700">
+        <!-- Fila superior: 2 columnas -->
+        <div class="grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700">
+          <!-- Col 1: Por unidad + Total KG -->
+          <div class="bg-card flex min-w-0 flex-col gap-4 px-2 py-5">
+            <div>
+              <span
+                class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
+              >
+                Por unidad
+              </span>
+              <div class="flex flex-col gap-2 pt-1">
+                <ng-container *ngFor="let item of resumenPesoComposer.items">
+                  <div class="flex flex-col">
+                    <div class="flex w-full items-center justify-between gap-4">
+                      <span
+                        class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                      >
+                        {{ item.um }}
+                      </span>
+                      <span class="text-right text-base font-bold tabular-nums md:text-2xl">
+                        {{ item.cant | number: '1.2-2' }}
+                      </span>
+                    </div>
+                    <span
+                      *ngIf="!item.esKG"
+                      class="mt-0.5 text-right text-xs text-black dark:text-white"
+                    >
+                      = {{ item.kgEquivalente | number: '1.2-2' }} KG
+                    </span>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
 
-          <div class="flex flex-1 items-center justify-start">
-            <span
-              class="w-full text-start text-xl font-bold tabular-nums text-purple-600 sm:text-xl dark:text-purple-400"
-            >
-              {{ resumenPesoComposer.totalKG | number: '1.2-2' }}
-            </span>
+            <mat-divider></mat-divider>
+
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <span
+                class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
+              >
+                Total KG
+                <p class="mt-0.5 text-xs font-normal normal-case">kilogramos facturados</p>
+              </span>
+              <span
+                class="text-base font-bold tabular-nums text-purple-600 md:text-2xl dark:text-purple-400"
+              >
+                {{ resumenPesoComposer.totalKG | number: '1.2-2' }}
+              </span>
+            </div>
           </div>
 
-          <span class="text-base text-black dark:text-white"> kilogramos facturados </span>
-        </div>
-
-        <!-- Por unidad -->
-        <div class="bg-card flex flex-col gap-2 px-6 py-5">
-          <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
-            >Por unidad</span
+          <!-- Col 2: Z200 + Total general KG -->
+          <div
+            *ngIf="notasVentaTotal?.unidades?.length"
+            class="bg-card flex min-w-0 flex-col gap-4 px-6 py-5"
           >
-          <div class="flex flex-col gap-2 pt-1">
-            <ng-container *ngFor="let item of resumenPesoComposer.items">
-              <div class="flex flex-col">
-                <div class="flex items-center justify-between gap-4">
-                  <span
-                    class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                  >
-                    {{ item.um }}
-                  </span>
-                  <span class="text-base font-bold tabular-nums md:text-xl">{{
-                    item.cant | number: '1.2-2'
-                  }}</span>
-                </div>
+            <div>
+              <span
+                class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
+              >
+                Z200
+              </span>
+              <div class="flex flex-col gap-2 pt-1">
+                <ng-container *ngFor="let u of notasVentaTotal!.unidades">
+                  <div class="flex items-center justify-between gap-4">
+                    <span
+                      class="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700 dark:bg-orange-900 dark:text-orange-300"
+                    >
+                      {{ u.um }}
+                    </span>
+                    <span
+                      class="text-base font-bold tabular-nums text-orange-600 md:text-2xl dark:text-orange-400"
+                    >
+                      {{ u.cant | number: '1.2-2' }}
+                    </span>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+
+            <!-- Divider + Total pegados juntos al fondo -->
+            <div class="mt-auto flex flex-col gap-4">
+              <mat-divider></mat-divider>
+              <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <span
-                  *ngIf="!item.esKG"
-                  class="mt-0.5 text-right text-xs text-gray-400 md:text-base"
+                  class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
                 >
-                  = {{ item.kgEquivalente | number: '1.2-2' }} KG
+                  Total general KG
+                  <p class="mt-0.5 text-xs font-normal normal-case">Total KG + Z200</p>
+                </span>
+                <span
+                  class="text-base font-bold tabular-nums text-green-600 md:text-2xl dark:text-green-400"
+                >
+                  {{ resumenPesoComposer.totalKG + totalKGNotasVenta | number: '1.2-2' }}
                 </span>
               </div>
-            </ng-container>
+            </div>
           </div>
         </div>
       </div>
@@ -240,6 +328,33 @@
                   </p>
                 </div> -->
               </div>
+
+              <!-- ← AGREGA ESTO AQUÍ ABAJO -->
+              <ng-container *ngIf="notasVentaPorDia[dia.fecha | date: 'yyyy-MM-dd'] as nv">
+                <mat-divider class="my-3"></mat-divider>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <mat-icon class="text-orange-500 icon-size-4">receipt</mat-icon>
+                    <span class="text-xs font-medium text-black dark:text-white">Z200</span>
+                    <span
+                      class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700 dark:bg-orange-900 dark:text-orange-300"
+                    >
+                      {{ nv.registros }} {{ nv.registros === 1 ? 'nota' : 'notas' }}
+                    </span>
+                  </div>
+                  <!-- Unidades -->
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <ng-container *ngFor="let u of nv.unidades">
+                      <span class="rounded-fullpx-3 flex items-center gap-1 py-0.5 text-xs">
+                        <span class="font-semibold text-orange-700 dark:text-orange-300">
+                          {{ u.cant | number: '1.2-2' }}
+                        </span>
+                        <span class="text-orange-500">{{ u.um }}</span>
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+              </ng-container>
             </div>
           </ng-container>
         </div>

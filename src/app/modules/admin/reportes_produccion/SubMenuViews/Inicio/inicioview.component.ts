@@ -47,6 +47,7 @@ import { ClienteAgrupado, FacturaDetalle } from './types/facturacion.types';
     CurrencyPipe,
   ],
 })
+// InicioViewComponent1
 export class InicioViewComponent implements OnInit, OnDestroy {
   ivaTotal = 0;
   totalConIva = 0;
@@ -93,6 +94,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   articuloSeleccionadoProduccion: string | null = null;
   articuloSeleccionadoPorRevisar: string | null = null;
   tipoEmbarqueSeleccionadoGrafica: string | null = null;
+  notasVentaUnidades: { um: string; cant: number }[] = [];
   @ViewChild(MatSort) recentTransactionsTableMatSort!: MatSort;
   data: any = {
     previousStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
@@ -1242,6 +1244,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     }
 
     this.notasVentaTotal = Number(payload?.notas_venta?.total) || 0;
+    this.notasVentaTotal = Number(payload?.notas_venta?.total) || 0;
+    this.notasVentaUnidades = payload?.notas_venta?.unidades ?? [];
   }
 
   /**
@@ -1731,5 +1735,42 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+  }
+  // Getter que calcula el resumen de peso con conversión de unidades
+  get resumenPesoFacturacion() {
+    const RATES: { [key: string]: number } = {
+      KG: 1,
+      KGS: 1,
+      LB: 0.453592,
+      LBS: 0.453592,
+      OZ: 0.0283495,
+      G: 0.001,
+      GR: 0.001,
+    };
+
+    const items = Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => {
+      const rate = RATES[um.toUpperCase()] ?? 0;
+      return { um, cant, kgEquivalente: cant * rate, esKG: rate === 1 };
+    });
+
+    const totalKG = items.reduce((sum, i) => sum + i.kgEquivalente, 0);
+
+    return { items, totalKG };
+  }
+
+  // Getter que convierte notas de venta a KG
+  get notasVentaUnidadesKG(): number {
+    const RATES: { [key: string]: number } = {
+      KG: 1,
+      KGS: 1,
+      LB: 0.453592,
+      LBS: 0.453592,
+      OZ: 0.0283495,
+      G: 0.001,
+    };
+    return this.notasVentaUnidades.reduce((sum, item) => {
+      const rate = RATES[item.um.toUpperCase()] ?? 0;
+      return sum + item.cant * rate;
+    }, 0);
   }
 }

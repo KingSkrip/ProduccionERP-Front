@@ -94,6 +94,9 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   articuloSeleccionadoProduccion: string | null = null;
   articuloSeleccionadoPorRevisar: string | null = null;
   tipoEmbarqueSeleccionadoGrafica: string | null = null;
+  notasVentaUnidades: { um: string; cant: number }[] = [];
+  variacionPeriodoAnterior: number;
+  unidadToggle: 'KG' | 'TON' | 'LB' = 'KG';
   areasResumen: AreaResumen[] = [
     {
       nombre: 'Facturación',
@@ -913,7 +916,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     return this.getMetric('Facturación', 2);
   }
 
-
   private onFacturadoLoaded(resp: any): void {
     const payload = resp?.data ?? resp;
     const tot = payload?.totales ?? {};
@@ -942,6 +944,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       else sinIva++;
     }
     this.notasVentaTotal = Number(payload?.notas_venta?.total) || 0;
+    this.notasVentaTotal = Number(payload?.notas_venta?.total) || 0;
+    this.notasVentaUnidades = payload?.notas_venta?.unidades ?? [];
   }
 
   /**
@@ -1434,5 +1438,20 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         console.error('Error al toggle Z200:', err);
       },
     });
+  }
+
+  get notasVentaUnidadesKG(): number {
+    const RATES: { [key: string]: number } = {
+      KG: 1,
+      KGS: 1,
+      LB: 0.453592,
+      LBS: 0.453592,
+      OZ: 0.0283495,
+      G: 0.001,
+    };
+    return this.notasVentaUnidades.reduce((sum, item) => {
+      const rate = RATES[item.um.toUpperCase()] ?? 0;
+      return sum + item.cant * rate;
+    }, 0);
   }
 }

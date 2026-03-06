@@ -170,7 +170,7 @@
             </div>
 
             <!-- DESKTOP: layout 3 columnas -->
-            <div class="hidden md:flex md:flex-row md:items-center md:gap-0">
+            <div class="mt-2 hidden md:flex md:flex-row md:items-center md:gap-0">
               <!-- Col 1: Total Z100 -->
               <div class="flex flex-1 flex-col px-2">
                 <div class="text-secondary text-sm font-medium leading-none">Total</div>
@@ -185,28 +185,20 @@
               <!-- Col 2: Z200 -->
               <div class="flex flex-1 flex-col px-4">
                 <div class="text-secondary text-sm font-medium leading-none">Z200</div>
-                <div class="mt-2 flex items-center">
+                <div class=" flex items-center mt-2">
                   <span class="text-2xl font-bold leading-none">
-                    <ng-container *ngIf="!z200Oculto">{{
-                      notasVentaTotal | currency: 'MXN'
-                    }}</ng-container>
+                    <ng-container *ngIf="!z200Oculto">
+                      {{ notasVentaTotal | currency: 'MXN' }}
+                    </ng-container>
                     <ng-container *ngIf="z200Oculto">
                       <span class="select-none font-medium text-black dark:text-white">******</span>
                     </ng-container>
                   </span>
-                  <button
-                    mat-icon-button
-                    type="button"
-                    class="ml-1 flex items-center justify-center p-0"
+                  <mat-icon
+                    class="ml-2 cursor-pointer text-black dark:text-white"
                     (click)="toggleZ200()"
-                  >
-                    <mat-icon
-                      class="text-black dark:text-white"
-                      [svgIcon]="
-                        z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'
-                      "
-                    ></mat-icon>
-                  </button>
+                    [svgIcon]="z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'"
+                  ></mat-icon>
                 </div>
               </div>
 
@@ -241,8 +233,7 @@
 
         <!-- Peso total -->
         <div
-          class="bg-card relative flex flex-auto cursor-pointer flex-col overflow-hidden rounded-2xl p-4 pb-3 shadow"
-          matRipple
+          class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-4 pb-3 shadow"
         >
           <div class="absolute right-2 top-2 z-10">
             <button
@@ -279,7 +270,7 @@
           </div>
 
           <!-- Loader o contenido -->
-          <div class="mt-4" *ngIf="!loadingFacturacion; else loaderConIva">
+          <div *ngIf="!loadingFacturacion; else loaderConIva">
             <ng-container *ngIf="resumenPesoFacturacion.items.length; else sinCantidades">
               <!-- MÓVIL -->
               <div class="flex flex-col gap-0 md:hidden">
@@ -320,37 +311,68 @@
               </div>
 
               <!-- DESKTOP: 3 columnas -->
-              <div class="hidden md:flex md:flex-row md:items-center md:gap-0">
-                <!-- Col 1: unidades -->
-                <div class="flex flex-1 flex-col gap-2 px-2">
-                  <div
-                    *ngFor="let item of resumenPesoFacturacion.items"
-                    class="flex items-baseline gap-2"
-                  >
-                    <span class="text-secondary text-sm font-medium leading-none"
-                      >{{ item.um }}:</span
-                    >
-                    <span class="text-2xl font-bold leading-none">{{
-                      formatValue(item.cant, 'decimal')
-                    }}</span>
-                    <span *ngIf="!item.esKG" class="text-xl font-normal text-black dark:text-white">
-                      = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
-                    </span>
-                  </div>
-                </div>
+<div class="mt-2 hidden md:flex md:flex-row md:gap-0">
+  <!-- Col 1: unidades -->
+  <div class="flex flex-1 flex-col gap-1 px-2">
+    <div class="text-secondary mb-1 text-sm font-medium leading-none">Unidades</div>
+    <div *ngFor="let item of resumenPesoFacturacion.items" class="flex items-baseline gap-2">
+      <span class="text-xl font-bold leading-none">
+        {{ formatValue(item.cant, 'decimal') }} {{ item.um }}
+      </span>
+      <span *ngIf="!item.esKG" class="text-xl font-medium text-black dark:text-white">
+        = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
+      </span>
+    </div>
 
-                <!-- Separador -->
-                <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+    <!-- Separador + subtotal al fondo -->
+    <div class="mt-auto">
+      <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+      <span class="text-xl font-bold leading-none">
+        {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
+      </span>
+    </div>
+  </div>
 
-                <!-- Col 2: Total -->
-                <div class="flex flex-1 flex-col px-4">
-                  <div class="text-secondary text-sm font-medium leading-none">Total general</div>
-                  <div
-                    class="mt-2 break-all text-2xl font-bold leading-none text-purple-500 dark:text-purple-400"
-                  >
-                    {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
-                  </div>
-                </div>
+  <!-- Separador -->
+  <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+  <!-- Col 2: Unidades Z200 -->
+  <div class="flex flex-1 flex-col px-4">
+    <div class="text-secondary text-sm font-medium leading-none">Unidades Z200</div>
+
+    <ng-container *ngIf="notasVentaUnidades.length; else sinUnidadesZ200">
+      <div class="mt-auto">
+        <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+        <span
+          class="text-xl font-bold leading-none text-purple-500 dark:text-purple-400"
+        >
+          {{ formatValue(notasVentaUnidades[0].cant, 'decimal') }} {{ notasVentaUnidades[0].um }}
+        </span>
+      </div>
+    </ng-container>
+    <ng-template #sinUnidadesZ200>
+      <span
+        class="mt-auto text-2xl font-bold leading-none text-purple-500 dark:text-purple-400"
+      >
+        —
+      </span>
+    </ng-template>
+  </div>
+
+  <!-- Separador -->
+  <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+  <!-- Col 3: Total general -->
+  <div class="flex flex-1 flex-col px-4">
+    <div class="text-secondary text-sm font-medium leading-none">Total general</div>
+
+    <div class="mt-auto">
+      <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+      <span class="text-xl font-bold leading-none text-purple-500 dark:text-purple-400">
+        {{ formatValue(resumenPesoFacturacion.totalKG + notasVentaUnidadesKG, 'decimal') }} KG
+      </span>
+    </div>
+  </div>
               </div>
             </ng-container>
 
@@ -1016,7 +1038,8 @@
         <div class="flex flex-col">
           <div class="text-lg font-medium leading-6 tracking-tight">Embarques por artículo</div>
           <div class="text-secondary mt-1 text-sm font-medium">
-            Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }} -
+            Periodo: {{ (filtros$ | async)?.fechaInicio | date: 'dd/MM/yyyy' }}
+            -
             {{ (filtros$ | async)?.fechaFin | date: 'dd/MM/yyyy' }}
           </div>
         </div>
@@ -1212,3 +1235,92 @@
   </div>
 </div>
 <!-- FIN VISTA RESUMEN CON LOADERS -->
+
+<!-- DESKTOP: 3 columnas -->
+<!-- <div class="mt-2 hidden md:flex md:flex-row md:gap-0">
+
+  <div class="flex flex-1 flex-col gap-1 px-2">
+    <div class="text-secondary mb-1 text-sm font-medium leading-none">Unidades</div>
+    <div *ngFor="let item of resumenPesoFacturacion.items" class="flex items-baseline gap-2">
+      <span class="text-xl font-bold leading-none">
+        {{ formatValue(item.cant, 'decimal') }} {{ item.um }}
+      </span>
+      <span *ngIf="!item.esKG" class="text-sm font-medium text-gray-400">
+        = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
+      </span>
+    </div>
+  </div>
+
+  <div class="w-px self-stretch bg-gray-200 dark:bg-gray-700"></div>
+
+  <div class="flex flex-1 flex-col px-4">
+    <div class="text-secondary mb-1 text-sm font-medium leading-none">Unidades Z200</div>
+    <ng-container *ngIf="notasVentaUnidades.length; else sinUnidadesZ200">
+      <div *ngFor="let item of notasVentaUnidades" class="flex items-baseline gap-2">
+        <span class="text-xl font-bold leading-none text-purple-500 dark:text-purple-400">
+          {{ formatValue(item.cant, 'decimal') }} {{ item.um }}
+        </span>
+      </div>
+    </ng-container>
+    <ng-template #sinUnidadesZ200>
+      <span class="text-xl font-bold leading-none text-purple-400">—</span>
+    </ng-template>
+  </div>
+
+  <div class="w-px self-stretch bg-gray-200 dark:bg-gray-700"></div>
+
+  <div class="flex flex-1 flex-col px-4">
+    <div class="mb-1 flex items-center justify-between">
+      <div class="text-secondary text-sm font-medium leading-none">Total general</div>
+     
+      <div class="flex rounded-md border border-gray-700 text-xs">
+        <button
+          (click)="unidadToggle = 'KG'"
+          [class.bg-purple-700]="unidadToggle === 'KG'"
+          [class.text-white]="unidadToggle === 'KG'"
+          class="px-2 py-0.5 text-gray-400 transition-colors"
+        >KG</button>
+        <button
+          (click)="unidadToggle = 'TON'"
+          [class.bg-purple-700]="unidadToggle === 'TON'"
+          [class.text-white]="unidadToggle === 'TON'"
+          class="border-x border-gray-700 px-2 py-0.5 text-gray-400 transition-colors"
+        >TON</button>
+        <button
+          (click)="unidadToggle = 'LB'"
+          [class.bg-purple-700]="unidadToggle === 'LB'"
+          [class.text-white]="unidadToggle === 'LB'"
+          class="px-2 py-0.5 text-gray-400 transition-colors"
+        >LB</button>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-gray-400">Z100</span>
+      <span class="text-xl font-bold">
+        <ng-container [ngSwitch]="unidadToggle">
+          <ng-container *ngSwitchCase="'KG'">{{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG</ng-container>
+          <ng-container *ngSwitchCase="'TON'">{{ formatValue(resumenPesoFacturacion.totalKG / 1000, 'decimal') }} TON</ng-container>
+          <ng-container *ngSwitchCase="'LB'">{{ formatValue(resumenPesoFacturacion.totalKG * 2.20462, 'decimal') }} LB</ng-container>
+        </ng-container>
+      </span>
+    </div>
+    <div class="mt-1 flex items-center gap-2">
+      <span class="text-sm text-gray-400">Z200</span>
+      <span class="text-xl font-bold text-purple-400">
+        + <ng-container [ngSwitch]="unidadToggle">
+          <ng-container *ngSwitchCase="'KG'">{{ formatValue(notasVentaUnidadesKG, 'decimal') }} KG</ng-container>
+          <ng-container *ngSwitchCase="'TON'">{{ formatValue(notasVentaUnidadesKG / 1000, 'decimal') }} TON</ng-container>
+          <ng-container *ngSwitchCase="'LB'">{{ formatValue(notasVentaUnidadesKG * 2.20462, 'decimal') }} LB</ng-container>
+        </ng-container>
+      </span>
+    </div>
+    <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+    <span class="text-2xl font-bold text-purple-500 dark:text-purple-400">
+      <ng-container [ngSwitch]="unidadToggle">
+        <ng-container *ngSwitchCase="'KG'">{{ formatValue(resumenPesoFacturacion.totalKG + notasVentaUnidadesKG, 'decimal') }} KG</ng-container>
+        <ng-container *ngSwitchCase="'TON'">{{ formatValue((resumenPesoFacturacion.totalKG + notasVentaUnidadesKG) / 1000, 'decimal') }} TON</ng-container>
+        <ng-container *ngSwitchCase="'LB'">{{ formatValue((resumenPesoFacturacion.totalKG + notasVentaUnidadesKG) * 2.20462, 'decimal') }} LB</ng-container>
+      </ng-container>
+    </span>
+  </div>
+</div> -->
