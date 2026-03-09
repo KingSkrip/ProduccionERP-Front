@@ -72,10 +72,12 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   loadingDetallesProcesos = true;
   loadingProduccionTejido = true;
   loadingGraficaFacturacion = true;
+  variacionPeriodoAnterior: number;
   loadingDistribucionProcesos = true;
   datosEmbarquesCompletos: any[] = [];
   private destroy$ = new Subject<void>();
   datosAgrupados: ClienteAgrupado[] = [];
+  unidadToggle: 'KG' | 'TON' | 'LB' = 'KG';
   datosSaldosCompletos: SaldosTejido[] = [];
   filtros$ = this.sharedData.filtrosGlobales$;
   chartSaldosTejido: ApexOptions | null = null;
@@ -95,8 +97,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   articuloSeleccionadoPorRevisar: string | null = null;
   tipoEmbarqueSeleccionadoGrafica: string | null = null;
   notasVentaUnidades: { um: string; cant: number }[] = [];
-  variacionPeriodoAnterior: number;
-  unidadToggle: 'KG' | 'TON' | 'LB' = 'KG';
+
   areasResumen: AreaResumen[] = [
     {
       nombre: 'Facturación',
@@ -247,9 +248,9 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         return;
       }
       const filtros = this.sharedData.obtenerFiltros();
-      const from = filtros.fechaInicio
-        ? new Date(filtros.fechaInicio)
-        : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      // const from = filtros.fechaInicio
+      //   ? new Date(filtros.fechaInicio)
+      //   : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
       const to = filtros.fechaFin ? new Date(filtros.fechaFin) : new Date();
       const toExclusive = new Date(to);
       toExclusive.setHours(0, 0, 0, 0);
@@ -307,7 +308,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
           this.procesarEstampados(datos.estampados);
           this.procesarAcabado(datos.acabado);
           this.crearGraficaDistribucionProcesos(datos);
-
           this.sharedData.actualizarTejidoPorDia(datos.tejidoPorDia ?? []);
           this.sharedData.actualizarTintoreriaPorDia(datos.tintoreriaPorDia ?? []);
           this.sharedData.actualizarEstampadoPorDia(datos.estampadoPorDia ?? []);
@@ -447,14 +447,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
 
   trackByFn(index: number, item: any): any {
     return item?.id ?? index;
-  }
-
-  private toNum(v: any): number {
-    if (v == null) return 0;
-    if (typeof v === 'number') return v;
-    const s = String(v).replace(/,/g, '').trim();
-    const n = Number(s);
-    return isNaN(n) ? 0 : n;
   }
 
   get detallesAcabado() {
@@ -604,14 +596,11 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   ): void {
     const area = this.areasResumen.find((a) => a.nombre === areaName);
     if (!area) return;
-
     const datosFiltrados = articuloSeleccionado
       ? datos.filter((d) => d.ARTICULO === articuloSeleccionado)
       : datos;
-
     const peso = datosFiltrados.reduce((sum, item) => sum + (Number(item[pesoField]) || 0), 0);
     const piezas = datosFiltrados.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-
     area.metrics[0].value = peso;
     area.metrics[1].value = piezas;
     area.metrics[2].value = datosFiltrados.length;
@@ -651,10 +640,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     );
     const topArticulos = datosOrdenados.slice(0, topN);
     const otrosArticulos = datosOrdenados.slice(topN);
-
     const series = topArticulos.map((item) => parseFloat(item[valueField]));
     const labels = topArticulos.map((item) => item.ARTICULO);
-
     if (otrosArticulos.length > 0) {
       const otrosTotal = otrosArticulos.reduce(
         (sum, item) => sum + parseFloat(item[valueField]),
@@ -663,7 +650,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       series.push(otrosTotal);
       labels.push(`Otros (${otrosArticulos.length})`);
     }
-
     this[chartProperty] = {
       series,
       labels,
@@ -822,7 +808,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       area.metrics[0].value = cantidadTotal;
       area.metrics[1].value = piezasTotal;
       area.metrics[2].value = procesos;
-
       area.detalles = data.map((item) => ({
         departamento: item.departamento || 'N/A',
         proceso: item.proceso || 'N/A',
@@ -875,10 +860,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const payload = resp?.data ?? resp;
     if (!payload) return;
     const tot = payload.totales ?? {};
-
     const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
     if (!area || area.metrics.length < 2) return;
-
     area.metrics[0].value = this.resumenPesoFacturacion.totalKG;
     area.metrics[1].value = Number(tot.total) || 0;
   }
@@ -1211,7 +1194,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const tipos = tiposUnicos.size;
     const articulos = new Set(datosFiltrados.map((item) => String(item.ARTICULO ?? '').trim()))
       .size;
-
     area.metrics[0].value = totalEmbarcado;
     area.metrics[1].value = tipos;
     area.metrics[2].value = articulos;
@@ -1240,10 +1222,10 @@ export class InicioViewComponent implements OnInit, OnDestroy {
 
     this.datosEmbarquesCompletos = data;
     this.datosEmbarquesCompletos = data;
-    const norm = (v: any) =>
-      String(v ?? '')
-        .trim()
-        .toUpperCase();
+    // const norm = (v: any) =>
+    //   String(v ?? '')
+    //     .trim()
+    //     .toUpperCase();
     const totalEmbarcado = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
     const TIPOS_FIJOS = ['PRIMERA', 'PREFERIDA', 'SEGUNDA', 'ORILLAS', 'RETAZO', 'MUESTRAS'];
     const tipos = TIPOS_FIJOS.length;
@@ -1267,7 +1249,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   abrirComposerFacturado(modo: ModoComposer): void {
     this._dialog.open(ComposerFacturadoComponent, {
       data: { modo },
-      // Móvil: pantalla completa | Desktop: dialog normal
       width: window.innerWidth < 768 ? '100vw' : '820px',
       height: window.innerWidth < 768 ? '100dvh' : 'auto',
       maxWidth: window.innerWidth < 768 ? '100vw' : '95vw',
@@ -1377,8 +1358,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         visible.add(seccion);
       }
     }
-
-    // Si alguna sección de procesos es visible, mostrar también el divider
     const seccionesProcesos = ['Tejido', 'Tintorería', 'Estampados', 'Acabado real'];
     if (seccionesProcesos.some((s) => visible.has(s))) {
       visible.add('Distribución de procesos');
@@ -1407,7 +1386,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   }
 
   verificarZ200Oculto(): void {
-    const Z200_ID = 200; // el id real que estés usando
+    const Z200_ID = 200;
 
     this.reportService.toggleOcultar(Z200_ID).subscribe({
       next: (oculto) => {
@@ -1418,21 +1397,18 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   }
 
   toggleZ200(): void {
-    // Optimistic update - cambia inmediatamente sin esperar al servidor
     this.z200Oculto = !this.z200Oculto;
     this.cdr.markForCheck();
 
     const Z200_ID = 200;
     this.reportService.toggleOcultar(Z200_ID).subscribe({
       next: (oculto) => {
-        // Si el servidor devuelve algo diferente, corregimos
         if (oculto !== this.z200Oculto) {
           this.z200Oculto = oculto;
           this.cdr.markForCheck();
         }
       },
       error: (err) => {
-        // Revertir si hay error
         this.z200Oculto = !this.z200Oculto;
         this.cdr.markForCheck();
         console.error('Error al toggle Z200:', err);

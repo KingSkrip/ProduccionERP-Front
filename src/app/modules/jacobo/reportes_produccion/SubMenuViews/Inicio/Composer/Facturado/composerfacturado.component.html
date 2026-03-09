@@ -59,7 +59,7 @@
               Z200
             </span>
             <span
-              class="text-base md:text-2xl font-bold tabular-nums text-blue-600 dark:text-blue-400"
+              class="text-base font-bold tabular-nums text-blue-600 md:text-2xl dark:text-blue-400"
             >
               {{ notasVentaTotal.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
             </span>
@@ -71,7 +71,7 @@
             Total
           </span>
           <span
-            class="text-base md:text-2xl font-bold tabular-nums text-green-700  dark:text-green-300"
+            class="text-base font-bold tabular-nums text-green-700 md:text-2xl dark:text-green-300"
           >
             {{ totalesFacturado?.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
           </span>
@@ -85,7 +85,7 @@
           Total General
         </span>
         <span
-          class="text-base md:text-2xl font-bold tabular-nums text-purple-600 dark:text-purple-400"
+          class="text-base font-bold tabular-nums text-purple-600 md:text-2xl dark:text-purple-400"
         >
           {{
             (notasVentaTotal?.total ?? 0) + (totalesFacturado?.total ?? 0)

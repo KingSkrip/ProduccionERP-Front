@@ -43,7 +43,6 @@ export interface NotasVentaResumen {
   unidades?: { um: string; cant: number }[];
 }
 
-// 'total' = vista de importes | 'peso' = vista de cantidades por día
 export type ModoComposer = 'total' | 'peso';
 
 @Component({
@@ -138,15 +137,15 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
         });
       }
       const dia = mapa.get(fecha)!;
-      dia._facturas.add(item.factura); // ← facturas únicas, no partidas
+      dia._facturas.add(item.factura);
       dia.cant += item.cant ?? 0;
       dia.importe += item.importe ?? 0;
-      dia.impuestos += item.impuestos ?? 0; // ← leer IVA directo del item
+      dia.impuestos += item.impuestos ?? 0;
       dia.total += item.total ?? 0;
     }
 
     return Array.from(mapa.values())
-      .map(({ _facturas, ...dia }) => ({ ...dia, facturas: _facturas.size })) // ← contar únicas
+      .map(({ _facturas, ...dia }) => ({ ...dia, facturas: _facturas.size }))
       .sort((a, b) => a.fecha.localeCompare(b.fecha));
   }
 
