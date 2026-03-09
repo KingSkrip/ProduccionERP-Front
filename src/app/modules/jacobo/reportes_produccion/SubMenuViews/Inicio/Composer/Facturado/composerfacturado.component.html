@@ -2,7 +2,6 @@
   <!-- ───── HEADER ───── -->
   <div class="flex flex-shrink-0 items-center justify-between border-b md:px-6 md:py-4">
     <div class="flex items-center gap-3">
-      <!-- Ícono según modo -->
       <div
         class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
         [class.bg-green-100]="modo === 'total'"
@@ -51,13 +50,13 @@
          MODO: TOTAL  (importes del periodo)
     ══════════════════════════════════════ -->
     <ng-container *ngIf="!loading && modo === 'total'">
-      <!-- KPIs principales -->
-      <div class="mt-2 grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700">
+      <!-- ── KPIs principales Z100 + Z200 + Total General ── -->
+      <!-- <div class="mt-2 grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700">
         <ng-container *ngIf="notasVentaTotal">
           <div class="bg-card flex flex-col items-center justify-center gap-1 py-3">
-            <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">
-              Z200
-            </span>
+            <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
+              >Z200</span
+            >
             <span
               class="text-base font-bold tabular-nums text-blue-600 md:text-2xl dark:text-blue-400"
             >
@@ -67,23 +66,21 @@
         </ng-container>
 
         <div class="bg-card flex flex-col items-center justify-center gap-1 py-3">
-          <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">
-            Total
-          </span>
+          <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
+            >Total Z100</span
+          >
           <span
             class="text-base font-bold tabular-nums text-green-700 md:text-2xl dark:text-green-300"
           >
             {{ totalesFacturado?.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
           </span>
         </div>
-      </div>
-
-      <!-- Total General — fila completa debajo -->
-      <div class="h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+      </div> -->
+      <!-- <div class="h-px w-full bg-gray-200 dark:bg-gray-700"></div>
       <div class="bg-card flex flex-col items-center justify-center gap-1 py-3">
-        <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">
-          Total General
-        </span>
+        <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
+          >Total General</span
+        >
         <span
           class="text-base font-bold tabular-nums text-purple-600 md:text-2xl dark:text-purple-400"
         >
@@ -92,12 +89,137 @@
               | currency: 'MXN' : 'symbol' : '1.2-2'
           }}
         </span>
+      </div> -->
+
+      <mat-divider></mat-divider>
+
+      <!-- ── DESGLOSE HILOS vs TELA ── -->
+      <div class="px-5 py-4">
+        <!-- Tabla de líneas -->
+        <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+          <!-- Header -->
+          <div
+            class="grid grid-cols-4 gap-px bg-gray-200 text-xs font-semibold uppercase tracking-wide dark:bg-gray-700"
+          >
+            <div class="bg-card px-3 py-2 text-black dark:text-white">Línea</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Z100</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Z200</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Total</div>
+          </div>
+
+          <!-- Fila Hilos -->
+          <div class="grid grid-cols-4 gap-px bg-gray-200 dark:bg-gray-700">
+            <!-- Label -->
+            <div class="bg-card flex items-center gap-2 px-3 py-3">
+              <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-blue-500"></div>
+              <span class="text-sm font-medium text-black dark:text-white">Hilos</span>
+            </div>
+            <!-- Z100 Hilos -->
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-black dark:text-white">
+                {{ porLineaHILOS.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+              </span>
+              <span *ngIf="promedioHILOS !== null" class="mt-0.5 text-xs text-black dark:text-white">
+                prom: {{ promedioHILOS | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+              </span>
+            </div>
+            <!-- Z200 Hilos -->
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-blue-600 dark:text-blue-400">
+                {{
+                  notasPorLineaHILOS.total > 0
+                    ? (notasPorLineaHILOS.total | currency: 'MXN' : 'symbol' : '1.0-0')
+                    : '—'
+                }}
+              </span>
+              <span *ngIf="promedioNotasHILOS !== null" class="mt-0.5 text-xs text-black dark:text-white">
+                prom: {{ promedioNotasHILOS | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+              </span>
+            </div>
+            <!-- Total Hilos -->
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-green-600 dark:text-green-400">
+                {{ totalGeneralHILOS | currency: 'MXN' : 'symbol' : '1.0-0' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Fila Tela -->
+          <div class="grid grid-cols-4 gap-px bg-gray-200 dark:bg-gray-700">
+            <!-- Label -->
+            <div class="bg-card flex items-center gap-2 px-3 py-3">
+              <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-emerald-500"></div>
+              <span class="text-sm font-medium text-black dark:text-white">Tela</span>
+            </div>
+            <!-- Z100 Tela -->
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-black dark:text-white">
+                {{ porLineaPTPR.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+              </span>
+              <span *ngIf="promedioPTPR !== null" class="mt-0.5 text-xs text-black dark:text-white">
+                prom: {{ promedioPTPR | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+              </span>
+            </div>
+            <!-- Z200 Tela -->
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-blue-600 dark:text-blue-400">
+                {{
+                  notasPorLineaPTPR.total > 0
+                    ? (notasPorLineaPTPR.total | currency: 'MXN' : 'symbol' : '1.0-0')
+                    : '—'
+                }}
+              </span>
+              <span *ngIf="promedioNotasPTPR !== null" class="mt-0.5 text-xs text-black dark:text-white">
+                prom: {{ promedioNotasPTPR | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+              </span>
+            </div>
+            <!-- Total Tela -->
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-green-600 dark:text-green-400">
+                {{ totalGeneralPTPR | currency: 'MXN' : 'symbol' : '1.0-0' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Fila Totales -->
+          <div class="grid grid-cols-4 gap-px bg-gray-300 dark:bg-gray-600">
+            <div class="flex items-center bg-gray-50 px-3 py-2.5 dark:bg-gray-800">
+              <span class="text-xs font-bold uppercase tracking-wide text-black dark:text-white"
+                >Total</span
+              >
+            </div>
+            <div
+              class="flex flex-col items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800"
+            >
+              <span class="text-sm font-bold text-green-700 dark:text-green-300">
+                {{ totalesFacturado?.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+              </span>
+            </div>
+            <div
+              class="flex flex-col items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800"
+            >
+              <span class="text-sm font-bold text-blue-700 dark:text-blue-300">
+                {{ notasVentaTotal?.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+              </span>
+            </div>
+            <div
+              class="flex flex-col items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800"
+            >
+              <span class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                {{
+                  (notasVentaTotal?.total ?? 0) + (totalesFacturado?.total ?? 0)
+                    | currency: 'MXN' : 'symbol' : '1.0-0'
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <mat-divider></mat-divider>
 
       <!-- Desglose por día — importes -->
-      <div class="py-4">
+      <div class="px-5 py-4">
         <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-black dark:text-white">
           Desglose por día
         </p>
@@ -176,34 +298,24 @@
     ══════════════════════════════════════ -->
     <ng-container *ngIf="!loading && modo === 'peso'">
       <!-- KPIs de peso -->
-      <div class="flex flex-col gap-px bg-gray-200 dark:bg-gray-700">
-        <!-- Fila superior: 2 columnas -->
+      <!-- <div class="flex flex-col gap-px bg-gray-200 dark:bg-gray-700">
         <div class="grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700">
-          <!-- Col 1: Por unidad + Total KG -->
-          <div class="bg-card flex min-w-0 flex-col gap-4 px-2 py-5">
+        
+          <div class="bg-card flex min-w-0 flex-col gap-4 px-4 py-5">
             <div>
-              <span
-                class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
-              >
-                Por unidad
-              </span>
+              <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">Por unidad</span>
               <div class="flex flex-col gap-2 pt-1">
                 <ng-container *ngFor="let item of resumenPesoComposer.items">
                   <div class="flex flex-col">
                     <div class="flex w-full items-center justify-between gap-4">
-                      <span
-                        class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                      >
+                      <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                         {{ item.um }}
                       </span>
                       <span class="text-right text-base font-bold tabular-nums md:text-2xl">
                         {{ item.cant | number: '1.2-2' }}
                       </span>
                     </div>
-                    <span
-                      *ngIf="!item.esKG"
-                      class="mt-0.5 text-right text-xs text-black dark:text-white"
-                    >
+                    <span *ngIf="!item.esKG" class="mt-0.5 text-right text-xs text-black dark:text-white">
                       = {{ item.kgEquivalente | number: '1.2-2' }} KG
                     </span>
                   </div>
@@ -214,42 +326,30 @@
             <mat-divider></mat-divider>
 
             <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-              <span
-                class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
-              >
+              <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">
                 Total KG
                 <p class="mt-0.5 text-xs font-normal normal-case">kilogramos facturados</p>
               </span>
-              <span
-                class="text-base font-bold tabular-nums text-purple-600 md:text-2xl dark:text-purple-400"
-              >
+              <span class="text-base font-bold tabular-nums text-purple-600 md:text-2xl dark:text-purple-400">
                 {{ resumenPesoComposer.totalKG | number: '1.2-2' }}
               </span>
             </div>
           </div>
 
-          <!-- Col 2: Z200 + Total general KG -->
+   
           <div
             *ngIf="notasVentaTotal?.unidades?.length"
-            class="bg-card flex min-w-0 flex-col gap-4 px-6 py-5"
+            class="bg-card flex min-w-0 flex-col gap-4 px-4 py-5"
           >
             <div>
-              <span
-                class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
-              >
-                Z200
-              </span>
+              <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">Z200</span>
               <div class="flex flex-col gap-2 pt-1">
                 <ng-container *ngFor="let u of notasVentaTotal!.unidades">
                   <div class="flex items-center justify-between gap-4">
-                    <span
-                      class="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700 dark:bg-orange-900 dark:text-orange-300"
-                    >
+                    <span class="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700 dark:bg-orange-900 dark:text-orange-300">
                       {{ u.um }}
                     </span>
-                    <span
-                      class="text-base font-bold tabular-nums text-orange-600 md:text-2xl dark:text-orange-400"
-                    >
+                    <span class="text-base font-bold tabular-nums text-orange-600 md:text-2xl dark:text-orange-400">
                       {{ u.cant | number: '1.2-2' }}
                     </span>
                   </div>
@@ -257,22 +357,114 @@
               </div>
             </div>
 
-            <!-- Divider + Total pegados juntos al fondo -->
             <div class="mt-auto flex flex-col gap-4">
               <mat-divider></mat-divider>
               <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                <span
-                  class="text-xs font-medium uppercase tracking-widest text-black dark:text-white"
-                >
+                <span class="text-xs font-medium uppercase tracking-widest text-black dark:text-white">
                   Total general KG
                   <p class="mt-0.5 text-xs font-normal normal-case">Total KG + Z200</p>
                 </span>
-                <span
-                  class="text-base font-bold tabular-nums text-green-600 md:text-2xl dark:text-green-400"
-                >
+                <span class="text-base font-bold tabular-nums text-green-600 md:text-2xl dark:text-green-400">
                   {{ resumenPesoComposer.totalKG + totalKGNotasVenta | number: '1.2-2' }}
                 </span>
               </div>
+            </div>
+          </div>
+        </div>
+      </div> -->
+
+      <!-- ── DESGLOSE HILOS vs TELA (PESO) ── -->
+      <div class="px-5 py-4">
+        <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+          <!-- Header -->
+          <div
+            class="grid grid-cols-4 gap-px bg-gray-200 text-xs font-semibold uppercase tracking-wide dark:bg-gray-700"
+          >
+            <div class="bg-card px-3 py-2 text-black dark:text-white">Línea</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Z100 kg</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Z200 kg</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Total kg</div>
+          </div>
+
+          <!-- Fila Hilos -->
+          <div class="grid grid-cols-4 gap-px bg-gray-200 dark:bg-gray-700">
+            <div class="bg-card flex items-center gap-2 px-3 py-3">
+              <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-blue-500"></div>
+              <span class="text-sm font-medium text-black dark:text-white">Hilos</span>
+            </div>
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-black dark:text-white">
+                {{ pesoHILOS | number: '1.2-2' }}
+              </span>
+              <span *ngIf="promedioHILOS !== null" class="mt-0.5 text-xs text-black dark:text-white">
+                {{ promedioHILOS | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+              </span>
+            </div>
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                {{ pesoNotasHILOS > 0 ? (pesoNotasHILOS | number: '1.2-2') : '—' }}
+              </span>
+              <!-- <span *ngIf="promedioNotasHILOS !== null" class="mt-0.5 text-xs text-black dark:text-white">
+                {{ promedioNotasHILOS | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+              </span> -->
+            </div>
+            <div class="bg-card flex items-center justify-center px-2 py-3">
+              <!-- <span class="text-sm font-bold text-green-600 dark:text-green-400">
+                {{ pesoGeneralHILOS | number: '1.2-2' }}
+              </span> -->
+            </div>
+          </div>
+
+          <!-- Fila Tela -->
+          <div class="grid grid-cols-4 gap-px bg-gray-200 dark:bg-gray-700">
+            <div class="bg-card flex items-center gap-2 px-3 py-3">
+              <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-emerald-500"></div>
+              <span class="text-sm font-medium text-black dark:text-white">Tela</span>
+            </div>
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-black dark:text-white">
+                {{ pesoPTPR | number: '1.2-2' }}
+              </span>
+              <span *ngIf="promedioPTPR !== null" class="mt-0.5 text-xs text-black dark:text-white">
+                {{ promedioPTPR | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+              </span>
+            </div>
+            <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                {{ pesoNotasPTPR > 0 ? (pesoNotasPTPR | number: '1.2-2') : '—' }}
+              </span>
+              <!-- <span *ngIf="promedioNotasPTPR !== null" class="mt-0.5 text-xs text-black dark:text-white">
+                {{ promedioNotasPTPR | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+              </span> -->
+            </div>
+            <div class="bg-card flex items-center justify-center px-2 py-3">
+              <!-- <span class="text-sm font-bold text-green-600 dark:text-green-400">
+                {{ pesoGeneralPTPR | number: '1.2-2' }}
+              </span> -->
+            </div>
+          </div>
+
+          <!-- Fila Totales -->
+          <div class="grid grid-cols-4 gap-px bg-gray-300 dark:bg-gray-600">
+            <div class="flex items-center bg-gray-50 px-3 py-2.5 dark:bg-gray-800">
+              <span class="text-xs font-bold uppercase tracking-wide text-black dark:text-white"
+                >Total</span
+              >
+            </div>
+            <div class="flex items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800">
+              <span class="text-black-700 text-sm font-bold dark:text-white">
+                {{ resumenPesoComposer.totalKG | number: '1.2-2' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800">
+              <span class="text-sm font-bold text-orange-700 dark:text-orange-300">
+                {{ totalKGNotasVenta | number: '1.2-2' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800">
+              <span class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                {{ resumenPesoComposer.totalKG + totalKGNotasVenta | number: '1.2-2' }}
+              </span>
             </div>
           </div>
         </div>
@@ -280,8 +472,10 @@
 
       <mat-divider></mat-divider>
 
+      <mat-divider></mat-divider>
+
       <!-- Desglose por día — peso -->
-      <div class="py-4">
+      <div class="px-5 py-4">
         <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-black dark:text-white">
           Peso por día
         </p>
@@ -317,19 +511,9 @@
                     <span class="text-base font-normal text-black dark:text-white">KG</span>
                   </span>
                 </div>
-                <!-- <div class="text-right">
-                  <span class="text-xs text-black dark:text-white">% del periodo</span>
-                  <p class="text-sm font-semibold">
-                    {{
-                      totalesFacturado?.cant
-                        ? ((dia.cant / totalesFacturado!.cant) * 100 | number: '1.1-1')
-                        : '0'
-                    }}%
-                  </p>
-                </div> -->
               </div>
 
-              <!-- ← AGREGA ESTO AQUÍ ABAJO -->
+              <!-- Z200 del día -->
               <ng-container *ngIf="notasVentaPorDia[dia.fecha | date: 'yyyy-MM-dd'] as nv">
                 <mat-divider class="my-3"></mat-divider>
                 <div class="flex items-center justify-between">
@@ -342,10 +526,9 @@
                       {{ nv.registros }} {{ nv.registros === 1 ? 'nota' : 'notas' }}
                     </span>
                   </div>
-                  <!-- Unidades -->
                   <div class="mt-2 flex flex-wrap gap-2">
                     <ng-container *ngFor="let u of nv.unidades">
-                      <span class="rounded-fullpx-3 flex items-center gap-1 py-0.5 text-xs">
+                      <span class="flex items-center gap-1 py-0.5 text-xs">
                         <span class="font-semibold text-orange-700 dark:text-orange-300">
                           {{ u.cant | number: '1.2-2' }}
                         </span>

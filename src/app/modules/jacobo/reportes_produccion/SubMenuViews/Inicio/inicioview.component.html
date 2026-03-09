@@ -1,5 +1,5 @@
 <!-- INICIO - VISTA RESUMEN CON LOADERS -->
-<div class="w-full px-6 pt-6 md:pt-2 bg-default">
+<div class="bg-default w-full px-6 pt-6 md:pt-2">
   <!-- Header -->
   <div class="mb-6 md:mb-8">
     <!-- Toggle Vista -->
@@ -56,7 +56,7 @@
     <!-- GRAFICA FACTURACION -->
     <div *ngIf="esVisible('Facturación')" class="mt-8 grid w-full grid-cols-1 gap-8">
       <!-- COLUMNA IZQUIERDA: 3 cards apiladas -->
-      <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <div class="grid grid-cols-1 gap-8">
         <!-- TOTAL -->
         <div
           class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl p-4 pb-3 shadow"
@@ -169,57 +169,168 @@
               </div>
             </div>
 
-            <!-- DESKTOP: layout 3 columnas -->
-            <div class="mt-2 hidden md:flex md:flex-row md:items-center md:gap-0">
+            <!-- DESKTOP: layout 5 columnas -->
+            <div class="mt-2 hidden md:flex md:flex-row md:gap-0">
               <!-- Col 1: Total Z100 -->
-              <div class="flex flex-1 flex-col px-2">
-                <div class="text-secondary text-sm font-medium leading-none">Total</div>
-                <div class="mt-2 break-all text-2xl font-bold leading-none">
-                  {{ totalFacturacion | currency: 'MXN' }}
+              <div class="flex flex-1 flex-col gap-1">
+                <div class="text-secondary mb-1 text-sm font-medium leading-none">Total</div>
+
+                <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Hilos</div>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xl font-bold leading-none">{{
+                    totalHILOS | currency: 'MXN'
+                  }}</span>
+                </div>
+
+                <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Tela</div>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xl font-bold leading-none">{{
+                    totalPTPR | currency: 'MXN'
+                  }}</span>
+                </div>
+
+                <div class="mt-auto">
+                  <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+                  <span class="text-xl font-bold leading-none">{{
+                    totalFacturacion | currency: 'MXN'
+                  }}</span>
                 </div>
               </div>
 
-              <!-- Separador vertical -->
               <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
 
-              <!-- Col 2: Z200 -->
-              <div class="flex flex-1 flex-col px-4">
-                <div class="text-secondary text-sm font-medium leading-none">Z200</div>
-                <div class=" flex items-center mt-2">
-                  <span class="text-2xl font-bold leading-none">
-                    <ng-container *ngIf="!z200Oculto">
-                      {{ notasVentaTotal | currency: 'MXN' }}
-                    </ng-container>
-                    <ng-container *ngIf="z200Oculto">
-                      <span class="select-none font-medium text-black dark:text-white">******</span>
-                    </ng-container>
+              <!-- Col 2: Promedio Z100 ($/KG) -->
+              <div class="flex flex-1 flex-col gap-1 px-4">
+                <div class="text-secondary mb-1 text-sm font-medium leading-none">
+                  Promedio total
+                </div>
+
+                <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Hilos</div>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xl font-bold leading-none">
+                    {{ cantHILOS > 0 ? (totalHILOS / cantHILOS | currency: 'MXN') : '—' }}
                   </span>
+                </div>
+
+                <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Tela</div>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xl font-bold leading-none">
+                    {{ cantPTPR > 0 ? (totalPTPR / cantPTPR | currency: 'MXN') : '—' }}
+                  </span>
+                </div>
+                <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+              </div>
+
+              <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+              <!-- Col 3: Z200 -->
+              <div class="flex flex-1 flex-col gap-1 px-4">
+                <div class="flex items-center gap-1">
+                  <div class="text-secondary text-sm font-medium leading-none">Z200</div>
                   <mat-icon
-                    class="ml-2 cursor-pointer text-black dark:text-white"
+                    class="ml-1 cursor-pointer text-black dark:text-white"
                     (click)="toggleZ200()"
                     [svgIcon]="z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'"
                   ></mat-icon>
                 </div>
+
+                <ng-container *ngIf="!z200Oculto; else z200OcultoDesktop">
+                  <div class="text-secondary mb-1 text-sm font-medium leading-none">Hilos</div>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold leading-none">{{
+                      notasVentaHILOS | currency: 'MXN'
+                    }}</span>
+                  </div>
+
+                  <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Tela</div>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold leading-none">{{
+                      notasVentaTotal | currency: 'MXN'
+                    }}</span>
+                  </div>
+
+                  <div class="mt-auto">
+                    <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+                    <span class="text-xl font-bold leading-none">{{
+                      notasVentaTotal | currency: 'MXN'
+                    }}</span>
+                  </div>
+                </ng-container>
+
+                <ng-template #z200OcultoDesktop>
+                  <div class="mt-auto">
+                    <span class="select-none text-2xl font-medium text-black dark:text-white"
+                      >******</span
+                    >
+                  </div>
+                </ng-template>
               </div>
 
-              <!-- Separador vertical -->
               <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
 
-              <!-- Col 3: Total general -->
+              <!-- Col 4: Promedio Z200 ($/KG) -->
+              <div class="flex flex-1 flex-col gap-1 px-4">
+                <div class="text-secondary mb-1 text-sm font-medium leading-none">
+                  Promedio Z200
+                </div>
+
+                <ng-container *ngIf="!z200Oculto; else z200PromedioOculto">
+                  <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Hilos</div>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold leading-none">
+                      {{
+                        cantNotasVentaHILOS > 0
+                          ? (notasVentaHILOS / cantNotasVentaHILOS | currency: 'MXN')
+                          : '—'
+                      }}
+                    </span>
+                  </div>
+
+                  <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Tela</div>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold leading-none">
+                      {{
+                        cantNotasVentaPTPR > 0
+                          ? (notasVentaTotal / cantNotasVentaPTPR | currency: 'MXN')
+                          : '—'
+                      }}
+                    </span>
+                  </div>
+
+                  <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+                </ng-container>
+
+                <ng-template #z200PromedioOculto>
+                  <div class="mt-auto">
+                    <span class="select-none text-2xl font-medium text-black dark:text-white"
+                      >******</span
+                    >
+                  </div>
+                </ng-template>
+              </div>
+
+              <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+              <!-- Col 5: Total general -->
               <div class="flex flex-1 flex-col px-4">
                 <div class="text-secondary text-sm font-medium leading-none">Total general</div>
-                <div class="mt-2 flex items-center gap-2">
-                  <span
-                    class="break-all text-2xl font-bold leading-none text-green-500 dark:text-green-400"
-                  >
-                    <ng-container *ngIf="!z200Oculto">{{
-                      totalFacturacion + notasVentaTotal | currency: 'MXN'
-                    }}</ng-container>
-                    <ng-container *ngIf="z200Oculto">
-                      <span class="select-none font-medium text-black dark:text-white">******</span>
-                    </ng-container>
-                  </span>
-                </div>
+
+                <ng-container *ngIf="!z200Oculto; else totalGeneralOculto">
+                  <div class="mt-auto">
+                    <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+                    <span class="text-xl font-bold leading-none text-green-500 dark:text-green-400">
+                      {{ totalFacturacion + notasVentaTotal | currency: 'MXN' }}
+                    </span>
+                  </div>
+                </ng-container>
+
+                <ng-template #totalGeneralOculto>
+                  <div class="mt-auto">
+                    <span class="select-none text-2xl font-medium text-black dark:text-white"
+                      >******</span
+                    >
+                  </div>
+                </ng-template>
               </div>
             </div>
           </div>
@@ -310,69 +421,115 @@
                 </div>
               </div>
 
-              <!-- DESKTOP: 3 columnas -->
-<div class="mt-2 hidden md:flex md:flex-row md:gap-0">
-  <!-- Col 1: unidades -->
-  <div class="flex flex-1 flex-col gap-1 px-2">
-    <div class="text-secondary mb-1 text-sm font-medium leading-none">Unidades</div>
-    <div *ngFor="let item of resumenPesoFacturacion.items" class="flex items-baseline gap-2">
-      <span class="text-xl font-bold leading-none">
-        {{ formatValue(item.cant, 'decimal') }} {{ item.um }}
-      </span>
-      <span *ngIf="!item.esKG" class="text-xl font-medium text-black dark:text-white">
-        = {{ formatValue(item.kgEquivalente, 'decimal') }} KG
-      </span>
-    </div>
+              <!-- DESKTOP: 3 columnas PESO -->
+              <div class="mt-2 hidden md:flex md:flex-row md:gap-0">
+                <!-- Col 1: unidades Z100 -->
+                <div class="flex flex-1 flex-col gap-1">
+                  <div class="text-secondary mb-1 text-sm font-medium leading-none">Unidades</div>
 
-    <!-- Separador + subtotal al fondo -->
-    <div class="mt-auto">
-      <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
-      <span class="text-xl font-bold leading-none">
-        {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
-      </span>
-    </div>
-  </div>
+                  <!-- Hilos -->
+                  <div class="text-secondary mb-1 mt-1 text-sm font-medium leading-none">Hilos</div>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold leading-none">
+                      {{ formatValue(cantHILOS, 'decimal') }} KG
+                    </span>
+                  </div>
 
-  <!-- Separador -->
-  <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+                  <!-- Tela -->
+                  <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Tela</div>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold leading-none">
+                      {{ formatValue(cantPTPR, 'decimal') }} KG
+                    </span>
+                  </div>
 
-  <!-- Col 2: Unidades Z200 -->
-  <div class="flex flex-1 flex-col px-4">
-    <div class="text-secondary text-sm font-medium leading-none">Unidades Z200</div>
+                  <!-- Separador + total KG al fondo -->
+                  <div class="mt-auto">
+                    <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+                    <span class="text-xl font-bold leading-none">
+                      {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
+                    </span>
+                  </div>
+                </div>
 
-    <ng-container *ngIf="notasVentaUnidades.length; else sinUnidadesZ200">
-      <div class="mt-auto">
-        <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
-        <span
-          class="text-xl font-bold leading-none text-purple-500 dark:text-purple-400"
-        >
-          {{ formatValue(notasVentaUnidades[0].cant, 'decimal') }} {{ notasVentaUnidades[0].um }}
-        </span>
-      </div>
-    </ng-container>
-    <ng-template #sinUnidadesZ200>
-      <span
-        class="mt-auto text-2xl font-bold leading-none text-purple-500 dark:text-purple-400"
-      >
-        —
-      </span>
-    </ng-template>
-  </div>
+                <!-- Separador -->
+                <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
 
-  <!-- Separador -->
-  <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+                <!-- Col 2: unidades Z200 -->
+                <div class="flex flex-1 flex-col gap-1 px-4">
+                  <div class="text-secondary text-sm font-medium leading-none">Unidades Z200</div>
 
-  <!-- Col 3: Total general -->
-  <div class="flex flex-1 flex-col px-4">
-    <div class="text-secondary text-sm font-medium leading-none">Total general</div>
+                  <!-- <ng-container *ngIf="!z200Oculto; else z200UnidadesOculto"> -->
 
-    <div class="mt-auto">
-      <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
-      <span class="text-xl font-bold leading-none text-purple-500 dark:text-purple-400">
-        {{ formatValue(resumenPesoFacturacion.totalKG + notasVentaUnidadesKG, 'decimal') }} KG
-      </span>
-    </div>
-  </div>
+                  <!-- Hilos Z200 (no hay en el JSON, mostramos 0) -->
+                  <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Hilos</div>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold leading-none">
+                      {{ formatValue(cantNotasVentaHILOS, 'decimal') }} KG
+                    </span>
+                  </div>
+
+                  <!-- Tela Z200 -->
+                  <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Tela</div>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold leading-none">
+                      {{ formatValue(cantNotasVentaPTPR, 'decimal') }} KG
+                    </span>
+                  </div>
+
+                  <!-- Total KG Z200 al fondo -->
+                  <div class="mt-auto">
+                    <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+                    <span class="text-xl font-bold leading-none">
+                      {{ formatValue(notasVentaUnidadesKG, 'decimal') }} KG
+                    </span>
+                  </div>
+                  <!-- </ng-container> -->
+
+                  <ng-template #z200UnidadesOculto>
+                    <div class="mt-auto">
+                      <span class="select-none text-2xl font-medium text-black dark:text-white"
+                        >******</span
+                      >
+                    </div>
+                  </ng-template>
+                </div>
+
+                <!-- Separador -->
+                <div class="h-12 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+                <!-- Col 3: total general unidades -->
+                <div class="flex flex-1 flex-col gap-1 px-4">
+                  <div class="text-secondary text-sm font-medium leading-none">Total general</div>
+
+                  <!-- <ng-container *ngIf="!z200Oculto; else totalUnidadesOculto"> -->
+
+                  <!-- Gran total KG al fondo -->
+                  <div class="mt-auto">
+                    <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+                    <span
+                      class="text-xl font-bold leading-none text-purple-500 dark:text-purple-400"
+                    >
+                      {{
+                        formatValue(
+                          resumenPesoFacturacion.totalKG + notasVentaUnidadesKG,
+                          'decimal'
+                        )
+                      }}
+                      KG
+                    </span>
+                  </div>
+
+                  <!-- </ng-container> -->
+
+                  <ng-template #totalUnidadesOculto>
+                    <div class="mt-auto">
+                      <span class="select-none text-2xl font-medium text-black dark:text-white"
+                        >******</span
+                      >
+                    </div>
+                  </ng-template>
+                </div>
               </div>
             </ng-container>
 

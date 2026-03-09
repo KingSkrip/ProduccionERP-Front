@@ -60,10 +60,16 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   totalFacturas = 0;
   cantidadTotal = 0;
   impuestosTotal = 0;
+  cantPTPR: number = 0;
   terminoBusqueda = '';
+  cantHILOS: number = 0;
+  totalPTPR: number = 0;
+  totalHILOS: number = 0;
   importeTotalSinIva = 0;
   loadingFacturacion = true;
+  notasVentaPTPR: number = 0;
   loadingSaldosTejido = true;
+  notasVentaHILOS: number = 0;
   z200Oculto: boolean = false;
   notasVentaTotal: number = 0;
   loadingRevisadoTejido = true;
@@ -71,6 +77,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   loadingPorRevisarTejido = true;
   loadingDetallesProcesos = true;
   loadingProduccionTejido = true;
+  cantNotasVentaPTPR: number = 0;
+  cantNotasVentaHILOS: number = 0;
   loadingGraficaFacturacion = true;
   variacionPeriodoAnterior: number;
   loadingDistribucionProcesos = true;
@@ -903,13 +911,24 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const payload = resp?.data ?? resp;
     const tot = payload?.totales ?? {};
     const detalle: FacturaDetalle[] = payload?.detalle ?? [];
+    const porLinea = payload?.por_linea ?? {};
+    const notasPorLinea = payload?.notas_venta?.por_linea ?? {};
 
     this.importeTotalSinIva = Number(tot.importe) || 0;
     this.impuestosTotal = Number(tot.impuestos) || 0;
     this.totalConIva = Number(tot.total) || 0;
     this.totalFacturas = Number(tot.facturas) || 0;
     this.cantidadTotal = Number(tot.cant) || 0;
+    this.totalPTPR = Number(porLinea['PTPR']?.total) || 0;
+    this.totalHILOS = Number(porLinea['HILOS']?.total) || 0;
+    this.notasVentaPTPR = Number(notasPorLinea['PTPR']?.total) || 0;
+    this.notasVentaHILOS = Number(notasPorLinea['HILOS']?.total) || 0;
+    this.cantPTPR = Number(porLinea['PTPR']?.cant) || 0;
+    this.cantHILOS = Number(porLinea['HILOS']?.cant) || 0;
+    this.cantNotasVentaPTPR = Number(notasPorLinea['PTPR']?.cant) || 0;
+    this.cantNotasVentaHILOS = Number(notasPorLinea['HILOS']?.cant) || 0;
     this.cantidadesPorUnidad = {};
+
     for (const item of detalle) {
       const unidad = (item.um || 'N/A').trim();
       const cantidad = Number(item.cant) || 0;
