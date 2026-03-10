@@ -1,6 +1,6 @@
-<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden bg-gray-50 dark:bg-gray-900">
+<div class="bg-default absolute inset-0 flex min-w-0 flex-col overflow-hidden">
   <!-- ===== HEADER MÓVIL (como estaba) ===== -->
-  <div class="relative bg-gray-50 md:hidden dark:bg-gray-900">
+  <div class="bg-default relative md:hidden">
     <div class="relative px-6 py-2">
       <div class="flex items-start gap-4">
         <div
@@ -25,7 +25,7 @@
 
   <!-- ===== HEADER + FILTROS COMPRIMIDO PC ===== -->
   <div
-    class="hidden items-center gap-4 border-gray-200 bg-gray-50 px-6 py-2 md:flex dark:border-gray-700 dark:bg-gray-900"
+    class="bg-default hidden items-center gap-4 border-gray-200 px-6 py-2 md:flex dark:border-gray-700"
   >
     <!-- Ícono + Títulos -->
     <div class="flex flex-shrink-0 items-center gap-2.5">
@@ -47,10 +47,7 @@
     <!-- Divisor -->
     <div class="h-8 w-px flex-shrink-0 bg-gray-200 dark:bg-gray-700"></div>
     <!-- Buscador -->
-    <mat-form-field
-      class="fuse-mat-dense fuse-mat-rounded flex-1"
-      [subscriptSizing]="'dynamic'"
-    >
+    <mat-form-field class="fuse-mat-dense fuse-mat-rounded flex-1" [subscriptSizing]="'dynamic'">
       <mat-icon
         matPrefix
         class="text-gray-400 icon-size-4"

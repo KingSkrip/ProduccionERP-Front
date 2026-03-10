@@ -3,7 +3,7 @@
 
 <!-- Navigation -->
 <fuse-vertical-navigation
-  class="bg-card z-[300] dark:bg-gray-900 print:hidden"
+  class="bg-card z-[300] dark:bg-default print:hidden"
   [appearance]="isScreenSmall ? 'futuristic' : 'dense'"
   [mode]="isScreenSmall ? 'over' : 'side'"
   name="mainNavigation"
@@ -23,7 +23,7 @@
   <!-- Header -->
   @if (isJacobo) {
     <div
-      class="bg-card relative z-[250] flex h-9 w-full flex-0 items-center px-4 shadow md:h-9 md:px-6 dark:border-b dark:bg-gray-900 dark:shadow-none print:hidden"
+      class="bg-card relative z-[250] flex h-9 w-full flex-0 items-center px-4 shadow md:h-9 md:px-6 dark:border-b dark:bg-default dark:shadow-none print:hidden"
     >
       <button class="mr-2" mat-icon-button (click)="toggleNavigation('mainNavigation')">
         <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
@@ -35,7 +35,7 @@
     </div>
   } @else {
     <div
-      class="bg-card relative z-[250] flex h-11 w-full flex-0 items-center px-4 shadow md:h-16 md:px-6 dark:border-b dark:bg-gray-900 dark:shadow-none print:hidden"
+      class="bg-card relative z-[250] flex h-11 w-full flex-0 items-center px-4 shadow md:h-16 md:px-6 dark:border-b dark:bg-default dark:shadow-none print:hidden"
     >
       <button class="mr-2" mat-icon-button (click)="toggleNavigation('mainNavigation')">
         <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>

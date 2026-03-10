@@ -1,21 +1,11 @@
 <!-- Button -->
-<button
-  mat-icon-button
-  [matMenuTriggerFor]="userActions"
-  class="user-avatar-btn"
->
+<button mat-icon-button [matMenuTriggerFor]="userActions" class="user-avatar-btn">
   <span class="relative flex items-center justify-center">
     @if (showAvatar && user?.photo) {
-      <img
-        class="user-avatar"
-        [src]="photoUrl"
-        alt="Perfil"
-      />
+      <img class="user-avatar" [src]="photoUrl" alt="Perfil" />
     }
     @if (!showAvatar || !user?.photo) {
-      <mat-icon
-        class="user-avatar-fallback"
-        [svgIcon]="'heroicons_outline:user-circle'">
+      <mat-icon class="user-avatar-fallback" [svgIcon]="'heroicons_outline:user-circle'">
       </mat-icon>
     }
 
@@ -26,24 +16,23 @@
         'bg-green-500': user?.status === 'online',
         'bg-amber-500': user?.status === 'away',
         'bg-red-500': user?.status === 'busy',
-        'bg-gray-400': user?.status === 'not-visible'
-      }">
+        'bg-gray-400': user?.status === 'not-visible',
+      }"
+    >
     </span>
   </span>
 </button>
 
-
 <mat-menu [xPosition]="'before'" #userActions="matMenu">
-    <button mat-menu-item>
-        <span class="flex flex-col leading-none">
-            <span>Sesión iniciada como</span>
-            <span class="mt-1.5 text-md font-medium">{{ user?.email }}</span>
-        </span>
-    </button>
-    <mat-divider class="my-2"></mat-divider>
+  <button mat-menu-item>
+    <span class="flex flex-col leading-none">
+      <span>Sesión iniciada como</span>
+      <span class="mt-1.5 text-md font-medium">{{ user?.email }}</span>
+    </span>
+  </button>
+  <mat-divider class="my-2"></mat-divider>
 
-
-    <!-- <button mat-menu-item (click)="openProfile()">
+  <!-- <button mat-menu-item (click)="openProfile()">
         <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
         <span>Perfil</span>
     </button>
@@ -53,79 +42,74 @@
         <span>Configuración</span>
     </button> -->
 
-
-
-    <!-- <button mat-menu-item [matMenuTriggerFor]="userStatus">
+  <!-- <button mat-menu-item [matMenuTriggerFor]="userStatus">
         <mat-icon
             [svgIcon]="'heroicons_outline:ellipsis-horizontal-circle'"
         ></mat-icon>
         <span>Estado</span>
     </button> -->
 
+  <!-- <mat-divider class="my-2"></mat-divider> -->
 
-    <!-- <mat-divider class="my-2"></mat-divider> -->
-
-
-
-    <button mat-menu-item (click)="signOut()">
-        <mat-icon [svgIcon]="'heroicons_outline:arrow-right-on-rectangle'"></mat-icon>
-        <span>Cerrar sesión</span>
-    </button>
+  <button mat-menu-item (click)="signOut()">
+    <mat-icon [svgIcon]="'heroicons_outline:arrow-right-on-rectangle'"></mat-icon>
+    <span>Cerrar sesión</span>
+  </button>
 </mat-menu>
 
 <mat-menu class="user-status-menu" #userStatus="matMenu">
-    <button mat-menu-item (click)="updateUserStatus('online')">
-        <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-green-500"></span>
-        <span>En línea</span>
-    </button>
-    <button mat-menu-item (click)="updateUserStatus('away')">
-        <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-amber-500"></span>
-        <span>Ausente</span>
-    </button>
-    <button mat-menu-item (click)="updateUserStatus('busy')">
-        <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-red-500"></span>
-        <span>Ocupado</span>
-    </button>
-    <button mat-menu-item (click)="updateUserStatus('not-visible')">
-        <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-gray-400"></span>
-        <span>Invisible</span>
-    </button>
+  <button mat-menu-item (click)="updateUserStatus('online')">
+    <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-green-500"></span>
+    <span>En línea</span>
+  </button>
+  <button mat-menu-item (click)="updateUserStatus('away')">
+    <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-amber-500"></span>
+    <span>Ausente</span>
+  </button>
+  <button mat-menu-item (click)="updateUserStatus('busy')">
+    <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-red-500"></span>
+    <span>Ocupado</span>
+  </button>
+  <button mat-menu-item (click)="updateUserStatus('not-visible')">
+    <span class="mr-3 inline-flex h-4 w-4 rounded-full bg-gray-400"></span>
+    <span>Invisible</span>
+  </button>
 </mat-menu>
 
-
 <style>
-    .user-avatar-btn {
-  padding: 0;
-}
+  .user-avatar-btn {
+    padding: 0;
+  }
 
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 9999px;
-  object-fit: cover;
-  border: 2px solid #e5e7eb; /* gris claro */
-  box-shadow: 0 2px 8px rgba(0,0,0,.15);
-  transition: transform .15s ease, box-shadow .15s ease;
-}
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    object-fit: cover;
+    border: 2px solid #e5e7eb; /* gris claro */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
 
-.user-avatar-btn:hover .user-avatar {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0,0,0,.25);
-}
+  .user-avatar-btn:hover .user-avatar {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
 
-.user-avatar-fallback {
-  font-size: 42px;
-}
+  .user-avatar-fallback {
+    font-size: 42px;
+  }
 
-.status-dot {
-  position: absolute;
-  bottom: 2px;
-  right: -1px;
-  width: 10px;
-  height: 10px;
-  border-radius: 9999px;
-  background-color: rgb(5, 243, 5);
-  border: 2px solid white;
-}
-
+  .status-dot {
+    position: absolute;
+    bottom: 2px;
+    right: -1px;
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    background-color: rgb(5, 243, 5);
+    border: 2px solid white;
+  }
 </style>

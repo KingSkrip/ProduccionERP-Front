@@ -259,10 +259,20 @@ const theming = plugin.withOptions(
                 'bg-hover': chroma(colors.slate[400]).alpha(0.12).css(),
                 'bg-status-bar': colors.slate[300],
               },
+              //default
+              // dark: {
+              //   'bg-app-bar': colors.slate[900],
+              //   'bg-card': colors.slate[800],
+              //   'bg-default': colors.slate[900],
+              //   'bg-dialog': colors.slate[800],
+              //   'bg-hover': 'rgba(255, 255, 255, 0.05)',
+              //   'bg-status-bar': colors.slate[900],
+              // },
+              //dark
               dark: {
                 'bg-app-bar': colors.slate[900],
-                'bg-card': colors.slate[800],
-                'bg-default': colors.slate[900],
+                'bg-card': '#212423', //colors.slate[800],
+                'bg-default': colors.black,
                 'bg-dialog': colors.slate[800],
                 'bg-hover': 'rgba(255, 255, 255, 0.05)',
                 'bg-status-bar': colors.slate[900],
