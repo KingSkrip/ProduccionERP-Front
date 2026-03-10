@@ -133,8 +133,6 @@ export const appRoutes: Route[] = [
                     //Reportes de produccion
                     { path: 'ReportProd', loadChildren: () => import('app/modules/admin/reportes_produccion/reportprod.routes') },
 
-                    //Reportes de produccion-JACOBO
-                    { path: 'ReportesProd', loadChildren: () => import('app/modules/jacobo/reportes_produccion/reportprod.routes') },
 
                     { path: 'file-manager', loadChildren: () => import('app/modules/admin/apps/file-manager/file-manager.routes') },
                     { path: 'help-center', loadChildren: () => import('app/modules/admin/apps/help-center/help-center.routes') },

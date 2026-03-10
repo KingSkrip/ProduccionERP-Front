@@ -4217,7 +4217,7 @@ export const menuJacobo: FuseNavigationItem[] = [
         title: 'Reportes de producción',
         type: 'basic',
         icon: 'heroicons_outline:rectangle-stack',
-        link: '/apps/ReportesProd',
+        link: '/apps/ReportProd',
       },
     ],
   },
@@ -4298,7 +4298,7 @@ export const menuReporteProd_Jacobo: FuseNavigationItem[] = [
     title: 'Resumen',
     type: 'basic',
     icon: 'heroicons_outline:home',
-    link: '/apps/ReportesProd/list/inicio',
+    link: '/apps/ReportProd/list/inicio',
   },
   // {
   //   id: 'bandeja.general',
@@ -4322,35 +4322,35 @@ export const menuReporteProd_Jacobo: FuseNavigationItem[] = [
     title: 'Facturado',
     type: 'basic',
     icon: 'heroicons_outline:document-check',
-    link: '/apps/ReportesProd/list/facturado',
+    link: '/apps/ReportProd/list/facturado',
   },
   {
     id: 'rp-tejido',
     title: 'Tejido',
     type: 'basic',
     icon: 'heroicons_outline:aguja',
-    link: '/apps/ReportesProd/list/tejido',
+    link: '/apps/ReportProd/list/tejido',
   },
   {
     id: 'rp-tintoreria',
     title: 'Tintorería',
     type: 'basic',
     icon: 'heroicons_outline:beaker',
-    link: '/apps/ReportesProd/list/tintoreria',
+    link: '/apps/ReportProd/list/tintoreria',
   },
   {
     id: 'rp-acabado-real',
     title: 'Acabado real',
     type: 'basic',
     icon: 'heroicons_outline:cog-6-tooth',
-    link: '/apps/ReportesProd/list/acabado-real',
+    link: '/apps/ReportProd/list/acabado-real',
   },
   {
     id: 'rp-estampado',
     title: 'Estampado',
     type: 'basic',
     icon: 'heroicons_outline:paint-brush',
-    link: '/apps/ReportesProd/list/estampado',
+    link: '/apps/ReportProd/list/estampado',
   },
 
   {
@@ -4358,7 +4358,7 @@ export const menuReporteProd_Jacobo: FuseNavigationItem[] = [
     title: 'Procesos',
     type: 'basic',
     icon: 'heroicons_outline:cog',
-    link: '/apps/ReportesProd/list/procesos',
+    link: '/apps/ReportProd/list/procesos',
   },
 ];
 

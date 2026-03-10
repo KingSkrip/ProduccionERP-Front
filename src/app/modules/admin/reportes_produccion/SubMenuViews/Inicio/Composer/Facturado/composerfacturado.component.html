@@ -1,0 +1,836 @@
+<div class="composer-facturado flex h-full flex-col">
+  <!-- ───── HEADER ───── -->
+  <div class="flex flex-shrink-0 items-center justify-between border-b md:px-6 md:py-4">
+    <div class="flex items-center gap-3">
+      <div
+        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+        [class.bg-green-100]="modo === 'total'"
+        [class.dark:bg-green-900]="modo === 'total'"
+        [class.bg-purple-100]="modo === 'peso'"
+        [class.dark:bg-purple-900]="modo === 'peso'"
+      >
+        <mat-icon
+          [ngClass]="{
+            'text-green-600': modo === 'total',
+            'text-purple-600': modo === 'peso',
+            'dark:text-white': true,
+          }"
+          [svgIcon]="
+            modo === 'total' ? 'heroicons_outline:currency-dollar' : 'heroicons_outline:scale'
+          "
+        ></mat-icon>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold leading-tight">
+          {{ modo === 'total' ? 'Facturado del periodo' : 'Peso facturado por día' }}
+        </h2>
+        <p class="mt-0.5 text-xs leading-none text-black dark:text-white">
+          {{ filtros?.fechaInicio | date: 'dd/MM/yyyy' }} &mdash;
+          {{ filtros?.fechaFin | date: 'dd/MM/yyyy' }}
+        </p>
+      </div>
+    </div>
+
+    <button mat-icon-button matTooltip="Cerrar" (click)="cerrar()">
+      <mat-icon class="text-black dark:text-white">close</mat-icon>
+    </button>
+  </div>
+
+  <!-- ───── CONTENIDO ───── -->
+  <div class="flex-auto overflow-y-auto">
+    <!-- SPINNER -->
+    <ng-container *ngIf="loading">
+      <div class="flex h-64 items-center justify-center">
+        <mat-spinner diameter="44"></mat-spinner>
+      </div>
+    </ng-container>
+
+    <!-- ══════════════════════════════════════
+         MODO: TOTAL  (importes del periodo)
+    ══════════════════════════════════════ -->
+    <ng-container *ngIf="!loading && modo === 'total'">
+      <mat-divider></mat-divider>
+
+      <!-- ── DESGLOSE HILOS vs TELA — TABLA RESUMEN ── -->
+      <div class="py-4 md:px-5">
+        <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+          <!-- Header — solo desktop, en móvil se oculta -->
+          <div
+            class="hidden grid-cols-4 gap-px bg-gray-200 text-xs font-semibold uppercase tracking-wide sm:grid dark:bg-gray-700"
+          >
+            <div class="bg-card px-3 py-2 text-black dark:text-white">Línea</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">
+              Total / Prom.
+            </div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Z200</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Total</div>
+          </div>
+
+          <!-- Fila Hilos — DESKTOP: 4 cols / MÓVIL: card apilado -->
+          <div class="border-b border-gray-200 dark:border-gray-700">
+            <!-- Cabecera móvil de fila -->
+            <div class="flex items-center gap-2 px-3 pt-3 sm:hidden">
+              <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-blue-500"></div>
+              <span class="text-sm font-semibold text-black dark:text-white">Hilos</span>
+            </div>
+            <!-- Grid -->
+            <div class="grid grid-cols-3 gap-px bg-gray-200 sm:grid-cols-4 dark:bg-gray-700">
+              <!-- Label — solo desktop -->
+              <div class="bg-card hidden items-center gap-2 px-3 py-3 sm:flex">
+                <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-blue-500"></div>
+                <span class="text-sm font-medium text-black dark:text-white">Hilos</span>
+              </div>
+              <!-- Total Z100 -->
+              <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+                <span class="mb-0.5 text-xs text-gray-500 sm:hidden dark:text-gray-400">Total</span>
+                <span class="text-center text-xs font-bold text-black dark:text-white">
+                  {{ porLineaHILOS.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                </span>
+                <span
+                  *ngIf="promedioHILOS !== null"
+                  class="mt-0.5 text-center text-[10px] text-gray-500 dark:text-gray-400"
+                >
+                  prom: {{ promedioHILOS | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+                </span>
+              </div>
+              <!-- Z200 Hilos -->
+              <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+                <span class="mb-0.5 text-xs text-gray-500 sm:hidden dark:text-gray-400">Z200</span>
+                <span class="text-center text-xs font-bold text-orange-600 dark:text-orange-400">
+                  {{
+                    notasPorLineaHILOS.total > 0
+                      ? (notasPorLineaHILOS.total | currency: 'MXN' : 'symbol' : '1.0-0')
+                      : '—'
+                  }}
+                </span>
+                <span
+                  *ngIf="promedioNotasHILOS !== null"
+                  class="mt-0.5 text-center text-[10px] text-gray-500 dark:text-gray-400"
+                >
+                  prom: {{ promedioNotasHILOS | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+                </span>
+              </div>
+              <!-- Total Hilos -->
+              <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+                <span class="mb-0.5 text-xs text-gray-500 sm:hidden dark:text-gray-400">Total</span>
+                <span class="text-center text-xs font-bold text-green-600 dark:text-green-400">
+                  {{ totalGeneralHILOS | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fila Tela -->
+          <div class="border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-2 px-3 pt-3 sm:hidden">
+              <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-emerald-500"></div>
+              <span class="text-sm font-semibold text-black dark:text-white">Tela</span>
+            </div>
+            <div class="grid grid-cols-3 gap-px bg-gray-200 sm:grid-cols-4 dark:bg-gray-700">
+              <div class="bg-card hidden items-center gap-2 px-3 py-3 sm:flex">
+                <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-emerald-500"></div>
+                <span class="text-sm font-medium text-black dark:text-white">Tela</span>
+              </div>
+              <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+                <span class="mb-0.5 text-xs text-gray-500 sm:hidden dark:text-gray-400">Total</span>
+                <span class="text-center text-xs font-bold text-black dark:text-white">
+                  {{ porLineaPTPR.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                </span>
+                <span
+                  *ngIf="promedioPTPR !== null"
+                  class="mt-0.5 text-center text-[10px] text-gray-500 dark:text-gray-400"
+                >
+                  prom: {{ promedioPTPR | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+                </span>
+              </div>
+              <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+                <span class="mb-0.5 text-xs text-gray-500 sm:hidden dark:text-gray-400">Z200</span>
+                <span class="text-center text-xs font-bold text-orange-600 dark:text-orange-400">
+                  {{
+                    notasPorLineaPTPR.total > 0
+                      ? (notasVentaTotal.total | currency: 'MXN' : 'symbol' : '1.0-0')
+                      : '—'
+                  }}
+                </span>
+                <span
+                  *ngIf="promedioNotasPTPR !== null"
+                  class="mt-0.5 text-center text-[10px] text-gray-500 dark:text-gray-400"
+                >
+                  prom: {{ promedioNotasPTPR | currency: 'MXN' : 'symbol' : '1.2-2' }}/kg
+                </span>
+              </div>
+              <div class="bg-card flex flex-col items-center justify-center px-2 py-3">
+                <span class="mb-0.5 text-xs text-gray-500 sm:hidden dark:text-gray-400">Total</span>
+                <span class="text-center text-xs font-bold text-green-600 dark:text-green-400">
+                  {{ totalGeneralPTPR | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fila Totales -->
+          <div class="grid grid-cols-3 gap-px bg-gray-300 sm:grid-cols-4 dark:bg-gray-600">
+            <div class="hidden items-center bg-gray-50 px-3 py-2.5 sm:flex dark:bg-gray-800">
+              <span class="text-xs font-bold uppercase tracking-wide text-black dark:text-white"
+                >Total</span
+              >
+            </div>
+            <div
+              class="flex flex-col items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800"
+            >
+              <span class="mb-0.5 text-[10px] text-gray-500 sm:hidden">Total</span>
+              <span class="text-center text-xs font-bold text-black dark:text-white">
+                {{ totalesFacturado?.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+              </span>
+            </div>
+            <div
+              class="flex flex-col items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800"
+            >
+              <span class="mb-0.5 text-[10px] text-gray-500 sm:hidden">Z200</span>
+              <span class="text-center text-xs font-bold text-orange-700 dark:text-orange-300">
+                {{ notasVentaTotal?.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+              </span>
+            </div>
+            <div
+              class="flex flex-col items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800"
+            >
+              <span class="mb-0.5 text-[10px] text-gray-500 sm:hidden">Total gral.</span>
+              <span class="text-center text-xs font-bold text-green-600 dark:text-green-400">
+                {{
+                  (notasVentaTotal?.total ?? 0) + (totalesFacturado?.total ?? 0)
+                    | currency: 'MXN' : 'symbol' : '1.0-0'
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Desglose por día — importes -->
+      <div class="py-4 md:px-5">
+        <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-black dark:text-white">
+          Desglose por día
+        </p>
+
+        <div class="flex flex-col gap-3">
+          <ng-container *ngFor="let dia of diasUnificados">
+            <div
+              class="bg-card overflow-hidden rounded-xl border shadow-sm transition-shadow hover:shadow-md"
+            >
+              <!-- Cabecera: Fecha + badge -->
+              <div
+                class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-700"
+              >
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-gray-400 icon-size-4 dark:text-gray-500"
+                    >calendar_today</mat-icon
+                  >
+                  <span class="text-sm font-semibold text-black dark:text-white">
+                    {{ dia.fecha | date: "EEEE dd 'de' MMMM" : '' : 'es-MX' | titlecase }}
+                  </span>
+                </div>
+                <span
+                  *ngIf="dia.tieneFacturas"
+                  class="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                >
+                  {{ dia.facturas }} {{ dia.facturas === 1 ? 'factura' : 'facturas' }}
+                </span>
+              </div>
+
+              <!-- ══ PC: 3 columnas ══ -->
+              <div class="hidden grid-cols-3 divide-x divide-gray-100 sm:grid dark:divide-gray-700">
+                <!-- Col 1: Total -->
+                <div class="flex flex-col gap-1 px-4 py-3">
+                  <span class="text-xs text-gray-400 dark:text-gray-500">Total</span>
+                  <ng-container *ngIf="dia.tieneFacturas; else sinDato1">
+                    <span class="text-sm font-bold text-black dark:text-white">
+                      {{ dia.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
+                    </span>
+                    <div class="mt-1 flex flex-col gap-0.5">
+                      <ng-container *ngFor="let item of _lineasDia(dia)">
+                        <span
+                          class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
+                        >
+                          <span
+                            class="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                            [class.bg-emerald-500]="item.key === 'PTPR'"
+                            [class.bg-blue-500]="item.key === 'HILOS'"
+                          ></span>
+                          {{ item.key === 'PTPR' ? 'Tela' : 'Hilos' }}
+                          <span class="font-semibold text-black dark:text-white">
+                            {{ item.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
+                          </span>
+                        </span>
+                      </ng-container>
+                    </div>
+                  </ng-container>
+                  <ng-template #sinDato1>
+                    <span class="text-sm text-gray-300 dark:text-gray-600">—</span>
+                  </ng-template>
+                </div>
+
+                <!-- Col 2: Z200 -->
+                <div class="flex flex-col gap-1 px-4 py-3">
+                  <span class="text-xs text-gray-400 dark:text-gray-500">Z200</span>
+                  <ng-container *ngIf="dia.notasVenta as nv; else sinZ200D">
+                    <span class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                      {{ nv.total_nv | currency: 'MXN' : 'symbol' : '1.2-2' }}
+                    </span>
+                    <div class="mt-1 flex flex-col gap-0.5">
+                      <ng-container *ngFor="let entry of nv.por_linea | keyvalue">
+                        <span
+                          class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
+                        >
+                          <span
+                            class="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                            [class.bg-emerald-500]="entry.key === 'PTPR'"
+                            [class.bg-blue-500]="entry.key === 'HILOS'"
+                          ></span>
+                          {{ entry.key === 'PTPR' ? 'Tela' : 'Hilos' }}
+                          <span class="font-semibold text-orange-600 dark:text-orange-400">
+                            {{ entry.value.total | currency: 'MXN' : 'symbol' : '1.2-2' }}
+                          </span>
+                        </span>
+                      </ng-container>
+                    </div>
+                  </ng-container>
+                  <ng-template #sinZ200D>
+                    <span class="text-sm text-gray-300 dark:text-gray-600">—</span>
+                  </ng-template>
+                </div>
+
+                <!-- Col 3: Total general -->
+                <div class="flex flex-col gap-1 px-4 py-3">
+                  <span class="text-xs text-gray-400 dark:text-gray-500">Total general</span>
+                  <span class="text-sm font-bold text-green-600 dark:text-green-400">
+                    {{
+                      dia.total + (dia.notasVenta?.total_nv ?? 0)
+                        | currency: 'MXN' : 'symbol' : '1.2-2'
+                    }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- ══ MÓVIL: filas apiladas ══ -->
+              <div class="flex flex-col gap-2 px-4 py-3 sm:hidden">
+                <!-- Fila Total -->
+                <ng-container *ngIf="dia.tieneFacturas">
+                  <div
+                    class="flex items-start justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800"
+                  >
+                    <div class="flex flex-col">
+                      <span
+                        class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                        >Total</span
+                      >
+                      <div class="mt-0.5 flex flex-col gap-0.5">
+                        <ng-container *ngFor="let item of _lineasDia(dia)">
+                          <span
+                            class="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400"
+                          >
+                            <span
+                              class="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                              [class.bg-emerald-500]="item.key === 'PTPR'"
+                              [class.bg-blue-500]="item.key === 'HILOS'"
+                            ></span>
+                            {{ item.key === 'PTPR' ? 'Tela' : 'Hilos' }}
+                          </span>
+                        </ng-container>
+                      </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-0.5">
+                      <span class="text-sm font-bold text-black dark:text-white">
+                        {{ dia.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                      </span>
+                      <ng-container *ngFor="let item of _lineasDia(dia)">
+                        <span class="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                          {{ item.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                        </span>
+                      </ng-container>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <!-- Fila Z200 -->
+                <ng-container *ngIf="dia.notasVenta as nv">
+                  <div class="flex items-start justify-between rounded-lg px-3 py-2">
+                    <div class="flex flex-col">
+                      <span
+                        class="text-[10px] font-semibold uppercase tracking-wide text-orange-400"
+                        >Z200
+                      </span>
+                      <div class="mt-0.5 flex flex-col gap-0.5">
+                        <ng-container *ngFor="let entry of nv.por_linea | keyvalue">
+                          <span
+                            class="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400"
+                          >
+                            <span
+                              class="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                              [class.bg-emerald-500]="entry.key === 'PTPR'"
+                              [class.bg-blue-500]="entry.key === 'HILOS'"
+                            ></span>
+                            {{ entry.key === 'PTPR' ? 'Tela' : 'Hilos' }}
+                          </span>
+                        </ng-container>
+                      </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-0.5">
+                      <span class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                        {{ nv.total_nv | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                      </span>
+                      <ng-container *ngFor="let entry of nv.por_linea | keyvalue">
+                        <span class="text-xs font-semibold text-orange-500 dark:text-orange-400">
+                          {{ entry.value.total | currency: 'MXN' : 'symbol' : '1.0-0' }}
+                        </span>
+                      </ng-container>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <!-- Fila Total General -->
+                <div
+                  class="flex items-center justify-between rounded-lg bg-green-50 px-3 py-2.5 dark:bg-green-950/30"
+                >
+                  <span
+                    class="text-[10px] font-semibold uppercase tracking-wide text-green-600 dark:text-green-400"
+                    >Total general</span
+                  >
+                  <span class="text-sm font-bold text-green-600 dark:text-green-400">
+                    {{
+                      dia.total + (dia.notasVenta?.total_nv ?? 0)
+                        | currency: 'MXN' : 'symbol' : '1.0-0'
+                    }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ══════════════════════════════════════
+     MODO: PESO  (cantidades por día)
+══════════════════════════════════════ -->
+    <ng-container *ngIf="!loading && modo === 'peso'">
+      <!-- ── RESUMEN HILOS vs TELA (PESO) ── -->
+      <div class="py-4 md:px-5">
+        <!-- PC: tabla 4 cols -->
+        <div
+          class="hidden overflow-hidden rounded-xl border border-gray-200 sm:block dark:border-gray-700"
+        >
+          <div
+            class="grid grid-cols-4 gap-px bg-gray-200 text-xs font-semibold uppercase tracking-wide dark:bg-gray-700"
+          >
+            <div class="bg-card px-3 py-2 text-black dark:text-white">Línea</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Total kg</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Z200 kg</div>
+            <div class="bg-card px-3 py-2 text-center text-black dark:text-white">Total kg</div>
+          </div>
+          <!-- Hilos -->
+          <div class="grid grid-cols-4 gap-px bg-gray-200 dark:bg-gray-700">
+            <div class="bg-card flex items-center gap-2 px-3 py-3">
+              <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-blue-500"></div>
+              <span class="text-sm font-medium text-black dark:text-white">Hilos</span>
+            </div>
+            <div class="bg-card flex items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-black dark:text-white">
+                {{ pesoHILOS | number: '1.2-2' }}
+              </span>
+            </div>
+            <div class="bg-card flex items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                {{ pesoNotasHILOS > 0 ? (pesoNotasHILOS | number: '1.2-2') : '—' }}
+              </span>
+            </div>
+            <div class="bg-card flex items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                {{ pesoGeneralHILOS | number: '1.2-2' }}
+              </span>
+            </div>
+          </div>
+          <!-- Tela -->
+          <div class="grid grid-cols-4 gap-px bg-gray-200 dark:bg-gray-700">
+            <div class="bg-card flex items-center gap-2 px-3 py-3">
+              <div class="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-emerald-500"></div>
+              <span class="text-sm font-medium text-black dark:text-white">Tela</span>
+            </div>
+            <div class="bg-card flex items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-black dark:text-white">
+                {{ pesoPTPR | number: '1.2-2' }}
+              </span>
+            </div>
+            <div class="bg-card flex items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                {{ pesoNotasPTPR > 0 ? (pesoNotasPTPR | number: '1.2-2') : '—' }}
+              </span>
+            </div>
+            <div class="bg-card flex items-center justify-center px-2 py-3">
+              <span class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                {{ pesoGeneralPTPR | number: '1.2-2' }}
+              </span>
+            </div>
+          </div>
+          <!-- Totales -->
+          <div class="grid grid-cols-4 gap-px bg-gray-300 dark:bg-gray-600">
+            <div class="flex items-center bg-gray-50 px-3 py-2.5 dark:bg-gray-800">
+              <span class="text-xs font-bold uppercase tracking-wide text-black dark:text-white"
+                >Total</span
+              >
+            </div>
+            <div class="flex items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800">
+              <span class="text-sm font-bold text-black dark:text-white">
+                {{ resumenPesoComposer.totalKG | number: '1.2-2' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800">
+              <span class="text-sm font-bold text-orange-700 dark:text-orange-300">
+                {{ totalKGNotasVenta | number: '1.2-2' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-center bg-gray-50 px-2 py-2.5 dark:bg-gray-800">
+              <span class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                {{ resumenPesoComposer.totalKG + totalKGNotasVenta | number: '1.2-2' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MÓVIL: 3 bloques apilados -->
+        <div class="flex flex-col gap-2 sm:hidden">
+          <!-- Z100 kg -->
+          <div class="rounded-lg border border-gray-200 dark:border-gray-700">
+            <div
+              class="border-b border-gray-200 bg-gray-50 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                >Z100 — kg facturado</span
+              >
+            </div>
+            <div class="grid grid-cols-3 divide-x divide-gray-200 dark:divide-gray-700">
+              <div class="p-2.5">
+                <div class="mb-0.5 flex items-center gap-1">
+                  <span class="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                  <span class="text-xs text-gray-400">Hilos</span>
+                </div>
+                <div class="text-sm font-bold text-black dark:text-white">
+                  {{ pesoHILOS | number: '1.2-2' }}
+                  <span class="text-[10px] font-normal text-gray-400">kg</span>
+                </div>
+              </div>
+              <div class="p-2.5">
+                <div class="mb-0.5 flex items-center gap-1">
+                  <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                  <span class="text-xs text-gray-400">Tela</span>
+                </div>
+                <div class="text-sm font-bold text-black dark:text-white">
+                  {{ pesoPTPR | number: '1.2-2' }}
+                  <span class="text-[10px] font-normal text-gray-400">kg</span>
+                </div>
+              </div>
+              <div class="p-2.5">
+                <div class="mb-0.5 text-xs text-gray-400">Total</div>
+                <div class="text-sm font-bold text-black dark:text-white">
+                  {{ resumenPesoComposer.totalKG | number: '1.2-2' }}
+                  <span class="text-[10px] font-normal text-gray-400">kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Z200 kg -->
+          <div class="rounded-lg border">
+            <div class="border-b px-3 py-1.5">
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-black dark:text-white"
+              >
+                Z200 — kg
+              </span>
+            </div>
+            <div class="grid grid-cols-3 divide-x">
+              <div class="p-2.5">
+                <div class="mb-0.5 flex items-center gap-1">
+                  <span class="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                  <span class="text-xs text-gray-400">Hilos</span>
+                </div>
+                <div class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                  {{ pesoNotasHILOS > 0 ? (pesoNotasHILOS | number: '1.2-2') : '—' }}
+                  <span *ngIf="pesoNotasHILOS > 0" class="text-[10px] font-normal text-gray-400"
+                    >kg</span
+                  >
+                </div>
+              </div>
+              <div class="p-2.5">
+                <div class="mb-0.5 flex items-center gap-1">
+                  <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                  <span class="text-xs text-gray-400">Tela</span>
+                </div>
+                <div class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                  {{ pesoNotasPTPR > 0 ? (pesoNotasPTPR | number: '1.2-2') : '—' }}
+                  <span *ngIf="pesoNotasPTPR > 0" class="text-[10px] font-normal text-gray-400"
+                    >kg</span
+                  >
+                </div>
+              </div>
+              <div class="p-2.5">
+                <div class="mb-0.5 text-xs text-gray-400">Total</div>
+                <div class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                  {{ totalKGNotasVenta | number: '1.2-2' }}
+                  <span class="text-[10px] font-normal text-gray-400">kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total general kg -->
+          <div class="rounded-lg border">
+            <div class="border-b px-3 py-1.5">
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-black dark:text-white"
+                >Total general — kg
+              </span>
+            </div>
+            <div class="grid grid-cols-3 divide-x">
+              
+              <div class="p-2.5">
+                <div class="mb-0.5 flex items-center gap-1">
+                  <span class="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                  <span class="text-xs text-gray-400">Hilos</span>
+                </div>
+                <div class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                  {{ pesoGeneralHILOS | number: '1.2-2' }}
+                  <span class="text-[10px] font-normal text-gray-400">kg</span>
+                </div>
+              </div>
+              <div class="p-2.5">
+                <div class="mb-0.5 flex items-center gap-1">
+                  <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                  <span class="text-xs text-gray-400">Tela</span>
+                </div>
+                <div class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                  {{ pesoGeneralPTPR | number: '1.2-2' }}
+                  <span class="text-[10px] font-normal text-gray-400">kg</span>
+                </div>
+              </div>
+
+              <div class="p-2.5">
+                <div class="mb-0.5 text-xs text-gray-400">Total</div>
+                <div class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                  {{ resumenPesoComposer.totalKG + totalKGNotasVenta | number: '1.2-2' }}
+                  <span class="text-[10px] font-normal text-gray-400">kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Desglose por día — peso -->
+      <div class="py-4 md:px-5">
+        <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-black dark:text-white">
+          Peso por día
+        </p>
+
+        <div class="flex flex-col gap-3">
+          <ng-container *ngFor="let dia of subtotalesPorDia">
+            <div
+              class="bg-card overflow-hidden rounded-xl border shadow-sm transition-shadow hover:shadow-md"
+            >
+              <!-- Cabecera -->
+              <div
+                class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-700"
+              >
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-gray-400 icon-size-4 dark:text-gray-500"
+                    >calendar_today</mat-icon
+                  >
+                  <span class="text-sm font-semibold text-black dark:text-white">
+                    {{ dia.fecha | date: "EEEE dd 'de' MMMM" : '' : 'es-MX' | titlecase }}
+                  </span>
+                </div>
+                <span
+                  class="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900 dark:text-purple-300"
+                >
+                  {{ dia.facturas }} {{ dia.facturas === 1 ? 'factura' : 'facturas' }}
+                </span>
+              </div>
+
+              <!-- PC: 3 columnas -->
+              <div class="hidden grid-cols-3 divide-x divide-gray-100 sm:grid dark:divide-gray-700">
+                <!-- Col 1: KG Z100 -->
+                <div class="flex flex-col gap-1 px-4 py-3">
+                  <span class="text-xs text-gray-400 dark:text-gray-500">KG facturado</span>
+                  <span class="text-sm font-bold text-black dark:text-white">
+                    {{ dia.cant | number: '1.2-2' }}
+                    <span class="text-xs font-normal text-gray-400">kg</span>
+                  </span>
+                  <div class="mt-1 flex flex-col gap-0.5">
+                    <ng-container *ngFor="let item of _lineasDiaPeso(dia)">
+                      <span
+                        class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
+                      >
+                        <span
+                          class="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                          [class.bg-emerald-500]="item.key === 'PTPR'"
+                          [class.bg-blue-500]="item.key === 'HILOS'"
+                        ></span>
+                        {{ item.key === 'PTPR' ? 'Tela' : 'Hilos' }}
+                        <span class="font-semibold text-black dark:text-white">{{
+                          item.cant | number: '1.2-2'
+                        }}</span>
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+
+                <!-- Col 2: KG Z200 -->
+                <div class="flex flex-col gap-1 px-4 py-3">
+                  <span class="text-xs text-gray-400 dark:text-gray-500">Z200</span>
+                  <ng-container
+                    *ngIf="notasVentaPorDia[dia.fecha | date: 'yyyy-MM-dd'] as nv; else sinZ200peso"
+                  >
+                    <span class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                      {{ _kgZ200Dia(dia) | number: '1.2-2' }}
+                      <span class="text-xs font-normal text-gray-400">kg</span>
+                    </span>
+                    <div *ngIf="nv.por_linea" class="mt-1 flex flex-col gap-0.5">
+                      <ng-container *ngFor="let entry of nv.por_linea | keyvalue">
+                        <span
+                          class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
+                        >
+                          <span
+                            class="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                            [class.bg-emerald-500]="entry.key === 'PTPR'"
+                            [class.bg-blue-500]="entry.key === 'HILOS'"
+                          ></span>
+                          {{ entry.key === 'PTPR' ? 'Tela' : 'Hilos' }}
+                          <span class="font-semibold text-orange-600 dark:text-orange-400">{{
+                            entry.value.cant | number: '1.2-2'
+                          }}</span>
+                        </span>
+                      </ng-container>
+                    </div>
+                  </ng-container>
+                  <ng-template #sinZ200peso>
+                    <span class="text-sm text-gray-300 dark:text-gray-600">—</span>
+                  </ng-template>
+                </div>
+
+                <!-- Col 3: KG Total -->
+                <div class="flex flex-col gap-1 px-4 py-3">
+                  <span class="text-xs text-gray-400 dark:text-gray-500">Total kg</span>
+                  <span class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                    {{ dia.cant + _kgZ200Dia(dia) | number: '1.2-2' }}
+                    <span class="text-xs font-normal text-gray-400">kg</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- MÓVIL: filas apiladas -->
+              <div class="flex flex-col gap-2 px-4 py-3 sm:hidden">
+                <!-- Fila KG Z100 -->
+                <div
+                  class="flex items-start justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800"
+                >
+                  <div class="flex flex-col">
+                    <span
+                      class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                      >KG facturado</span
+                    >
+                    <div class="mt-0.5 flex flex-col gap-0.5">
+                      <ng-container *ngFor="let item of _lineasDiaPeso(dia)">
+                        <span
+                          class="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400"
+                        >
+                          <span
+                            class="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                            [class.bg-emerald-500]="item.key === 'PTPR'"
+                            [class.bg-blue-500]="item.key === 'HILOS'"
+                          ></span>
+                          {{ item.key === 'PTPR' ? 'Tela' : 'Hilos' }}
+                        </span>
+                      </ng-container>
+                    </div>
+                  </div>
+                  <div class="flex flex-col items-end gap-0.5">
+                    <span class="text-sm font-bold text-black dark:text-white">
+                      {{ dia.cant | number: '1.2-2' }}
+                      <span class="text-[10px] font-normal text-gray-400">kg</span>
+                    </span>
+                    <ng-container *ngFor="let item of _lineasDiaPeso(dia)">
+                      <span class="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                        {{ item.cant | number: '1.2-2' }}
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+
+                <!-- Fila KG Z200 -->
+                <ng-container *ngIf="notasVentaPorDia[dia.fecha | date: 'yyyy-MM-dd'] as nv">
+                  <div class="flex items-start justify-between rounded-lg px-3 py-2">
+                    <div class="flex flex-col">
+                      <span
+                        class="text-[10px] font-semibold uppercase tracking-wide text-orange-400"
+                        >Z200 kg</span
+                      >
+                      <div class="mt-0.5 flex flex-col gap-0.5">
+                        <ng-container *ngFor="let entry of nv.por_linea | keyvalue">
+                          <span
+                            class="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400"
+                          >
+                            <span
+                              class="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                              [class.bg-emerald-500]="entry.key === 'PTPR'"
+                              [class.bg-blue-500]="entry.key === 'HILOS'"
+                            ></span>
+                            {{ entry.key === 'PTPR' ? 'Tela' : 'Hilos' }}
+                          </span>
+                        </ng-container>
+                      </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-0.5">
+                      <span class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                        {{ _kgZ200Dia(dia) | number: '1.2-2' }}
+                        <span class="text-[10px] font-normal text-gray-400">kg</span>
+                      </span>
+                      <ng-container *ngFor="let entry of nv.por_linea | keyvalue">
+                        <span class="text-xs font-semibold text-orange-500 dark:text-orange-400">
+                          {{ entry.value.cant | number: '1.2-2' }}
+                        </span>
+                      </ng-container>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <!-- Fila Total kg -->
+                <div
+                  class="flex items-center justify-between rounded-lg bg-purple-50 px-3 py-2.5 dark:bg-purple-950/30"
+                >
+                  <span
+                    class="text-[10px] font-semibold uppercase tracking-wide text-purple-600 dark:text-purple-400"
+                    >Total kg</span
+                  >
+                  <span class="text-sm font-bold text-purple-600 dark:text-purple-400">
+                    {{ dia.cant + _kgZ200Dia(dia) | number: '1.2-2' }}
+                    <span class="text-[10px] font-normal text-gray-400">kg</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ───── FOOTER ───── -->
+  <div class="flex flex-shrink-0 items-center justify-end border-t py-3 md:px-6">
+    <button mat-stroked-button (click)="cerrar()">Cerrar</button>
+  </div>
+</div>
