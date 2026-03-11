@@ -523,7 +523,7 @@
                             {{ pedido.condicion || 'Sin condición' }}
                           </span>
                           <div class="flex items-center gap-1">
-                            <button
+                            <!-- <button
                               mat-icon-button
                               matTooltip="Descargar PDF"
                               [disabled]="descargando() === pedido.cve_ped"
@@ -531,13 +531,13 @@
                             >
                               <mat-icon
                                 class="icon-size-4"
-[svgIcon]="
-  descargando() === pedido.cve_ped
-    ? 'heroicons_outline:arrow-path'
-    : 'heroicons_outline:share'
-"
+                                [svgIcon]="
+                                  descargando() === pedido.cve_ped
+                                    ? 'heroicons_outline:arrow-path'
+                                    : 'heroicons_outline:share'
+                                "
                               ></mat-icon>
-                            </button>
+                            </button> -->
                             <mat-icon
                               class="text-gray-400 transition-transform duration-200 icon-size-4"
                               [class.rotate-90]="estaExpandido(pedido.cve_ped)"
@@ -596,7 +596,7 @@
                           {{ getKilosPedido(pedido) | number: '1.0-0' }} kg
                         </div>
                         <div class="flex items-center justify-end gap-1">
-                          <button
+                          <!-- <button
                             mat-icon-button
                             matTooltip="Descargar PDF"
                             [disabled]="descargando() === pedido.cve_ped"
@@ -604,13 +604,13 @@
                           >
                             <mat-icon
                               class="icon-size-4"
-                             [svgIcon]="
-  descargando() === pedido.cve_ped
-    ? 'heroicons_outline:arrow-path'
-    : 'heroicons_outline:share'
-"
+                              [svgIcon]="
+                                descargando() === pedido.cve_ped
+                                  ? 'heroicons_outline:arrow-path'
+                                  : 'heroicons_outline:share'
+                              "
                             ></mat-icon>
-                          </button>
+                          </button> -->
                           <mat-icon
                             class="text-gray-400 transition-transform duration-200 icon-size-4"
                             [class.rotate-90]="estaExpandido(pedido.cve_ped)"
