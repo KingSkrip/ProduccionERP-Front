@@ -90,7 +90,7 @@
       <!-- Panel desplegable -->
       <div
         *ngIf="mostrarPanelFiltrosPc"
-        class="absolute right-0 top-full z-50 mt-2 flex max-h-[calc(70vh-70px)] min-h-0 w-[480px] flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800"
+        class="bg-default absolute right-0 top-full z-50 mt-2 flex max-h-[calc(70vh-70px)] min-h-0 w-[480px] flex-col rounded-2xl border border-gray-200 shadow-2xl dark:border-gray-700"
         [@slideDown]
       >
         <!-- Header del panel -->
@@ -328,9 +328,9 @@
                 <mat-option [value]="''"
                   ><span class="font-medium">Todos los departamentos</span></mat-option
                 >
-                <mat-option *ngFor="let depto of departamentosUnicos" [value]="depto">{{
-                  depto
-                }}</mat-option>
+                <mat-option *ngFor="let depto of departamentosUnicos" [value]="depto">
+                  {{ depto }}
+                </mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -389,7 +389,7 @@
   </div>
 
   <!-- ===== BARRA DE FILTROS MÓVIL (STICKY) ===== -->
-  <div class="sticky top-0 bg-gray-50 md:hidden dark:bg-gray-900">
+  <div class="bg-default sticky top-0 md:hidden">
     <div class="flex items-center gap-2 px-3">
       <mat-form-field
         class="fuse-mat-dense flex-1"
@@ -573,9 +573,9 @@
         <mat-form-field class="w-full" appearance="outline">
           <mat-select [formControl]="deptoControl" placeholder="Todos los departamentos">
             <mat-option [value]="''">Todos los departamentos</mat-option>
-            <mat-option *ngFor="let depto of departamentosUnicos" [value]="depto">{{
-              depto
-            }}</mat-option>
+            <mat-option *ngFor="let depto of departamentosUnicos" [value]="depto">
+              {{ depto }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
       </div>
@@ -602,7 +602,7 @@
   <div class="flex flex-auto overflow-hidden">
     <div class="flex flex-auto flex-col overflow-y-auto">
       <!-- Router Outlet - Vistas hijas (Facturado, Tejido, etc.) -->
-      <div class="w-full pb-6 md:px-6">
+      <div class="w-full pb-6">
         <router-outlet></router-outlet>
       </div>
 

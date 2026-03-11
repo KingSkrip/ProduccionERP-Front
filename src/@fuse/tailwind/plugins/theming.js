@@ -260,23 +260,24 @@ const theming = plugin.withOptions(
                 'bg-status-bar': colors.slate[300],
               },
               //default
-              // dark: {
-              //   'bg-app-bar': colors.slate[900],
-              //   'bg-card': colors.slate[800],
-              //   'bg-default': colors.slate[900],
-              //   'bg-dialog': colors.slate[800],
-              //   'bg-hover': 'rgba(255, 255, 255, 0.05)',
-              //   'bg-status-bar': colors.slate[900],
-              // },
-              //dark
               dark: {
                 'bg-app-bar': colors.slate[900],
-                'bg-card': '#212423', //colors.slate[800],
-                'bg-default': colors.black,
+                'bg-card': colors.slate[800],
+                'bg-default': colors.slate[900],
                 'bg-dialog': colors.slate[800],
                 'bg-hover': 'rgba(255, 255, 255, 0.05)',
                 'bg-status-bar': colors.slate[900],
               },
+              //dark
+              // dark: {
+              //   'bg-app-bar': colors.slate[900],
+              //   'bg-card': '#212423', 
+              //   'bg-default': colors.black,
+              //   'bg-dialog': '#212423',
+              //   'bg-hover': 'rgba(255, 255, 255, 0.05)',
+              //   'bg-status-bar': colors.slate[900],
+              // },
+
               // cambio de colores para dark
               //   dark: {
               //     'bg-app-bar': '#000000',

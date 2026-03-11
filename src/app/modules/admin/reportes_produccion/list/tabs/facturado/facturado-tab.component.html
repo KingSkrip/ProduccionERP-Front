@@ -1,7 +1,7 @@
 <!-- Tarjetas de resumen - Solo mostrar si hay datos -->
-<div class="bg-gray-50 dark:bg-gray-800">
+<div class="bg-default w-full">
   <!-- cards -->
-  <div class="md:px-8 md:py-4" *ngIf="!isLoading && datosAgrupados.length > 0">
+  <div class="md:py-4" *ngIf="!isLoading && datosAgrupados.length > 0">
     <!-- Cards móvil -->
     <div
       class="bg-card rounded-2xl border border-gray-200 p-4 shadow-sm md:hidden dark:border-gray-700"
@@ -390,7 +390,7 @@
 
   <!-- Tabla con desplegable -->
   <div
-    class="mt-6 hidden w-full overflow-x-auto overflow-y-visible md:block md:px-8 md:pb-8"
+    class="mt-6 hidden w-full overflow-x-auto overflow-y-visible md:block md:pb-8"
     *ngIf="!isLoading && datosAgrupados.length > 0"
   >
     <table class="bg-card w-full min-w-max overflow-hidden rounded-2xl shadow-sm">

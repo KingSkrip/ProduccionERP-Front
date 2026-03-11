@@ -1,33 +1,51 @@
 <!-- INICIO - VISTA RESUMEN CON LOADERS -->
-<div class="w-full  pt-6 md:pt-2 bg-default">
+<div class="bg-default w-full pt-6 md:pt-2">
   <!-- Header -->
   <div class="mb-6 md:mb-8">
     <!-- Toggle Vista -->
-    <div class="ml-3 flex w-fit gap-2 rounded-lg bg-gray-100 p-1 dark:bg-gray-500 md:ml-0">
-      <button
-        (click)="cambiarVista('general')"
-        [class.bg-white]="vistaActual === 'general'"
-        [class.shadow]="vistaActual === 'general'"
-        [class.text-blue-600]="vistaActual === 'general'"
-        [class.text-gray-600]="vistaActual !== 'general'"
-        [class.dark:text-white]="vistaActual !== 'general'"
-        class="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200"
-      >
-        <mat-icon class="h-5 w-5 text-base">grid_view</mat-icon>
-        <span class="text-base font-semibold">General</span>
-      </button>
-      <button
-        (click)="cambiarVista('detalle')"
-        [class.bg-white]="vistaActual === 'detalle'"
-        [class.shadow]="vistaActual === 'detalle'"
-        [class.text-blue-600]="vistaActual === 'detalle'"
-        [class.text-gray-600]="vistaActual !== 'detalle'"
-        [class.dark:text-white]="vistaActual !== 'detalle'"
-        class="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200"
-      >
-        <mat-icon class="h-5 w-5 text-lg">format_list_bulleted</mat-icon>
-        <span class="text-base font-semibold">Detalle</span>
-      </button>
+    <div class="mb-6 md:mb-8">
+      <div class="ml-3 w-fit md:ml-0">
+        <div class="bg-card relative flex gap-1 rounded-full p-1.5 shadow-inner">
+          <!-- Sliding pill background -->
+          <div
+            class="absolute bottom-1.5 top-1.5 rounded-full bg-primary shadow-md transition-all duration-300 ease-in-out"
+            [style.left]="vistaActual === 'general' ? '6px' : 'calc(50% + 3px)'"
+            [style.width]="'calc(50% - 9px)'"
+          ></div>
+
+          <!-- Botón General -->
+          <button
+            (click)="cambiarVista('general')"
+            class="relative z-10 flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition-colors duration-300 sm:px-5"
+            [class.text-white]="vistaActual === 'general'"
+            [class.text-gray-500]="vistaActual !== 'general'"
+          >
+            <mat-icon
+              style="font-size: 18px; width: 18px; height: 18px"
+              [class.text-white]="vistaActual === 'general'"
+              [class.text-gray-500]="vistaActual !== 'general'"
+              >grid_view</mat-icon
+            >
+            <span class="hidden sm:inline">General</span>
+          </button>
+
+          <!-- Botón Detalle -->
+          <button
+            (click)="cambiarVista('detalle')"
+            class="relative z-10 flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition-colors duration-300 sm:px-5"
+            [class.text-white]="vistaActual === 'detalle'"
+            [class.text-gray-500]="vistaActual !== 'detalle'"
+          >
+            <mat-icon
+              style="font-size: 18px; width: 18px; height: 18px"
+              [class.text-white]="vistaActual === 'detalle'"
+              [class.text-gray-500]="vistaActual !== 'detalle'"
+              >format_list_bulleted</mat-icon
+            >
+            <span class="hidden sm:inline">Detalle</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -67,13 +85,38 @@
               mat-icon-button
               [matMenuTriggerFor]="menuTotal"
               (click)="$event.stopPropagation()"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-primary shadow-none transition-all duration-200 active:scale-95 sm:h-8 sm:w-8 sm:bg-transparent sm:shadow-lg"
             >
-              <mat-icon class="text-black icon-size-5 dark:text-white">more_vert</mat-icon>
+              <mat-icon class="text-white icon-size-5 sm:text-black sm:dark:text-white">
+                more_vert
+              </mat-icon>
             </button>
-            <mat-menu #menuTotal="matMenu">
-              <button mat-menu-item (click)="abrirComposerFacturado('total')">
-                <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
-                <span class="text-black dark:text-white">Ver detalles</span>
+
+            <mat-menu #menuTotal="matMenu" panelClass="menu-redondeado">
+              <button
+                mat-menu-item
+                (click)="abrirComposerFacturado('total')"
+                class="flex items-center gap-4 px-5 py-4 sm:gap-3 sm:px-4 sm:py-2"
+              >
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 sm:h-auto sm:w-auto sm:rounded-none sm:bg-transparent"
+                >
+                  <mat-icon
+                    class="mx-auto block text-primary sm:text-black md:mr-2 dark:text-white"
+                    style="font-size: 20px; width: 20px; height: 20px"
+                  >
+                    open_in_full
+                  </mat-icon>
+                </div>
+
+                <div class="flex flex-col sm:contents">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                    Ver detalles
+                  </span>
+                  <span class="text-sm text-black sm:hidden dark:text-white">
+                    Abre la vista completa
+                  </span>
+                </div>
               </button>
             </mat-menu>
           </div>
@@ -101,7 +144,6 @@
           <div *ngIf="!loadingFacturacion; else loaderTemplate">
             <!-- MÓVIL: 2 cols + total general -->
             <div class="flex flex-col gap-3 md:hidden">
-              
               <!-- ══ FILA: Z100 | Z200 ══ -->
               <div class="flex flex-row gap-3">
                 <!-- TOTAL -->
@@ -439,13 +481,38 @@
               mat-icon-button
               [matMenuTriggerFor]="menuPeso"
               (click)="$event.stopPropagation()"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-200 active:scale-95 sm:h-8 sm:w-8 sm:bg-transparent sm:shadow-none"
             >
-              <mat-icon class="text-black icon-size-5 dark:text-white">more_vert</mat-icon>
+              <mat-icon class="text-white icon-size-5 sm:text-black sm:dark:text-white">
+                more_vert
+              </mat-icon>
             </button>
-            <mat-menu #menuPeso="matMenu">
-              <button mat-menu-item (click)="abrirComposerFacturado('peso')">
-                <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
-                <span class="text-black dark:text-white">Ver detalles</span>
+
+            <mat-menu #menuPeso="matMenu" panelClass="menu-redondeado">
+              <button
+                mat-menu-item
+                (click)="abrirComposerFacturado('peso')"
+                class="flex items-center gap-4 px-5 py-4 sm:gap-3 sm:px-4 sm:py-2"
+              >
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 sm:h-auto sm:w-auto sm:rounded-none sm:bg-transparent"
+                >
+                  <mat-icon
+                    class="mx-auto block text-primary sm:text-black md:mr-2 dark:text-white"
+                    style="font-size: 20px; width: 20px; height: 20px"
+                  >
+                    open_in_full
+                  </mat-icon>
+                </div>
+
+                <div class="flex flex-col sm:contents">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                    Ver detalles
+                  </span>
+                  <span class="text-sm text-black sm:hidden dark:text-white">
+                    Abre la vista completa
+                  </span>
+                </div>
               </button>
             </mat-menu>
           </div>
@@ -789,24 +856,46 @@
           </div>
 
           <!-- Botón 3 puntos -->
-          <!-- Botón 3 puntos -->
           <div class="absolute right-2 top-2 z-10">
             <button
               mat-icon-button
-              class="flex h-10 w-10 items-center justify-center"
               [matMenuTriggerFor]="menuTejido"
               (click)="$event.stopPropagation()"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-200 active:scale-95 sm:h-8 sm:w-8 sm:bg-transparent sm:shadow-none"
             >
-              <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
+              <mat-icon class="text-white icon-size-5 sm:text-black sm:dark:text-white">
+                more_vert
+              </mat-icon>
             </button>
-          </div>
 
-          <mat-menu #menuTejido="matMenu">
-            <button mat-menu-item (click)="abrirTejido()">
-              <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
-              <span class="text-black dark:text-white">Ver detalles</span>
-            </button>
-          </mat-menu>
+            <mat-menu #menuTejido="matMenu" panelClass="menu-redondeado">
+              <button
+                mat-menu-item
+                (click)="abrirTejido()"
+                class="flex items-center gap-4 px-5 py-4 sm:gap-3 sm:px-4 sm:py-2"
+              >
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 sm:h-auto sm:w-auto sm:rounded-none sm:bg-transparent"
+                >
+                  <mat-icon
+                    class="mx-auto block text-primary sm:text-black md:mr-2 dark:text-white"
+                    style="font-size: 20px; width: 20px; height: 20px"
+                  >
+                    open_in_full
+                  </mat-icon>
+                </div>
+
+                <div class="flex flex-col sm:contents">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                    Ver detalles
+                  </span>
+                  <span class="text-sm text-black sm:hidden dark:text-white">
+                    Abre la vista completa
+                  </span>
+                </div>
+              </button>
+            </mat-menu>
+          </div>
 
           <!-- Header -->
           <div class="flex items-center justify-between pr-12">
@@ -865,21 +954,43 @@
           <div class="absolute right-2 top-2 z-10">
             <button
               mat-icon-button
-              class="flex h-10 w-10 items-center justify-center"
               [matMenuTriggerFor]="menuTintoreria"
               (click)="$event.stopPropagation()"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-200 active:scale-95 sm:h-8 sm:w-8 sm:bg-transparent sm:shadow-none"
             >
-              <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
+              <mat-icon class="text-white icon-size-5 sm:text-black sm:dark:text-white">
+                more_vert
+              </mat-icon>
             </button>
-          </div>
 
-          <!-- Menu -->
-          <mat-menu #menuTintoreria="matMenu">
-            <button mat-menu-item (click)="abrirTintoreria()">
-              <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
-              <span class="text-black dark:text-white">Ver detalles</span>
-            </button>
-          </mat-menu>
+            <mat-menu #menuTintoreria="matMenu" panelClass="menu-redondeado">
+              <button
+                mat-menu-item
+                (click)="abrirTintoreria()"
+                class="flex items-center gap-4 px-5 py-4 sm:gap-3 sm:px-4 sm:py-2"
+              >
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 sm:h-auto sm:w-auto sm:rounded-none sm:bg-transparent"
+                >
+                  <mat-icon
+                    class="mx-auto block text-primary sm:text-black md:mr-2 dark:text-white"
+                    style="font-size: 20px; width: 20px; height: 20px"
+                  >
+                    open_in_full
+                  </mat-icon>
+                </div>
+
+                <div class="flex flex-col sm:contents">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                    Ver detalles
+                  </span>
+                  <span class="text-sm text-black sm:hidden dark:text-white">
+                    Abre la vista completa
+                  </span>
+                </div>
+              </button>
+            </mat-menu>
+          </div>
 
           <!-- Header -->
           <div class="flex items-start justify-between pr-12">
@@ -937,21 +1048,43 @@
           <div class="absolute right-2 top-2 z-10">
             <button
               mat-icon-button
-              class="flex h-10 w-10 items-center justify-center"
               [matMenuTriggerFor]="menuEstampado"
               (click)="$event.stopPropagation()"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-200 active:scale-95 sm:h-8 sm:w-8 sm:bg-transparent sm:shadow-none"
             >
-              <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
+              <mat-icon class="text-white icon-size-5 sm:text-black sm:dark:text-white">
+                more_vert
+              </mat-icon>
             </button>
-          </div>
 
-          <!-- Menu -->
-          <mat-menu #menuEstampado="matMenu">
-            <button mat-menu-item (click)="abrirEstampado()">
-              <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
-              <span class="text-black dark:text-white">Ver detalles</span>
-            </button>
-          </mat-menu>
+            <mat-menu #menuEstampado="matMenu" panelClass="menu-redondeado">
+              <button
+                mat-menu-item
+                (click)="abrirEstampado()"
+                class="flex items-center gap-4 px-5 py-4 sm:gap-3 sm:px-4 sm:py-2"
+              >
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 sm:h-auto sm:w-auto sm:rounded-none sm:bg-transparent"
+                >
+                  <mat-icon
+                    class="mx-auto block text-primary sm:text-black md:mr-2 dark:text-white"
+                    style="font-size: 20px; width: 20px; height: 20px"
+                  >
+                    open_in_full
+                  </mat-icon>
+                </div>
+
+                <div class="flex flex-col sm:contents">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                    Ver detalles
+                  </span>
+                  <span class="text-sm text-black sm:hidden dark:text-white">
+                    Abre la vista completa
+                  </span>
+                </div>
+              </button>
+            </mat-menu>
+          </div>
 
           <!-- Header -->
           <div class="flex items-start justify-between pr-12">
@@ -1009,21 +1142,43 @@
           <div class="absolute right-2 top-2 z-10">
             <button
               mat-icon-button
-              class="flex h-10 w-10 items-center justify-center"
               [matMenuTriggerFor]="menuAcabado"
               (click)="$event.stopPropagation()"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-200 active:scale-95 sm:h-8 sm:w-8 sm:bg-transparent sm:shadow-none"
             >
-              <mat-icon class="text-black dark:text-white">more_vert</mat-icon>
+              <mat-icon class="text-white icon-size-5 sm:text-black sm:dark:text-white">
+                more_vert
+              </mat-icon>
             </button>
-          </div>
 
-          <!-- Menu -->
-          <mat-menu #menuAcabado="matMenu">
-            <button mat-menu-item (click)="abrirAcabado()">
-              <mat-icon class="text-black dark:text-white">open_in_full</mat-icon>
-              <span class="text-black dark:text-white">Ver detalles</span>
-            </button>
-          </mat-menu>
+            <mat-menu #menuAcabado="matMenu" panelClass="menu-redondeado">
+              <button
+                mat-menu-item
+                (click)="abrirAcabado()"
+                class="flex items-center gap-4 px-5 py-4 sm:gap-3 sm:px-4 sm:py-2"
+              >
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 sm:h-auto sm:w-auto sm:rounded-none sm:bg-transparent"
+                >
+                  <mat-icon
+                    class="mx-auto block text-primary sm:text-black md:mr-2 dark:text-white"
+                    style="font-size: 20px; width: 20px; height: 20px"
+                  >
+                    open_in_full
+                  </mat-icon>
+                </div>
+
+                <div class="flex flex-col sm:contents">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                    Ver detalles
+                  </span>
+                  <span class="text-sm text-black sm:hidden dark:text-white">
+                    Abre la vista completa
+                  </span>
+                </div>
+              </button>
+            </mat-menu>
+          </div>
 
           <!-- Header -->
           <div class="flex items-start justify-between pr-12">
@@ -1554,7 +1709,7 @@
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
         <div
           *ngFor="let area of areasResumenFiltradas"
-          class="rounded-2xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md md:p-6 dark:bg-gray-800"
+          class="bg-card rounded-2xl p-5 shadow-sm transition-shadow hover:shadow-md md:p-6"
         >
           <!-- Header del área -->
           <div class="mb-5 flex items-center gap-3 border-b-2 border-gray-100 pb-4">

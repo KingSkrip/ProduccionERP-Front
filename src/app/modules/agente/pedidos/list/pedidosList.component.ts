@@ -251,54 +251,33 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     return this.pedidoExpandido() === cvePed;
   }
 
-  descargarPDF(cvePed: string): void {
-    this.descargando.set(cvePed);
-    this._pedidosService
-      .descargarPDF(cvePed)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: async (blob) => {
-          const fileName = `pedido-${cvePed}.pdf`;
-
-          // Intenta compartir si el navegador lo soporta
-          if (navigator.share && navigator.canShare) {
-            const file = new File([blob], fileName, { type: 'application/pdf' });
-            if (navigator.canShare({ files: [file] })) {
-              try {
-                await navigator.share({
-                  title: `Pedido ${cvePed}`,
-                  text: `Aquí está el pedido ${cvePed}`,
-                  files: [file],
-                });
-                this.descargando.set(null);
-                return;
-              } catch (err) {
-                // Si el usuario cancela el share, no hacer nada
-                if ((err as DOMException).name !== 'AbortError') {
-                  console.warn('Share falló, descargando...', err);
-                } else {
-                  this.descargando.set(null);
-                  return;
-                }
-              }
-            }
+  async compartirPDF(cvePed: string): Promise<void> {
+  this.descargando.set(cvePed);
+  this._pedidosService
+    .descargarPDF(cvePed)
+    .pipe(takeUntil(this._destroy$))
+    .subscribe({
+      next: async (blob) => {
+        const fileName = `pedido-${cvePed}.pdf`;
+        const file = new File([blob], fileName, { type: 'application/pdf' });
+        try {
+          await navigator.share({
+            title: `Pedido ${cvePed}`,
+            files: [file],
+          });
+        } catch (err) {
+          if ((err as DOMException).name !== 'AbortError') {
+            this._snackBar.open('No se pudo compartir el PDF', 'Cerrar', { duration: 4000 });
           }
-
-          // Fallback: descarga normal
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = fileName;
-          link.click();
-          URL.revokeObjectURL(url);
-          this.descargando.set(null);
-        },
-        error: () => {
-          this._snackBar.open('Error al descargar el PDF', 'Cerrar', { duration: 4000 });
-          this.descargando.set(null);
-        },
-      });
-  }
+        }
+        this.descargando.set(null);
+      },
+      error: () => {
+        this._snackBar.open('Error al obtener el PDF', 'Cerrar', { duration: 4000 });
+        this.descargando.set(null);
+      },
+    });
+}
 
   trackByClie(_i: number, c: ClienteConPedidos): string {
     return c.cve_clie;
