@@ -107,4 +107,8 @@ export class PedidosService {
   enviarPorEmail(cvePed: string, email: string): Observable<ApiResponse<void>> {
     return this._httpClient.post<ApiResponse<void>>(`${this._apiUrl}/${cvePed}/email`, { email });
   }
+
+  getDetallePedido(cvePed: string): Observable<any> {
+    return this._httpClient.get(`${this._apiUrl}/${cvePed}/detalle`);
+  }
 }
