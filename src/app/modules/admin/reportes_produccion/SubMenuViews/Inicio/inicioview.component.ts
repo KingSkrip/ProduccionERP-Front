@@ -66,6 +66,10 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   totalPTPR: number = 0;
   totalHILOS: number = 0;
   importeTotalSinIva = 0;
+  cantKgPTPR: number = 0;
+  cantLbPTPR: number = 0;
+  cantKgHILOS: number = 0;
+  cantLbHILOS: number = 0;
   loadingFacturacion = true;
   notasVentaPTPR: number = 0;
   loadingSaldosTejido = true;
@@ -303,8 +307,9 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (datos) => {
           this.sharedData.setDatosFacturado(datos.facturado);
-          this.procesarFacturado(datos.facturado);
           this.onFacturadoLoaded(datos.facturado);
+this.procesarFacturado(datos.facturado);
+
           this.procesarProduccion(datos.produccion);
           this.procesarRevisado(datos.revisado);
           this.procesarPorRevisar(datos.porRevisar);
@@ -894,6 +899,9 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     return { items, totalKG };
   }
 
+  //45.3592
+  
+
   get cantidadesPorUnidadArray() {
     return Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => ({ um, cant }));
   }
@@ -922,8 +930,17 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     this.totalHILOS = Number(porLinea['HILOS']?.total) || 0;
     this.notasVentaPTPR = Number(notasPorLinea['PTPR']?.total) || 0;
     this.notasVentaHILOS = Number(notasPorLinea['HILOS']?.total) || 0;
-    this.cantPTPR = Number(porLinea['PTPR']?.cant) || 0;
-    this.cantHILOS = Number(porLinea['HILOS']?.cant) || 0;
+
+    this.cantPTPR = Number(porLinea['PTPR']?.cant_kg_eq) || 0;
+    this.cantHILOS = Number(porLinea['HILOS']?.cant_kg_eq) || 0;
+    this.cantKgPTPR = Number(porLinea['PTPR']?.cant_kg) || 0;
+    this.cantLbPTPR = Number(porLinea['PTPR']?.cant_lb) || 0;
+    this.cantKgHILOS = Number(porLinea['HILOS']?.cant_kg) || 0;
+    this.cantLbHILOS = Number(porLinea['HILOS']?.cant_lb) || 0;
+
+    // this.cantPTPR = Number(porLinea['PTPR']?.cant_kg_eq) || 0;
+    // this.cantHILOS = Number(porLinea['HILOS']?.cant_kg_eq) || 0;
+
     this.cantNotasVentaPTPR = Number(notasPorLinea['PTPR']?.cant) || 0;
     this.cantNotasVentaHILOS = Number(notasPorLinea['HILOS']?.cant) || 0;
     this.cantidadesPorUnidad = {};
@@ -1433,18 +1450,17 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  get notasVentaUnidadesKG(): number {
-    const RATES: { [key: string]: number } = {
-      KG: 1,
-      KGS: 1,
-      LB: 0.453592,
-      LBS: 0.453592,
-      OZ: 0.0283495,
-      G: 0.001,
-    };
-    return this.notasVentaUnidades.reduce((sum, item) => {
-      const rate = RATES[item.um.toUpperCase()] ?? 0;
-      return sum + item.cant * rate;
-    }, 0);
-  }
+  get notasVentaUnidadesKGEq(): number {
+  return (this.cantNotasVentaPTPR || 0) + (this.cantNotasVentaHILOS || 0);
+}
+
+get notasVentaUnidadesKG(): number {
+  return (this.cantNotasVentaPTPR || 0) + (this.cantNotasVentaHILOS || 0);
+}
+
+
+
+  get totalKgEqZ100(): number {
+  return (this.cantPTPR || 0) + (this.cantHILOS || 0);
+}
 }

@@ -119,13 +119,14 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
       const porLinea = data.por_linea ?? {};
       const notasPorLinea = data.notas_venta?.por_linea ?? {};
 
-      this.porLineaHILOS = {
-        total: Number(porLinea['HILOS']?.total) || 0,
-        cant: Number(porLinea['HILOS']?.cant) || 0,
-      };
       this.porLineaPTPR = {
         total: Number(porLinea['PTPR']?.total) || 0,
-        cant: Number(porLinea['PTPR']?.cant) || 0,
+        cant: Number(porLinea['PTPR']?.cant_kg_eq) || 0, // ← cambiar a cant_kg_eq
+      };
+
+      this.porLineaHILOS = {
+        total: Number(porLinea['HILOS']?.total) || 0,
+        cant: Number(porLinea['HILOS']?.cant_kg_eq) || 0, // ← también este por consistencia
       };
       this.notasPorLineaHILOS = {
         total: Number(notasPorLinea['HILOS']?.total) || 0,

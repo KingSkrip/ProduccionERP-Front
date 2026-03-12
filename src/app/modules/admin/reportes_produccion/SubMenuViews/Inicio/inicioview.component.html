@@ -538,37 +538,63 @@
           <!-- Loader o contenido -->
           <div *ngIf="!loadingFacturacion; else loaderConIva">
             <ng-container *ngIf="resumenPesoFacturacion.items.length; else sinCantidades">
-              <!-- MÓVIL: Peso total -->
+              <!-- MÓVIL: Peso total (con Hilos + Tela) -->
               <div class="flex flex-col gap-3 md:hidden">
                 <!-- ══ FILA: Z100 | Z200 ══ -->
-                <div class="flex flex-row gap-3">
+                <div class="flex flex-row items-stretch gap-3">
                   <!-- PESO Z100 -->
-                  <div class="mt-1 flex flex-1 flex-col gap-1">
-                    <span class="text-sm font-bold text-black dark:text-white"> Unidades </span>
+                  <div class="flex flex-1 flex-col gap-2">
+                    <span class="mb-0.5 text-sm font-medium text-black dark:text-white"
+                      >Unidades</span
+                    >
 
-                    <div class="flex flex-col">
-                      <div class="flex flex-row items-center">
-                        <span class="text-sm text-black dark:text-white">Hilos:</span>
-                        <span class="ml-1 text-sm font-bold text-black dark:text-white">
-                          {{ formatValue(cantHILOS, 'decimal') }} KG
-                        </span>
-                      </div>
+                    <!-- Hilos -->
+                    <div class="flex flex-col gap-0.5">
+                      <span class="text-[11px] font-medium uppercase tracking-wider text-gray-400"
+                        >Hilos</span
+                      >
+                      <span class="text-base font-semibold text-black dark:text-white">
+                        {{ formatValue(cantHILOS, 'decimal') }} KG
+                      </span>
+                      <ng-container *ngIf="cantLbHILOS > 0">
+                        <div class="flex flex-wrap items-center gap-1 text-[11px] text-gray-400">
+                          <span>{{ formatValue(cantKgHILOS, 'decimal') }} kg</span>
+                          <span class="opacity-40">+</span>
+                          <span>{{ formatValue(cantLbHILOS, 'decimal') }} lb</span>
+                        </div>
+                      </ng-container>
                     </div>
 
-                    <div class="flex flex-col">
-                      <div class="flex flex-row items-center">
-                        <span class="text-sm text-black dark:text-white">Tela:</span>
-                        <span class="ml-1 text-sm font-bold text-black dark:text-white">
-                          {{ formatValue(cantPTPR, 'decimal') }} KG
-                        </span>
-                      </div>
+                    <div class="h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+
+                    <!-- Tela -->
+                    <div class="flex flex-col gap-0.5">
+                      <span class="text-[11px] font-medium uppercase tracking-wider text-gray-400"
+                        >Tela</span
+                      >
+                      <span class="text-base font-semibold text-black dark:text-white">
+                        {{ formatValue(cantPTPR, 'decimal') }} KG
+                      </span>
+                      <ng-container *ngIf="cantLbPTPR > 0">
+                        <div class="flex flex-col gap-0.5 text-[11px] text-black dark:text-white">
+                          <span>KG: {{ formatValue(cantKgPTPR, 'decimal') }}</span>
+                          <span>
+                            LB: {{ formatValue(cantLbPTPR, 'decimal') }} =
+                            <span class="font-medium text-purple-400">
+                              {{ formatValue(cantLbPTPR * 0.453592, 'decimal') }} KG
+                            </span>
+                          </span>
+                        </div>
+                      </ng-container>
                     </div>
 
-                    <div class="border-t border-gray-200 pt-1 dark:border-gray-700">
-                      <span class="text-sm text-black dark:text-white">Total</span>
-                      <div class="text-base">
+                    <div class="h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+
+                    <div class="flex items-baseline justify-between">
+                      <span class="text-sm text-gray-400">Total</span>
+                      <span class="text-lg font-semibold text-black dark:text-white">
                         {{ formatValue(resumenPesoFacturacion.totalKG, 'decimal') }} KG
-                      </div>
+                      </span>
                     </div>
                   </div>
 
@@ -576,18 +602,14 @@
                   <div class="w-px self-stretch bg-gray-200 dark:bg-gray-700"></div>
 
                   <!-- PESO Z200 -->
-                  <div class="flex flex-1 flex-col gap-1">
+                  <div class="flex flex-1 flex-col gap-2">
                     <div class="flex items-center justify-between">
-                      <span class="text-sm font-bold text-black dark:text-white">
-                        Unidades Z200
-                      </span>
-                      <button
-                        type="button"
-                        (click)="toggleZ200()"
-                        class="flex items-center gap-0.5"
+                      <span class="text-sm font-medium text-black dark:text-white"
+                        >Unidades Z200</span
                       >
+                      <button type="button" (click)="toggleZ200()" class="flex items-center">
                         <mat-icon
-                          class="text-black icon-size-6 dark:text-white"
+                          class="text-black icon-size-5 dark:text-white"
                           [svgIcon]="
                             z200Oculto ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'
                           "
@@ -596,34 +618,40 @@
                     </div>
 
                     <ng-container *ngIf="!z200Oculto; else z200PesoOcultoMobile">
-                      <div class="flex flex-col">
-                        <div class="flex flex-row items-center">
-                          <span class="text-sm text-black dark:text-white">Hilos:</span>
-                          <span class="ml-1 text-sm font-bold text-black dark:text-white">
-                            {{ formatValue(cantNotasVentaHILOS, 'decimal') }} KG
-                          </span>
-                        </div>
+                      <!-- Hilos Z200 -->
+                      <div class="flex flex-col gap-0.5">
+                        <span class="text-[11px] font-medium uppercase tracking-wider text-gray-400"
+                          >Hilos</span
+                        >
+                        <span class="text-base font-semibold text-black dark:text-white">
+                          {{ formatValue(cantNotasVentaHILOS, 'decimal') }} KG
+                        </span>
                       </div>
 
-                      <div class="flex flex-col">
-                        <div class="flex flex-row items-center">
-                          <span class="text-sm text-black dark:text-white">Tela:</span>
-                          <span class="ml-1 text-sm font-bold text-black dark:text-white">
-                            {{ formatValue(cantNotasVentaPTPR, 'decimal') }} KG
-                          </span>
-                        </div>
+                      <div class="h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+
+                      <!-- Tela Z200 -->
+                      <div class="flex flex-col gap-0.5">
+                        <span class="text-[11px] font-medium uppercase tracking-wider text-gray-400"
+                          >Tela</span
+                        >
+                        <span class="text-base font-semibold text-black dark:text-white">
+                          {{ formatValue(cantNotasVentaPTPR, 'decimal') }} KG
+                        </span>
                       </div>
 
-                      <div class="border-t border-gray-200 pt-1 dark:border-gray-700">
-                        <span class="text-sm text-black dark:text-white">Total</span>
-                        <div class="text-base">
+                      <div class="mt-auto h-px w-full bg-gray-200 dark:bg-gray-700"></div>
+
+                      <div class="flex items-baseline justify-between">
+                        <span class="text-sm text-gray-400">Total</span>
+                        <span class="text-lg font-semibold text-black dark:text-white">
                           {{ formatValue(notasVentaUnidadesKG, 'decimal') }} KG
-                        </div>
+                        </span>
                       </div>
                     </ng-container>
 
                     <ng-template #z200PesoOcultoMobile>
-                      <div class="flex flex-1 items-center justify-center">
+                      <div class="flex flex-1 items-center justify-center pt-4">
                         <span class="select-none tracking-widest text-black dark:text-white"
                           >••••••</span
                         >
@@ -636,22 +664,20 @@
                 <div class="border-t border-gray-200 pt-3 dark:border-gray-700">
                   <ng-container *ngIf="!z200Oculto; else totalPesoGeneralOcultoMobile">
                     <div class="flex items-center justify-between">
-                      <div class="flex flex-col gap-1">
-                        <span
-                          class="text-sm font-bold tracking-widest text-purple-500 dark:text-purple-400"
-                        >
-                          Total general
-                        </span>
-                      </div>
-                      <span class="text-2xl font-semibold text-purple-600 dark:text-purple-400">
-                        {{
-                          formatValue(
-                            resumenPesoFacturacion.totalKG + notasVentaUnidadesKG,
-                            'decimal'
-                          )
-                        }}
-                        KG
+                      <span
+                        class="text-sm font-bold uppercase tracking-widest text-purple-500 dark:text-purple-400"
+                      >
+                        Total general
                       </span>
+                     <span class="text-xl font-bold leading-none text-purple-500 dark:text-purple-400">
+  {{
+    formatValue(
+      resumenPesoFacturacion.totalKG + notasVentaUnidadesKG,
+      'decimal'
+    )
+  }}
+  KG
+</span>
                     </div>
                   </ng-container>
 
@@ -676,19 +702,46 @@
                 <div class="flex flex-1 flex-col gap-1">
                   <div class="text-secondary mb-1 text-sm font-medium leading-none">Unidades</div>
 
+                  <!-- HILOS -->
                   <div class="text-secondary mb-1 mt-1 text-sm font-medium leading-none">Hilos</div>
                   <div class="flex items-baseline gap-2">
                     <span class="text-xl font-bold leading-none">
                       {{ formatValue(cantHILOS, 'decimal') }} KG
                     </span>
                   </div>
+                  <!-- desglose LB solo si hay -->
+                  <ng-container *ngIf="cantLbHILOS > 0">
+                    <div class="text-secondary mt-0.5 flex gap-1 text-xs leading-none">
+                      <span>{{ formatValue(cantKgHILOS, 'decimal') }} kg</span>
+                      <span class="opacity-40">+</span>
+                      <span>{{ formatValue(cantLbHILOS, 'decimal') }} lb</span>
+                    </div>
+                  </ng-container>
 
+                  <!-- TELA -->
                   <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Tela</div>
                   <div class="flex items-baseline gap-2">
                     <span class="text-xl font-bold leading-none">
                       {{ formatValue(cantPTPR, 'decimal') }} KG
                     </span>
                   </div>
+                  <!-- desglose LB solo si hay -->
+                  <ng-container *ngIf="cantLbPTPR > 0">
+                    <div class="mt-0.5 flex flex-col gap-0.5 text-xs leading-none">
+                      <div class="flex items-center gap-1 text-sm text-black dark:text-white">
+                        <span>KG:</span>
+                        <span>{{ formatValue(cantKgPTPR, 'decimal') }}</span>
+                      </div>
+                      <div class="flex items-center gap-1 text-sm text-black dark:text-white">
+                        <span>LB:</span>
+                        <span>{{ formatValue(cantLbPTPR, 'decimal') }}</span>
+                        <span class="opacity-40">=</span>
+                        <span class="text-purple-400"
+                          >{{ formatValue(cantLbPTPR * 0.453592, 'decimal') }} KG</span
+                        >
+                      </div>
+                    </div>
+                  </ng-container>
 
                   <div class="mt-auto">
                     <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
@@ -731,7 +784,7 @@
                   <div class="mt-auto">
                     <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
                     <span class="text-xl font-bold leading-none">
-                      {{ formatValue(notasVentaUnidadesKG, 'decimal') }} KG
+                       {{ formatValue(cantNotasVentaPTPR + cantNotasVentaHILOS, 'decimal') }} KG
                     </span>
                   </div>
 
