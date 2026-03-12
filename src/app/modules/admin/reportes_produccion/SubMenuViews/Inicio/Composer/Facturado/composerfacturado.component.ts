@@ -343,23 +343,31 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
     return Array.from(mapa.entries()).map(([key, total]) => ({ key, total }));
   }
 
-
-
   // KG por línea del día (Z100)
-_lineasDiaPeso(dia: any): { key: string; cant: number }[] {
-  const mapa = new Map<string, number>();
-  for (const item of this.detalleFacturado) {
-    if ((item.fecha?.substring(0, 10) ?? '') !== dia.fecha?.substring(0, 10)) continue;
-    const linea = (item as any).linea_producto ?? 'SIN_LINEA';
-    mapa.set(linea, (mapa.get(linea) ?? 0) + (item.cant ?? 0));
+  _lineasDiaPeso(dia: any): { key: string; cant: number }[] {
+    const mapa = new Map<string, number>();
+    for (const item of this.detalleFacturado) {
+      if ((item.fecha?.substring(0, 10) ?? '') !== dia.fecha?.substring(0, 10)) continue;
+      const linea = (item as any).linea_producto ?? 'SIN_LINEA';
+      mapa.set(linea, (mapa.get(linea) ?? 0) + (item.cant ?? 0));
+    }
+    return Array.from(mapa.entries()).map(([key, cant]) => ({ key, cant }));
   }
-  return Array.from(mapa.entries()).map(([key, cant]) => ({ key, cant }));
-}
 
-// KG total Z200 del día (suma de unidades)
-_kgZ200Dia(dia: any): number {
-  const nv = this.notasVentaPorDia[dia.fecha?.substring(0, 10) ?? ''];
-  if (!nv?.unidades) return 0;
-  return nv.unidades.reduce((s, u) => s + (u.cant ?? 0), 0);
-}
+  // KG total Z200 del día (suma de unidades)
+  _kgZ200Dia(dia: any): number {
+    const nv = this.notasVentaPorDia[dia.fecha?.substring(0, 10) ?? ''];
+    if (!nv?.unidades) return 0;
+    return nv.unidades.reduce((s, u) => s + (u.cant ?? 0), 0);
+  }
+
+  _lineasDiaPesoOrdenado(dia: any): { key: string; cant: number }[] {
+    const orden = ['PTPR', 'HILOS'];
+    return this._lineasDiaPeso(dia).sort((a, b) => orden.indexOf(a.key) - orden.indexOf(b.key));
+  }
+
+  _lineasDiaOrdenado(dia: any): { key: string; total: number }[] {
+    const orden = ['PTPR', 'HILOS'];
+    return this._lineasDia(dia).sort((a, b) => orden.indexOf(a.key) - orden.indexOf(b.key));
+  }
 }

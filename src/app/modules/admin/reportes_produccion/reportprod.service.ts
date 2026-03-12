@@ -388,13 +388,9 @@ export class ReportProdService {
       return `${yyyy}-${mm}-${dd}`;
     };
 
-    // fin exclusivo: +1 día
-    const finExclusivo = new Date(fechaFin);
-    finExclusivo.setDate(finExclusivo.getDate() + 1);
-
     params = params
       .set('fecha_inicio', `${toIso(fechaInicio)} 00:00:00`)
-      .set('fecha_fin', `${toIso(finExclusivo)} 00:00:00`)
+      .set('fecha_fin', `${toIso(fechaFin)} 00:00:00`)
       .set('desglosar', desglosar ? '1' : '0');
 
     return this._httpClient

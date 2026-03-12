@@ -1,7 +1,7 @@
 <!-- INICIO - VISTA RESUMEN CON LOADERS -->
 <div class="bg-default w-full pt-6 md:pt-2">
   <!-- Header -->
-  <div class="mb-6 md:mb-8">
+  <div class="mb-6 md:mb-8 md:ml-3">
     <!-- Toggle Vista -->
     <div class="mb-6 md:mb-8">
       <div class="ml-3 w-fit md:ml-0">
@@ -351,23 +351,23 @@
                 <ng-container *ngIf="!z200Oculto; else z200OcultoDesktop">
                   <div class="text-secondary mb-1 text-sm font-medium leading-none">Hilos</div>
                   <div class="flex items-baseline gap-2">
-                    <span class="text-xl font-bold leading-none">{{
-                      notasVentaHILOS | currency: 'MXN'
-                    }}</span>
+                    <span class="text-xl font-bold leading-none">
+                      {{ notasVentaHILOS | currency: 'MXN' }}
+                    </span>
                   </div>
 
                   <div class="text-secondary mb-1 mt-2 text-sm font-medium leading-none">Tela</div>
                   <div class="flex items-baseline gap-2">
-                    <span class="text-xl font-bold leading-none">{{
-                      notasVentaTotal | currency: 'MXN'
-                    }}</span>
+                    <span class="text-xl font-bold leading-none">
+                      {{ notasVentaTotal | currency: 'MXN' }}
+                    </span>
                   </div>
 
                   <div class="mt-auto">
                     <div class="my-2 h-px w-full bg-gray-200 dark:bg-gray-700"></div>
-                    <span class="text-xl font-bold leading-none">{{
-                      notasVentaTotal | currency: 'MXN'
-                    }}</span>
+                    <span class="text-xl font-bold leading-none">
+                      {{ notasVentaTotal | currency: 'MXN' }}
+                    </span>
                   </div>
                 </ng-container>
 
