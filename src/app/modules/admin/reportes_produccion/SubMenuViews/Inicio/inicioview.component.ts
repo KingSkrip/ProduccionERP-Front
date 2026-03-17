@@ -77,14 +77,20 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   z200Oculto: boolean = false;
   notasVentaTotal: number = 0;
   loadingRevisadoTejido = true;
+  devolucionesTotal: number = 0;
   loadingEmbarquesTejido = true;
   loadingPorRevisarTejido = true;
   loadingDetallesProcesos = true;
   loadingProduccionTejido = true;
   cantNotasVentaPTPR: number = 0;
   cantNotasVentaHILOS: number = 0;
+  devolucionesCantPTPR: number = 0;
   loadingGraficaFacturacion = true;
   variacionPeriodoAnterior: number;
+  devolucionesCantHILOS: number = 0;
+  devolucionesTotalPTPR: number = 0;
+  devolucionesRegistros: number = 0;
+  devolucionesTotalHILOS: number = 0;
   loadingDistribucionProcesos = true;
   datosEmbarquesCompletos: any[] = [];
   private destroy$ = new Subject<void>();
@@ -308,7 +314,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
         next: (datos) => {
           this.sharedData.setDatosFacturado(datos.facturado);
           this.onFacturadoLoaded(datos.facturado);
-this.procesarFacturado(datos.facturado);
+          this.procesarFacturado(datos.facturado);
 
           this.procesarProduccion(datos.produccion);
           this.procesarRevisado(datos.revisado);
@@ -900,7 +906,6 @@ this.procesarFacturado(datos.facturado);
   }
 
   //45.3592
-  
 
   get cantidadesPorUnidadArray() {
     return Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => ({ um, cant }));
@@ -920,6 +925,8 @@ this.procesarFacturado(datos.facturado);
     const detalle: FacturaDetalle[] = payload?.detalle ?? [];
     const porLinea = payload?.por_linea ?? {};
     const notasPorLinea = payload?.notas_venta?.por_linea ?? {};
+    const devoluciones = payload?.devoluciones ?? {};
+    const devPorLinea = devoluciones?.por_linea ?? {};
 
     this.importeTotalSinIva = Number(tot.importe) || 0;
     this.impuestosTotal = Number(tot.impuestos) || 0;
@@ -938,11 +945,15 @@ this.procesarFacturado(datos.facturado);
     this.cantKgHILOS = Number(porLinea['HILOS']?.cant_kg) || 0;
     this.cantLbHILOS = Number(porLinea['HILOS']?.cant_lb) || 0;
 
-    // this.cantPTPR = Number(porLinea['PTPR']?.cant_kg_eq) || 0;
-    // this.cantHILOS = Number(porLinea['HILOS']?.cant_kg_eq) || 0;
-
     this.cantNotasVentaPTPR = Number(notasPorLinea['PTPR']?.cant) || 0;
     this.cantNotasVentaHILOS = Number(notasPorLinea['HILOS']?.cant) || 0;
+
+    this.devolucionesRegistros = Number(devoluciones?.registros) || 0;
+    this.devolucionesTotal = Number(devoluciones?.total) || 0;
+    this.devolucionesCantPTPR = Number(devPorLinea['PTPR']?.cant_kg_eq) || 0;
+    this.devolucionesCantHILOS = Number(devPorLinea['HILOS']?.cant_kg_eq) || 0;
+    this.devolucionesTotalPTPR = Number(devPorLinea['PTPR']?.total) || 0;
+    this.devolucionesTotalHILOS = Number(devPorLinea['HILOS']?.total) || 0;
     this.cantidadesPorUnidad = {};
 
     for (const item of detalle) {
@@ -1451,16 +1462,18 @@ this.procesarFacturado(datos.facturado);
   }
 
   get notasVentaUnidadesKGEq(): number {
-  return (this.cantNotasVentaPTPR || 0) + (this.cantNotasVentaHILOS || 0);
-}
+    return (this.cantNotasVentaPTPR || 0) + (this.cantNotasVentaHILOS || 0);
+  }
 
-get notasVentaUnidadesKG(): number {
-  return (this.cantNotasVentaPTPR || 0) + (this.cantNotasVentaHILOS || 0);
-}
-
-
+  get notasVentaUnidadesKG(): number {
+    return (this.cantNotasVentaPTPR || 0) + (this.cantNotasVentaHILOS || 0);
+  }
 
   get totalKgEqZ100(): number {
-  return (this.cantPTPR || 0) + (this.cantHILOS || 0);
-}
+    return (this.cantPTPR || 0) + (this.cantHILOS || 0);
+  }
+
+  get devolucionesCantTotal(): number {
+    return (this.devolucionesCantPTPR || 0) + (this.devolucionesCantHILOS || 0);
+  }
 }

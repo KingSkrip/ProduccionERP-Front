@@ -13,8 +13,6 @@ export interface ClienteConPedidos {
   sinDef: number;
 }
 
-// ─── Interfaces actualizadas con los campos reales del SP ─────────────────────
-
 export interface Partida {
   CVE_PED: string;
   ARTICULO: string;
@@ -107,6 +105,4 @@ export class PedidosService {
   enviarPorEmail(cvePed: string, email: string): Observable<ApiResponse<void>> {
     return this._httpClient.post<ApiResponse<void>>(`${this._apiUrl}/${cvePed}/email`, { email });
   }
-
-
 }

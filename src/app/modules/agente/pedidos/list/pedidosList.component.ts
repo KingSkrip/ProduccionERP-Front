@@ -252,32 +252,32 @@ export class PedidosListComponent implements OnInit, OnDestroy {
   }
 
   async compartirPDF(cvePed: string): Promise<void> {
-  this.descargando.set(cvePed);
-  this._pedidosService
-    .descargarPDF(cvePed)
-    .pipe(takeUntil(this._destroy$))
-    .subscribe({
-      next: async (blob) => {
-        const fileName = `pedido-${cvePed}.pdf`;
-        const file = new File([blob], fileName, { type: 'application/pdf' });
-        try {
-          await navigator.share({
-            title: `Pedido ${cvePed}`,
-            files: [file],
-          });
-        } catch (err) {
-          if ((err as DOMException).name !== 'AbortError') {
-            this._snackBar.open('No se pudo compartir el PDF', 'Cerrar', { duration: 4000 });
+    this.descargando.set(cvePed);
+    this._pedidosService
+      .descargarPDF(cvePed)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: async (blob) => {
+          const fileName = `pedido-${cvePed}.pdf`;
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          try {
+            await navigator.share({
+              title: `Pedido ${cvePed}`,
+              files: [file],
+            });
+          } catch (err) {
+            if ((err as DOMException).name !== 'AbortError') {
+              this._snackBar.open('No se pudo compartir el PDF', 'Cerrar', { duration: 4000 });
+            }
           }
-        }
-        this.descargando.set(null);
-      },
-      error: () => {
-        this._snackBar.open('Error al obtener el PDF', 'Cerrar', { duration: 4000 });
-        this.descargando.set(null);
-      },
-    });
-}
+          this.descargando.set(null);
+        },
+        error: () => {
+          this._snackBar.open('Error al obtener el PDF', 'Cerrar', { duration: 4000 });
+          this.descargando.set(null);
+        },
+      });
+  }
 
   trackByClie(_i: number, c: ClienteConPedidos): string {
     return c.cve_clie;
