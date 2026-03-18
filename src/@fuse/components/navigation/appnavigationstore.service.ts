@@ -267,15 +267,6 @@ export class AppNavigationStoreService {
     const isSuadmin = roleId === RoleEnum.SUADMIN;
     const isAgente = roleId === RoleEnum.AGENTE;
 
-    console.log(
-      (isSuadmin && isJefe) ||
-        (isAgente && isVentas) || // ✅ ya está
-        (isSuadmin && isAdmin) ||
-        (isSuadmin && isSabu) ||
-        (isSuadmin && isJaime) ||
-        isSuadmin,
-    );
-
     if (isSuadmin && isJacobo) {
       return [...menuReporteProd_Jacobo];
     } else if (
