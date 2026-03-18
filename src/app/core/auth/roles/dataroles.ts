@@ -33,6 +33,7 @@ export const SubRoles = {
   8: 'ADMIN',
   9: 'JAIME',
   10: 'SABU',
+  11: 'VENTAS',
 };
 
 export enum SubRoleEnum {
@@ -46,6 +47,7 @@ export enum SubRoleEnum {
   ADMIN = 8,
   JAIME = 9,
   SABU = 10,
+  VENTAS = 11,
 }
 
 // Navegación por rol principal

@@ -4435,3 +4435,50 @@ export const menuAgentes: FuseNavigationItem[] = [
     link: '/apps/PedidosCl1',
   },
 ];
+
+
+
+
+export const menuVentas: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+
+    {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];

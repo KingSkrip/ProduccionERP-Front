@@ -68,7 +68,14 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
       .subscribe(({ roleId, subRoleId }) => {
         this.isJacobo = subRoleId === SubRoleEnum.JACOBO;
 
-        const canSeeChildMenu = subRoleId === SubRoleEnum.JEFE || roleId === RoleEnum.SUADMIN;
+        const canSeeChildMenu =
+          subRoleId === SubRoleEnum.JEFE ||
+          subRoleId === SubRoleEnum.VENTAS ||
+          subRoleId === SubRoleEnum.JACOBO ||
+          subRoleId === SubRoleEnum.JAIME ||
+          subRoleId === SubRoleEnum.SABU ||
+          subRoleId === SubRoleEnum.ADMIN ||
+          roleId === RoleEnum.SUADMIN;
 
         if (canSeeChildMenu) {
           const reportProdNav = this._fuseVerticalNavigationService.getReportProdNavigation(

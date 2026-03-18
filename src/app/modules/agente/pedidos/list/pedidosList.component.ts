@@ -68,12 +68,17 @@ export const fadeIn = trigger('fadeIn', [
   animations: [...fuseAnimations, slideDown, fadeIn],
 })
 export class PedidosListComponent implements OnInit, OnDestroy {
+  currentPage = signal(1);
+  totalPages = signal(1);
+  totalClients = signal(0);
+  perPage = 10;
+
   private _destroy$ = new Subject<void>();
   searchControl = new FormControl('');
-  estadoControl = new FormControl('todos');
+  estadoControl = new FormControl('Parcial');
   condicionControl = new FormControl('todas');
   searchSignal = signal('');
-  estadoSignal = signal('todos');
+  estadoSignal = signal('Parcial');
   condicionSignal = signal('todas');
   mostrarPanelFiltros = false;
   mostrarPanelFiltrosPc = false;
@@ -98,22 +103,21 @@ export class PedidosListComponent implements OnInit, OnDestroy {
   private _cancelarPreparacion$ = new Subject<void>();
   isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   private pedidosFiltradosFlat = computed(() => {
-    const texto = this.searchSignal().toLowerCase();
-    const estado = this.estadoSignal();
-    const condicion = this.condicionSignal();
-    return this.pedidos().filter((p) => {
-      const coincideTexto =
-        !texto ||
-        p.cve_ped.toLowerCase().includes(texto) ||
-        (p.referencia ?? '').toLowerCase().includes(texto) ||
-        (p.nombre ?? '').toLowerCase().includes(texto);
+  const texto    = this.searchSignal().toLowerCase();
+  const condicion = this.condicionSignal();
 
-      const coincideEstado = estado === 'todos' || p.status === estado;
-      const coincideCondicion = condicion === 'todas' || p.condicion === condicion;
+  return this.pedidos().filter((p) => {
+    const coincideTexto =
+      !texto ||
+      p.cve_ped.toLowerCase().includes(texto) ||
+      (p.referencia ?? '').toLowerCase().includes(texto) ||
+      (p.nombre ?? '').toLowerCase().includes(texto);
 
-      return coincideTexto && coincideEstado && coincideCondicion;
-    });
+    const coincideCondicion = condicion === 'todas' || p.condicion === condicion;
+
+    return coincideTexto && coincideCondicion;
   });
+});
   clientesConPedidos = computed((): ClienteConPedidos[] => {
     const mapa = new Map<string, ClienteConPedidos>();
 
@@ -148,21 +152,20 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     private _snackBar: MatSnackBar,
   ) {}
 
-  ngOnInit(): void {
-    this.cargarPedidos();
+ngOnInit(): void {
+  this.cargarPedidos();
 
-    this.searchControl.valueChanges
-      .pipe(debounceTime(300), takeUntil(this._destroy$))
-      .subscribe((val) => this.searchSignal.set(val ?? ''));
+  this.searchControl.valueChanges
+    .pipe(debounceTime(300), takeUntil(this._destroy$))
+    .subscribe((val) => this.searchSignal.set(val ?? ''));
 
-    this.estadoControl.valueChanges
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((val) => this.estadoSignal.set(val ?? 'todos'));
-
-    this.condicionControl.valueChanges
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((val) => this.condicionSignal.set(val ?? 'todas'));
-  }
+  this.condicionControl.valueChanges
+    .pipe(debounceTime(200), takeUntil(this._destroy$))
+    .subscribe((val) => {
+      this.condicionSignal.set(val ?? 'todas');
+      this.cargarPedidos(1);
+    });
+}
 
   ngOnDestroy(): void {
     this._destroy$.next();
@@ -188,22 +191,18 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     this._cd.markForCheck();
   }
 
-  filtrosActivosCount(): number {
-    let count = 0;
-    if (this.estadoControl.value !== 'todos') count++;
-    if (this.condicionControl.value !== 'todas') count++;
-    return count;
-  }
+ filtrosActivosCount(): number {
+  return this.condicionControl.value !== 'todas' ? 1 : 0;
+}
 
-  limpiarFiltros(): void {
-    this.searchControl.setValue('');
-    this.estadoControl.setValue('todos');
-    this.condicionControl.setValue('todas');
-    this.searchSignal.set('');
-    this.estadoSignal.set('todos');
-    this.condicionSignal.set('todas');
-    this._cd.markForCheck();
-  }
+limpiarFiltros(): void {
+  this.searchControl.setValue('');
+  this.condicionControl.setValue('todas');
+  this.searchSignal.set('');
+  this.condicionSignal.set('todas');
+  this.cargarPedidos(1);
+  this._cd.markForCheck();
+}
 
   aplicarFiltrosPc(): void {
     this.mostrarPanelFiltrosPc = false;
@@ -215,21 +214,33 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     this._cd.markForCheck();
   }
 
-  cargarPedidos(): void {
-    this.cargando.set(true);
-    this._pedidosService
-      .getPedidos()
-      .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (res) => {
-          this.pedidos.set(res.data ?? []);
-          this.cargando.set(false);
-        },
-        error: () => {
-          this._snackBar.open('Error al cargar pedidos', 'Cerrar', { duration: 4000 });
-          this.cargando.set(false);
-        },
-      });
+cargarPedidos(page = 1): void {
+  this.cargando.set(true);
+  this._pedidosService
+    .getPedidos(page, this.perPage, this.condicionSignal())
+    .pipe(takeUntil(this._destroy$))
+    .subscribe({
+      next: (res) => {
+        this.pedidos.set(res.data ?? []);
+        if (res.pagination) {
+          this.currentPage.set(res.pagination.page);
+          this.totalPages.set(res.pagination.total_pages);
+          this.totalClients.set(res.pagination.total_clients);
+        }
+        this.cargando.set(false);
+        this.clienteExpandido.set(null);
+        this.pedidoExpandido.set(null);
+      },
+      error: () => {
+        this._snackBar.open('Error al cargar pedidos', 'Cerrar', { duration: 4000 });
+        this.cargando.set(false);
+      },
+    });
+}
+
+  irAPagina(page: number): void {
+    if (page < 1 || page > this.totalPages()) return;
+    this.cargarPedidos(page);
   }
 
   // ── Acordeón clientes ──
@@ -243,9 +254,43 @@ export class PedidosListComponent implements OnInit, OnDestroy {
   }
 
   // ── Acordeón pedidos ──
-  togglePedido(cvePed: string): void {
-    this.pedidoExpandido.update((c) => (c === cvePed ? null : cvePed));
+ togglePedido(pedido: Pedido): void {
+  const cvePed = pedido.cve_ped;
+
+  // Si ya está expandido, colapsar
+  if (this.pedidoExpandido() === cvePed) {
+    this.pedidoExpandido.set(null);
+    return;
   }
+
+  this.pedidoExpandido.set(cvePed);
+
+  // Si ya tiene artículos cargados, no volver a pedir
+  if (pedido.articulos?.length > 0 || pedido.cardigans?.length > 0) return;
+
+  // Lazy load
+  this.pedidoCargando.set(cvePed);
+  this._pedidosService
+    .getDetallePedido(cvePed)
+    .pipe(takeUntil(this._destroy$))
+    .subscribe({
+      next: (res) => {
+        // Mutar el pedido dentro del signal de pedidos
+        this.pedidos.update((lista) =>
+          lista.map((p) =>
+            p.cve_ped === cvePed
+              ? { ...p, articulos: res.articulos ?? [], cardigans: res.cardigans ?? [] }
+              : p
+          )
+        );
+        this.pedidoCargando.set(null);
+      },
+      error: () => {
+        this._snackBar.open('Error al cargar detalle', 'Cerrar', { duration: 3000 });
+        this.pedidoCargando.set(null);
+      },
+    });
+}
 
   estaExpandido(cvePed: string): boolean {
     return this.pedidoExpandido() === cvePed;
@@ -305,11 +350,16 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     return cliente.pedidos.reduce((s, p) => s + this.getKilosPedido(p), 0);
   }
 
-  getKilosPedido(pedido: Pedido): number {
-    const kgArt = (pedido.articulos ?? []).reduce((s, a) => s + Number(a.CANTIDAD ?? 0), 0);
-    const kgCard = (pedido.cardigans ?? []).reduce((s, c) => s + Number(c.CANTIDAD ?? 0), 0);
+getKilosPedido(pedido: Pedido): number {
+  // Si ya se cargaron los artículos, calcular desde ellos (más preciso post-lazy-load)
+  if (pedido.articulos?.length > 0 || pedido.cardigans?.length > 0) {
+    const kgArt  = (pedido.articulos  ?? []).reduce((s, a) => s + Number(a.CANTIDAD ?? 0), 0);
+    const kgCard = (pedido.cardigans  ?? []).reduce((s, c) => s + Number(c.CANTIDAD ?? 0), 0);
     return kgArt + kgCard;
   }
+  // Si aún no se han cargado, usar el valor precalculado del backend
+  return pedido.kg_total ?? 0;
+}
   totalKilos = computed(() =>
     this.clientesConPedidos().reduce(
       (s, c) => s + c.pedidos.reduce((sp, p) => sp + this.getKilosPedido(p), 0),
@@ -415,4 +465,23 @@ export class PedidosListComponent implements OnInit, OnDestroy {
         },
       });
   }
+
+  getPaginasVisibles(): number[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+    const pages: number[] = [1];
+    if (current > 3) pages.push(-1); // ellipsis
+
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+      pages.push(i);
+    }
+
+    if (current < total - 2) pages.push(-1); // ellipsis
+    pages.push(total);
+    return pages;
+  }
+
+  pedidoCargando = signal<string | null>(null);
 }

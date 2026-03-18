@@ -13,6 +13,7 @@ import {
   menuRh,
   menuSuAdmin,
   menuSuAdmin_Admin,
+  menuVentas,
 } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable } from 'rxjs';
 
@@ -183,6 +184,7 @@ export class AppNavigationStoreService {
   //SubRoleEnum
 
   getNavigationByRole(roleId: number, subRoleId?: number): FuseNavigationItem[] {
+    console.log('roleId:', roleId, 'subRoleId:', subRoleId);
     let navigation: FuseNavigationItem[] = [];
 
     // 1️⃣ Navegación base por ROL
@@ -237,6 +239,10 @@ export class AppNavigationStoreService {
           navigation = menuSuAdmin_Admin;
           break;
 
+        case SubRoleEnum.VENTAS:
+          navigation = menuVentas;
+          break;
+
         // futuros subroles aquí
       }
     }
@@ -253,19 +259,32 @@ export class AppNavigationStoreService {
   getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
     const isJefe = subRoleId === SubRoleEnum.JEFE;
     const isJacobo = subRoleId === SubRoleEnum.JACOBO;
-    const isSuadmin = roleId === RoleEnum.SUADMIN;
+    const isVentas = subRoleId === SubRoleEnum.VENTAS;
     const isAdmin = subRoleId === SubRoleEnum.ADMIN;
     const isJaime = subRoleId === SubRoleEnum.JAIME;
     const isSabu = subRoleId === SubRoleEnum.SABU;
+
+    const isSuadmin = roleId === RoleEnum.SUADMIN;
+    const isAgente = roleId === RoleEnum.AGENTE;
+
+    console.log(
+      (isSuadmin && isJefe) ||
+        (isAgente && isVentas) || // ✅ ya está
+        (isSuadmin && isAdmin) ||
+        (isSuadmin && isSabu) ||
+        (isSuadmin && isJaime) ||
+        isSuadmin,
+    );
 
     if (isSuadmin && isJacobo) {
       return [...menuReporteProd_Jacobo];
     } else if (
       (isSuadmin && isJefe) ||
+      (isAgente && isVentas) || // ✅ ya está
       (isSuadmin && isAdmin) ||
       (isSuadmin && isSabu) ||
       (isSuadmin && isJaime) ||
-      (isSuadmin)
+      isSuadmin
     ) {
       return [...menuReporteProd_Jefe];
     }

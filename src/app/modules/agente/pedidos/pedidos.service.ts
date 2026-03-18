@@ -48,6 +48,7 @@ export interface Pedido {
   status: string; // "Completo" | "Parcial" | "Sin Def."
   articulos: Partida[];
   cardigans: Cardigan[];
+   kg_total: number;
 }
 
 export interface ResumenPedidos {
@@ -58,10 +59,20 @@ export interface ResumenPedidos {
   sin_def: number;
 }
 
+export interface PaginationMeta {
+  page: number;
+  per_page: number;
+  total_clients: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
   total?: number;
+  pagination?: PaginationMeta;
   anio?: number;
   message?: string;
 }
@@ -74,8 +85,18 @@ export class PedidosService {
 
   constructor(private _httpClient: HttpClient) {}
 
-  getPedidos(): Observable<ApiResponse<Pedido[]>> {
-    return this._httpClient.get<ApiResponse<Pedido[]>>(this._apiUrl);
+getPedidos(page = 1, perPage = 5, condicion = 'todas'): Observable<ApiResponse<Pedido[]>> {
+  return this._httpClient.get<ApiResponse<Pedido[]>>(this._apiUrl, {
+    params: { page: page.toString(), per_page: perPage.toString(), condicion },
+  });
+}
+
+  getDetallePedido(cvePed: string): Observable<{
+    success: boolean;
+    articulos: Partida[];
+    cardigans: Cardigan[];
+  }> {
+    return this._httpClient.get<any>(`${this._apiUrl}/${cvePed}/detalle`);
   }
 
   getResumen(): Observable<ApiResponse<ResumenPedidos>> {

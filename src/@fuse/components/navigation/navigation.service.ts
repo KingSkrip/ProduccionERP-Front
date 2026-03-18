@@ -13,6 +13,7 @@ import {
   menuRh,
   menuSuAdmin,
   menuSuAdmin_Admin,
+  menuVentas,
 } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable } from 'rxjs';
 
@@ -230,8 +231,6 @@ export class FuseNavigationService {
           navigation = menuJefe;
           break;
 
-          
-
         case SubRoleEnum.JACOBO:
           navigation = menuJacobo;
           break;
@@ -240,6 +239,9 @@ export class FuseNavigationService {
           navigation = menuSuAdmin_Admin;
           break;
 
+            case SubRoleEnum.VENTAS:
+                    navigation = menuVentas;
+                    break;
         // futuros subroles aquí
       }
     }
@@ -253,13 +255,20 @@ export class FuseNavigationService {
     return [...navigation];
   }
 
-  getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
-    if (subRoleId === SubRoleEnum.JEFE) {
-      return [...menuReporteProd_Jefe];
-    } else if (subRoleId === SubRoleEnum.JACOBO) {
-      return [...menuReporteProd_Jacobo];
-    }
-
-    return [];
+ getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
+  if (subRoleId === SubRoleEnum.JACOBO) {
+    return [...menuReporteProd_Jacobo];
+  } else if (
+    subRoleId === SubRoleEnum.JEFE ||
+    subRoleId === SubRoleEnum.VENTAS ||
+    subRoleId === SubRoleEnum.JAIME ||
+    subRoleId === SubRoleEnum.SABU ||
+    subRoleId === SubRoleEnum.ADMIN ||
+    roleId === RoleEnum.SUADMIN
+  ) {
+    return [...menuReporteProd_Jefe];
   }
+
+  return [];
+}
 }
