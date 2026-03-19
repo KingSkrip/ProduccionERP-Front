@@ -438,14 +438,39 @@
                     <div
                       class="cursor-pointer sm:px-6 md:grid md:items-center md:gap-4 md:py-3"
                       style="grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr 1.4fr 1.2fr 1.2fr 3rem"
-                    (click)="togglePedido(pedido)"
+                      (click)="togglePedido(pedido)"
                     >
                       <!-- MÓVIL -->
                       <div class="flex flex-col px-3 py-3 md:hidden">
-                        <div class="flex items-center justify-between gap-2">
-                          <span class="text-sm font-bold text-gray-900 dark:text-white"
-                            >Pedido: {{ pedido.cve_ped }}</span
-                          >
+                        <div class="flex items-center justify-between">
+                          <!-- Grupo: checkbox + pedido -->
+                          <div class="flex items-center gap-2">
+                            <!-- Checkbox -->
+                            <div
+                              (click)="toggleSeleccionPedido($event, pedido.cve_ped)"
+                              class="flex h-8 w-8 cursor-pointer items-center justify-center"
+                            >
+                              <div
+                                class="flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all"
+                                [class.border-primary]="estaSeleccionadoPedido(pedido.cve_ped)"
+                                [class.bg-primary]="estaSeleccionadoPedido(pedido.cve_ped)"
+                                [class.border-gray-300]="!estaSeleccionadoPedido(pedido.cve_ped)"
+                              >
+                                <mat-icon
+                                  *ngIf="estaSeleccionadoPedido(pedido.cve_ped)"
+                                  class="text-white icon-size-3"
+                                  svgIcon="heroicons_outline:check"
+                                ></mat-icon>
+                              </div>
+                            </div>
+
+                            <!-- Pedido -->
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">
+                              Pedido: {{ pedido.cve_ped }}
+                            </span>
+                          </div>
+
+                          <!-- Status -->
                           <span
                             class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-semibold"
                             [class.bg-green-100]="pedido.status === 'Completo'"
@@ -494,7 +519,7 @@
                             {{ pedido.condicion || 'Sin condición' }}
                           </span>
                           <div class="flex items-center gap-1">
-                            <button
+                            <!-- <button
                               mat-icon-button
                               matTooltip="Descargar PDF"
                               [disabled]="descargando() === pedido.cve_ped"
@@ -508,7 +533,7 @@
                                     : 'heroicons_outline:share'
                                 "
                               ></mat-icon>
-                            </button>
+                            </button> -->
                             <mat-icon
                               class="text-gray-400 transition-transform duration-200 icon-size-4"
                               [class.rotate-90]="estaExpandido(pedido.cve_ped)"
@@ -520,14 +545,41 @@
 
                       <!-- DESKTOP -->
                       <div class="hidden md:contents">
-                        <div>
-                          <div class="text-sm font-bold text-gray-900 dark:text-white">
-                            {{ pedido.cve_ped }}
+                        <div class="flex items-start gap-2">
+                          <!-- Checkbox -->
+                          <div
+                            (click)="toggleSeleccionPedido($event, pedido.cve_ped)"
+                            class="flex h-8 w-8 cursor-pointer items-center justify-center"
+                          >
+                            <div
+                              class="flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all"
+                              [class.border-primary]="estaSeleccionadoPedido(pedido.cve_ped)"
+                              [class.bg-primary]="estaSeleccionadoPedido(pedido.cve_ped)"
+                              [class.border-gray-300]="!estaSeleccionadoPedido(pedido.cve_ped)"
+                            >
+                              <mat-icon
+                                *ngIf="estaSeleccionadoPedido(pedido.cve_ped)"
+                                class="text-white icon-size-3"
+                                svgIcon="heroicons_outline:check"
+                              ></mat-icon>
+                            </div>
                           </div>
-                          <div *ngIf="pedido.referencia" class="text-sm text-black dark:text-white">
-                            {{ pedido.referencia }}
+
+                          <!-- Texto -->
+                          <div class="flex flex-col">
+                            <div class="text-sm font-bold text-gray-900 dark:text-white">
+                              {{ pedido.cve_ped }}
+                            </div>
+
+                            <div
+                              *ngIf="pedido.referencia"
+                              class="text-xs text-black dark:text-white"
+                            >
+                              {{ pedido.referencia }}
+                            </div>
                           </div>
                         </div>
+
                         <div class="text-sm text-gray-600 dark:text-gray-300">
                           {{ pedido.fecha_elab || '—' }}
                         </div>
@@ -567,7 +619,7 @@
                           {{ getKilosPedido(pedido) | number: '1.0-0' }} kg
                         </div>
                         <div class="flex items-center justify-end gap-1">
-                          <button
+                          <!-- <button
                             mat-icon-button
                             matTooltip="Descargar PDF"
                             [disabled]="descargando() === pedido.cve_ped"
@@ -581,7 +633,7 @@
                                   : 'heroicons_outline:share'
                               "
                             ></mat-icon>
-                          </button>
+                          </button> -->
                           <mat-icon
                             class="text-gray-400 transition-transform duration-200 icon-size-4"
                             [class.rotate-90]="estaExpandido(pedido.cve_ped)"
@@ -592,107 +644,111 @@
                     </div>
 
                     <!-- DETALLE EXPANDIDO -->
-                    <div *ngIf="estaExpandido(pedido.cve_ped)"
-  class="border-t border-gray-100 bg-gray-50/50 px-4 pb-4 pt-3 sm:px-8 dark:border-gray-800 dark:bg-gray-800/20">
-
-  <!-- Cargando detalle -->
-  <div *ngIf="pedidoCargando() === pedido.cve_ped"
-    class="flex items-center justify-center py-6 gap-2 text-gray-400">
-    <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary"></div>
-    <span class="text-sm">Cargando detalle...</span>
-  </div>
-                      <ng-container *ngIf="pedidoCargando() !== pedido.cve_ped">
-                      <!-- Meta -->
+                    <div
+                      *ngIf="estaExpandido(pedido.cve_ped)"
+                      class="border-t border-gray-100 bg-gray-50/50 px-4 pb-4 pt-3 sm:px-8 dark:border-gray-800 dark:bg-gray-800/20"
+                    >
+                      <!-- Cargando detalle -->
                       <div
-                        class="mb-4 flex flex-wrap gap-4 rounded-xl bg-white px-4 py-3 shadow-sm dark:bg-gray-800/40"
+                        *ngIf="pedidoCargando() === pedido.cve_ped"
+                        class="flex items-center justify-center gap-2 py-6 text-gray-400"
                       >
-                        <div *ngIf="pedido.fecha_elab" class="flex items-center gap-1.5">
-                          <mat-icon
-                            class="text-sm text-black icon-size-4 dark:text-white"
-                            svgIcon="heroicons_outline:calendar"
-                          ></mat-icon>
-                          <span class="text-sm text-black dark:text-white">Elab.</span>
-                          <span class="text-sm font-semibold text-black dark:text-white">
-                            {{ pedido.fecha_elab }}
-                          </span>
-                        </div>
-                        <div *ngIf="pedido.fecha_entrega" class="flex items-center gap-1.5">
-                          <mat-icon
-                            class="text-sm text-black icon-size-4 dark:text-white"
-                            svgIcon="heroicons_outline:truck"
-                          ></mat-icon>
-                          <span class="text-sm text-black dark:text-white">Entrega</span>
-                          <span class="text-sm font-semibold text-black dark:text-white">
-                            {{ pedido.fecha_entrega }}
-                          </span>
-                        </div>
-                        <div *ngIf="pedido.fecha_pago" class="flex items-center gap-1.5">
-                          <mat-icon
-                            class="text-sm text-black icon-size-4 dark:text-white"
-                            svgIcon="heroicons_outline:banknotes"
-                          ></mat-icon>
-                          <span class="text-sm text-black dark:text-white">Pago</span>
-                          <span class="text-sm font-semibold text-black dark:text-white">
-                            {{ pedido.fecha_pago }}
-                          </span>
-                        </div>
-                        <div *ngIf="pedido.observaciones" class="flex items-center gap-1.5">
-                          <mat-icon
-                            class="text-sm text-black icon-size-4 dark:text-white"
-                            svgIcon="heroicons_outline:chat-bubble-left"
-                          ></mat-icon>
-                          <span class="text-sm text-black dark:text-white">
-                            {{ pedido.observaciones }}
-                          </span>
-                        </div>
+                        <div
+                          class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary"
+                        ></div>
+                        <span class="text-sm">Cargando detalle...</span>
                       </div>
-
-                      <!-- Artículos -->
-                      <div *ngIf="pedido.articulos?.length > 0" class="mb-3">
-                        <p
-                          class="mb-2 text-xs font-bold uppercase tracking-wider text-black dark:text-white"
+                      <ng-container *ngIf="pedidoCargando() !== pedido.cve_ped">
+                        <!-- Meta -->
+                        <div
+                          class="mb-4 flex flex-wrap gap-4 rounded-xl bg-white px-4 py-3 shadow-sm dark:bg-gray-800/40"
                         >
-                          Artículos
-                        </p>
-                        <div class="flex flex-col gap-1">
-                          <div
-                            *ngFor="let a of pedido.articulos"
-                            class="flex flex-col gap-0.5 border-l-4 border-primary bg-primary/5 py-2 pl-3 pr-4 sm:flex-row sm:items-center sm:justify-between"
-                          >
-                            <span class="text-sm font-medium"> {{ a.ARTICULO }} </span>
-                            <span
-                              class="text-sm font-extrabold tabular-nums text-primary sm:ml-4 sm:flex-shrink-0"
-                            >
-                              {{ a.CANTIDAD }} kg
+                          <div *ngIf="pedido.fecha_elab" class="flex items-center gap-1.5">
+                            <mat-icon
+                              class="text-sm text-black icon-size-4 dark:text-white"
+                              svgIcon="heroicons_outline:calendar"
+                            ></mat-icon>
+                            <span class="text-sm text-black dark:text-white">Elab.</span>
+                            <span class="text-sm font-semibold text-black dark:text-white">
+                              {{ pedido.fecha_elab }}
+                            </span>
+                          </div>
+                          <div *ngIf="pedido.fecha_entrega" class="flex items-center gap-1.5">
+                            <mat-icon
+                              class="text-sm text-black icon-size-4 dark:text-white"
+                              svgIcon="heroicons_outline:truck"
+                            ></mat-icon>
+                            <span class="text-sm text-black dark:text-white">Entrega</span>
+                            <span class="text-sm font-semibold text-black dark:text-white">
+                              {{ pedido.fecha_entrega }}
+                            </span>
+                          </div>
+                          <div *ngIf="pedido.fecha_pago" class="flex items-center gap-1.5">
+                            <mat-icon
+                              class="text-sm text-black icon-size-4 dark:text-white"
+                              svgIcon="heroicons_outline:banknotes"
+                            ></mat-icon>
+                            <span class="text-sm text-black dark:text-white">Pago</span>
+                            <span class="text-sm font-semibold text-black dark:text-white">
+                              {{ pedido.fecha_pago }}
+                            </span>
+                          </div>
+                          <div *ngIf="pedido.observaciones" class="flex items-center gap-1.5">
+                            <mat-icon
+                              class="text-sm text-black icon-size-4 dark:text-white"
+                              svgIcon="heroicons_outline:chat-bubble-left"
+                            ></mat-icon>
+                            <span class="text-sm text-black dark:text-white">
+                              {{ pedido.observaciones }}
                             </span>
                           </div>
                         </div>
-                      </div>
 
-                      <!-- Cardigans -->
-                      <div *ngIf="pedido.cardigans?.length > 0">
-                        <p
-                          class="mb-2 text-xs font-bold uppercase tracking-wider text-black dark:text-white"
-                        >
-                          Cardigans
-                        </p>
-                        <div class="flex flex-col gap-1">
-                          <div
-                            *ngFor="let c of pedido.cardigans"
-                            class="flex flex-col gap-0.5 border-l-4 border-purple-400 bg-purple-50 py-2 pl-3 pr-4 sm:flex-row sm:items-center sm:justify-between dark:bg-purple-900/20"
+                        <!-- Artículos -->
+                        <div *ngIf="pedido.articulos?.length > 0" class="mb-3">
+                          <p
+                            class="mb-2 text-xs font-bold uppercase tracking-wider text-black dark:text-white"
                           >
-                            <span class="text-sm font-medium">{{ c.DESCRIPCION }}</span>
-                            <span
-                              class="text-sm font-extrabold tabular-nums text-purple-600 dark:text-purple-400"
+                            Artículos
+                          </p>
+                          <div class="flex flex-col gap-1">
+                            <div
+                              *ngFor="let a of pedido.articulos"
+                              class="flex flex-col gap-0.5 border-l-4 border-primary bg-primary/5 py-2 pl-3 pr-4 sm:flex-row sm:items-center sm:justify-between"
                             >
-                              {{ c.CANTIDAD }} kg
-                            </span>
+                              <span class="text-sm font-medium"> {{ a.ARTICULO }} </span>
+                              <span
+                                class="text-sm font-extrabold tabular-nums text-primary sm:ml-4 sm:flex-shrink-0"
+                              >
+                                {{ a.CANTIDAD }} kg
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
+
+                        <!-- Cardigans -->
+                        <div *ngIf="pedido.cardigans?.length > 0">
+                          <p
+                            class="mb-2 text-xs font-bold uppercase tracking-wider text-black dark:text-white"
+                          >
+                            Cardigans
+                          </p>
+                          <div class="flex flex-col gap-1">
+                            <div
+                              *ngFor="let c of pedido.cardigans"
+                              class="flex flex-col gap-0.5 border-l-4 border-purple-400 bg-purple-50 py-2 pl-3 pr-4 sm:flex-row sm:items-center sm:justify-between dark:bg-purple-900/20"
+                            >
+                              <span class="text-sm font-medium">{{ c.DESCRIPCION }}</span>
+                              <span
+                                class="text-sm font-extrabold tabular-nums text-purple-600 dark:text-purple-400"
+                              >
+                                {{ c.CANTIDAD }} kg
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </ng-container>
                     </div>
-
                   </div>
                 </div>
 

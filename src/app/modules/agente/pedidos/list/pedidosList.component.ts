@@ -84,9 +84,12 @@ export class PedidosListComponent implements OnInit, OnDestroy {
   mostrarPanelFiltrosPc = false;
   clienteExpandido = signal<string | null>(null);
   pedidoExpandido = signal<string | null>(null);
+  pedidosSeleccionados = signal<Set<string>>(new Set());
   pedidos = signal<Pedido[]>([]);
   cargando = signal(false);
   descargando = signal<string | null>(null);
+  pedidoCargando = signal<string | null>(null);
+  private blobCacheIndividual = new Map<string, Blob>();
   opcionesEstado = [
     { value: 'todos', label: 'Todos los estados' },
     { value: 'Completo', label: 'Entregados' },
@@ -99,25 +102,28 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     { value: 'Sin definir', label: 'Sin definir' },
   ];
   blobCache: Blob | null = null;
+  totalSeleccionados = computed(
+    () => this.clientesSeleccionados().size + this.pedidosSeleccionados().size,
+  );
   blobCacheKey = '';
   private _cancelarPreparacion$ = new Subject<void>();
   isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   private pedidosFiltradosFlat = computed(() => {
-  const texto    = this.searchSignal().toLowerCase();
-  const condicion = this.condicionSignal();
+    const texto = this.searchSignal().toLowerCase();
+    const condicion = this.condicionSignal();
 
-  return this.pedidos().filter((p) => {
-    const coincideTexto =
-      !texto ||
-      p.cve_ped.toLowerCase().includes(texto) ||
-      (p.referencia ?? '').toLowerCase().includes(texto) ||
-      (p.nombre ?? '').toLowerCase().includes(texto);
+    return this.pedidos().filter((p) => {
+      const coincideTexto =
+        !texto ||
+        p.cve_ped.toLowerCase().includes(texto) ||
+        (p.referencia ?? '').toLowerCase().includes(texto) ||
+        (p.nombre ?? '').toLowerCase().includes(texto);
 
-    const coincideCondicion = condicion === 'todas' || p.condicion === condicion;
+      const coincideCondicion = condicion === 'todas' || p.condicion === condicion;
 
-    return coincideTexto && coincideCondicion;
+      return coincideTexto && coincideCondicion;
+    });
   });
-});
   clientesConPedidos = computed((): ClienteConPedidos[] => {
     const mapa = new Map<string, ClienteConPedidos>();
 
@@ -152,26 +158,27 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     private _snackBar: MatSnackBar,
   ) {}
 
-ngOnInit(): void {
-  this.cargarPedidos();
+  ngOnInit(): void {
+    this.cargarPedidos();
 
-  this.searchControl.valueChanges
-    .pipe(debounceTime(300), takeUntil(this._destroy$))
-    .subscribe((val) => this.searchSignal.set(val ?? ''));
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), takeUntil(this._destroy$))
+      .subscribe((val) => this.searchSignal.set(val ?? ''));
 
-  this.condicionControl.valueChanges
-    .pipe(debounceTime(200), takeUntil(this._destroy$))
-    .subscribe((val) => {
-      this.condicionSignal.set(val ?? 'todas');
-      this.cargarPedidos(1);
-    });
-}
+    this.condicionControl.valueChanges
+      .pipe(debounceTime(200), takeUntil(this._destroy$))
+      .subscribe((val) => {
+        this.condicionSignal.set(val ?? 'todas');
+        this.cargarPedidos(1);
+      });
+  }
 
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
     this._cancelarPreparacion$.next();
     this._cancelarPreparacion$.complete();
+    this.blobCacheIndividual.clear();
   }
 
   togglePanelFiltros(): void {
@@ -191,18 +198,18 @@ ngOnInit(): void {
     this._cd.markForCheck();
   }
 
- filtrosActivosCount(): number {
-  return this.condicionControl.value !== 'todas' ? 1 : 0;
-}
+  filtrosActivosCount(): number {
+    return this.condicionControl.value !== 'todas' ? 1 : 0;
+  }
 
-limpiarFiltros(): void {
-  this.searchControl.setValue('');
-  this.condicionControl.setValue('todas');
-  this.searchSignal.set('');
-  this.condicionSignal.set('todas');
-  this.cargarPedidos(1);
-  this._cd.markForCheck();
-}
+  limpiarFiltros(): void {
+    this.searchControl.setValue('');
+    this.condicionControl.setValue('todas');
+    this.searchSignal.set('');
+    this.condicionSignal.set('todas');
+    this.cargarPedidos(1);
+    this._cd.markForCheck();
+  }
 
   aplicarFiltrosPc(): void {
     this.mostrarPanelFiltrosPc = false;
@@ -214,29 +221,29 @@ limpiarFiltros(): void {
     this._cd.markForCheck();
   }
 
-cargarPedidos(page = 1): void {
-  this.cargando.set(true);
-  this._pedidosService
-    .getPedidos(page, this.perPage, this.condicionSignal())
-    .pipe(takeUntil(this._destroy$))
-    .subscribe({
-      next: (res) => {
-        this.pedidos.set(res.data ?? []);
-        if (res.pagination) {
-          this.currentPage.set(res.pagination.page);
-          this.totalPages.set(res.pagination.total_pages);
-          this.totalClients.set(res.pagination.total_clients);
-        }
-        this.cargando.set(false);
-        this.clienteExpandido.set(null);
-        this.pedidoExpandido.set(null);
-      },
-      error: () => {
-        this._snackBar.open('Error al cargar pedidos', 'Cerrar', { duration: 4000 });
-        this.cargando.set(false);
-      },
-    });
-}
+  cargarPedidos(page = 1): void {
+    this.cargando.set(true);
+    this._pedidosService
+      .getPedidos(page, this.perPage, this.condicionSignal())
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (res) => {
+          this.pedidos.set(res.data ?? []);
+          if (res.pagination) {
+            this.currentPage.set(res.pagination.page);
+            this.totalPages.set(res.pagination.total_pages);
+            this.totalClients.set(res.pagination.total_clients);
+          }
+          this.cargando.set(false);
+          this.clienteExpandido.set(null);
+          this.pedidoExpandido.set(null);
+        },
+        error: () => {
+          this._snackBar.open('Error al cargar pedidos', 'Cerrar', { duration: 4000 });
+          this.cargando.set(false);
+        },
+      });
+  }
 
   irAPagina(page: number): void {
     if (page < 1 || page > this.totalPages()) return;
@@ -254,49 +261,56 @@ cargarPedidos(page = 1): void {
   }
 
   // ── Acordeón pedidos ──
- togglePedido(pedido: Pedido): void {
-  const cvePed = pedido.cve_ped;
+  togglePedido(pedido: Pedido): void {
+    const cvePed = pedido.cve_ped;
 
-  // Si ya está expandido, colapsar
-  if (this.pedidoExpandido() === cvePed) {
-    this.pedidoExpandido.set(null);
-    return;
+    // Si ya está expandido, colapsar
+    if (this.pedidoExpandido() === cvePed) {
+      this.pedidoExpandido.set(null);
+      return;
+    }
+
+    this.pedidoExpandido.set(cvePed);
+
+    // Si ya tiene artículos cargados, no volver a pedir
+    if (pedido.articulos?.length > 0 || pedido.cardigans?.length > 0) return;
+
+    // Lazy load
+    this.pedidoCargando.set(cvePed);
+    this._pedidosService
+      .getDetallePedido(cvePed)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (res) => {
+          // Mutar el pedido dentro del signal de pedidos
+          this.pedidos.update((lista) =>
+            lista.map((p) =>
+              p.cve_ped === cvePed
+                ? { ...p, articulos: res.articulos ?? [], cardigans: res.cardigans ?? [] }
+                : p,
+            ),
+          );
+          this.pedidoCargando.set(null);
+        },
+        error: () => {
+          this._snackBar.open('Error al cargar detalle', 'Cerrar', { duration: 3000 });
+          this.pedidoCargando.set(null);
+        },
+      });
   }
-
-  this.pedidoExpandido.set(cvePed);
-
-  // Si ya tiene artículos cargados, no volver a pedir
-  if (pedido.articulos?.length > 0 || pedido.cardigans?.length > 0) return;
-
-  // Lazy load
-  this.pedidoCargando.set(cvePed);
-  this._pedidosService
-    .getDetallePedido(cvePed)
-    .pipe(takeUntil(this._destroy$))
-    .subscribe({
-      next: (res) => {
-        // Mutar el pedido dentro del signal de pedidos
-        this.pedidos.update((lista) =>
-          lista.map((p) =>
-            p.cve_ped === cvePed
-              ? { ...p, articulos: res.articulos ?? [], cardigans: res.cardigans ?? [] }
-              : p
-          )
-        );
-        this.pedidoCargando.set(null);
-      },
-      error: () => {
-        this._snackBar.open('Error al cargar detalle', 'Cerrar', { duration: 3000 });
-        this.pedidoCargando.set(null);
-      },
-    });
-}
 
   estaExpandido(cvePed: string): boolean {
     return this.pedidoExpandido() === cvePed;
   }
 
   async compartirPDF(cvePed: string): Promise<void> {
+    // Si ya tenemos el blob en cache, compartir directamente (síncrono al click)
+    const cached = this.blobCacheIndividual.get(cvePed);
+    if (cached) {
+      await this._compartirBlob(cached, cvePed);
+      return;
+    }
+
     this.descargando.set(cvePed);
     this._pedidosService
       .descargarPDF(cvePed)
@@ -322,6 +336,16 @@ cargarPedidos(page = 1): void {
           this.descargando.set(null);
         },
       });
+  }
+  private async _compartirBlob(blob: Blob, cvePed: string): Promise<void> {
+    const file = new File([blob], `pedido-${cvePed}.pdf`, { type: 'application/pdf' });
+    try {
+      await navigator.share({ title: `Pedido ${cvePed}`, files: [file] });
+    } catch (err) {
+      if ((err as DOMException).name !== 'AbortError') {
+        this._snackBar.open('No se pudo compartir el PDF', 'Cerrar', { duration: 4000 });
+      }
+    }
   }
 
   trackByClie(_i: number, c: ClienteConPedidos): string {
@@ -350,16 +374,16 @@ cargarPedidos(page = 1): void {
     return cliente.pedidos.reduce((s, p) => s + this.getKilosPedido(p), 0);
   }
 
-getKilosPedido(pedido: Pedido): number {
-  // Si ya se cargaron los artículos, calcular desde ellos (más preciso post-lazy-load)
-  if (pedido.articulos?.length > 0 || pedido.cardigans?.length > 0) {
-    const kgArt  = (pedido.articulos  ?? []).reduce((s, a) => s + Number(a.CANTIDAD ?? 0), 0);
-    const kgCard = (pedido.cardigans  ?? []).reduce((s, c) => s + Number(c.CANTIDAD ?? 0), 0);
-    return kgArt + kgCard;
+  getKilosPedido(pedido: Pedido): number {
+    // Si ya se cargaron los artículos, calcular desde ellos (más preciso post-lazy-load)
+    if (pedido.articulos?.length > 0 || pedido.cardigans?.length > 0) {
+      const kgArt = (pedido.articulos ?? []).reduce((s, a) => s + Number(a.CANTIDAD ?? 0), 0);
+      const kgCard = (pedido.cardigans ?? []).reduce((s, c) => s + Number(c.CANTIDAD ?? 0), 0);
+      return kgArt + kgCard;
+    }
+    // Si aún no se han cargado, usar el valor precalculado del backend
+    return pedido.kg_total ?? 0;
   }
-  // Si aún no se han cargado, usar el valor precalculado del backend
-  return pedido.kg_total ?? 0;
-}
   totalKilos = computed(() =>
     this.clientesConPedidos().reduce(
       (s, c) => s + c.pedidos.reduce((sp, p) => sp + this.getKilosPedido(p), 0),
@@ -391,12 +415,11 @@ getKilosPedido(pedido: Pedido): number {
 
   limpiarSeleccion(): void {
     this.clientesSeleccionados.set(new Set());
+    this.pedidosSeleccionados.set(new Set());
     this.blobCache = null;
     this.blobCacheKey = '';
     this._cd.markForCheck();
   }
-
-  totalSeleccionados = computed(() => this.clientesSeleccionados().size);
 
   async compartirSeleccionados(): Promise<void> {
     if (!this.blobCache || this.descargando() === '__multi__') return;
@@ -420,16 +443,24 @@ getKilosPedido(pedido: Pedido): number {
     this.blobCacheKey = '';
     this.descargando.set(null);
 
-    if (this.clientesSeleccionados().size > 0) {
+    // Activar si hay clientes O pedidos sueltos seleccionados
+    if (this.clientesSeleccionados().size > 0 || this.pedidosSeleccionados().size > 0) {
       this.prepararPDFEnBackground();
     }
     this._cd.markForCheck();
   }
 
   private prepararPDFEnBackground(): void {
-    const pedidosIds = this.clientesConPedidos()
+    // IDs de pedidos vía clientes seleccionados
+    const pedidosPorCliente = this.clientesConPedidos()
       .filter((c) => this.clientesSeleccionados().has(c.cve_clie))
       .flatMap((c) => c.pedidos.map((p) => p.cve_ped));
+
+    // IDs de pedidos seleccionados individualmente
+    const pedidosSueltos = Array.from(this.pedidosSeleccionados());
+
+    // Merge sin duplicados
+    const pedidosIds = [...new Set([...pedidosPorCliente, ...pedidosSueltos])];
 
     if (pedidosIds.length === 0) return;
 
@@ -444,10 +475,15 @@ getKilosPedido(pedido: Pedido): number {
       .pipe(takeUntil(this._cancelarPreparacion$))
       .subscribe({
         next: (blob) => {
-          // Verificar que la selección no cambió
-          const idsActuales = this.clientesConPedidos()
-            .filter((c) => this.clientesSeleccionados().has(c.cve_clie))
-            .flatMap((c) => c.pedidos.map((p) => p.cve_ped))
+          // Verificar que la selección no cambió (clientes + sueltos)
+          const idsActuales = [
+            ...new Set([
+              ...this.clientesConPedidos()
+                .filter((c) => this.clientesSeleccionados().has(c.cve_clie))
+                .flatMap((c) => c.pedidos.map((p) => p.cve_ped)),
+              ...Array.from(this.pedidosSeleccionados()),
+            ]),
+          ]
             .sort()
             .join(',');
 
@@ -483,5 +519,17 @@ getKilosPedido(pedido: Pedido): number {
     return pages;
   }
 
-  pedidoCargando = signal<string | null>(null);
+  toggleSeleccionPedido(event: Event, cvePed: string): void {
+    event.stopPropagation();
+    this.pedidosSeleccionados.update((set) => {
+      const nuevo = new Set(set);
+      nuevo.has(cvePed) ? nuevo.delete(cvePed) : nuevo.add(cvePed);
+      return nuevo;
+    });
+    this.invalidarCache();
+    this._cd.markForCheck();
+  }
+  estaSeleccionadoPedido(cvePed: string): boolean {
+    return this.pedidosSeleccionados().has(cvePed);
+  }
 }
