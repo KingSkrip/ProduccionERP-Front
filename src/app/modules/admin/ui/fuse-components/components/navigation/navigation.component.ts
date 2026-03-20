@@ -39,7 +39,7 @@ export class NavigationComponent {
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
     ngOnInit() {
-        this.menu = this._menuService.getMenu();
+        // this.menu = this._menuService.getMenu();
     }
     /**
      * Get navigation item

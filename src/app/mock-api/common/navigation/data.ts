@@ -4046,103 +4046,6 @@ export const menuColaborador: FuseNavigationItem[] = [
   },
 ];
 
-export const menuJefe: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
-  {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
-  },
-
-  {
-    id: 'bandeja.general',
-    title: 'Bandeja general',
-    tooltip: 'Bandeja general',
-    type: 'basic',
-    icon: 'heroicons_outline:archive-box',
-    link: '/pages/mailbox',
-  },
-
- {
-    id: 'estados.cuenta',
-    title: 'Estados de cuenta',
-    tooltip: 'Estados de cuenta',
-    type: 'basic',
-    icon: 'heroicons_outline:banknotes',
-    link: '/apps/Edos_cuentaCl1',
-  },
-  {
-    id: 'usuarios.pedidos',
-    title: 'Pedidos',
-    tooltip: 'Pedidos',
-    type: 'basic',
-    icon: 'heroicons_outline:shopping-bag',
-    link: '/apps/PedidosCl1',
-  },
-  //{
-  //id: 'to.do',
-  //title: 'Scrumboard',
-  //tooltip: 'scrumboard',
-  //type: 'basic',
-  //icon: 'heroicons_outline:view-columns',
-  //link: '/apps/scrumboard',
-  //},
-
-  //     {
-  //   id: 'bandeja.general',
-  //   title: 'Bandeja',
-  //   tooltip: 'Bandeja',
-  //   type: 'basic',
-  //   icon: 'heroicons_outline:archive-box',
-  //   link: '/pages/mailbox',
-  // },
-  // {
-  //   id: 'to.do',
-  //   title: 'Scrumboard',
-  //   tooltip: 'scrumboard',
-  //   type: 'basic',
-  //   icon: 'heroicons_outline:view-columns',
-  //   link: '/apps/scrumboard',
-  // },
-
-  // =======================
-  // PRODUCCIÓN
-  // =======================
-  {
-    id: 'group.produccion',
-    title: 'Producción',
-    type: 'group',
-    children: [
-      {
-        id: 'produccion.aprobar-pedidos',
-        title: 'Aprobar pedidos',
-        type: 'basic',
-        icon: 'heroicons_outline:check',
-        link: '/apps/AceptPedidos',
-      },
-      {
-        id: 'produccion.reportes',
-        title: 'Reportes de producción',
-        type: 'basic',
-        icon: 'heroicons_outline:rectangle-stack',
-        link: '/apps/ReportProd',
-      },
-    ],
-  },
-];
-
-
 export const menuSuAdmin_Admin: FuseNavigationItem[] = [
   // =======================
   // DASHBOARDS
@@ -4292,6 +4195,7 @@ export const menuReporteProd_Jefe: FuseNavigationItem[] = [
     link: '/apps/ReportProd/list/procesos',
   },
 ];
+
 export const menuReporteProd_Jacobo: FuseNavigationItem[] = [
   {
     id: 'rp-Inicio',
@@ -4436,9 +4340,6 @@ export const menuAgentes: FuseNavigationItem[] = [
   },
 ];
 
-
-
-
 export const menuVentas: FuseNavigationItem[] = [
   // =======================
   // DASHBOARDS
@@ -4467,11 +4368,468 @@ export const menuVentas: FuseNavigationItem[] = [
     link: '/pages/mailbox',
   },
 
-    {
+  {
     id: 'group.produccion',
     title: 'Producción',
     type: 'group',
     children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuColaborador_Gerente: FuseNavigationItem[] = [
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuColaborador_Contraloria: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuColaborador_Coordinador: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuJefe: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+
+  // {
+  //   id: 'estados.cuenta',
+  //   title: 'Estados de cuenta',
+  //   tooltip: 'Estados de cuenta',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:banknotes',
+  //   link: '/apps/Edos_cuentaCl1',
+  // },
+  // {
+  //   id: 'usuarios.pedidos',
+  //   title: 'Pedidos',
+  //   tooltip: 'Pedidos',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:shopping-bag',
+  //   link: '/apps/PedidosCl1',
+  // },
+  //{
+  //id: 'to.do',
+  //title: 'Scrumboard',
+  //tooltip: 'scrumboard',
+  //type: 'basic',
+  //icon: 'heroicons_outline:view-columns',
+  //link: '/apps/scrumboard',
+  //},
+
+  //     {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja',
+  //   tooltip: 'Bandeja',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'Scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
+
+  // =======================
+  // PRODUCCIÓN
+  // =======================
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      // {
+      //   id: 'produccion.aprobar-pedidos',
+      //   title: 'Aprobar pedidos',
+      //   type: 'basic',
+      //   icon: 'heroicons_outline:check',
+      //   link: '/apps/AceptPedidos',
+      // },
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuJaime: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+
+  {
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
+    type: 'basic',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuentaCl1',
+  },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/PedidosCl1',
+  },
+  //{
+  //id: 'to.do',
+  //title: 'Scrumboard',
+  //tooltip: 'scrumboard',
+  //type: 'basic',
+  //icon: 'heroicons_outline:view-columns',
+  //link: '/apps/scrumboard',
+  //},
+
+  //     {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja',
+  //   tooltip: 'Bandeja',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'Scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
+
+  // =======================
+  // PRODUCCIÓN
+  // =======================
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.aprobar-pedidos',
+        title: 'Aprobar pedidos',
+        type: 'basic',
+        icon: 'heroicons_outline:check',
+        link: '/apps/AceptPedidos',
+      },
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuSabu: FuseNavigationItem[] = [
+  // =======================
+  // DASHBOARDS
+  // =======================
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+
+  {
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
+    type: 'basic',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuentaCl1',
+  },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/PedidosCl1',
+  },
+  //{
+  //id: 'to.do',
+  //title: 'Scrumboard',
+  //tooltip: 'scrumboard',
+  //type: 'basic',
+  //icon: 'heroicons_outline:view-columns',
+  //link: '/apps/scrumboard',
+  //},
+
+  //     {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja',
+  //   tooltip: 'Bandeja',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'Scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
+
+  // =======================
+  // PRODUCCIÓN
+  // =======================
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.aprobar-pedidos',
+        title: 'Aprobar pedidos',
+        type: 'basic',
+        icon: 'heroicons_outline:check',
+        link: '/apps/AceptPedidos',
+      },
       {
         id: 'produccion.reportes',
         title: 'Reportes de producción',

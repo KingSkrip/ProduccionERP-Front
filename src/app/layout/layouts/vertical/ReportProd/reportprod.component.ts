@@ -11,7 +11,11 @@ import {
 import { AppNavigationStoreService } from '@fuse/components/navigation/appnavigationstore.service';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { AuthService } from 'app/core/auth/auth.service';
-import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
+import {
+  RolesWithChildMenuAccess,
+  SubRoleEnum,
+  SubRolesWithChildMenuAccess,
+} from 'app/core/auth/roles/dataroles';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { UserService } from 'app/core/user/user.service';
 import { filter, Subject, takeUntil } from 'rxjs';
@@ -69,22 +73,14 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
         this.isJacobo = subRoleId === SubRoleEnum.JACOBO;
 
         const canSeeChildMenu =
-          subRoleId === SubRoleEnum.JEFE ||
-          subRoleId === SubRoleEnum.VENTAS ||
-          subRoleId === SubRoleEnum.JACOBO ||
-          subRoleId === SubRoleEnum.JAIME ||
-          subRoleId === SubRoleEnum.SABU ||
-          subRoleId === SubRoleEnum.ADMIN ||
-          roleId === RoleEnum.SUADMIN;
+          SubRolesWithChildMenuAccess.has(subRoleId) || RolesWithChildMenuAccess.has(roleId);
 
         if (canSeeChildMenu) {
           const reportProdNav = this._fuseVerticalNavigationService.getReportProdNavigation(
             roleId,
             subRoleId,
           );
-
           this._fuseVerticalNavigationService.storeNavigation('reportprod', reportProdNav);
-
           this.navigation = this._fuseVerticalNavigationService.getNavigation('reportprod');
         } else {
           this._fuseVerticalNavigationService.storeNavigation('reportprod', []);

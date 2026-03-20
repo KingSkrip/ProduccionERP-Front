@@ -4,7 +4,7 @@ import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
 import { catchError, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
-import { NavigationByRole, NavigationBySubRole, RoleEnum } from './roles/dataroles';
+import { RoleEnum } from './roles/dataroles';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -141,17 +141,17 @@ export class AuthService {
     /**
      * Get Menu by Role
      */
-    getMenu(): string[] {
-        const user = this._userService.user;
+    // getMenu(): string[] {
+    //     const user = this._userService.user;
 
-        if (!user?.permissions?.length) {
-            return [];
-        }
-        const roleId = user.permissions[0] as RoleEnum;
-        const subRoleId = user.sub_permissions?.[0] ?? null;
+    //     if (!user?.permissions?.length) {
+    //         return [];
+    //     }
+    //     const roleId = user.permissions[0] as RoleEnum;
+    //     const subRoleId = user.sub_permissions?.[0] ?? null;
 
-        return NavigationByRole[roleId] ?? [];
-    }
+    //     return NavigationByRole[roleId] ?? [];
+    // }
 
 
 

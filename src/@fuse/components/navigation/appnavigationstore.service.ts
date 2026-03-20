@@ -6,13 +6,19 @@ import {
   menuAgentes,
   menuClientes,
   menuColaborador,
+  menuColaborador_Contraloria,
+  menuColaborador_Coordinador,
+  menuColaborador_Gerente,
   menuJacobo,
+  menuJaime,
   menuJefe,
   menuReporteProd_Jacobo,
   menuReporteProd_Jefe,
   menuRh,
+  menuSabu,
   menuSuAdmin,
   menuSuAdmin_Admin,
+  menuSuAdmin_Direccion,
   menuVentas,
 } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -184,7 +190,6 @@ export class AppNavigationStoreService {
   //SubRoleEnum
 
   getNavigationByRole(roleId: number, subRoleId?: number): FuseNavigationItem[] {
-    console.log('roleId:', roleId, 'subRoleId:', subRoleId);
     let navigation: FuseNavigationItem[] = [];
 
     // 1️⃣ Navegación base por ROL
@@ -224,11 +229,13 @@ export class AppNavigationStoreService {
         case SubRoleEnum.JEFE:
           navigation = menuJefe;
           break;
+
         case SubRoleEnum.JAIME:
-          navigation = menuJefe;
+          navigation = menuJaime;
           break;
+
         case SubRoleEnum.SABU:
-          navigation = menuJefe;
+          navigation = menuSabu;
           break;
 
         case SubRoleEnum.JACOBO:
@@ -241,6 +248,22 @@ export class AppNavigationStoreService {
 
         case SubRoleEnum.VENTAS:
           navigation = menuVentas;
+          break;
+
+        case SubRoleEnum.GERENTE:
+          navigation = menuColaborador_Gerente;
+          break;
+
+        case SubRoleEnum.DIRECCION:
+          navigation = menuSuAdmin_Direccion;
+          break;
+
+        case SubRoleEnum.CONTRALORIA:
+          navigation = menuColaborador_Contraloria;
+          break;
+
+        case SubRoleEnum.COORDINADOR:
+          navigation = menuColaborador_Coordinador;
           break;
 
         // futuros subroles aquí
@@ -263,9 +286,14 @@ export class AppNavigationStoreService {
     const isAdmin = subRoleId === SubRoleEnum.ADMIN;
     const isJaime = subRoleId === SubRoleEnum.JAIME;
     const isSabu = subRoleId === SubRoleEnum.SABU;
+    const isDireccion = subRoleId === SubRoleEnum.DIRECCION;
+    const isGerente = subRoleId === SubRoleEnum.GERENTE;
+    const isContraloria = subRoleId === SubRoleEnum.CONTRALORIA;
+    const isCoordinador = subRoleId === SubRoleEnum.COORDINADOR;
 
     const isSuadmin = roleId === RoleEnum.SUADMIN;
     const isAgente = roleId === RoleEnum.AGENTE;
+    const isColaborador = roleId === RoleEnum.COLABORADOR;
 
     if (isSuadmin && isJacobo) {
       return [...menuReporteProd_Jacobo];
@@ -275,6 +303,11 @@ export class AppNavigationStoreService {
       (isSuadmin && isAdmin) ||
       (isSuadmin && isSabu) ||
       (isSuadmin && isJaime) ||
+      (isDireccion && isColaborador) ||
+      (isGerente && isColaborador) ||
+      (isContraloria && isColaborador) ||
+      (isJefe && isColaborador) ||
+      (isCoordinador && isColaborador) ||
       isSuadmin
     ) {
       return [...menuReporteProd_Jefe];

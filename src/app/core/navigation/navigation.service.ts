@@ -6,13 +6,19 @@ import {
   menuAgentes,
   menuClientes,
   menuColaborador,
+  menuColaborador_Contraloria,
+  menuColaborador_Coordinador,
+  menuColaborador_Gerente,
   menuJacobo,
+  menuJaime,
   menuJefe,
   menuReporteProd_Jacobo,
   menuReporteProd_Jefe,
   menuRh,
+  menuSabu,
   menuSuAdmin,
   menuSuAdmin_Admin,
+  menuSuAdmin_Direccion,
   menuVentas,
 } from 'app/mock-api/common/navigation/data';
 import { BehaviorSubject, Observable, ReplaySubject, tap } from 'rxjs';
@@ -242,10 +248,33 @@ export class NavigationService {
           navigation = menuSuAdmin_Admin;
           break;
 
-            case SubRoleEnum.VENTAS:
-                    navigation = menuVentas;
-                    break;
+        case SubRoleEnum.VENTAS:
+          navigation = menuVentas;
+          break;
 
+        case SubRoleEnum.GERENTE:
+          navigation = menuColaborador_Gerente;
+          break;
+
+        case SubRoleEnum.DIRECCION:
+          navigation = menuSuAdmin_Direccion;
+          break;
+
+        case SubRoleEnum.JAIME:
+          navigation = menuJaime;
+          break;
+
+        case SubRoleEnum.SABU:
+          navigation = menuSabu;
+          break;
+
+        case SubRoleEnum.CONTRALORIA:
+          navigation = menuColaborador_Contraloria;
+          break;
+
+        case SubRoleEnum.COORDINADOR:
+          navigation = menuColaborador_Coordinador;
+          break;
         // futuros subroles aquí
       }
     }
@@ -259,22 +288,26 @@ export class NavigationService {
     return [...navigation];
   }
 
-getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
-  if (subRoleId === SubRoleEnum.JACOBO) {
-    return [...menuReporteProd_Jacobo];
-  } else if (
-    subRoleId === SubRoleEnum.JEFE ||
-    subRoleId === SubRoleEnum.VENTAS ||
-    subRoleId === SubRoleEnum.JAIME ||
-    subRoleId === SubRoleEnum.SABU ||
-    subRoleId === SubRoleEnum.ADMIN ||
-    roleId === RoleEnum.SUADMIN
-  ) {
-    return [...menuReporteProd_Jefe];
-  }
+  getReportProdNavigation(roleId: number, subRoleId?: number): FuseNavigationItem[] {
+    if (subRoleId === SubRoleEnum.JACOBO) {
+      return [...menuReporteProd_Jacobo];
+    } else if (
+      subRoleId === SubRoleEnum.JEFE ||
+      subRoleId === SubRoleEnum.VENTAS ||
+      subRoleId === SubRoleEnum.JAIME ||
+      subRoleId === SubRoleEnum.SABU ||
+      subRoleId === SubRoleEnum.ADMIN ||
+      subRoleId === SubRoleEnum.DIRECCION ||
+      subRoleId === SubRoleEnum.GERENTE ||
+      subRoleId === SubRoleEnum.CONTRALORIA ||
+      subRoleId === SubRoleEnum.COORDINADOR ||
+      roleId === RoleEnum.SUADMIN
+    ) {
+      return [...menuReporteProd_Jefe];
+    }
 
-  return [];
-}
+    return [];
+  }
 
   /**
    * Get all navigation data

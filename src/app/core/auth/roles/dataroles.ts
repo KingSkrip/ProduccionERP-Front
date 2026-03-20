@@ -34,6 +34,9 @@ export const SubRoles = {
   9: 'JAIME',
   10: 'SABU',
   11: 'VENTAS',
+  12: 'DIRECCION',
+  13: 'CONTRALORIA',
+  14: 'COORDINADOR',
 };
 
 export enum SubRoleEnum {
@@ -48,22 +51,23 @@ export enum SubRoleEnum {
   JAIME = 9,
   SABU = 10,
   VENTAS = 11,
+  DIRECCION = 12,
+  CONTRALORIA = 13,
+  COORDINADOR = 14,
 }
 
-// Navegación por rol principal
-export const NavigationByRole = {
-  [RoleEnum.COLABORADOR]: ['Inicio', 'Perfil', 'Viajes', 'Historial'],
-  [RoleEnum.RH]: ['Inicio', 'Usuarios', 'Pagos', 'Rutas', 'Reportes'],
-  [RoleEnum.SUADMIN]: ['Inicio', 'Usuarios', 'Pagos', 'Rutas', 'Reportes', 'Configuración'],
-  [RoleEnum.ADMIN]: ['Inicio', 'Usuarios', 'Pagos', 'Rutas', 'Reportes', 'Configuración'],
-};
+// dataroles.ts — agrega un set de subroles con acceso
+export const SubRolesWithChildMenuAccess = new Set([
+  SubRoleEnum.JEFE,
+  SubRoleEnum.VENTAS,
+  SubRoleEnum.JACOBO,
+  SubRoleEnum.JAIME,
+  SubRoleEnum.SABU,
+  SubRoleEnum.ADMIN,
+  SubRoleEnum.DIRECCION,
+  SubRoleEnum.GERENTE,
+  SubRoleEnum.CONTRALORIA,
+  SubRoleEnum.COORDINADOR,
+]);
 
-// (Opcional) Navegación por subrol si deseas controlar accesos más finos
-export const NavigationBySubRole = {
-  [SubRoleEnum.OPERARIO]: ['Inicio', 'Tareas'],
-  [SubRoleEnum.SUPERVISOR]: ['Inicio', 'Usuarios', 'Reportes'],
-  [SubRoleEnum.GERENTE]: ['Inicio', 'Usuarios', 'Pagos', 'Reportes'],
-  [SubRoleEnum.CONTADOR]: ['Inicio', 'Pagos', 'Reportes'],
-  [SubRoleEnum.AUXILIAR_ADMINISTRATIVO]: ['Inicio', 'Pagos'],
-  [SubRoleEnum.JEFE]: ['Inicio', 'Usuarios', 'Rutas', 'Reportes', 'Configuración'],
-};
+export const RolesWithChildMenuAccess = new Set([RoleEnum.SUADMIN, RoleEnum.COLABORADOR]);
