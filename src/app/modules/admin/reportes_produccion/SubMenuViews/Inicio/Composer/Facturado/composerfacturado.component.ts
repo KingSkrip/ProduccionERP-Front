@@ -118,15 +118,17 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
       // Leer desglose por línea
       const porLinea = data.por_linea ?? {};
       const notasPorLinea = data.notas_venta?.por_linea ?? {};
+      const devPorLinea = data.devoluciones?.por_linea ?? {};
 
       this.porLineaPTPR = {
-        total: Number(porLinea['PTPR']?.total) || 0,
-        cant: Number(porLinea['PTPR']?.cant_kg_eq) || 0, // ← cambiar a cant_kg_eq
+        total: (Number(porLinea['PTPR']?.total) || 0) - (Number(devPorLinea['PTPR']?.total) || 0),
+        cant:
+          (Number(porLinea['PTPR']?.cant_kg_eq) || 0) -
+          (Number(devPorLinea['PTPR']?.cant_kg_eq) || 0),
       };
-
       this.porLineaHILOS = {
         total: Number(porLinea['HILOS']?.total) || 0,
-        cant: Number(porLinea['HILOS']?.cant_kg_eq) || 0, // ← también este por consistencia
+        cant: Number(porLinea['HILOS']?.cant_kg_eq) || 0,
       };
       this.notasPorLineaHILOS = {
         total: Number(notasPorLinea['HILOS']?.total) || 0,
@@ -188,31 +190,43 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
       .sort((a, b) => a.fecha.localeCompare(b.fecha));
   }
 
+  // get resumenPesoComposer() {
+  //   const RATES: { [key: string]: number } = {
+  //     KG: 1,
+  //     KGS: 1,
+  //     LB: 0.453592,
+  //     LBS: 0.453592,
+  //     OZ: 0.0283495,
+  //     G: 0.001,
+  //     GR: 0.001,
+  //   };
+
+  //   const mapa = new Map<string, number>();
+  //   for (const item of this.detalleFacturado) {
+  //     const um = (item.um ?? 'N/A').trim();
+  //     mapa.set(um, (mapa.get(um) ?? 0) + (item.cant ?? 0));
+  //   }
+
+  //   const items = Array.from(mapa.entries()).map(([um, cant]) => {
+  //     const rate = RATES[um.toUpperCase()] ?? 0;
+  //     return { um, cant, kgEquivalente: cant * rate, esKG: rate === 1 };
+  //   });
+
+  //   // const totalKG = items.reduce((sum, i) => sum + i.kgEquivalente, 0);
+  //   // return { items, totalKG };
+
+  //   return {
+  //     items: [],
+  //     totalKG: this.porLineaPTPR.cant + this.porLineaHILOS.cant,
+  //   };
+  // }
+
   get resumenPesoComposer() {
-    const RATES: { [key: string]: number } = {
-      KG: 1,
-      KGS: 1,
-      LB: 0.453592,
-      LBS: 0.453592,
-      OZ: 0.0283495,
-      G: 0.001,
-      GR: 0.001,
-    };
-
-    const mapa = new Map<string, number>();
-    for (const item of this.detalleFacturado) {
-      const um = (item.um ?? 'N/A').trim();
-      mapa.set(um, (mapa.get(um) ?? 0) + (item.cant ?? 0));
-    }
-
-    const items = Array.from(mapa.entries()).map(([um, cant]) => {
-      const rate = RATES[um.toUpperCase()] ?? 0;
-      return { um, cant, kgEquivalente: cant * rate, esKG: rate === 1 };
-    });
-
-    const totalKG = items.reduce((sum, i) => sum + i.kgEquivalente, 0);
-    return { items, totalKG };
-  }
+  return {
+    items: [],
+    totalKG: this.porLineaPTPR.cant + this.porLineaHILOS.cant,
+  };
+}
 
   // ─── Peso por línea Z100 ───
   get pesoHILOS(): number {
@@ -315,22 +329,27 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
     return Array.from(mapa.values()).sort((a, b) => a.fecha.localeCompare(b.fecha));
   }
 
+  // get totalKGNotasVenta(): number {
+  //   if (!this.notasVentaTotal?.unidades) return 0;
+  //   const RATES: { [key: string]: number } = {
+  //     KG: 1,
+  //     KGS: 1,
+  //     LB: 0.453592,
+  //     LBS: 0.453592,
+  //     OZ: 0.0283495,
+  //     G: 0.001,
+  //     GR: 0.001,
+  //   };
+  //   return this.notasVentaTotal.unidades.reduce((sum, u) => {
+  //     const rate = RATES[(u.um ?? '').toUpperCase()] ?? 1;
+  //     return sum + u.cant * rate;
+  //   }, 0);
+  // }
+
+
   get totalKGNotasVenta(): number {
-    if (!this.notasVentaTotal?.unidades) return 0;
-    const RATES: { [key: string]: number } = {
-      KG: 1,
-      KGS: 1,
-      LB: 0.453592,
-      LBS: 0.453592,
-      OZ: 0.0283495,
-      G: 0.001,
-      GR: 0.001,
-    };
-    return this.notasVentaTotal.unidades.reduce((sum, u) => {
-      const rate = RATES[(u.um ?? '').toUpperCase()] ?? 1;
-      return sum + u.cant * rate;
-    }, 0);
-  }
+  return this.notasPorLineaPTPR.cant + this.notasPorLineaHILOS.cant;
+}
 
   _lineasDia(dia: any): { key: string; total: number }[] {
     // filtra el detalle del día y agrupa por linea_producto
@@ -338,7 +357,7 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
     for (const item of this.detalleFacturado) {
       const f = item.fecha?.substring(0, 10) ?? '';
       if (f !== dia.fecha?.substring(0, 10)) continue;
-      const linea = (item as any).linea_producto ?? 'SIN_LINEA';
+      const linea = (item as any).linea ?? item.linea ?? 'SIN_LINEA';
       mapa.set(linea, (mapa.get(linea) ?? 0) + (item.total ?? 0));
     }
     return Array.from(mapa.entries()).map(([key, total]) => ({ key, total }));
@@ -349,7 +368,7 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
     const mapa = new Map<string, number>();
     for (const item of this.detalleFacturado) {
       if ((item.fecha?.substring(0, 10) ?? '') !== dia.fecha?.substring(0, 10)) continue;
-      const linea = (item as any).linea_producto ?? 'SIN_LINEA';
+      const linea = (item as any).linea_producto ?? (item as any).linea ?? item.linea ?? 'SIN_LINEA';
       mapa.set(linea, (mapa.get(linea) ?? 0) + (item.cant ?? 0));
     }
     return Array.from(mapa.entries()).map(([key, cant]) => ({ key, cant }));
@@ -359,7 +378,10 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
   _kgZ200Dia(dia: any): number {
     const nv = this.notasVentaPorDia[dia.fecha?.substring(0, 10) ?? ''];
     if (!nv?.unidades) return 0;
-    return nv.unidades.reduce((s, u) => s + (u.cant ?? 0), 0);
+    if (nv.por_linea) {
+      return Object.values(nv.por_linea).reduce((s: number, l: any) => s + (l.cant ?? 0), 0);
+    }
+    return nv.unidades?.reduce((s, u) => s + (u.cant ?? 0), 0) ?? 0;
   }
 
   _lineasDiaPesoOrdenado(dia: any): { key: string; cant: number }[] {
@@ -371,4 +393,9 @@ export class ComposerFacturadoComponent implements OnInit, OnDestroy {
     const orden = ['PTPR', 'HILOS'];
     return this._lineasDia(dia).sort((a, b) => orden.indexOf(a.key) - orden.indexOf(b.key));
   }
+
+  _sortPorLinea = (a: any, b: any): number => {
+    const orden = ['PTPR', 'HILOS'];
+    return orden.indexOf(a.key) - orden.indexOf(b.key);
+  };
 }
