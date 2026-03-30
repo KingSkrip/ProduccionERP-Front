@@ -139,3 +139,16 @@
 
 
 }
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+
+/* Esto es lo único de CSS que necesitas para matar el margen de Material */
+::ng-deep .day-citas-modal-panel {
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    padding: 0 !important; /* Adiós al margen estúpido */
+    border-radius: 24px !important;
+    background-color: #09090b !important; /* bg-zinc-950 */
+  }
+}

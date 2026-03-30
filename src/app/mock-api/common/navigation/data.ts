@@ -2664,6 +2664,14 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     link: '/apps/Edos_cuenta',
   },
   {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
+  {
     id: 'usuarios.pedidos',
     title: 'Pedidos',
     tooltip: 'Pedidos',
@@ -4579,6 +4587,15 @@ export const menuJefe: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
+  },
+
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
   },
 
   // {

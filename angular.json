@@ -47,6 +47,7 @@
               "includePaths": ["src/@fuse/styles"]
             },
             "styles": [
+              "@angular/material/prebuilt-themes/azure-blue.css",
               "src/styles/splash-screen.css",
               "src/styles/inter.css",
               "src/@fuse/styles/tailwind.scss",
@@ -113,7 +114,10 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles/styles.scss"],
+            "styles": [
+              "@angular/material/prebuilt-themes/azure-blue.css",
+              "src/styles/styles.scss"
+            ],
             "scripts": []
           }
         }

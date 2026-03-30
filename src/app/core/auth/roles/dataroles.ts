@@ -9,6 +9,7 @@ export const Roles = {
   5: 'JEFE',
   6: 'CLIENTE',
   7: 'AGENTE',
+  8: 'PROVEDORES',
 };
 
 export enum RoleEnum {
@@ -19,6 +20,7 @@ export enum RoleEnum {
   JEFE = 5,
   CLIENTE = 6,
   AGENTE = 7,
+  PROVEDORES = 8,
 }
 
 // Subroles
@@ -56,7 +58,7 @@ export enum SubRoleEnum {
   COORDINADOR = 14,
 }
 
-// dataroles.ts — agrega un set de subroles con acceso
+//acceso para submenu de produccion
 export const SubRolesWithChildMenuAccess = new Set([
   SubRoleEnum.JEFE,
   SubRoleEnum.VENTAS,

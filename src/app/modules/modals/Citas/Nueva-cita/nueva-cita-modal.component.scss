@@ -1,0 +1,85 @@
+// Neutraliza el padding/margin que mete Material en el panel
+.day-citas-modal-panel {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    border-radius: 24px !important;
+    overflow: hidden !important;
+  }
+
+  .mat-mdc-dialog-surface {
+    padding: 0 !important;
+    border-radius: 24px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Esto es lo único de CSS que necesitas para matar el margen de Material */
+::ng-deep .day-citas-modal-panel {
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    padding: 0 !important; /* Adiós al margen estúpido */
+    border-radius: 24px !important;
+    background-color: #09090b !important; /* bg-zinc-950 */
+  }
+}
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideRight {
+  0% {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-left {
+  animation: slideLeft 0.25s ease;
+}
+
+.slide-right {
+  animation: slideRight 0.25s ease;
+}
+
+.modal-fullscreen .mat-mdc-dialog-container {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  display: flex;
+  flex-direction: column;
+}
+
+
+// input[type="date"]::-webkit-calendar-picker-indicator,
+// input[type="time"]::-webkit-calendar-picker-indicator {
+//   display: none;
+//   -webkit-appearance: none;
+// }
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 40px;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 10;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+}

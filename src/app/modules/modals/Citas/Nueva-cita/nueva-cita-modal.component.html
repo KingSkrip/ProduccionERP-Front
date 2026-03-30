@@ -1,0 +1,160 @@
+<div class="bg-card flex h-full flex-col">
+  <!-- Header modal -->
+  <div
+    class="flex shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-500"
+  >
+    <h2 class="ml-2 text-lg text-black dark:text-white">
+      {{ editandoCita ? 'Editar cita' : 'Nueva cita' }}
+    </h2>
+    <button
+      class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-500"
+      (click)="cerrarModal()"
+    >
+      <mat-icon class="text-base text-black icon-size-5 dark:text-white">close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Body modal -->
+  <div class="flex flex-1 flex-col gap-4 overflow-y-auto px-1 py-5">
+    <!-- Visita -->
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-black dark:text-white">Visitante</label>
+      <div class="relative">
+        <input
+          [(ngModel)]="formCita.paciente"
+          placeholder="Nombre completo"
+          class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+        />
+        <mat-icon
+          class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-black icon-size-5 dark:text-white"
+        >
+          person
+        </mat-icon>
+      </div>
+    </div>
+
+    <!-- Motivo -->
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-black dark:text-white">Motivo de la cita</label>
+      <div class="relative">
+        <input
+          [(ngModel)]="formCita.motivo"
+          placeholder="Ej: Consulta general"
+          class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+        />
+        <mat-icon
+          class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-black icon-size-5 dark:text-white"
+          >assignment</mat-icon
+        >
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Fecha -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Fecha</label>
+        <div class="relative overflow-hidden">
+          <input
+            type="date"
+            [(ngModel)]="formCita.fecha"
+            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+            style="appearance: none; -webkit-appearance: none"
+          />
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-black icon-size-5 dark:text-white"
+          >
+            calendar_today
+          </mat-icon>
+        </div>
+      </div>
+
+      <!-- Estado -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Estado</label>
+        <div class="relative">
+          <select
+            [(ngModel)]="formCita.estado"
+            class="w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+          >
+            <option value="confirmada">Confirmada</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+
+          <!-- Icono gris de Material -->
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-black icon-size-6 dark:text-white"
+          >
+            expand_more
+          </mat-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Hora inicio -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Hora inicio</label>
+        <div class="relative overflow-hidden">
+          <input
+            type="time"
+            [(ngModel)]="formCita.horaInicio"
+            class="appearance-none w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+            style="appearance: none; -webkit-appearance: none"
+          />
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-black icon-size-5 dark:text-white"
+          >
+            schedule
+          </mat-icon>
+        </div>
+      </div>
+
+      <!-- Hora fin -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Hora fin</label>
+        <div class="relative overflow-hidden">
+          <input
+            type="time"
+            [(ngModel)]="formCita.horaFin"
+            class="appearance-none w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+            style="appearance: none; -webkit-appearance: none"
+          />
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-black icon-size-5 dark:text-white"
+          >
+            schedule
+          </mat-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notas -->
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-black dark:text-white">Notas adicionales</label>
+      <textarea
+        [(ngModel)]="formCita.notas"
+        rows="3"
+        placeholder="Observaciones..."
+        class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- Footer modal -->
+  <div class="flex shrink-0 justify-end gap-3 border-t border-gray-200 dark:border-gray-500">
+    <button
+      class="mt-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-slate-50 dark:text-white"
+      (click)="cerrarModal()"
+    >
+      Cancelar
+    </button>
+    <button
+      class="mr-2 mt-2 inline-flex items-center gap-1 rounded-lg bg-primary-600 px-4 py-2 text-sm text-white shadow-sm transition-colors hover:bg-primary-700"
+      (click)="guardarCita()"
+    >
+      <mat-icon class="text-base leading-none text-white icon-size-5">save</mat-icon>
+      {{ editandoCita ? 'Actualizar' : 'Guardar' }}
+    </button>
+  </div>
+</div>
