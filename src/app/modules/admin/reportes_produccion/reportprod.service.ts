@@ -61,9 +61,66 @@ export interface FacturadoDetallePartida {
   PNETO: number;
 }
 
+export interface FacturadoLinea {
+  cant: number;
+  cant_kg?: number;
+  cant_lb?: number;
+  cant_kg_eq?: number;
+  importe: number;
+  impuestos: number;
+  total: number;
+}
+
+export interface FacturadoNotasLinea {
+  cant: number;
+  total: number;
+}
+
+export interface FacturadoDevolucionLinea {
+  cant_kg_eq: number;
+  importe: number;
+  total: number;
+}
+
 export interface FacturadoResumenResponse {
-  total: { pneto: number };
-  detalle: FacturadoDetallePartida[] | null;
+  // totales globales (Z100 únicamente)
+  totales?: {
+    facturas: number;
+    cant: number;
+    importe: number;
+    impuestos: number;
+    total: number;
+    
+  };
+  // desglose Z100 por línea: PTPR / HILOS
+  por_linea?: {
+    [linea: string]: FacturadoLinea;
+  };
+  // notas de venta Z200
+  notas_venta?: {
+    registros: number;
+    total: number;
+    unidades: { um: string; cant: number }[];
+    por_linea: {
+      [linea: string]: FacturadoNotasLinea;
+    };
+  };
+  // devoluciones
+  devoluciones?: {
+    registros: number;
+    cant: number;
+    subtotal: number;
+    iva: number;
+    total: number;
+    por_linea: {
+      [linea: string]: FacturadoDevolucionLinea;
+    };
+    detalle: any[];
+  };
+  // detalle de partidas (tabla)
+  detalle: any[];
+  // legacy — mantener para no romper nada
+  total?: { pneto: number };
 }
 
 export interface AcabadoResumen {
@@ -374,24 +431,64 @@ export class ReportProdService {
    * - desglosar=true: trae detalle por partida
    * - desglosar=false: solo total
    */
+  // getFacturado(
+  //   fechaInicio: Date,
+  //   fechaFin: Date,
+  //   desglosar: boolean = true,
+  // ): Observable<FacturadoResumenResponse> {
+  //   let params = new HttpParams();
+
+  //   const toIso = (d: Date): string => {
+  //     const dd = d.getDate().toString().padStart(2, '0');
+  //     const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+  //     const yyyy = d.getFullYear();
+  //     return `${yyyy}-${mm}-${dd}`;
+  //   };
+
+  //   params = params
+  //     .set('fecha_inicio', `${toIso(fechaInicio)} 00:00:00`)
+  //     .set('fecha_fin', `${toIso(fechaFin)} 00:00:00`)
+  //     .set('desglosar', desglosar ? '1' : '0');
+
+  //   return this._httpClient
+  //     .get<{
+  //       success: boolean;
+  //       data: FacturadoResumenResponse;
+  //     }>(`${this.apiUrl}reportes-produccion/facturado`, { params })
+  //     .pipe(
+  //       map((r) => r.data),
+  //       catchError((err) => {
+  //         console.error('Error al obtener facturado', err);
+  //         return throwError(() => new Error(err.message || 'Error desconocido'));
+  //       }),
+  //     );
+  // }
+
   getFacturado(
-    fechaInicio: Date,
-    fechaFin: Date,
+    fechaInicio?: Date | null,
+    fechaFin?: Date | null,
     desglosar: boolean = true,
   ): Observable<FacturadoResumenResponse> {
     let params = new HttpParams();
 
-    const toIso = (d: Date): string => {
-      const dd = d.getDate().toString().padStart(2, '0');
-      const mm = (d.getMonth() + 1).toString().padStart(2, '0');
-      const yyyy = d.getFullYear();
-      return `${yyyy}-${mm}-${dd}`;
+    // ✅ Mismo formato Firebird que todos los demás métodos
+    const formatoFirebird = (fecha: Date, esInicio: boolean): string => {
+      const dia = fecha.getDate().toString().padStart(2, '0');
+      const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+      const anio = fecha.getFullYear();
+      const hora = esInicio ? '00:00:00' : '23:59:59';
+      return `${dia}.${mes}.${anio} ${hora}`;
     };
 
-    params = params
-      .set('fecha_inicio', `${toIso(fechaInicio)} 00:00:00`)
-      .set('fecha_fin', `${toIso(fechaFin)} 00:00:00`)
-      .set('desglosar', desglosar ? '1' : '0');
+    if (fechaInicio) {
+      params = params.set('fecha_inicio', formatoFirebird(fechaInicio, true));
+    }
+
+    if (fechaFin) {
+      params = params.set('fecha_fin', formatoFirebird(fechaFin, false));
+    }
+
+    params = params.set('desglosar', desglosar ? '1' : '0');
 
     return this._httpClient
       .get<{

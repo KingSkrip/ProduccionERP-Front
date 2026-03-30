@@ -1,4 +1,4 @@
-<div class="flex min-w-0 flex-auto flex-col dark:bg-gray-900">
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
   <!-- ===== ENCABEZADO ===== -->
   <div
     class="bg-card flex flex-0 flex-col px-4 pt-4 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:pt-4 dark:bg-transparent"
@@ -772,26 +772,26 @@
             </div>
           </div>
         </ng-container>
+
         <!-- ===== PAGINADOR ===== -->
         <ng-container *ngIf="!cargando() && totalPages() > 1">
-          <div class="mt-4 flex items-center justify-between px-2 pb-6">
-            <!-- Info -->
-            <span class="text-sm text-gray-500 dark:text-gray-400">
-              Página {{ currentPage() }} de {{ totalPages() }}
-              <span class="hidden sm:inline">· {{ totalClients() }} clientes</span>
+          <div class="mt-3 flex items-center justify-between gap-2 px-2 pb-4">
+            <!-- Info — solo desktop -->
+            <span class="hidden text-sm text-gray-500 md:block dark:text-gray-400">
+              Página {{ currentPage() }} de {{ totalPages() }} · {{ totalClients() }} clientes
             </span>
 
-            <!-- Botones -->
-            <div class="flex items-center gap-1">
+            <!-- Botones — en móvil ocupan todo el ancho centrados -->
+            <div class="flex w-full items-center justify-center gap-0.5 md:w-auto">
               <!-- Primera -->
               <button
                 mat-icon-button
                 [disabled]="currentPage() === 1"
                 (click)="irAPagina(1)"
-                matTooltip="Primera página"
+                class="!h-8 !w-8"
               >
                 <mat-icon
-                  class="icon-size-4"
+                  class="icon-size-3.5"
                   svgIcon="heroicons_outline:chevron-double-left"
                 ></mat-icon>
               </button>
@@ -801,18 +801,18 @@
                 mat-icon-button
                 [disabled]="currentPage() === 1"
                 (click)="irAPagina(currentPage() - 1)"
-                matTooltip="Página anterior"
+                class="!h-8 !w-8"
               >
-                <mat-icon class="icon-size-4" svgIcon="heroicons_outline:chevron-left"></mat-icon>
+                <mat-icon class="icon-size-3.5" svgIcon="heroicons_outline:chevron-left"></mat-icon>
               </button>
 
               <!-- Páginas numéricas -->
               <ng-container *ngFor="let p of getPaginasVisibles()">
-                <span *ngIf="p === -1" class="px-1 text-gray-400">…</span>
+                <span *ngIf="p === -1" class="px-0.5 text-xs text-gray-400">…</span>
                 <button
                   *ngIf="p !== -1"
                   mat-icon-button
-                  class="h-9 w-9 rounded-lg text-sm font-semibold"
+                  class="!h-8 !w-8 rounded-lg text-xs font-semibold"
                   [class.bg-primary]="p === currentPage()"
                   [class.text-white]="p === currentPage()"
                   (click)="irAPagina(p)"
@@ -826,9 +826,12 @@
                 mat-icon-button
                 [disabled]="currentPage() === totalPages()"
                 (click)="irAPagina(currentPage() + 1)"
-                matTooltip="Página siguiente"
+                class="!h-8 !w-8"
               >
-                <mat-icon class="icon-size-4" svgIcon="heroicons_outline:chevron-right"></mat-icon>
+                <mat-icon
+                  class="icon-size-3.5"
+                  svgIcon="heroicons_outline:chevron-right"
+                ></mat-icon>
               </button>
 
               <!-- Última -->
@@ -836,10 +839,10 @@
                 mat-icon-button
                 [disabled]="currentPage() === totalPages()"
                 (click)="irAPagina(totalPages())"
-                matTooltip="Última página"
+                class="!h-8 !w-8"
               >
                 <mat-icon
-                  class="icon-size-4"
+                  class="icon-size-3.5"
                   svgIcon="heroicons_outline:chevron-double-right"
                 ></mat-icon>
               </button>

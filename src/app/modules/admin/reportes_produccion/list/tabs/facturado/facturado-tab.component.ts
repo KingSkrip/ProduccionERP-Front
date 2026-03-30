@@ -14,7 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { fuseAnimations } from '@fuse/animations';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-import { ReportProdService } from '../../../reportprod.service';
+import { FacturadoResumenResponse, ReportProdService } from '../../../reportprod.service';
 import { SharedDataService } from '../../shared-data.service';
 
 interface FacturaDetalle {
@@ -48,19 +48,23 @@ interface ClienteAgrupado {
 })
 export class FacturadoTabComponent implements OnInit, OnDestroy {
   // Datos originales y agrupados
-  datosOriginales: any = null;
+  datosOriginales: FacturadoResumenResponse | null = null;
   datosAgrupados: ClienteAgrupado[] = [];
   totalFacturado = 0;
 
   // Estados
   isLoading = false;
   cargaInicial = false;
-
   datosFacturadoOriginal: any = null;
   importeTotalSinIva = 0;
   impuestosTotal = 0;
   totalConIva = 0;
   totalFacturas = 0;
+
+  subtotalGeneral = 0;
+  impuestosGeneral = 0;
+  totalFacturadoConNV = 0;
+
   private readonly CONVERSION_RATES = {
     LB_TO_KG: 0.453592,
     KG_TO_LB: 2.20462,
@@ -69,7 +73,25 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
     OZ_TO_KG: 0.0283495,
     G_TO_KG: 0.001,
   };
-
+  cantPTPR: number = 0;
+  cantKG: number = 0;
+  TotalKG: number = 0;
+  cantHilos: number = 0;
+  cantLB: number = 0;
+  cantLBtoKG: number = 0;
+  cantNotasVentaPTPR: number = 0;
+  devolucionesCantPTPR: number = 0;
+  devolucionesKG: number = 0;
+  z100Tela: number = 0;
+  Notas_VentaKG: number = 0;
+  GTTela: number = 0;
+  TotalG: number = 0;
+  facatPTPR: number = 0;
+  facatHilos: number = 0;
+  devolucionesSubtotal: number = 0;
+  z100TelaFact: number = 0;
+  notasVentaTotal: number = 0;
+  TotalFG: number = 0;
   private _unsubscribeAll = new Subject<void>();
 
   constructor(
@@ -80,6 +102,47 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this._sharedDataService.datosFacturado$
+      .pipe(takeUntil(this._unsubscribeAll))
+      .subscribe((resp) => {
+        const payload = resp?.data ?? resp;
+        const porLinea = payload?.por_linea ?? {};
+        const notasPorLinea = payload?.notas_venta?.por_linea ?? {};
+        const devoluciones = payload?.devoluciones ?? {};
+        const devPorLinea = devoluciones?.por_linea ?? {};
+        // PESO
+        this.cantPTPR = Number(porLinea['PTPR']?.cant_kg_eq) || 0;
+        //DEVOLUCIONES
+        this.devolucionesKG = Number(devPorLinea['PTPR']?.cant_kg_eq) || 0;
+        //NOTA DE VENTA
+        this.Notas_VentaKG = Number(notasPorLinea['PTPR']?.cant) || 0;
+        //OPERACION
+        this.z100Tela = this.cantPTPR - this.devolucionesKG;
+        //GRANTOTAL- PESO
+        //TELA
+        this.GTTela = this.z100Tela + this.Notas_VentaKG;
+        //TELA
+        this.cantHilos = Number(porLinea['HILOS']?.cant_kg_eq) || 0;
+        //FINAL
+        this.TotalG = this.GTTela + this.cantHilos;
+
+        // FACTURADO-hilos
+        this.facatHilos = Number(porLinea['HILOS']?.importe) || 0;
+        // FACTURADO-tela
+        this.facatPTPR = Number(porLinea['PTPR']?.total) || 0;
+        //DEVOLUCIONES:
+        this.devolucionesSubtotal = Number(devoluciones?.subtotal) || 0;
+        //RESTA DE Z100
+        this.z100TelaFact = this.facatPTPR - this.devolucionesSubtotal;
+        //NOTAS DE VENTA
+        this.notasVentaTotal = Number(payload?.notas_venta?.total) || 0;
+        //GRAN TOTAL
+        this.GTTela = this.z100TelaFact + this.notasVentaTotal;
+        //FINAL
+        this.TotalFG = this.facatHilos + this.GTTela;
+        this._cd.markForCheck();
+      });
+
     // Escuchar cambios en filtros globales
     this._sharedDataService.filtrosGlobales$
       .pipe(takeUntil(this._unsubscribeAll))
@@ -133,8 +196,21 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
     // Agrupar por cliente
     this.agruparPorCliente(detalleFiltrado);
 
-    // Recalcular total
-    this.totalFacturado = this.datosAgrupados.reduce((sum, grupo) => sum + grupo.totalFacturado, 0);
+    // Priorizar totales del backend si NO hay filtro de búsqueda
+    if (!busqueda && this.datosOriginales.totales) {
+      const totales = this.datosOriginales.totales;
+      this.subtotalGeneral = totales.importe || 0;
+      this.impuestosGeneral = totales.impuestos || 0;
+      this.totalFacturado = totales.total || 0;
+    } else {
+      // Si hay filtro, recalcular desde agrupados
+      this.subtotalGeneral = this.calcularImporteTotal();
+      this.impuestosGeneral = this.calcularImpuestosTotal();
+      this.totalFacturado = this.datosAgrupados.reduce(
+        (sum, grupo) => sum + grupo.totalFacturado,
+        0,
+      );
+    }
 
     this._cd.markForCheck();
   }
@@ -188,9 +264,18 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
       .getFacturado(fechaInicio || undefined, fechaFin || undefined, true)
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
-        next: (data) => {
+        next: (data: FacturadoResumenResponse) => {
+          // Tipado explícito
           this.datosOriginales = data;
           this.cargaInicial = true;
+          const totales = data.totales || {};
+          this.subtotalGeneral = data.totales?.importe ?? 0;
+          this.impuestosGeneral = data.totales?.impuestos ?? 0;
+          this.totalFacturado = data.totales?.total ?? 0;
+
+          // Opcional: total con notas de venta
+          const notasVenta = data.notas_venta?.total || 0;
+          this.totalFacturadoConNV = this.totalFacturado + notasVenta;
 
           // Aplicar filtros y agrupar
           const filtros = this._sharedDataService.obtenerFiltros();
@@ -269,5 +354,23 @@ export class FacturadoTabComponent implements OnInit, OnDestroy {
       departamento: '',
       proceso: '',
     });
+  }
+
+  formatValue(value: number, type: 'decimal' | 'currency' = 'decimal'): string {
+    if (value == null) return '0';
+
+    if (type === 'currency') {
+      return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+        minimumFractionDigits: 2,
+      }).format(value);
+    }
+
+    // decimal
+    return new Intl.NumberFormat('es-MX', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
   }
 }

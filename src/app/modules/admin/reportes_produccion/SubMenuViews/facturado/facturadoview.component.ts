@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { FacturadoTabComponent } from '../../list/tabs/facturado/facturado-tab.compoonent';
+import { FacturadoTabComponent } from '../../list/tabs/facturado/facturado-tab.component';
 
 @Component({
   selector: 'facturado-view',
