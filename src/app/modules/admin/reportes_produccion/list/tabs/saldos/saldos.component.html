@@ -1,31 +1,6 @@
 <!-- Cards de resumen - Solo mostrar si hay datos -->
 <div class="md:px-8 md:py-4" *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length > 0">
-  <!-- Vista móvil -->
-  <div class="md:hidden">
-    <div class="bg-card rounded-xl border-l-4 border-green-500 px-5 py-4 shadow-sm">
-      <div class="flex items-center justify-between gap-4">
-        <div class="min-w-0 flex-1">
-          <div class="text-secondary mb-2 text-sm font-medium">Total Saldos</div>
-          <div class="flex items-baseline gap-2">
-            <div class="text-3xl font-bold">
-              {{ calcularTotalPesoSaldos() | number: '1.2-2' }}
-            </div>
-            <div class="text-secondary text-sm">kg</div>
-          </div>
-        </div>
-        <div class="flex-shrink-0">
-          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10">
-            <mat-icon
-              class="text-green-500 icon-size-6"
-              [svgIcon]="'heroicons_outline:archive-box'"
-            ></mat-icon>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Vista desktop -->
+  <!-- CARD DESKTOP -->
   <div class="hidden grid-cols-3 gap-3 md:grid">
     <!-- ARTICULOS -->
     <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
@@ -102,9 +77,51 @@
   </button>
 </div>
 
-<!-- Tabla de datos -->
+
+
+<!-- VISTA MÓVIL -->
+<div class="space-y-2 pb-4 md:hidden" *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length > 0">
+
+  <!-- Total strip -->
+  <div class="border-card bg-card mt-1 flex items-center justify-between rounded-xl border px-3 py-3">
+    <span class="text-secondary text-sm">Total</span>
+    <span class="text-base font-bold text-green-600 dark:text-green-400">
+      {{ calcularTotalPesoSaldos() | number: '1.2-2' }} kg
+    </span>
+  </div>
+
+  <!-- Cards artículos -->
+  <div
+    *ngFor="let item of datosSaldosFiltrados"
+    class="bg-card overflow-hidden rounded-2xl border border-gray-100 shadow-sm dark:border-gray-700/60"
+  >
+    <div class="flex items-center gap-3 px-3 py-3">
+      <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-cyan-500/10">
+        <mat-icon
+          class="text-cyan-500 icon-size-4"
+          [svgIcon]="'heroicons_outline:archive-box'"
+        ></mat-icon>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold leading-tight">{{ item.ARTICULO }}</p>
+      </div>
+
+      <div class="flex-shrink-0 text-right">
+        <p class="text-sm font-semibold text-green-600 dark:text-green-400">
+          {{ item.TOTAL_SALDO | number: '1.2-2' }} kg
+        </p>
+        <p class="mt-0.5 text-xs text-sky-500">{{ item.PIEZAS | number: '1.2-2' }} pz</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- VISTA DESKTOP -->
 <div
-  class="mt-6 overflow-x-auto md:px-8 md:pb-8"
+  class="mt-6 overflow-x-auto md:px-8 md:pb-8 HIDDEN MD:BLOCK"
   *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length > 0"
 >
   <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">

@@ -636,8 +636,6 @@
                     <mat-tab-group class="tabs-pestanas" animationDuration="300ms" [disableRipple]="true"
                         [(selectedIndex)]="selectedTabIndex" (selectedIndexChange)="onTabChange($event)">
 
-
-
                         <!-- TAB: TEJIDO -->
                         <mat-tab>
                             <ng-template mat-tab-label>
@@ -648,7 +646,7 @@
                                 </div>
                             </ng-template>
                             <ng-template matTabContent>
-                                <div class="px-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+                                <div class="bg-card rounded-2xl shadow-sm">
                                     <tabs-tejido-tab></tabs-tejido-tab>
                                 </div>
                             </ng-template>

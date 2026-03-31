@@ -1,7 +1,7 @@
 <!-- Cards de resumen - Solo mostrar si hay datos -->
 <div class="md:px-8 md:py-4" *ngIf="!isLoadingTejido && datosTejidoFiltrados.length > 0">
   <!-- Vista móvil -->
-  <div class="md:hidden">
+  <!-- <div class="md:hidden">
     <div class="bg-card rounded-xl border-l-4 border-green-500 px-5 py-4 shadow-sm">
       <div class="flex items-center justify-between gap-4">
         <div class="min-w-0 flex-1">
@@ -23,7 +23,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Vista desktop -->
   <div class="hidden grid-cols-3 gap-3 md:grid">
@@ -102,9 +102,75 @@
   </button>
 </div>
 
-<!-- Tabla de datos -->
+<!-- VISTA PARA MOVIL -->
 <div
-  class="mt-6 overflow-x-auto md:px-8 md:pb-8"
+  class="space-y-2 px-4 pb-4 md:hidden"
+  *ngIf="!isLoadingTejido && datosTejidoFiltrados.length > 0"
+>
+  <!-- Total general al fondo -->
+  <div
+    class="mt-1 flex items-center justify-between rounded-xl border  px-3 py-3 border-card bg-card"
+  >
+    <span class="text-secondary text-sm">Total</span>
+    <span class="text-base font-bold text-green-600 dark:text-green-400"
+      >{{ calcularTotalPesoTejido() | number: '1.2-2' }} kg</span
+    >
+  </div>
+
+  <div
+    *ngFor="let item of datosTejidoFiltrados; let i = index"
+    class="bg-card overflow-hidden rounded-2xl border border-gray-100 shadow-sm dark:border-gray-700/60"
+  >
+    <!-- Header del artículo -->
+    <div class="flex cursor-pointer items-center gap-3 px-3 py-3" (click)="toggleArticuloTejido(i)">
+      <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-pink-500/10">
+        <mat-icon class="text-pink-500 icon-size-4" [svgIcon]="'heroicons_outline:cube'"></mat-icon>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold leading-tight">{{ item.ARTICULO }}</p>
+      </div>
+
+      <div class="flex-shrink-0 text-right">
+        <p class="text-sm font-semibold text-green-600 dark:text-green-400">
+          {{ item.TOTAL_TJ | number: '1.2-2' }} kg
+        </p>
+        <p class="mt-0.5 text-xs text-sky-500">{{ item.PIEZAS | number: '1.2-2' }} pz</p>
+      </div>
+    </div>
+
+    <!-- Detalle expandible -->
+    <div *ngIf="item.expandido" class="border-t border-gray-100 dark:border-gray-700/60">
+      <!-- Fila piezas -->
+      <div
+        class="flex items-center gap-3 border-b border-gray-100 bg-gray-50/70 px-4 py-3 pl-14 dark:border-gray-700/40 dark:bg-gray-800/40"
+      >
+        <span class="-ml-4 mr-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-sky-400"></span>
+        <span class="text-secondary min-w-0 flex-1 text-sm">Piezas producidas</span>
+        <div class="flex-shrink-0 text-right">
+          <p class="text-sm font-medium text-sky-600 dark:text-sky-400">
+            {{ item.PIEZAS | number: '1.2-2' }} pz
+          </p>
+        </div>
+      </div>
+
+      <!-- Fila peso -->
+      <div class="flex items-center gap-3 bg-gray-50/70 px-4 py-3 pl-14 dark:bg-gray-800/40">
+        <span class="-ml-4 mr-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-400"></span>
+        <span class="text-secondary min-w-0 flex-1 text-sm">Peso tejido</span>
+        <div class="flex-shrink-0 text-right">
+          <p class="text-sm font-medium text-green-600 dark:text-green-400">
+            {{ item.TOTAL_TJ | number: '1.2-2' }} kg
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VISTA DESKTOP -->
+<div
+  class="mt-6 hidden overflow-x-auto md:block md:px-8 md:pb-8"
   *ngIf="!isLoadingTejido && datosTejidoFiltrados.length > 0"
 >
   <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">

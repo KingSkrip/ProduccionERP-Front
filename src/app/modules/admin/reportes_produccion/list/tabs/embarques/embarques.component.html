@@ -1,31 +1,6 @@
 <!-- Cards de resumen - Solo mostrar si hay datos -->
 <div class="md:px-8 md:py-4" *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length > 0">
-  <!-- Vista móvil - Card único con total -->
-  <div class="md:hidden">
-    <div class="bg-card rounded-xl border-l-4 border-green-500 px-5 py-4 shadow-sm">
-      <div class="flex items-center justify-between gap-4">
-        <div class="min-w-0 flex-1">
-          <div class="text-secondary mb-2 text-sm font-medium">Total Embarques</div>
-          <div class="flex items-baseline gap-2">
-            <div class="text-3xl font-bold">
-              {{ calcularTotalEmbarques() | number: '1.2-2' }}
-            </div>
-            <div class="text-secondary text-sm">kg</div>
-          </div>
-        </div>
-        <div class="flex-shrink-0">
-          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10">
-            <mat-icon
-              class="text-green-500 icon-size-6"
-              [svgIcon]="'heroicons_outline:truck'"
-            ></mat-icon>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Vista desktop - Grid de 7 cards (6 tipos + 1 total) -->
+  <!-- CARD DESKTOP -->
   <div class="hidden md:block">
     <!-- Primera fila: 4 cards -->
     <div class="mb-3 grid grid-cols-4 gap-3">
@@ -174,7 +149,69 @@
   </button>
 </div>
 
-<!-- Tabla de datos -->
+<!-- VISTA MÓVIL -->
+<div
+  class="space-y-2 pb-4 md:hidden"
+  *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length > 0"
+>
+  <!-- Total strip -->
+  <div
+    class="border-card bg-card mt-1 flex items-center justify-between rounded-xl border px-3 py-3"
+  >
+    <span class="text-secondary text-sm">Total</span>
+    <span class="text-base font-bold text-green-600 dark:text-green-400">
+      {{ calcularTotalEmbarques() | number: '1.2-2' }} kg
+    </span>
+  </div>
+
+  <!-- Cards artículos -->
+  <div
+    *ngFor="let item of datosEmbarquesFiltrados"
+    class="bg-card overflow-hidden rounded-2xl border border-gray-100 shadow-sm dark:border-gray-700/60"
+  >
+    <div class="flex items-center gap-3 px-3 py-3">
+      <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-pink-500/10">
+        <mat-icon
+          class="text-pink-500 icon-size-4"
+          [svgIcon]="'heroicons_outline:truck'"
+        ></mat-icon>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold leading-tight">{{ item.ARTICULO }}</p>
+        <span
+          class="mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold"
+          [ngClass]="{
+            'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300':
+              item.TIPO === 'PRIMERA',
+            'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300':
+              item.TIPO === 'PREFERIDA',
+            'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300':
+              item.TIPO === 'SEGUNDA',
+            'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300':
+              item.TIPO === 'ORILLAS',
+            'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300':
+              item.TIPO === 'RETAZO',
+            'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300':
+              item.TIPO === 'MUESTRAS',
+            'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300':
+              item.TIPO === 'SIN CLASIFICAR',
+          }"
+        >
+          {{ item.TIPO }}
+        </span>
+      </div>
+
+      <div class="flex-shrink-0 text-right">
+        <p class="text-sm font-semibold text-green-600 dark:text-green-400">
+          {{ item.CANTIDAD | number: '1.2-2' }} kg
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VISTA DESKTOP -->
 <div
   class="mt-6 overflow-x-auto md:px-8 md:pb-8"
   *ngIf="!isLoadingEmbarques && datosEmbarquesFiltrados.length > 0"
@@ -183,7 +220,7 @@
     <thead class="bg-gray-50 dark:bg-gray-700">
       <tr>
         <th
-          class="pl-2 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+          class="py-2 pl-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
         >
           Tipo
         </th>
@@ -193,7 +230,7 @@
           Artículo
         </th>
         <th
-          class="pr-2 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+          class="py-2 pr-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
         >
           Cantidad (kg)
         </th>
@@ -241,7 +278,7 @@
           </div>
         </td>
 
-        <td class="pr-3 py-2 text-right md:px-6 md:py-4">
+        <td class="py-2 pr-3 text-right md:px-6 md:py-4">
           <span class="text-lg font-bold text-green-600 dark:text-green-400">
             {{ item.CANTIDAD | number: '1.2-2' }}
           </span>
