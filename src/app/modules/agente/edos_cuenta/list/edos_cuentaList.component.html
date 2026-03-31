@@ -409,10 +409,10 @@
     <!-- BARRA FLOTANTE SELECCIÓN -->
     <div
       *ngIf="documentosSeleccionados.size > 0"
-      class="fixed bottom-10 md:bottom-20 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-2xl dark:bg-gray-100"
+      class="fixed bottom-10 md:bottom-20 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-card px-5 py-3 shadow-2xl"
       [@slideDown]
     >
-      <span class="text-sm font-medium text-white dark:text-gray-900">
+      <span class="text-sm font-medium text-black dark:text-white">
         {{ documentosSeleccionados.size }} doc{{
           documentosSeleccionados.size !== 1 ? 's' : ''
         }}
@@ -420,9 +420,9 @@
       </span>
 
       <!-- Preparando en background -->
-      <div *ngIf="compartiendo" class="flex items-center gap-2 text-white dark:text-gray-900">
+      <div *ngIf="compartiendo" class="flex items-center gap-2 text-black dark:text-white">
         <mat-icon
-          class="animate-spin icon-size-5"
+          class="animate-spin icon-size-5 text-black dark:text-white"
           svgIcon="heroicons_outline:arrow-path"
         ></mat-icon>
         <span class="text-sm">Preparando...</span>
@@ -438,7 +438,7 @@
         [disabled]="!blobCache"
         (click)="compartirPDF()"
       >
-        <mat-icon class="mr-1 icon-size-5" svgIcon="heroicons_outline:share"></mat-icon>
+        <mat-icon class="mr-1 icon-size-5 text-black dark:text-white" svgIcon="heroicons_outline:share"></mat-icon>
         <span>{{ blobCache ? 'Compartir PDF' : 'Preparando...' }}</span>
       </button>
 

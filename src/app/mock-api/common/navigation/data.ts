@@ -4115,6 +4115,14 @@ export const menuJacobo: FuseNavigationItem[] = [
       },
     ],
   },
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
   // =======================
   // PRODUCCIÓN
   // =======================
@@ -4407,7 +4415,14 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
       },
     ],
   },
-
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
   {
     id: 'bandeja.general',
     title: 'Bandeja general',
@@ -4450,7 +4465,14 @@ export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
       },
     ],
   },
-
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
   {
     id: 'bandeja.general',
     title: 'Bandeja general',
@@ -4492,6 +4514,14 @@ export const menuColaborador_Contraloria: FuseNavigationItem[] = [
         link: '/dashboards/project',
       },
     ],
+  },
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
   },
 
   {
@@ -4536,7 +4566,14 @@ export const menuColaborador_Coordinador: FuseNavigationItem[] = [
       },
     ],
   },
-
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
   {
     id: 'bandeja.general',
     title: 'Bandeja general',
@@ -4579,6 +4616,14 @@ export const menuJefe: FuseNavigationItem[] = [
       },
     ],
   },
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
 
   {
     id: 'bandeja.general',
@@ -4587,15 +4632,6 @@ export const menuJefe: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
-  },
-
-  {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
-    type: 'basic',
-    icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
   },
 
   // {
@@ -4683,6 +4719,15 @@ export const menuJaime: FuseNavigationItem[] = [
         link: '/dashboards/project',
       },
     ],
+  },
+
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
   },
 
   {
@@ -4780,7 +4825,14 @@ export const menuSabu: FuseNavigationItem[] = [
       },
     ],
   },
-
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
   {
     id: 'bandeja.general',
     title: 'Bandeja general',

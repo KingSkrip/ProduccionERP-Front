@@ -350,20 +350,20 @@
     <!-- ── BARRA FLOTANTE SELECCIÓN ── -->
     <div
       *ngIf="documentosSeleccionados.size > 0"
-      class="fixed bottom-10 md:bottom-20 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-2xl dark:bg-gray-100"
+      class="fixed bottom-10 md:bottom-20 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-card px-5 py-3 shadow-2xl"
       [@slideDown]
     >
       <span
-        class="flex-1 whitespace-normal text-center text-sm font-medium leading-tight text-white sm:text-left dark:text-gray-900"
+        class="flex-1 whitespace-normal text-center text-sm font-medium leading-tight sm:text-left text-black dark:text-white"
       >
         {{ documentosSeleccionados.size }} doc{{ documentosSeleccionados.size !== 1 ? 's' : '' }}
         seleccionado{{ documentosSeleccionados.size !== 1 ? 's' : '' }}
       </span>
 
       <!-- Preparando -->
-      <div *ngIf="compartiendo" class="flex items-center gap-2 text-white dark:text-gray-900">
+      <div *ngIf="compartiendo" class="flex items-center gap-2 text-black dark:text-white">
         <mat-icon
-          class="animate-spin icon-size-5"
+          class="animate-spin icon-size-5 text-black dark:text-white"
           svgIcon="heroicons_outline:arrow-path"
         ></mat-icon>
         <span class="text-sm">Preparando...</span>
@@ -388,7 +388,7 @@
         class="text-black hover:text-red-500 dark:hover:text-red-500"
         (click)="limpiarSeleccion()"
       >
-        <mat-icon class="icon-size-4" svgIcon="heroicons_outline:x-mark"></mat-icon>
+        <mat-icon class="icon-size-4 text-black dark:text-white" svgIcon="heroicons_outline:x-mark"></mat-icon>
       </button>
     </div>
   </div>

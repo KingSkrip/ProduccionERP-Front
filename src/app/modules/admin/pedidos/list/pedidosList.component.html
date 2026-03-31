@@ -614,7 +614,7 @@
                     (click)="$event.stopPropagation(); descargarPDF(pedido.cve_ped)"
                   >
                     <mat-icon
-                      class="icon-size-4"
+                      class="icon-size-4 text-black dark:text-white hover:text-red-500 dark:hover:text-red-500"
                       [svgIcon]="
                         descargando() === pedido.cve_ped
                           ? 'heroicons_outline:arrow-path'
@@ -633,7 +633,7 @@
     <!-- ── BARRA FLOTANTE SELECCIÓN ── -->
     <div
       *ngIf="totalSeleccionados() > 0"
-      class="fixed bottom-10 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-2xl md:bottom-20 dark:bg-gray-100"
+      class="fixed bottom-10 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-card px-5 py-3 shadow-2xl md:bottom-20 "
       [@slideDown]
     >
       <span
@@ -650,7 +650,7 @@
           class="animate-spin icon-size-5"
           svgIcon="heroicons_outline:arrow-path"
         ></mat-icon>
-        <span class="text-sm">Preparando...</span>
+        <span class="text-sm text-black dark:text-white">Preparando...</span>
       </div>
 
       <!-- Listo -->
@@ -672,7 +672,7 @@
         class="text-black hover:text-red-500 dark:hover:text-red-500"
         (click)="limpiarSeleccion()"
       >
-        <mat-icon class="icon-size-4" svgIcon="heroicons_outline:x-mark"></mat-icon>
+        <mat-icon class="icon-size-4 text-black hover:text-red-500 dark:hover:text-red-500" svgIcon="heroicons_outline:x-mark"></mat-icon>
       </button>
     </div>
   </div>
