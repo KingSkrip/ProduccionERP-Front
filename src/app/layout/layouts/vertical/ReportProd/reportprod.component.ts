@@ -39,6 +39,7 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
   private _unsubscribeAll: Subject<any> = new Subject<any>();
   appName = APP_CONFIG.appName;
   navOpened = false;
+  mostrarMenuMas = false;
   @ViewChild('reportProdNav', { static: true })
   reportProdNav!: FuseVerticalNavigationComponent;
   isJacobo: boolean = false;
@@ -139,4 +140,40 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
 
     this.reportProdNav?.toggle();
   }
+
+
+  toggleMenuMas(): void {
+  this.mostrarMenuMas = !this.mostrarMenuMas;
+}
+
+isActiveRoute(link: string): boolean {
+  return this._router.url.includes(link);
+}
+// (inyecta Router en el constructor si no lo tienes)
+
+navegarA(link: string): void {
+  this._router.navigate([link]);
+  this.mostrarMenuMas = false;
+}
+
+
+// Abanico radial hacia arriba — distribuye los items en semicírculo
+getFanX(index: number, total: number): number {
+  if (total === 1) return 85; // centrado
+  const startAngle = 200; // grados desde la derecha
+  const endAngle = 340;
+  const angle = startAngle + (index / (total - 1)) * (endAngle - startAngle);
+  const rad = (angle * Math.PI) / 180;
+  return 85 + Math.cos(rad) * 90; // 90 = radio del abanico
+}
+
+getFanY(index: number, total: number): number {
+  if (total === 1) return 60;
+  const startAngle = 200;
+  const endAngle = 340;
+  const angle = startAngle + (index / (total - 1)) * (endAngle - startAngle);
+  const rad = (angle * Math.PI) / 180;
+  return 10 + Math.abs(Math.sin(rad)) * 90;
+}
+
 }

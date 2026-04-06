@@ -263,7 +263,7 @@
       <div *ngIf="vistaActual === 'semana'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <!-- MÓVIL: vista mes -->
         <div class="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
-          <div class="min-h-0 flex-1 overflow-auto pb-16" style="scrollbar-width: none">
+          <div class="min-h-0 flex-1 overflow-auto pb-14" style="scrollbar-width: none">
             <!-- Cabeceras días semana -->
             <div class="grid grid-cols-7 border-b border-gray-200 bg-primary-500">
               <span
@@ -273,50 +273,54 @@
                 {{ d }}
               </span>
             </div>
-            <!-- Semanas del mes -->
-            <div
-              *ngFor="let semana of diasDelMesConSemanas"
-              class="grid grid-cols-7 border-b border-gray-100 dark:border-gray-700"
-            >
+
+            <!-- Contenedor de semanas: flex-col que llena el alto restante -->
+            <div class="flex flex-col" style="height: calc(100% - 33px)">
               <div
-                *ngFor="let dia of semana"
-                class="relative min-h-[72px] cursor-pointer border-r border-gray-100 p-1 dark:border-gray-700"
-                [ngClass]="{
-                  'opacity-30': dia.esOtroMes,
-                  'bg-blue-50 dark:bg-blue-900/20': esHoy(dia.fecha),
-                  'bg-accent-500/10': !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
-                }"
-                (click)="seleccionarDiaYAccion(dia.fecha)"
+                *ngFor="let semana of diasDelMesConSemanas"
+                class="grid flex-1 grid-cols-7 border-b border-gray-100 dark:border-gray-700"
               >
-                <!-- Número del día -->
-                <span
-                  class="mb-[2px] flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium"
+                <div
+                  *ngFor="let dia of semana"
+                  class="relative cursor-pointer border-r border-gray-100 p-1 dark:border-gray-700"
                   [ngClass]="{
-                    'bg-primary-500 text-white': esHoy(dia.fecha),
-                    'bg-accent-400 text-black':
-                      !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
-                    'text-black dark:text-white':
-                      !esHoy(dia.fecha) && dia.fecha !== fechaDiaSeleccionado,
+                    'opacity-30': dia.esOtroMes,
+                    'bg-blue-50 dark:bg-blue-900/20': esHoy(dia.fecha),
+                    'bg-accent-500/10': !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
                   }"
-                  >{{ dia.dia }}</span
+                  (click)="seleccionarDiaYAccion(dia.fecha)"
                 >
-                <!-- Citas (máx 2) -->
-                <ng-container *ngFor="let cita of getCitasDelDia(dia.fecha); let i = index">
-                  <div
-                    *ngIf="i < 2"
-                    class="mb-[2px] truncate rounded px-1 text-[9px] font-medium leading-tight text-black"
+                  <!-- Número del día -->
+                  <span
+                    class="mb-[2px] flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium"
                     [ngClass]="{
-                      'bg-green-200': cita.estado === 'confirmada',
-                      'bg-yellow-200': cita.estado === 'pendiente',
-                      'bg-red-100': cita.estado === 'cancelada',
+                      'bg-primary-500 text-white': esHoy(dia.fecha),
+                      'bg-accent-400 text-black':
+                        !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
+                      'text-black dark:text-white':
+                        !esHoy(dia.fecha) && dia.fecha !== fechaDiaSeleccionado,
                     }"
+                    >{{ dia.dia }}</span
                   >
-                    {{ cita.paciente }}
-                  </div>
-                  <div *ngIf="i === 2" class="text-[9px] text-gray-400">
-                    +{{ getCitasDelDia(dia.fecha).length - 2 }} más
-                  </div>
-                </ng-container>
+
+                  <!-- Citas (máx 2) -->
+                  <ng-container *ngFor="let cita of getCitasDelDia(dia.fecha); let i = index">
+                    <div
+                      *ngIf="i < 2"
+                      class="mb-[2px] truncate rounded px-1 text-[9px] font-medium leading-tight text-black"
+                      [ngClass]="{
+                        'bg-green-200': cita.estado === 'confirmada',
+                        'bg-yellow-200': cita.estado === 'pendiente',
+                        'bg-red-100': cita.estado === 'cancelada',
+                      }"
+                    >
+                      {{ cita.paciente }}
+                    </div>
+                    <div *ngIf="i === 2" class="text-[9px] text-gray-400">
+                      +{{ getCitasDelDia(dia.fecha).length - 2 }} más
+                    </div>
+                  </ng-container>
+                </div>
               </div>
             </div>
           </div>
