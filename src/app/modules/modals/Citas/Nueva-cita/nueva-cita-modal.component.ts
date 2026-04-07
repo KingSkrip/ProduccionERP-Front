@@ -111,6 +111,7 @@ export class NuevaCitaModalComponent implements OnInit {
 
   onTouchMove(event: TouchEvent): void {
     if (!this.isDragging) return;
+    event.preventDefault();
 
     const deltaY = event.touches[0].clientY - this._touchStartY;
 
@@ -198,6 +199,6 @@ export class NuevaCitaModalComponent implements OnInit {
   }
 
   abrirFecha(input: HTMLInputElement) {
-  input.showPicker();
-}
+    input.showPicker();
+  }
 }

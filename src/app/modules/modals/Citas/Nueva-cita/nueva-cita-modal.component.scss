@@ -102,7 +102,15 @@ select {
 }
 
 
+/* Deshabilita pull-to-refresh del navegador */
+body {
+  overscroll-behavior-y: none;
+}
 
+/* O más específico, solo cuando el modal esté abierto */
+.cdk-overlay-container {
+  overscroll-behavior: none;
+}
 
 
 
