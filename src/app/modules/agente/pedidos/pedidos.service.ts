@@ -57,6 +57,7 @@ export interface ResumenPedidos {
   completos: number;
   parciales: number;
   sin_def: number;
+  total_kg: number; // 👈 esto es lo nuevo
 }
 
 export interface PaginationMeta {

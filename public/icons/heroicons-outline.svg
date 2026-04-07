@@ -1188,25 +1188,19 @@
             <path d="M482.189,430.439c-26.096,13.286-57.55,8.288-78.274-12.435c-12.735-12.735-19.749-29.668-19.749-47.679s7.014-34.944,19.749-47.68l11.92-11.92c38.118-38.118,51.665-91.639,40.656-140.712c16.229-13.253,27.199-22.501,30.862-26.166c32.862-32.863,32.862-86.335,0-119.198c-32.863-32.863-86.336-32.863-119.199,0C341.393,51.407,17.343,467.097,3.562,484.779c-5.23,6.71-4.64,16.267,1.377,22.282c3.27,3.271,7.587,4.938,11.924,4.938c3.64,0,7.296-1.174,10.358-3.561c13.964-10.882,276.103-215.232,398.944-313.896c2.484,33.111-8.903,67.077-34.169,92.343l-11.92,11.92c-19.104,19.104-29.624,44.503-29.624,71.52c0,27.016,10.521,52.416,29.625,71.519c19.485,19.486,45.291,29.7,71.484,29.698c15.59-0.001,31.322-3.621,45.927-11.06c8.297-4.224,11.597-14.375,7.372-22.671C500.635,429.514,490.482,426.215,482.189,430.439z M415.835,96.165l-0.001-0.001l-23.84,23.84l0.001,0.001c4.047,4.047,7.73,8.321,11.064,12.774l-11.065,11.065c-3.292,3.292-7.607,4.938-11.919,4.938c-4.314,0-8.629-1.645-11.919-4.938c-6.583-6.582-6.583-17.256,0-23.84l47.68-47.679c6.583-6.583,17.257-6.583,23.84,0c6.583,6.582,6.583,17.256,0,23.84l-12.587,12.586C423.608,104.401,419.864,100.194,415.835,96.165z"/>
         </svg>
 
-<svg id="center"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    stroke-width="2.2"
-    aria-hidden="true">
+        <svg id="center"
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
 
-    <!-- círculo exterior -->
-    <circle cx="12" cy="12" r="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- círculo exterior -->
+            <circle cx="12" cy="12" r="8" stroke-linecap="round" stroke-linejoin="round"/>
 
-    <!-- líneas de mira -->
-    <path stroke-linecap="round" stroke-linejoin="round"
-        d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+            <!-- líneas de mira -->
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3M12 19v3M2 12h3M19 12h3" />
 
-    <!-- punto central -->
-    <circle cx="12" cy="12" r="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- punto central -->
+            <circle cx="12" cy="12" r="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 
-</svg>
+        </svg>
 
         <svg id="cog"
             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -1216,6 +1210,21 @@
         <svg id="barcode"
             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
             <path d="M232 48v40a8 8 0 0 1-16 0V56h-32a8 8 0 0 1 0-16h40a8 8 0 0 1 8 8ZM72 200H40v-32a8 8 0 0 0-16 0v40a8 8 0 0 0 8 8h40a8 8 0 0 0 0-16Zm152-40a8 8 0 0 0-8 8v32h-32a8 8 0 0 0 0 16h40a8 8 0 0 0 8-8v-40a8 8 0 0 0-8-8ZM32 96a8 8 0 0 0 8-8V56h32a8 8 0 0 0 0-16H32a8 8 0 0 0-8 8v40a8 8 0 0 0 8 8ZM80 80a8 8 0 0 0-8 8v80a8 8 0 0 0 16 0V88a8 8 0 0 0-8-8Zm104 88V88a8 8 0 0 0-16 0v80a8 8 0 0 0 16 0ZM144 80a8 8 0 0 0-8 8v80a8 8 0 0 0 16 0V88a8 8 0 0 0-8-8Zm-32 0a8 8 0 0 0-8 8v80a8 8 0 0 0 16 0V88a8 8 0 0 0-8-8Z"/>
+        </svg>
+
+        <svg id="edit_calendar"
+            xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor">
+            <path d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v200H760v-40H200v400h280v80H200Zm0-560h560v-80H200v80ZM560-80v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T903-300L683-80H560Zm300-263-37-37 37 37ZM620-140h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z"/>
+        </svg>
+
+        <svg id="calendar_add_on"
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 2v2M16 2v2M3 10h18M5 4h14a2 2 0 012 2v5.5M5 4a2 2 0 00-2 2v12a2 2 0 002 2h6m6-6v6m3-3h-6"/>
+        </svg>
+
+        <svg id="assignment"
+            xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 -960 960 960" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h168q13-36 43.5-58t68.5-22q38 0 68.5 22t43.5 58h168q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm80-80h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm221.5-198.5Q510-807 510-820t-8.5-21.5Q493-850 480-850t-21.5 8.5Q450-833 450-820t8.5 21.5Q467-790 480-790t21.5-8.5ZM200-200v-560 560Z"/>
         </svg>
 
     </defs>

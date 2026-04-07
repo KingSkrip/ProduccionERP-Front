@@ -25,7 +25,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
-import { ClienteConPedidos, Pedido, PedidosService } from '../pedidos.service';
+import { ClienteConPedidos, Pedido, PedidosService, ResumenPedidos } from '../pedidos.service';
 
 export const slideDown = trigger('slideDown', [
   transition(':enter', [
@@ -106,6 +106,18 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     () => this.clientesSeleccionados().size + this.pedidosSeleccionados().size,
   );
   blobCacheKey = '';
+  resumen = signal<ResumenPedidos | null>(null);
+
+  // Computed para las tarjetas (reemplaza los que tenías)
+  totalPedidos = computed(() => this.resumen()?.total_pedidos ?? 0);
+  totalEnProceso = computed(() => this.resumen()?.parciales ?? 0);
+  totalKilos = computed(() => this.resumen()?.total_kg ?? 0);
+
+  // totalPedidos = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.totalPedidos, 0));
+  totalEntregados = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.completos, 0));
+  // totalEnProceso = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.parciales, 0));
+  totalSinAutorizar = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.sinDef, 0));
+
   private _cancelarPreparacion$ = new Subject<void>();
   isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   private pedidosFiltradosFlat = computed(() => {
@@ -159,6 +171,7 @@ export class PedidosListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.cargarResumen();
     this.cargarPedidos();
 
     this.searchControl.valueChanges
@@ -179,6 +192,15 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     this._cancelarPreparacion$.next();
     this._cancelarPreparacion$.complete();
     this.blobCacheIndividual.clear();
+  }
+
+  cargarResumen(): void {
+    this._pedidosService.getResumen().subscribe({
+      next: (res) => {
+        if (res.success) this.resumen.set(res.data);
+      },
+      error: (err) => console.error('Error resumen', err),
+    });
   }
 
   togglePanelFiltros(): void {
@@ -355,11 +377,6 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     return p.cve_ped;
   }
 
-  totalPedidos = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.totalPedidos, 0));
-  totalEntregados = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.completos, 0));
-  totalEnProceso = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.parciales, 0));
-  totalSinAutorizar = computed(() => this.clientesConPedidos().reduce((s, c) => s + c.sinDef, 0));
-
   expandirTodos(): void {
     const todos = this.clientesConPedidos().map((c) => c.cve_clie);
     const hayAlgunExpandido = todos.some((id) => this.estaClienteExpandido(id));
@@ -384,12 +401,12 @@ export class PedidosListComponent implements OnInit, OnDestroy {
     // Si aún no se han cargado, usar el valor precalculado del backend
     return pedido.kg_total ?? 0;
   }
-  totalKilos = computed(() =>
-    this.clientesConPedidos().reduce(
-      (s, c) => s + c.pedidos.reduce((sp, p) => sp + this.getKilosPedido(p), 0),
-      0,
-    ),
-  );
+  // totalKilos = computed(() =>
+  //   this.clientesConPedidos().reduce(
+  //     (s, c) => s + c.pedidos.reduce((sp, p) => sp + this.getKilosPedido(p), 0),
+  //     0,
+  //   ),
+  // );
 
   // ── Selección múltiple de clientes ──
   clientesSeleccionados = signal<Set<string>>(new Set());

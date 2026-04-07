@@ -12,25 +12,16 @@ import {
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatChipsModule } from '@angular/material/chips';
 import {
   MAT_DATE_LOCALE,
-  MatNativeDateModule,
   MatOptionModule,
-  MatRippleModule,
 } from '@angular/material/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatSortModule } from '@angular/material/sort';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
 import { NuevaCitaModalComponent } from 'app/modules/modals/Citas/Nueva-cita/nueva-cita-modal.component';
@@ -56,27 +47,18 @@ export const slideDown = trigger('slideDown', [
   standalone: true,
   imports: [
     CommonModule,
-    MatProgressBarModule,
     MatIconModule,
     MatCardModule,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatSlideToggleModule,
     MatSelectModule,
     MatOptionModule,
-    MatCheckboxModule,
-    MatRippleModule,
-    MatNativeDateModule,
     MatFormFieldModule,
     MatInputModule,
     MatTooltipModule,
-    MatMenuModule,
     MatDialogModule,
     MatSnackBarModule,
-    MatChipsModule,
   ],
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'es-MX' }],
   encapsulation: ViewEncapsulation.None,
@@ -84,7 +66,6 @@ export const slideDown = trigger('slideDown', [
   animations: [...fuseAnimations, slideDown],
 })
 export class CitasListComponent implements OnInit, OnDestroy {
-  // @ViewChild('modalCita') modalCitaRef!: TemplateRef<any>;
 
   private _unsubscribeAll = new Subject<void>();
 
@@ -225,13 +206,13 @@ export class CitasListComponent implements OnInit, OnDestroy {
     return this.citas.some((c) => c.fecha === fecha);
   }
 
-  irAHoy(): void {
-    this.semanaOffset = 0;
-    this.diaSeleccionado = this.diaHoy;
-    this.mesVistaActual = this.mesHoy;
-    this.anioVistaActual = this.anioHoy;
-    this._cdr.markForCheck();
-  }
+irAHoy(): void {
+  this.semanaOffset = 0;
+  this.diaSeleccionado = this.hoy.getDate();
+  this.mesVistaActual = this.hoy.getMonth();
+  this.anioVistaActual = this.hoy.getFullYear();
+  this._cdr.markForCheck();
+}
 
   // ─── Semana ─────────────────────────────────────────────────────
 
@@ -299,16 +280,6 @@ export class CitasListComponent implements OnInit, OnDestroy {
       nombre: '',
       numero: String(this.diaSeleccionado),
     };
-  }
-
-  // ─── Vista lista ─────────────────────────────────────────────────
-
-  get citasFiltradas(): Cita[] {
-    return this.citas.filter((c) => {
-      const porFecha = c.fecha === this.fechaDiaSeleccionado;
-      const porEstado = this.filtroEstado === 'todos' || c.estado === this.filtroEstado;
-      return porFecha && porEstado;
-    });
   }
 
   // ─── Resumen ─────────────────────────────────────────────────────
@@ -445,15 +416,10 @@ export class CitasListComponent implements OnInit, OnDestroy {
     this.anioVistaActual = +partes[0];
     this.mesVistaActual = +partes[1] - 1;
     this.diaSeleccionado = +partes[2];
-
     const citasDelDia = this.getCitasDelDia(fecha);
     const esPasado = this.esFechaPasada(fecha);
-
-    // Día pasado sin citas → no hacer nada
     if (esPasado && citasDelDia.length === 0) return;
-
     if (citasDelDia.length > 0) {
-      // Siempre abre el modal de visualización (pasado o futuro)
       const dialogRef = this._dialog.open(DayCitasModalComponent, {
         width: '92%',
         maxWidth: '480px',
@@ -498,15 +464,14 @@ export class CitasListComponent implements OnInit, OnDestroy {
 
   private abrirModalCita(data: any): void {
     const isMobile = this._breakpointObserver.isMatched(Breakpoints.Handset);
-
-    this._dialog
-      .open(NuevaCitaModalComponent, {
-        width: isMobile ? '100vw' : '520px',
-        height: isMobile ? '100vh' : 'auto',
-        maxWidth: '100vw',
-        panelClass: isMobile ? 'modal-fullscreen' : 'modal-cita-panel',
-        data,
-      })
+    this._dialog.open(NuevaCitaModalComponent, {
+    width: isMobile ? '100vw' : '520px',
+    height: 'auto',
+    maxWidth: '100vw',
+    panelClass: isMobile ? 'modal-top-sheet' : 'modal-cita-panel',
+    position: isMobile ? { bottom: '0' } : undefined,
+    data,
+  })
       .afterClosed()
       .subscribe((res) => {
         if (res?.success) this.ngOnInit();
