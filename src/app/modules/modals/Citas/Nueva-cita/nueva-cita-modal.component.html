@@ -190,7 +190,12 @@
     (click)="$event.stopPropagation()"
     [@slideUp]
   >
-    <div class="bg-default dark:bg-card">
+    <div class="bg-default dark:bg-card"
+      [class.select-none]="isDragging"
+    [style.transform]="dragTransform"
+    [style.transition]="dragTransition"
+    (click)="$event.stopPropagation()"
+    [@slideUp]>
       <!-- Drag Handle -->
       <div
         class="flex cursor-grab justify-center pb-2 pt-3 active:cursor-grabbing"
