@@ -1,11 +1,12 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   Inject,
   OnInit,
+  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -20,13 +21,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { AuthService } from 'app/core/auth/auth.service';
 import { RoleEnum } from 'app/core/auth/roles/dataroles';
-import { CitaPayload, CitasService } from 'app/modules/ViewAll/Citas/citas.service';
+import { CitasService } from 'app/modules/ViewAll/Citas/citas.service';
 import { Cita } from 'app/modules/ViewAll/Citas/Types/citas.types';
-import { NotaAccesoModalComponent } from './Nota/nota.component';
-import { AllUsersNuevaCitaModalComponent } from './allusers/all-users-nueva-cita-modal.component';
-import { ProvedoresNuevaCitaModalComponent } from './provedores/provedores-nueva-cita-modal.component';
+import { NotaAccesoModalComponent } from '../Nota/nota.component';
+import { NuevaCitaModalComponent } from '../nueva-cita-modal.component';
 
 export const slideUp = trigger('slideUp', [
   transition(':enter', [
@@ -45,8 +48,8 @@ export const slideUp = trigger('slideUp', [
 ]);
 
 @Component({
-  selector: 'nueva-cita-modal',
-  templateUrl: './nueva-cita-modal.component.html',
+  selector: 'all-users-nueva-cita-modal',
+  templateUrl: './all-users-nueva-cita-modal.component.html',
   standalone: true,
   imports: [
     CommonModule,
@@ -55,23 +58,33 @@ export const slideUp = trigger('slideUp', [
     MatIconModule,
     MatProgressSpinnerModule,
     FormsModule,
-     AllUsersNuevaCitaModalComponent,
-  ProvedoresNuevaCitaModalComponent
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
   ],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [slideUp],
 })
-export class NuevaCitaModalComponent implements OnInit {
+export class AllUsersNuevaCitaModalComponent implements OnInit {
+  //@ViewChild(MatAutocompleteTrigger) autocomplete!: MatAutocompleteTrigger;
+  @ViewChild('inputNative2') inputNativeRef2!: ElementRef<HTMLInputElement>;
+  @ViewChild('inputNative') inputNativeRef!: ElementRef<HTMLInputElement>;
+  @ViewChild('inputAuto2') autocomplete2!: MatAutocompleteTrigger;
+  @ViewChild('inputAuto') autocomplete!: MatAutocompleteTrigger;
   formCita: Partial<Cita> = {};
   editandoCita: boolean = false;
   isProveedor = false;
-
-  // Drag to dismiss
+  usuariosSeleccionados: any[] = [];
+  usuarios: any[] = [];
+  busquedaUsuario: string = '';
+  usuariosFiltrados: any[] = [];
   isDragging = false;
   dragTransform = 'translateY(0)';
+  usaVehiculo: boolean = false;
   dragTransition = 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)';
-
+  private _citaIds: number[] = [];
+  private _visitantesIdsIniciales: number[] = [];
+  private _conVehiculoInicial: boolean = false;
   private _touchStartY = 0;
   private _dragY = 0;
   private readonly DISMISS_THRESHOLD = 140;
@@ -85,9 +98,28 @@ export class NuevaCitaModalComponent implements OnInit {
     private _authService: AuthService,
     private _cdr: ChangeDetectorRef,
   ) {
+    // En ProvedoresNuevaCitaModalComponent constructor:
+
     if (data?.cita) {
       this.editandoCita = true;
-      this.formCita = { ...data.cita };
+      const trimHora = (h: string = '') => h?.slice(0, 5) ?? '';
+
+      this.formCita = {
+        fecha: data.cita.fecha,
+        horaInicio: trimHora(data.cita.horaInicio),
+        horaFin: trimHora(data.cita.horaFin),
+        motivo: data.cita.motivo,
+        estado: data.cita.estado,
+        notas: data.cita.notas,
+      };
+
+      // ✅ Guardar para asignar en ngOnInit
+      this._conVehiculoInicial =
+        data.cita.con_vehiculo === 1 ||
+        data.cita.con_vehiculo === '1' ||
+        data.cita.con_vehiculo === true;
+      this._citaIds = data.cita.ids ?? [];
+      this._visitantesIdsIniciales = (data.cita.visitantes ?? []).map((v: any) => v.id);
     } else {
       this.editandoCita = false;
       this.formCita = {
@@ -102,6 +134,25 @@ export class NuevaCitaModalComponent implements OnInit {
   ngOnInit(): void {
     const user = this._authService.getUser();
     this.isProveedor = user?.permissions?.[0] === RoleEnum.PROVEDORES;
+
+    // ✅ Asignar aquí para que el template ya exista
+    this.usaVehiculo = this._conVehiculoInicial;
+    this._cdr.markForCheck();
+
+    this._citasService.getUsuariosPermitidosParaAllUsers().subscribe({
+      next: (res) => {
+        this.usuarios = res;
+        this.usuariosFiltrados = res;
+
+        if (this._visitantesIdsIniciales.length > 0) {
+          this.usuariosSeleccionados = res.filter((u: any) =>
+            this._visitantesIdsIniciales.includes(u.id),
+          );
+        }
+
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   // ==================== DRAG TO DISMISS ====================
@@ -159,19 +210,20 @@ export class NuevaCitaModalComponent implements OnInit {
 
   guardarCita(): void {
     const normalizarHora = (h: string = '') => h?.slice(0, 5) || '';
-
-    const payload: CitaPayload = {
+    const payload = {
+      ...(this.editandoCita ? { ids: this._citaIds } : {}),
       fecha: this.formCita.fecha!,
       hora_inicio: normalizarHora(this.formCita.horaInicio),
       hora_fin: normalizarHora(this.formCita.horaFin),
-      nombre_visitante: this.formCita.paciente,
+      visitantes: this.usuariosSeleccionados.map((u) => u.id),
       motivo: this.formCita.motivo,
       estado: this.formCita.estado,
       notas: this.formCita.notas,
+      con_vehiculo: this.usaVehiculo,
     };
 
     const request$ = this.editandoCita
-      ? this._citasService.updateCita(this.formCita.id!, payload)
+      ? this._citasService.updateCita(this.data.cita.id, payload)
       : this._citasService.createCita(payload);
 
     request$.subscribe({
@@ -180,16 +232,23 @@ export class NuevaCitaModalComponent implements OnInit {
           duration: 3000,
         });
 
-        this._dialog.open(NotaAccesoModalComponent, {
-          width: '400px',
-          panelClass: 'day-citas-modal-panel',
-        });
+        // 👈 Solo al crear, no al editar
+        if (!this.editandoCita) {
+          this._dialog.open(NotaAccesoModalComponent, {
+            width: '400px',
+            panelClass: 'day-citas-modal-panel',
+          });
+        }
 
         this.dialogRef.close({ success: true });
       },
       error: (err) => {
-        const msg = err.error?.message ?? 'Error al guardar la cita';
-        this._snackBar.open(msg, 'Cerrar', { duration: 4500 });
+        const errores: string[] = err.error?.errores ?? [];
+        const msg =
+          errores.length > 0
+            ? errores.join('\n')
+            : (err.error?.message ?? 'Error al guardar la cita');
+        this._snackBar.open(msg, 'Cerrar', { duration: 6000 });
       },
     });
   }
@@ -204,5 +263,63 @@ export class NuevaCitaModalComponent implements OnInit {
 
   abrirFecha(input: HTMLInputElement) {
     input.showPicker();
+  }
+
+  seleccionarUsuario(usuario: any): void {
+    const yaExiste = this.usuariosSeleccionados.find((u) => u.user_id === usuario.user_id);
+    if (!yaExiste) {
+      this.usuariosSeleccionados.push(usuario);
+    }
+    setTimeout(() => {
+      this.busquedaUsuario = '';
+      this.usuariosFiltrados = [...this.usuarios];
+      this._cdr.detectChanges();
+    });
+  }
+
+  removerUsuario(usuario: any): void {
+    this.usuariosSeleccionados = this.usuariosSeleccionados.filter(
+      (u) => u.user_id !== usuario.user_id,
+    );
+  }
+
+  displayFn(): string {
+    return ''; // Siempre muestra vacío tras seleccionar
+  }
+
+  filtrarUsuarios(): void {
+    // Protección: si busquedaUsuario no es string, resetear
+    if (typeof this.busquedaUsuario !== 'string') {
+      this.busquedaUsuario = '';
+      this.usuariosFiltrados = [...this.usuarios];
+      return;
+    }
+
+    const valor = this.busquedaUsuario.toLowerCase();
+    this.usuariosFiltrados = this.usuarios.filter((u) => u.nombre?.toLowerCase().includes(valor));
+  }
+
+  abrirAutocomplete() {
+    if (this.autocomplete) {
+      this.autocomplete.openPanel();
+    }
+  }
+
+  toggleAutocomplete(): void {
+    if (this.autocomplete.panelOpen) {
+      this.autocomplete.closePanel();
+    } else {
+      this.inputNativeRef.nativeElement.focus();
+      this.autocomplete.openPanel();
+    }
+  }
+
+  toggleAutocomplete2(): void {
+    if (this.autocomplete2.panelOpen) {
+      this.autocomplete2.closePanel();
+    } else {
+      this.inputNativeRef2.nativeElement.focus();
+      this.autocomplete2.openPanel();
+    }
   }
 }

@@ -152,3 +152,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     background-color: #09090b !important; /* bg-zinc-950 */
   }
 }
+
+
+.modal-cita-panel .mat-mdc-dialog-container {
+  padding: 0 !important;
+}
+
+.modal-cita-panel .mat-mdc-dialog-surface {
+  padding: 0 !important;
+}

@@ -12,6 +12,7 @@ import {
   menuJacobo,
   menuJaime,
   menuJefe,
+  menuProvedores,
   menuReporteProd_Jacobo,
   menuReporteProd_Jefe,
   menuRh,
@@ -217,6 +218,10 @@ export class FuseNavigationService {
 
       case RoleEnum.AGENTE:
         navigation = menuAgentes;
+        break;
+
+      case RoleEnum.PROVEDORES:
+        navigation = menuProvedores;
         break;
 
       default:

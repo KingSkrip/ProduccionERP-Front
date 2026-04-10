@@ -2629,9 +2629,7 @@ export const menuRh: FuseNavigationItem[] = [
 // ];
 
 export const menuSuAdmin: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4052,12 +4050,18 @@ export const menuColaborador: FuseNavigationItem[] = [
     icon: 'heroicons_outline:barcode',
     link: '/apps/colaborador/Barcode',
   },
+    {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
 ];
 
 export const menuSuAdmin_Admin: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4098,9 +4102,7 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
 ];
 
 export const menuJacobo: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4283,9 +4285,7 @@ export const menuReporteProd_Jacobo: FuseNavigationItem[] = [
 ];
 
 export const menuClientes: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4320,9 +4320,7 @@ export const menuClientes: FuseNavigationItem[] = [
 ];
 
 export const menuAgentes: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4357,9 +4355,7 @@ export const menuAgentes: FuseNavigationItem[] = [
 ];
 
 export const menuVentas: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4448,9 +4444,7 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
 ];
 
 export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4498,9 +4492,7 @@ export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
 ];
 
 export const menuColaborador_Contraloria: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4549,9 +4541,7 @@ export const menuColaborador_Contraloria: FuseNavigationItem[] = [
 ];
 
 export const menuColaborador_Coordinador: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4599,9 +4589,7 @@ export const menuColaborador_Coordinador: FuseNavigationItem[] = [
 ];
 
 export const menuJefe: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4703,9 +4691,7 @@ export const menuJefe: FuseNavigationItem[] = [
 ];
 
 export const menuJaime: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4808,9 +4794,7 @@ export const menuJaime: FuseNavigationItem[] = [
 ];
 
 export const menuSabu: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
+ 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4908,4 +4892,32 @@ export const menuSabu: FuseNavigationItem[] = [
       },
     ],
   },
+];
+
+
+export const menuProvedores: FuseNavigationItem[] =[
+
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
+
 ];

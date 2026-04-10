@@ -12,10 +12,7 @@ import {
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import {
-  MAT_DATE_LOCALE,
-  MatOptionModule,
-} from '@angular/material/core';
+import { MAT_DATE_LOCALE, MatOptionModule } from '@angular/material/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,8 +21,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
+import { AuthService } from 'app/core/auth/auth.service';
 import { NuevaCitaModalComponent } from 'app/modules/modals/Citas/Nueva-cita/nueva-cita-modal.component';
 import { DayCitasModalComponent } from 'app/modules/modals/Citas/Ver-citas/day-citas-modal.component';
+import { DetallesAccesoModalComponent } from 'app/modules/modals/Citas/Ver-citas/detalles/detalles.component';
 import { Subject, takeUntil } from 'rxjs';
 import { CitaAPI, CitasService } from '../citas.service';
 import { Cita } from '../Types/citas.types';
@@ -66,7 +65,6 @@ export const slideDown = trigger('slideDown', [
   animations: [...fuseAnimations, slideDown],
 })
 export class CitasListComponent implements OnInit, OnDestroy {
-
   private _unsubscribeAll = new Subject<void>();
 
   // ─── Estado del calendario ──────────────────────────────────────
@@ -90,13 +88,14 @@ export class CitasListComponent implements OnInit, OnDestroy {
   filtroEstado = 'todos';
   citas: Cita[] = [];
   menuAbiertoCita: Cita | null = null;
-
+  isProveedor = false;
   constructor(
     private _citasService: CitasService,
     private _snackBar: MatSnackBar,
     private _cdr: ChangeDetectorRef,
     private _breakpointObserver: BreakpointObserver,
     private _dialog: MatDialog,
+    private _authService: AuthService,
   ) {}
 
   // ─── ngOnInit — mapeo corregido ───────────────────────────────────
@@ -105,21 +104,68 @@ export class CitasListComponent implements OnInit, OnDestroy {
       .getCitas()
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe((citas: CitaAPI[]) => {
+        console.log(
+          'CITAS RAW:',
+          citas.map((c) => ({
+            id_de_la_cita: c.id,
+            es_externa: c.es_externa,
+            nombre_proveedor: c.nombre_proveedor,
+            nombre_visitante: c.nombre_visitante,
+            usuario: c.usuario,
+          })),
+        );
+
         this.citas = citas.map((c) => ({
           id: c.id,
           id_visitante: c.id_visitante,
-          paciente: c.nombre_visitante ?? c.visitante?.nombre ?? 'Sin nombre',
+          paciente: c.es_externa
+            ? (c.nombre_proveedor ?? c.usuario?.nombre ?? 'Proveedor')
+            : (c.nombre_visitante ?? c.visitante?.nombre ?? 'Sin nombre'),
           motivo: c.motivo ?? '',
           fecha: c.fecha,
           horaInicio: c.hora_inicio,
           horaFin: c.hora_fin,
           estado: c.estado,
           notas: c.notas,
+          // ✅ Agregar estos dos
+          con_vehiculo: (c as any).con_vehiculo ?? false,
           dia: String(new Date(c.fecha).getDate()),
           mes: this._mesCorto(new Date(c.fecha).getMonth()),
+          esExterna: c.es_externa ?? false,
         }));
+
         this._cdr.markForCheck();
       });
+  }
+
+  // ─── Agrupar citas por fecha + hora_inicio ───────────────────────
+
+  get citasAgrupadas(): Cita[] {
+    const mapa = new Map<string, Cita>();
+
+    for (const cita of this.citas) {
+      const key = `${cita.fecha}_${cita.horaInicio}_${cita.horaFin}`;
+      if (mapa.has(key)) {
+        const existente = mapa.get(key)!;
+        existente.paciente = `${existente.paciente}, ${cita.paciente}`;
+        // ✅ Acumular ids del grupo
+        existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
+        // ✅ Acumular visitantes
+        existente.visitantes = [
+          ...(existente.visitantes ?? []),
+          { id: cita.id_visitante!, nombre: cita.paciente },
+        ];
+      } else {
+        mapa.set(key, {
+          ...cita,
+          ids: [cita.id!],
+          // ✅ Inicializar visitantes con el primero
+          visitantes: [{ id: cita.id_visitante!, nombre: cita.paciente }],
+        });
+      }
+    }
+
+    return Array.from(mapa.values());
   }
 
   ngOnDestroy(): void {
@@ -202,17 +248,22 @@ export class CitasListComponent implements OnInit, OnDestroy {
   }
 
   tieneCitas(dia: number): boolean {
-    const fecha = `${this.anioVistaActual}-${String(this.mesVistaActual + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-    return this.citas.some((c) => c.fecha === fecha);
+    const fecha = this.fechaDelMiniCal(dia);
+    return this.citasAgrupadas.some((c) => c.fecha === fecha);
   }
 
-irAHoy(): void {
-  this.semanaOffset = 0;
-  this.diaSeleccionado = this.hoy.getDate();
-  this.mesVistaActual = this.hoy.getMonth();
-  this.anioVistaActual = this.hoy.getFullYear();
-  this._cdr.markForCheck();
-}
+  tieneCitasExternas(dia: number): boolean {
+    const fecha = this.fechaDelMiniCal(dia);
+    return this.citasAgrupadas.some((c) => c.fecha === fecha && c.esExterna === true);
+  }
+
+  irAHoy(): void {
+    this.semanaOffset = 0;
+    this.diaSeleccionado = this.hoy.getDate();
+    this.mesVistaActual = this.hoy.getMonth();
+    this.anioVistaActual = this.hoy.getFullYear();
+    this._cdr.markForCheck();
+  }
 
   // ─── Semana ─────────────────────────────────────────────────────
 
@@ -260,7 +311,7 @@ irAHoy(): void {
   }
 
   getCitasEnSlot(fecha: string, hora: number): Cita[] {
-    return this.citas.filter((c) => {
+    return this.citasAgrupadas.filter((c) => {
       if (c.fecha !== fecha) return false;
       const h = parseInt(c.horaInicio.split(':')[0], 10);
       return h === hora;
@@ -285,7 +336,7 @@ irAHoy(): void {
   // ─── Resumen ─────────────────────────────────────────────────────
 
   get citasHoy(): Cita[] {
-    return this.citas.filter((c) => c.fecha === this.fechaDiaSeleccionado);
+    return this.citasAgrupadas.filter((c) => c.fecha === this.fechaDiaSeleccionado);
   }
 
   get citasPendientes(): number {
@@ -353,6 +404,15 @@ irAHoy(): void {
   }
 
   verDetalleCita(cita: Cita): void {
+    if (cita.esExterna) {
+      this._dialog.open(DetallesAccesoModalComponent, {
+        width: '480px',
+        maxWidth: '100vw',
+        panelClass: 'modal-cita-panel',
+        data: { cita },
+      });
+      return;
+    }
     this.editarCita(cita);
   }
 
@@ -408,7 +468,7 @@ irAHoy(): void {
   }
 
   getCitasDelDia(fecha: string): Cita[] {
-    return this.citas.filter((c) => c.fecha === fecha);
+    return this.citasAgrupadas.filter((c) => c.fecha === fecha);
   }
 
   seleccionarDiaYAccion(fecha: string): void {
@@ -429,8 +489,7 @@ irAHoy(): void {
 
       dialogRef.afterClosed().subscribe((result: any) => {
         if (result && !esPasado) {
-          // solo actúa si no es pasado
-          if (result.action === 'edit' && result.cita) {
+          if (result.action === 'edit' && result.cita && !result.cita.esExterna) {
             this.editarCita(result.cita);
           } else if (result.action === 'add') {
             this.abrirModalCita({
@@ -464,14 +523,15 @@ irAHoy(): void {
 
   private abrirModalCita(data: any): void {
     const isMobile = this._breakpointObserver.isMatched(Breakpoints.Handset);
-    this._dialog.open(NuevaCitaModalComponent, {
-    width: isMobile ? '100vw' : '520px',
-    height: 'auto',
-    maxWidth: '100vw',
-    panelClass: isMobile ? 'modal-top-sheet' : 'modal-cita-panel',
-    position: isMobile ? { bottom: '0' } : undefined,
-    data,
-  })
+    this._dialog
+      .open(NuevaCitaModalComponent, {
+        width: isMobile ? '100vw' : '520px',
+        height: 'auto',
+        maxWidth: '100vw',
+        panelClass: isMobile ? 'modal-top-sheet' : 'modal-cita-panel',
+        position: isMobile ? { bottom: '0' } : undefined,
+        data,
+      })
       .afterClosed()
       .subscribe((res) => {
         if (res?.success) this.ngOnInit();
@@ -485,7 +545,7 @@ irAHoy(): void {
     }
     // Si la vista es 'semana' (tu calendario Samsung de móvil), movemos el mes
     else if (this.vistaActual === 'semana') {
-      this.mesAnterior();
+  this.semanaAnterior();
     }
     // Para la vista lista, mantenemos el movimiento por semana
     else {
@@ -497,7 +557,7 @@ irAHoy(): void {
     if (this.vistaActual === 'dia') {
       this.cambiarDia(1);
     } else if (this.vistaActual === 'semana') {
-      this.mesSiguiente();
+            this.semanaSiguiente();
     } else {
       this.semanaSiguiente();
     }
@@ -514,12 +574,10 @@ irAHoy(): void {
 
   get citasSemana(): Cita[] {
     const fechasSemana = this.semanaActual.map((d) => d.fecha);
-
-    return this.citas
+    return this.citasAgrupadas
       .filter((c) => {
         const enSemana = fechasSemana.includes(c.fecha);
         const porEstado = this.filtroEstado === 'todos' || c.estado === this.filtroEstado;
-
         return enSemana && porEstado;
       })
       .sort((a, b) => {

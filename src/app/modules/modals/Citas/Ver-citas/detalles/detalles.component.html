@@ -1,0 +1,157 @@
+<div class="bg-card flex flex-col" style="min-width: 380px; max-width: 480px">
+  <!-- Header -->
+  <div
+    class="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-500"
+  >
+    <div class="flex items-center gap-2">
+      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500">
+        <mat-icon class="text-base text-white">event</mat-icon>
+      </div>
+      <h2 class="text-base font-bold text-black dark:text-white">Detalles de la cita</h2>
+    </div>
+    <button
+      class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-500"
+      (click)="cerrar()"
+    >
+      <mat-icon class="text-base text-black dark:text-white">close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-5">
+    <!-- Proveedor -->
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-black dark:text-white">Agendado por</label>
+      <div
+        class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+      >
+        <div
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+        >
+          {{ data.cita.paciente?.charAt(0) | uppercase }}
+        </div>
+        <span class="text-sm font-medium text-black dark:text-white">{{ data.cita.paciente }}</span>
+        <span
+          class="ml-auto flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600"
+        >
+          <span class="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+          Externa
+        </span>
+      </div>
+    </div>
+
+    <!-- Motivo -->
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
+      <div
+        class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+      >
+        <mat-icon class="shrink-0 text-base text-gray-400">assignment</mat-icon>
+        <span class="text-sm text-black dark:text-white">{{ data.cita.motivo || '—' }}</span>
+      </div>
+    </div>
+
+    <!-- Fecha + Estado -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Fecha</label>
+        <div
+          class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+        >
+          <mat-icon class="shrink-0 text-base text-gray-400">calendar_today</mat-icon>
+          <span class="text-sm text-black dark:text-white">{{ data.cita.fecha }}</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Estado</label>
+        <div
+          class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+        >
+          <span
+            class="h-2 w-2 shrink-0 rounded-full"
+            [ngClass]="{
+              'bg-green-500': data.cita.estado === 'confirmada',
+              'bg-amber-400': data.cita.estado === 'pendiente',
+              'bg-red-400': data.cita.estado === 'cancelada',
+            }"
+          ></span>
+          <span
+            class="text-sm font-medium capitalize"
+            [ngClass]="{
+              'text-green-600': data.cita.estado === 'confirmada',
+              'text-amber-600': data.cita.estado === 'pendiente',
+              'text-red-600': data.cita.estado === 'cancelada',
+            }"
+            >{{ data.cita.estado }}</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Hora inicio + Hora fin -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Hora inicio</label>
+        <div
+          class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+        >
+          <mat-icon class="shrink-0 text-base text-gray-400">schedule</mat-icon>
+          <span class="text-sm text-black dark:text-white">{{ data.cita.horaInicio }}</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Hora fin</label>
+        <div
+          class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+        >
+          <mat-icon class="shrink-0 text-base text-gray-400">schedule</mat-icon>
+          <span class="text-sm text-black dark:text-white">{{ data.cita.horaFin }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notas -->
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-black dark:text-white"
+        >Notas adicionales</label
+      >
+      <div
+        class="min-h-[72px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+      >
+        <span class="text-sm text-black dark:text-white">{{ data.cita.notas || 'Sin notas' }}</span>
+      </div>
+    </div>
+
+    <!-- Viene en vehículo -->
+    <div
+      class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+    >
+      <div class="flex items-center gap-2">
+        <mat-icon class="text-base text-gray-400">directions_car</mat-icon>
+        <span class="text-sm text-black dark:text-white">Viene en vehículo</span>
+      </div>
+      <span
+        class="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+        [ngClass]="
+          data.cita.con_vehiculo
+            ? 'bg-green-100 text-green-600'
+            : 'bg-gray-200 text-gray-500 dark:bg-gray-600 dark:text-gray-300'
+        "
+      >
+        {{ data.cita.con_vehiculo ? 'Sí' : 'No' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex shrink-0 justify-end border-t border-gray-200 px-4 py-3 dark:border-gray-500">
+    <button
+      class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-slate-50 dark:text-white"
+      (click)="cerrar()"
+    >
+      Cerrar
+    </button>
+  </div>
+</div>

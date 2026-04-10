@@ -15,6 +15,7 @@ import { CitasService } from 'app/modules/ViewAll/Citas/citas.service';
 import { Cita } from 'app/modules/ViewAll/Citas/Types/citas.types';
 
 import { Subject, takeUntil } from 'rxjs';
+import { DetallesAccesoModalComponent } from './detalles/detalles.component';
 
 @Component({
   selector: 'day-citas-modal',
@@ -55,6 +56,17 @@ export class DayCitasModalComponent {
 
  editarCita(cita: Cita): void {
   if (this.esFechaPasada()) return;
+
+  if (cita.esExterna) {
+    this._dialog.open(DetallesAccesoModalComponent, {
+      width: '480px',
+      maxWidth: '100vw',
+      panelClass: 'modal-cita-panel',
+      data: { cita },
+    });
+    return;
+  }
+
   this.dialogRef.close({ action: 'edit', cita });
 }
 

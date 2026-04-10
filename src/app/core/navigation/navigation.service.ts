@@ -12,6 +12,7 @@ import {
   menuJacobo,
   menuJaime,
   menuJefe,
+  menuProvedores,
   menuReporteProd_Jacobo,
   menuReporteProd_Jefe,
   menuRh,
@@ -227,6 +228,11 @@ export class NavigationService {
       case RoleEnum.AGENTE:
         navigation = menuAgentes;
         break;
+
+      case RoleEnum.PROVEDORES:
+        navigation = menuProvedores;
+        break;
+
 
       default:
         navigation = [];
