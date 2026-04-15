@@ -4018,22 +4018,6 @@ export const menuColaborador: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
-  {
-    id: 'estados.cuenta',
-    title: 'Estados de cuenta',
-    tooltip: 'Estados de cuenta',
-    type: 'basic',
-    icon: 'heroicons_outline:banknotes',
-    link: '/apps/Edos_cuenta',
-  },
-  {
-    id: 'usuarios.pedidos',
-    title: 'Pedidos',
-    tooltip: 'Pedidos',
-    type: 'basic',
-    icon: 'heroicons_outline:shopping-bag',
-    link: '/apps/Pedidos',
-  },
   //{
   //id: 'to.do',
   //title: 'Scrumboard',

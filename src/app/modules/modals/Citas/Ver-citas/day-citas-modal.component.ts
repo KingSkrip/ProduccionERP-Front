@@ -28,7 +28,7 @@ import { DetallesAccesoModalComponent } from './detalles/detalles.component';
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
   ],
 })
 export class DayCitasModalComponent {
@@ -54,26 +54,33 @@ export class DayCitasModalComponent {
     this.dialogRef.close();
   }
 
- editarCita(cita: Cita): void {
-  if (this.esFechaPasada()) return;
+  editarCita(cita: Cita): void {
+    if (this.esFechaPasada()) return;
 
-  if (cita.esExterna) {
-    this._dialog.open(DetallesAccesoModalComponent, {
-      width: '480px',
-      maxWidth: '100vw',
-      panelClass: 'modal-cita-panel',
-      data: { cita },
-    });
-    return;
+    if (cita.esExterna) {
+      this._dialog
+        .open(DetallesAccesoModalComponent, {
+          width: '480px',
+          maxWidth: '100vw',
+          panelClass: ['modal-cita-panel', 'modal-cita-panel--responsive'],
+          data: { cita },
+        })
+        .afterClosed()
+        .subscribe((result) => {
+          if (result?.estadoActualizado) {
+            cita.estado = result.estadoActualizado;
+          }
+        });
+      return;
+    }
+
+    this.dialogRef.close({ action: 'edit', cita });
   }
 
-  this.dialogRef.close({ action: 'edit', cita });
-}
-
-agregarNuevaCita(): void {
-  if (this.esFechaPasada()) return;
-  this.dialogRef.close({ action: 'add', fecha: this.data.fecha });
-}
+  agregarNuevaCita(): void {
+    if (this.esFechaPasada()) return;
+    this.dialogRef.close({ action: 'add', fecha: this.data.fecha });
+  }
 
   onTouchStart(event: TouchEvent): void {
     this.touchStartX = event.changedTouches[0].screenX;
@@ -128,7 +135,7 @@ agregarNuevaCita(): void {
         console.error('Error al cargar citas:', err);
         this.loading = false;
         this._snackBar.open('Error al cargar las citas', 'OK', { duration: 3000 });
-      }
+      },
     });
   }
 
@@ -163,7 +170,20 @@ agregarNuevaCita(): void {
   get fechaFormateada(): string {
     const partes = this.data.fecha.split('-');
     const d = new Date(+partes[0], +partes[1] - 1, +partes[2]);
-    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const meses = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
+    ];
     return `${d.getDate()} ${meses[d.getMonth()]}`;
   }
 
@@ -175,10 +195,10 @@ agregarNuevaCita(): void {
   }
 
   esFechaPasada(): boolean {
-  const partes = this.data.fecha.split('-');
-  const fecha = new Date(+partes[0], +partes[1] - 1, +partes[2]);
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  return fecha < hoy;
-}
+    const partes = this.data.fecha.split('-');
+    const fecha = new Date(+partes[0], +partes[1] - 1, +partes[2]);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    return fecha < hoy;
+  }
 }

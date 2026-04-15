@@ -104,17 +104,6 @@ export class CitasListComponent implements OnInit, OnDestroy {
       .getCitas()
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe((citas: CitaAPI[]) => {
-        console.log(
-          'CITAS RAW:',
-          citas.map((c) => ({
-            id_de_la_cita: c.id,
-            es_externa: c.es_externa,
-            nombre_proveedor: c.nombre_proveedor,
-            nombre_visitante: c.nombre_visitante,
-            usuario: c.usuario,
-          })),
-        );
-
         this.citas = citas.map((c) => ({
           id: c.id,
           id_visitante: c.id_visitante,
@@ -127,7 +116,6 @@ export class CitasListComponent implements OnInit, OnDestroy {
           horaFin: c.hora_fin,
           estado: c.estado,
           notas: c.notas,
-          // ✅ Agregar estos dos
           con_vehiculo: (c as any).con_vehiculo ?? false,
           dia: String(new Date(c.fecha).getDate()),
           mes: this._mesCorto(new Date(c.fecha).getMonth()),
@@ -148,9 +136,7 @@ export class CitasListComponent implements OnInit, OnDestroy {
       if (mapa.has(key)) {
         const existente = mapa.get(key)!;
         existente.paciente = `${existente.paciente}, ${cita.paciente}`;
-        // ✅ Acumular ids del grupo
         existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
-        // ✅ Acumular visitantes
         existente.visitantes = [
           ...(existente.visitantes ?? []),
           { id: cita.id_visitante!, nombre: cita.paciente },
@@ -159,7 +145,6 @@ export class CitasListComponent implements OnInit, OnDestroy {
         mapa.set(key, {
           ...cita,
           ids: [cita.id!],
-          // ✅ Inicializar visitantes con el primero
           visitantes: [{ id: cita.id_visitante!, nombre: cita.paciente }],
         });
       }
@@ -377,7 +362,6 @@ export class CitasListComponent implements OnInit, OnDestroy {
 
   editarCita(cita: Cita): void {
     if (this.esFechaPasada(cita.fecha)) return;
-
     this.abrirModalCita({ cita });
   }
 
@@ -405,12 +389,24 @@ export class CitasListComponent implements OnInit, OnDestroy {
 
   verDetalleCita(cita: Cita): void {
     if (cita.esExterna) {
-      this._dialog.open(DetallesAccesoModalComponent, {
-        width: '480px',
-        maxWidth: '100vw',
-        panelClass: 'modal-cita-panel',
-        data: { cita },
-      });
+      this._dialog
+        .open(DetallesAccesoModalComponent, {
+          width: '480px',
+          maxWidth: '100vw',
+          panelClass: 'modal-cita-panel',
+          data: { cita },
+        })
+        .afterClosed()
+        .subscribe((result) => {
+          if (result?.estadoActualizado) {
+            const citaEnLista = this.citas.find((c) => c.id === cita.id);
+            if (citaEnLista) {
+              citaEnLista.estado = result.estadoActualizado;
+            }
+            cita.estado = result.estadoActualizado;
+            this._cdr.markForCheck();
+          }
+        });
       return;
     }
     this.editarCita(cita);
@@ -545,7 +541,7 @@ export class CitasListComponent implements OnInit, OnDestroy {
     }
     // Si la vista es 'semana' (tu calendario Samsung de móvil), movemos el mes
     else if (this.vistaActual === 'semana') {
-  this.semanaAnterior();
+      this.semanaAnterior();
     }
     // Para la vista lista, mantenemos el movimiento por semana
     else {
@@ -557,7 +553,7 @@ export class CitasListComponent implements OnInit, OnDestroy {
     if (this.vistaActual === 'dia') {
       this.cambiarDia(1);
     } else if (this.vistaActual === 'semana') {
-            this.semanaSiguiente();
+      this.semanaSiguiente();
     } else {
       this.semanaSiguiente();
     }

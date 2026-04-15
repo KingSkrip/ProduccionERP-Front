@@ -134,25 +134,24 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
   ngOnInit(): void {
     const user = this._authService.getUser();
     this.isProveedor = user?.permissions?.[0] === RoleEnum.PROVEDORES;
-
-    // ✅ Asignar aquí para que el template ya exista
     this.usaVehiculo = this._conVehiculoInicial;
     this._cdr.markForCheck();
 
-    this._citasService.getUsuariosPermitidosParaAllUsers().subscribe({
-      next: (res) => {
-        this.usuarios = res;
-        this.usuariosFiltrados = res;
+   this._citasService.getUsuariosPermitidosParaAllUsers().subscribe({
+    next: (res) => {
+      this.usuarios = res;
+      this.usuariosFiltrados = res;
+      if (this._visitantesIdsIniciales.length > 0) {
+        this.usuariosSeleccionados = res.filter((u: any) =>
+          this._visitantesIdsIniciales.includes(u.id),
+        );
+      }
 
-        if (this._visitantesIdsIniciales.length > 0) {
-          this.usuariosSeleccionados = res.filter((u: any) =>
-            this._visitantesIdsIniciales.includes(u.id),
-          );
-        }
+      this._cdr.markForCheck();
+    },
+  });
 
-        this._cdr.markForCheck();
-      },
-    });
+
   }
 
   // ==================== DRAG TO DISMISS ====================

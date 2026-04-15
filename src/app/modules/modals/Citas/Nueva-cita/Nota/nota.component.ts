@@ -1,16 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AuthService } from 'app/core/auth/auth.service';
+import { RoleEnum } from 'app/core/auth/roles/dataroles';
 
 @Component({
   selector: 'nota-cita',
@@ -28,7 +25,17 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   ],
 })
 export class NotaAccesoModalComponent {
-  constructor(private dialogRef: MatDialogRef<NotaAccesoModalComponent>) {}
+  isProveedor = false;
+
+  constructor(
+    private _authService: AuthService,
+    private dialogRef: MatDialogRef<NotaAccesoModalComponent>,
+  ) {}
+
+  ngOnInit(): void {
+    const user = this._authService.getUser();
+    this.isProveedor = user?.permissions?.[0] === RoleEnum.PROVEDORES;
+  }
 
   cerrar() {
     this.dialogRef.close();

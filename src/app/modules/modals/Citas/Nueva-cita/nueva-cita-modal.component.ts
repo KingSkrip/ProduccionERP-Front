@@ -24,8 +24,8 @@ import { AuthService } from 'app/core/auth/auth.service';
 import { RoleEnum } from 'app/core/auth/roles/dataroles';
 import { CitaPayload, CitasService } from 'app/modules/ViewAll/Citas/citas.service';
 import { Cita } from 'app/modules/ViewAll/Citas/Types/citas.types';
-import { NotaAccesoModalComponent } from './Nota/nota.component';
 import { AllUsersNuevaCitaModalComponent } from './allusers/all-users-nueva-cita-modal.component';
+import { NotaAccesoModalComponent } from './Nota/nota.component';
 import { ProvedoresNuevaCitaModalComponent } from './provedores/provedores-nueva-cita-modal.component';
 
 export const slideUp = trigger('slideUp', [
@@ -55,8 +55,8 @@ export const slideUp = trigger('slideUp', [
     MatIconModule,
     MatProgressSpinnerModule,
     FormsModule,
-     AllUsersNuevaCitaModalComponent,
-  ProvedoresNuevaCitaModalComponent
+    AllUsersNuevaCitaModalComponent,
+    ProvedoresNuevaCitaModalComponent,
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,

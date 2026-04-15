@@ -86,7 +86,7 @@
 
     <!-- Motivo -->
     <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium text-black dark:text-white">Motivo de la cita</label>
+      <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
       <div class="relative">
         <input
           [(ngModel)]="formCita.motivo"
@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 gap-4">
       <!-- Fecha -->
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium text-black dark:text-white">Fecha</label>
@@ -123,28 +123,6 @@
         </div>
       </div>
 
-      <!-- Estado -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Estado</label>
-
-        <div class="relative">
-          <select
-            [(ngModel)]="formCita.estado"
-            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="confirmada">Confirmada</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="cancelada">Cancelada</option>
-          </select>
-
-          <!-- Icono personalizado (solo este debe verse) -->
-          <mat-icon
-            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xl text-black icon-size-5 dark:text-white"
-          >
-            expand_more
-          </mat-icon>
-        </div>
-      </div>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
@@ -208,7 +186,7 @@
 
     <!-- ¿Viene en coche? -->
     <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium text-black dark:text-white">¿Viene en vehículo?</label>
+      <label class="text-sm font-medium text-black dark:text-white">¿Iremos con vehículo?</label>
       <div class="flex items-center gap-3">
         <button
           type="button"
@@ -222,7 +200,7 @@
           ></span>
         </button>
         <span class="text-sm text-black dark:text-white">
-          {{ usaVehiculo ? 'Sí, viene en vehículo' : 'No viene en vehículo' }}
+          {{ usaVehiculo ? 'Sí, iremos en vehículo' : 'No iremos en vehículo' }}
         </span>
       </div>
     </div>
@@ -472,44 +450,16 @@
         </div>
       </div>
 
-      <!-- Estado -->
-      <div>
-        <label class="text-sm font-medium text-black dark:text-white">Estado</label>
-        <div
-          class="flex rounded-2xl border border-gray-700 bg-gray-300 p-1 text-black dark:border-gray-300 dark:bg-gray-500 dark:text-white"
-        >
-          <button
-            *ngFor="let estado of ['confirmada', 'pendiente', 'cancelada']"
-            (click)="formCita.estado = estado"
-            class="flex-1 rounded-[14px] py-3 text-sm font-medium transition-all"
-            [ngClass]="{
-              'bg-green-500/50 text-black dark:text-white':
-                formCita.estado === 'confirmada' && estado === 'confirmada',
-
-              'bg-yellow-400/50 text-black dark:text-white':
-                formCita.estado === 'pendiente' && estado === 'pendiente',
-
-              'bg-red-500/50 text-white': formCita.estado === 'cancelada' && estado === 'cancelada',
-
-              'text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700':
-                formCita.estado !== estado,
-            }"
-          >
-            {{ estado | titlecase }}
-          </button>
-        </div>
-      </div>
-
       <!-- ¿Viene en coche? -->
       <div>
-        <label class="text-sm font-medium text-black dark:text-white">¿Viene en vehículo?</label>
+        <label class="text-sm font-medium text-black dark:text-white">¿Iremos con vehículo?</label>
         <div
           class="mt-1 flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-300 px-4 py-4 dark:bg-gray-500"
         >
           <div class="flex items-center gap-3">
             <mat-icon class="text-black dark:text-white">directions_car</mat-icon>
             <span class="text-sm text-black dark:text-white">
-              {{ usaVehiculo ? 'Sí, viene en vehículo' : 'No viene en vehículo' }}
+              {{ usaVehiculo ? 'Sí, iremos en vehículo' : 'No iremos en vehículo' }}
             </span>
           </div>
           <button

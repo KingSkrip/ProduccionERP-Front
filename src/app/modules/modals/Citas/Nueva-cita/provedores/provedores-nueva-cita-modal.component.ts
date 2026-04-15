@@ -97,8 +97,6 @@ export class ProvedoresNuevaCitaModalComponent implements OnInit {
     private _authService: AuthService,
     private _cdr: ChangeDetectorRef,
   ) {
-    // En ProvedoresNuevaCitaModalComponent constructor:
-
     if (data?.cita) {
       this.editandoCita = true;
       const trimHora = (h: string = '') => h?.slice(0, 5) ?? '';

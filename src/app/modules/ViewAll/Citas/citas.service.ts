@@ -29,7 +29,7 @@ export interface CitaPayload {
   hora_fin: string;
   nombre_visitante?: string;
   motivo?: string;
-  visitantes?:   number[]; 
+  visitantes?: number[];
   estado?: 'pendiente' | 'confirmada' | 'cancelada';
   notas?: string;
 }
@@ -57,10 +57,9 @@ export class CitasService {
     return this._http.put<CitaAPI>(`${this._apiUrl}/${id}`, payload);
   }
 
-  updateEstado(id: number, estado: 'pendiente' | 'confirmada' | 'cancelada'): Observable<CitaAPI> {
-    return this._http.put<CitaAPI>(`${this._apiUrl}/${id}`, { estado });
-  }
-
+updateEstado(id: number, estado: 'pendiente' | 'confirmada' | 'cancelada'): Observable<CitaAPI> {
+  return this._http.patch<CitaAPI>(`${this._apiUrl}/${id}/estado`, { estado });
+}
   deleteCita(id: number): Observable<{ message: string }> {
     return this._http.delete<{ message: string }>(`${this._apiUrl}/${id}`);
   }
@@ -68,8 +67,6 @@ export class CitasService {
   getCitasPorFecha(fecha: string): Observable<CitaAPI[]> {
     return this._http.get<CitaAPI[]>(`${this._apiUrl}?fecha=${fecha}`);
   }
-
-
 
   getUsuariosPermitidosParaAllUsers(): Observable<any[]> {
     return this._http.get<any[]>(`${APP_CONFIG.apiUrl}usuarios-permitidosAllUsers`);
