@@ -1,6 +1,6 @@
-<div class="flex min-w-0 flex-auto flex-col">
+<div class="bg-default absolute inset-0 flex min-w-0 flex-col overflow-hidden">
   <!-- Header -->
-  <div class="bg-card">
+  <div class="bg-card flex-shrink-0">
     <div class="mx-auto flex w-full max-w-screen-xl flex-col px-6 sm:px-8">
       <div class="my-8 flex min-w-0 flex-auto flex-col sm:my-12 sm:flex-row sm:items-center">
         <!-- Avatar and name -->
@@ -143,8 +143,8 @@
   </div>
 </div> -->
 
-  <!-- ALL USERS -->
-  <div class="-mt-px flex-auto border-t pt-4 sm:pt-6" *ngIf="isAllUsers">
+  <!-- ALL USERS: este sí hace scroll -->
+  <div class="flex-auto overflow-y-auto min-h-0" *ngIf="isAllUsers">
     <div class="mx-auto w-full max-w-screen-xl">
       <!-- Tabs -->
       <mat-tab-group class="sm:px-2" mat-stretch-tabs="false" [animationDuration]="'0'">
@@ -992,8 +992,8 @@
     </div>
   </div>
 
-  <!-- SU ADMIN / JEFE -->
-  <div class="-mt-px mb-5 flex-auto border-t pt-4 sm:pt-6" *ngIf="isJefeOrSuadmin">
+  <!-- JEFE/SUADMIN: este sí hace scroll -->
+  <div class="flex-auto overflow-y-auto min-h-0 py-5" *ngIf="isJefeOrSuadmin">
     <div class="mx-auto w-full max-w-screen-xl px-6 sm:px-8">
       <!-- Header Ejecutivo -->
       <div class="mb-8">
@@ -1249,9 +1249,8 @@
     </div>
   </div>
 
-  <!-- CLIENTES -->
-
-  <div class="-mt-px mb-5 flex-auto border-t pt-4 sm:pt-6" *ngIf="isCliente">
+  <!-- CLIENTES: este sí hace scroll -->
+  <div class="flex-auto overflow-y-auto min-h-0" *ngIf="isCliente">
     <div class="mx-auto w-full max-w-screen-xl px-6 sm:px-8">
       <!-- Header -->
       <div class="mb-8">

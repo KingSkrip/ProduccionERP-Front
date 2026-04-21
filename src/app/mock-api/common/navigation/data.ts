@@ -4904,4 +4904,4 @@ export const menuProvedores: FuseNavigationItem[] =[
     link: '/apps/Citas',
   },
 
-];
+]; 

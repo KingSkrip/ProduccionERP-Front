@@ -1,5 +1,5 @@
 <!-- modal de pc -->
-<div class="bg-card flex hidden h-full flex-col md:block p-4">
+<div class="bg-card flex hidden h-full flex-col p-4 md:block">
   <!-- Header modal -->
   <div
     class="flex shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-500"
@@ -74,7 +74,7 @@
           <div class="gap- flex items-center py-0.5">
             <!-- Initials avatar -->
             <div
-              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white text-xs font-bold dark:bg-primary-500 dark:text-white"
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white dark:bg-primary-500 dark:text-white"
             >
               {{ u.nombre | slice: 0 : 1 }}
             </div>
@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-4">
+    <div [ngClass]="editandoCita ? 'grid grid-cols-2 gap-4' : 'flex flex-col gap-1'">
       <!-- Fecha -->
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium text-black dark:text-white">Fecha</label>
@@ -123,6 +123,27 @@
         </div>
       </div>
 
+      <!-- Estado (solo al editar) -->
+      <div class="flex flex-col gap-1" *ngIf="editandoCita">
+        <label class="text-sm font-medium text-black dark:text-white">Estado</label>
+
+        <div class="relative">
+          <select
+            [(ngModel)]="formCita.estado"
+            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+          >
+            <option value="confirmada">Confirmada</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xl text-black icon-size-5 dark:text-white"
+          >
+            expand_more
+          </mat-icon>
+        </div>
+      </div>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
@@ -282,7 +303,6 @@
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      
     </div>
     <!-- Body -->
     <div class="flex-1 space-y-6 overflow-auto p-5 pb-28">
@@ -352,7 +372,7 @@
             <div class="flex items-center gap-3 py-0.5">
               <!-- Initials avatar -->
               <div
-                class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white text-xs font-bold dark:bg-primary-500 dark:text-white"
+                class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white dark:bg-primary-500 dark:text-white"
               >
                 {{ u.nombre | slice: 0 : 1 }}
               </div>
@@ -384,23 +404,46 @@
       </div>
 
       <!-- Fecha -->
-      <div>
-        <label class="text-sm font-medium text-black dark:text-white">Fecha</label>
+      <div [ngClass]="editandoCita ? 'grid-cols-1w grid gap-4' : 'block'">
+        <div>
+          <label class="text-sm font-medium text-black dark:text-white">Fecha</label>
 
-        <div class="relative">
-          <input
-            #fechaInput
-            type="date"
-            [(ngModel)]="formCita.fecha"
-            class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
-          />
+          <div class="relative">
+            <input
+              #fechaInput
+              type="date"
+              [(ngModel)]="formCita.fecha"
+              class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
+            />
 
-          <!-- Icono clicable -->
-          <div
-            (click)="fechaInput.showPicker()"
-            class="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
-          >
-            <mat-icon class="text-black icon-size-5 dark:text-white"> calendar_today </mat-icon>
+            <div
+              (click)="fechaInput.showPicker()"
+              class="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+            >
+              <mat-icon class="text-black icon-size-5 dark:text-white">calendar_today</mat-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado (solo al editar) -->
+        <div *ngIf="editandoCita">
+          <label class="text-sm font-medium text-black dark:text-white">Estado</label>
+
+          <div class="relative">
+            <select
+              [(ngModel)]="formCita.estado"
+              class="appearance-none w-full cursor-pointer rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all [-moz-appearance:none] [-webkit-appearance:none] focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+            >
+              <option value="confirmada">Confirmada</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+
+            <mat-icon
+              class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xl text-black icon-size-5 dark:text-white"
+            >
+              expand_more
+            </mat-icon>
           </div>
         </div>
       </div>
