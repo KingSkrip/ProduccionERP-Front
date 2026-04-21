@@ -371,19 +371,19 @@
                     {{ hora }}:00
                   </div>
                   <!-- Grid horas — celda de cada día -->
-<div
-  *ngFor="let dia of semanaActual"
-  class="group relative min-h-[58px] cursor-pointer border-l border-t border-gray-300 p-1 transition-colors hover:bg-slate-50"
-  [ngClass]="{
-    'bg-blue-50/30': esHoy(dia.fecha),
-    'bg-accent-500/10': !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
-  }"
-  (click)="
-    getCitasEnSlot(dia.fecha, hora).length > 0
-      ? verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0])
-      : crearCitaEnSlot(dia, hora)
-  "
->
+                  <div
+                    *ngFor="let dia of semanaActual"
+                    class="group relative min-h-[58px] cursor-pointer border-l border-t border-gray-300 p-1 transition-colors hover:bg-slate-50"
+                    [ngClass]="{
+                      'bg-blue-50/30': esHoy(dia.fecha),
+                      'bg-accent-500/10': !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
+                    }"
+          (click)="
+  getCitasEnSlot(dia.fecha, hora).length > 0
+    ? verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0])
+    : !esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora)
+"
+                  >
                     <ng-container *ngFor="let cita of getCitasEnSlot(dia.fecha, hora)">
                       <div
                         class="pointer-events-none mb-1 flex flex-col gap-[2px] rounded-lg px-2 py-1 text-[11px]"
@@ -412,29 +412,23 @@
                       </div>
                     </ng-container>
                     <button
-                      *ngIf="
-                        getCitasEnSlot(dia.fecha, hora).length === 0 && !esFechaPasada(dia.fecha)
-                      "
+                      *ngIf="getCitasEnSlot(dia.fecha, hora).length === 0 && !esSlotPasado(dia.fecha, hora)"
                       class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-white opacity-0 shadow transition-opacity hover:bg-primary-700 group-hover:opacity-100"
-                      (click)="
-                        !esFechaPasada(dia.fecha) && crearCitaEnSlot(dia, hora);
-                        $event.stopPropagation()
-                      "
-                    >
+                     (click)="!esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora); $event.stopPropagation()">
                       <mat-icon class="text-sm text-white">add</mat-icon>
                     </button>
                     <button
-                      *ngIf="
-                        getCitasEnSlot(dia.fecha, hora).length > 0 &&
-                        !esFechaPasada(dia.fecha) &&
-                        !getCitasEnSlot(dia.fecha, hora)[0].esExterna
-                      "
+*ngIf="
+  getCitasEnSlot(dia.fecha, hora).length > 0 &&
+  !esSlotPasado(dia.fecha, hora) &&
+  !getCitasEnSlot(dia.fecha, hora)[0].esExterna
+"
                       class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-accent-500 opacity-0 shadow transition-opacity hover:bg-accent-700 group-hover:opacity-100"
                       (click)="
-                        !esFechaPasada(dia.fecha) &&
-                          verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0]);
-                        $event.stopPropagation()
-                      "
+  !esSlotPasado(dia.fecha, hora) &&
+    verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0]);
+  $event.stopPropagation()
+"
                     >
                       <mat-icon class="text-sm text-black">edit</mat-icon>
                     </button>
@@ -460,8 +454,9 @@
               {{ hora }}:00
             </div>
             <div
-              class="bg-card min-h-[42px] cursor-pointer border-l border-gray-200 p-1 lg:p-2 dark:border-gray-500"
-              (click)="crearCitaEnSlot(diaSeleccionadoObj, hora)"
+              class="bg-card min-h-[42px] border-l border-gray-200 p-1 lg:p-2 dark:border-gray-500"
+             [class.cursor-pointer]="!esSlotPasado(fechaDiaSeleccionado, hora)"
+(click)="!esSlotPasado(fechaDiaSeleccionado, hora) && crearCitaEnSlot(diaSeleccionadoObj, hora)"
             >
               <ng-container *ngFor="let cita of getCitasEnSlot(fechaDiaSeleccionado, hora)">
                 <div

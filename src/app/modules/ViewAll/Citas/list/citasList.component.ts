@@ -594,4 +594,11 @@ export class CitasListComponent implements OnInit, OnDestroy {
     const h = String(Math.min(ahora.getHours() + 1, 23)).padStart(2, '0');
     return `${h}:00`;
   }
+
+  esSlotPasado(fecha: string, hora: number): boolean {
+  const hoy = new Date();
+  const [anio, mes, dia] = fecha.split('-').map(Number);
+  const slotDate = new Date(anio, mes - 1, dia, hora);
+  return slotDate < hoy;
+}
 }

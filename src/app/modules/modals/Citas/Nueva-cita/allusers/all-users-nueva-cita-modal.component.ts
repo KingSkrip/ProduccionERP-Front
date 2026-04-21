@@ -209,6 +209,25 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
 
   guardarCita(): void {
     const normalizarHora = (h: string = '') => h?.slice(0, 5) || '';
+
+      // ── Validación de fecha/hora pasada (solo al CREAR) ──
+  if (!this.editandoCita) {
+    const fechaHoraInicio = new Date(
+      `${this.formCita.fecha}T${normalizarHora(this.formCita.horaInicio)}:00`
+    );
+    const ahora = new Date();
+
+    if (fechaHoraInicio <= ahora) {
+      this._snackBar.open(
+        'No puedes agendar citas en una fecha u hora que ya pasó.',
+        'Cerrar',
+        { duration: 4000 }
+      );
+      return;
+    }
+  }
+
+  
     const payload = {
       ...(this.editandoCita ? { ids: this._citaIds } : {}),
       fecha: this.formCita.fecha!,
