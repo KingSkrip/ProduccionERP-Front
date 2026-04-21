@@ -183,6 +183,7 @@ export class NuevaCitaModalComponent implements OnInit {
         this._dialog.open(NotaAccesoModalComponent, {
           width: '400px',
           panelClass: 'day-citas-modal-panel',
+          disableClose: true
         });
 
         this.dialogRef.close({ success: true });

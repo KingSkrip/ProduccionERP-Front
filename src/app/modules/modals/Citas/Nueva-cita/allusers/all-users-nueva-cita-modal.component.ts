@@ -255,6 +255,7 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
           this._dialog.open(NotaAccesoModalComponent, {
             width: '400px',
             panelClass: 'day-citas-modal-panel',
+            disableClose: true,
           });
         }
 
