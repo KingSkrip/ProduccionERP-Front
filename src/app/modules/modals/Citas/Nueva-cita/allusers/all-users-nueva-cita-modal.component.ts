@@ -10,6 +10,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -17,13 +18,11 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
-import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { AuthService } from 'app/core/auth/auth.service';
 import { RoleEnum } from 'app/core/auth/roles/dataroles';
 import { CitasService } from 'app/modules/ViewAll/Citas/citas.service';
@@ -66,7 +65,6 @@ export const slideUp = trigger('slideUp', [
   animations: [slideUp],
 })
 export class AllUsersNuevaCitaModalComponent implements OnInit {
-  //@ViewChild(MatAutocompleteTrigger) autocomplete!: MatAutocompleteTrigger;
   @ViewChild('inputNative2') inputNativeRef2!: ElementRef<HTMLInputElement>;
   @ViewChild('inputNative') inputNativeRef!: ElementRef<HTMLInputElement>;
   @ViewChild('inputAuto2') autocomplete2!: MatAutocompleteTrigger;
@@ -88,7 +86,6 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
   private _touchStartY = 0;
   private _dragY = 0;
   private readonly DISMISS_THRESHOLD = 140;
-
   constructor(
     public dialogRef: MatDialogRef<NuevaCitaModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -98,12 +95,9 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
     private _authService: AuthService,
     private _cdr: ChangeDetectorRef,
   ) {
-    // En ProvedoresNuevaCitaModalComponent constructor:
-
     if (data?.cita) {
       this.editandoCita = true;
       const trimHora = (h: string = '') => h?.slice(0, 5) ?? '';
-
       this.formCita = {
         fecha: data.cita.fecha,
         horaInicio: trimHora(data.cita.horaInicio),
@@ -112,8 +106,6 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
         estado: data.cita.estado,
         notas: data.cita.notas,
       };
-
-      // ✅ Guardar para asignar en ngOnInit
       this._conVehiculoInicial =
         data.cita.con_vehiculo === 1 ||
         data.cita.con_vehiculo === '1' ||
@@ -136,26 +128,21 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
     this.isProveedor = user?.permissions?.[0] === RoleEnum.PROVEDORES;
     this.usaVehiculo = this._conVehiculoInicial;
     this._cdr.markForCheck();
-
-   this._citasService.getUsuariosPermitidosParaAllUsers().subscribe({
-    next: (res) => {
-      this.usuarios = res;
-      this.usuariosFiltrados = res;
-      if (this._visitantesIdsIniciales.length > 0) {
-        this.usuariosSeleccionados = res.filter((u: any) =>
-          this._visitantesIdsIniciales.includes(u.id),
-        );
-      }
-
-      this._cdr.markForCheck();
-    },
-  });
-
-
+    this._citasService.getUsuariosPermitidosParaAllUsers().subscribe({
+      next: (res) => {
+        this.usuarios = res;
+        this.usuariosFiltrados = res;
+        if (this._visitantesIdsIniciales.length > 0) {
+          this.usuariosSeleccionados = res.filter((u: any) =>
+            this._visitantesIdsIniciales.includes(u.id),
+          );
+        }
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   // ==================== DRAG TO DISMISS ====================
-
   onTouchStart(event: TouchEvent): void {
     this._touchStartY = event.touches[0].clientY;
     this.isDragging = true;
@@ -166,23 +153,16 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
   onTouchMove(event: TouchEvent): void {
     if (!this.isDragging) return;
     event.preventDefault();
-
     const deltaY = event.touches[0].clientY - this._touchStartY;
-
-    // Evitar que suba
     if (deltaY <= 0) {
       this.dragTransform = 'translateY(0)';
       return;
     }
-
     this._dragY = deltaY;
-
-    // Efecto de resistencia cuando se pasa del umbral
     const resistance =
       deltaY > this.DISMISS_THRESHOLD
         ? this.DISMISS_THRESHOLD + (deltaY - this.DISMISS_THRESHOLD) * 0.35
         : deltaY;
-
     this.dragTransform = `translateY(${resistance}px)`;
     this._cdr.markForCheck();
   }
@@ -192,14 +172,11 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
 
     this.isDragging = false;
     this.dragTransition = 'transform 0.42s cubic-bezier(0.32, 0.72, 0, 1)';
-
     if (this._dragY >= this.DISMISS_THRESHOLD) {
-      // Deslizar hacia abajo y cerrar
       this.dragTransform = 'translateY(120%) scale(0.95)';
       this._cdr.markForCheck();
       setTimeout(() => this.dialogRef.close(), 320);
     } else {
-      // Volver a la posición original
       this.dragTransform = 'translateY(0)';
       this._cdr.markForCheck();
     }
@@ -209,25 +186,19 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
 
   guardarCita(): void {
     const normalizarHora = (h: string = '') => h?.slice(0, 5) || '';
-
-      // ── Validación de fecha/hora pasada (solo al CREAR) ──
-  if (!this.editandoCita) {
-    const fechaHoraInicio = new Date(
-      `${this.formCita.fecha}T${normalizarHora(this.formCita.horaInicio)}:00`
-    );
-    const ahora = new Date();
-
-    if (fechaHoraInicio <= ahora) {
-      this._snackBar.open(
-        'No puedes agendar citas en una fecha u hora que ya pasó.',
-        'Cerrar',
-        { duration: 4000 }
+    if (!this.editandoCita) {
+      const fechaHoraInicio = new Date(
+        `${this.formCita.fecha}T${normalizarHora(this.formCita.horaInicio)}:00`,
       );
-      return;
+      const ahora = new Date();
+      if (fechaHoraInicio <= ahora) {
+        this._snackBar.open('No puedes agendar citas en una fecha u hora que ya pasó.', 'Cerrar', {
+          duration: 4000,
+        });
+        return;
+      }
     }
-  }
 
-  
     const payload = {
       ...(this.editandoCita ? { ids: this._citaIds } : {}),
       fecha: this.formCita.fecha!,
@@ -243,14 +214,11 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
     const request$ = this.editandoCita
       ? this._citasService.updateCita(this.data.cita.id, payload)
       : this._citasService.createCita(payload);
-
     request$.subscribe({
       next: () => {
         this._snackBar.open(this.editandoCita ? 'Cita actualizada ✓' : 'Cita creada ✓', 'OK', {
           duration: 3000,
         });
-
-        // 👈 Solo al crear, no al editar
         if (!this.editandoCita) {
           this._dialog.open(NotaAccesoModalComponent, {
             width: '400px',
@@ -258,7 +226,6 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
             disableClose: true,
           });
         }
-
         this.dialogRef.close({ success: true });
       },
       error: (err) => {
@@ -276,7 +243,6 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
     this.dragTransition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
     this.dragTransform = 'translateY(110%) scale(0.96)';
     this._cdr.markForCheck();
-
     setTimeout(() => this.dialogRef.close(), 350);
   }
 
@@ -303,17 +269,15 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
   }
 
   displayFn(): string {
-    return ''; // Siempre muestra vacío tras seleccionar
+    return '';
   }
 
   filtrarUsuarios(): void {
-    // Protección: si busquedaUsuario no es string, resetear
     if (typeof this.busquedaUsuario !== 'string') {
       this.busquedaUsuario = '';
       this.usuariosFiltrados = [...this.usuarios];
       return;
     }
-
     const valor = this.busquedaUsuario.toLowerCase();
     this.usuariosFiltrados = this.usuarios.filter((u) => u.nombre?.toLowerCase().includes(valor));
   }

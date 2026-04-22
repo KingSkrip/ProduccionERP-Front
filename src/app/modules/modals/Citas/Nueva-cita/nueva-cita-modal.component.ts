@@ -19,7 +19,6 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
 import { AuthService } from 'app/core/auth/auth.service';
 import { RoleEnum } from 'app/core/auth/roles/dataroles';
 import { CitaPayload, CitasService } from 'app/modules/ViewAll/Citas/citas.service';
@@ -63,19 +62,15 @@ export const slideUp = trigger('slideUp', [
   animations: [slideUp],
 })
 export class NuevaCitaModalComponent implements OnInit {
+  private _dragY = 0;
+  isDragging = false;
+  isProveedor = false;
+  private _touchStartY = 0;
   formCita: Partial<Cita> = {};
   editandoCita: boolean = false;
-  isProveedor = false;
-
-  // Drag to dismiss
-  isDragging = false;
   dragTransform = 'translateY(0)';
-  dragTransition = 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)';
-
-  private _touchStartY = 0;
-  private _dragY = 0;
   private readonly DISMISS_THRESHOLD = 140;
-
+  dragTransition = 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)';
   constructor(
     public dialogRef: MatDialogRef<NuevaCitaModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -116,40 +111,29 @@ export class NuevaCitaModalComponent implements OnInit {
   onTouchMove(event: TouchEvent): void {
     if (!this.isDragging) return;
     event.preventDefault();
-
     const deltaY = event.touches[0].clientY - this._touchStartY;
-
-    // Evitar que suba
     if (deltaY <= 0) {
       this.dragTransform = 'translateY(0)';
       return;
     }
-
     this._dragY = deltaY;
-
-    // Efecto de resistencia cuando se pasa del umbral
     const resistance =
       deltaY > this.DISMISS_THRESHOLD
         ? this.DISMISS_THRESHOLD + (deltaY - this.DISMISS_THRESHOLD) * 0.35
         : deltaY;
-
     this.dragTransform = `translateY(${resistance}px)`;
     this._cdr.markForCheck();
   }
 
   onTouchEnd(event: TouchEvent): void {
     if (!this.isDragging) return;
-
     this.isDragging = false;
     this.dragTransition = 'transform 0.42s cubic-bezier(0.32, 0.72, 0, 1)';
-
     if (this._dragY >= this.DISMISS_THRESHOLD) {
-      // Deslizar hacia abajo y cerrar
       this.dragTransform = 'translateY(120%) scale(0.95)';
       this._cdr.markForCheck();
       setTimeout(() => this.dialogRef.close(), 320);
     } else {
-      // Volver a la posición original
       this.dragTransform = 'translateY(0)';
       this._cdr.markForCheck();
     }
@@ -159,7 +143,6 @@ export class NuevaCitaModalComponent implements OnInit {
 
   guardarCita(): void {
     const normalizarHora = (h: string = '') => h?.slice(0, 5) || '';
-
     const payload: CitaPayload = {
       fecha: this.formCita.fecha!,
       hora_inicio: normalizarHora(this.formCita.horaInicio),
@@ -169,11 +152,9 @@ export class NuevaCitaModalComponent implements OnInit {
       estado: this.formCita.estado,
       notas: this.formCita.notas,
     };
-
     const request$ = this.editandoCita
       ? this._citasService.updateCita(this.formCita.id!, payload)
       : this._citasService.createCita(payload);
-
     request$.subscribe({
       next: () => {
         this._snackBar.open(this.editandoCita ? 'Cita actualizada ✓' : 'Cita creada ✓', 'OK', {
@@ -183,9 +164,8 @@ export class NuevaCitaModalComponent implements OnInit {
         this._dialog.open(NotaAccesoModalComponent, {
           width: '400px',
           panelClass: 'day-citas-modal-panel',
-          disableClose: true
+          disableClose: true,
         });
-
         this.dialogRef.close({ success: true });
       },
       error: (err) => {
@@ -199,7 +179,6 @@ export class NuevaCitaModalComponent implements OnInit {
     this.dragTransition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
     this.dragTransform = 'translateY(110%) scale(0.96)';
     this._cdr.markForCheck();
-
     setTimeout(() => this.dialogRef.close(), 350);
   }
 

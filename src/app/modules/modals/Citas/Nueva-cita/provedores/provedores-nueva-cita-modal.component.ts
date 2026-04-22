@@ -65,7 +65,6 @@ export const slideUp = trigger('slideUp', [
   animations: [slideUp],
 })
 export class ProvedoresNuevaCitaModalComponent implements OnInit {
-  //@ViewChild(MatAutocompleteTrigger) autocomplete!: MatAutocompleteTrigger;
   @ViewChild('inputNative2') inputNativeRef2!: ElementRef<HTMLInputElement>;
   @ViewChild('inputNative') inputNativeRef!: ElementRef<HTMLInputElement>;
   @ViewChild('inputAuto2') autocomplete2!: MatAutocompleteTrigger;
@@ -100,7 +99,6 @@ export class ProvedoresNuevaCitaModalComponent implements OnInit {
     if (data?.cita) {
       this.editandoCita = true;
       const trimHora = (h: string = '') => h?.slice(0, 5) ?? '';
-
       this.formCita = {
         fecha: data.cita.fecha,
         horaInicio: trimHora(data.cita.horaInicio),
@@ -109,8 +107,6 @@ export class ProvedoresNuevaCitaModalComponent implements OnInit {
         estado: data.cita.estado,
         notas: data.cita.notas,
       };
-
-      // ✅ Guardar para asignar en ngOnInit
       this._conVehiculoInicial =
         data.cita.con_vehiculo === 1 ||
         data.cita.con_vehiculo === '1' ||
@@ -131,16 +127,12 @@ export class ProvedoresNuevaCitaModalComponent implements OnInit {
   ngOnInit(): void {
     const user = this._authService.getUser();
     this.isProveedor = user?.permissions?.[0] === RoleEnum.PROVEDORES;
-
-    // ✅ Asignar aquí para que el template ya exista
     this.usaVehiculo = this._conVehiculoInicial;
     this._cdr.markForCheck();
-
     this._citasService.getUsuariosPermitidosParaProvedores().subscribe({
       next: (res) => {
         this.usuarios = res;
         this.usuariosFiltrados = res;
-
         if (this._visitantesIdsIniciales.length > 0) {
           this.usuariosSeleccionados = res.filter((u: any) =>
             this._visitantesIdsIniciales.includes(u.id),
@@ -153,7 +145,6 @@ export class ProvedoresNuevaCitaModalComponent implements OnInit {
   }
 
   // ==================== DRAG TO DISMISS ====================
-
   onTouchStart(event: TouchEvent): void {
     this._touchStartY = event.touches[0].clientY;
     this.isDragging = true;
@@ -164,65 +155,50 @@ export class ProvedoresNuevaCitaModalComponent implements OnInit {
   onTouchMove(event: TouchEvent): void {
     if (!this.isDragging) return;
     event.preventDefault();
-
     const deltaY = event.touches[0].clientY - this._touchStartY;
-
-    // Evitar que suba
     if (deltaY <= 0) {
       this.dragTransform = 'translateY(0)';
       return;
     }
-
     this._dragY = deltaY;
-
-    // Efecto de resistencia cuando se pasa del umbral
     const resistance =
       deltaY > this.DISMISS_THRESHOLD
         ? this.DISMISS_THRESHOLD + (deltaY - this.DISMISS_THRESHOLD) * 0.35
         : deltaY;
-
     this.dragTransform = `translateY(${resistance}px)`;
     this._cdr.markForCheck();
   }
 
   onTouchEnd(event: TouchEvent): void {
     if (!this.isDragging) return;
-
     this.isDragging = false;
     this.dragTransition = 'transform 0.42s cubic-bezier(0.32, 0.72, 0, 1)';
-
     if (this._dragY >= this.DISMISS_THRESHOLD) {
-      // Deslizar hacia abajo y cerrar
       this.dragTransform = 'translateY(120%) scale(0.95)';
       this._cdr.markForCheck();
       setTimeout(() => this.dialogRef.close(), 320);
     } else {
-      // Volver a la posición original
       this.dragTransform = 'translateY(0)';
       this._cdr.markForCheck();
     }
   }
 
   // ==================== ACTIONS ====================
-
   guardarCita(): void {
     const normalizarHora = (h: string = '') => h?.slice(0, 5) || '';
-      // ── Validación de fecha/hora pasada (solo al CREAR) ──
-  if (!this.editandoCita) {
-    const fechaHoraInicio = new Date(
-      `${this.formCita.fecha}T${normalizarHora(this.formCita.horaInicio)}:00`
-    );
-    const ahora = new Date();
-
-    if (fechaHoraInicio <= ahora) {
-      this._snackBar.open(
-        'No puedes agendar citas en una fecha u hora que ya pasó.',
-        'Cerrar',
-        { duration: 4000 }
+    if (!this.editandoCita) {
+      const fechaHoraInicio = new Date(
+        `${this.formCita.fecha}T${normalizarHora(this.formCita.horaInicio)}:00`,
       );
-      return;
+      const ahora = new Date();
+
+      if (fechaHoraInicio <= ahora) {
+        this._snackBar.open('No puedes agendar citas en una fecha u hora que ya pasó.', 'Cerrar', {
+          duration: 4000,
+        });
+        return;
+      }
     }
-  }
     const payload = {
       ...(this.editandoCita ? { ids: this._citaIds } : {}),
       fecha: this.formCita.fecha!,
@@ -234,23 +210,19 @@ export class ProvedoresNuevaCitaModalComponent implements OnInit {
       notas: this.formCita.notas,
       con_vehiculo: this.usaVehiculo,
     };
-
     const request$ = this.editandoCita
       ? this._citasService.updateCitaProveedor(payload)
       : this._citasService.createCitaProvedores(payload);
-
     request$.subscribe({
       next: () => {
         this._snackBar.open(this.editandoCita ? 'Cita actualizada ✓' : 'Cita creada ✓', 'OK', {
           duration: 3000,
         });
-
-        // 👈 Solo al crear, no al editar
         if (!this.editandoCita) {
           this._dialog.open(NotaAccesoModalComponent, {
             width: '400px',
             panelClass: 'day-citas-modal-panel',
-            disableClose: true
+            disableClose: true,
           });
         }
 
@@ -298,11 +270,10 @@ export class ProvedoresNuevaCitaModalComponent implements OnInit {
   }
 
   displayFn(): string {
-    return ''; // Siempre muestra vacío tras seleccionar
+    return '';
   }
 
   filtrarUsuarios(): void {
-    // Protección: si busquedaUsuario no es string, resetear
     if (typeof this.busquedaUsuario !== 'string') {
       this.busquedaUsuario = '';
       this.usuariosFiltrados = [...this.usuarios];
