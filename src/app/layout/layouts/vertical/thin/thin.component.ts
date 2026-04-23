@@ -146,4 +146,20 @@ export class ThinLayoutComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+
+  onNavOpenedChanged(opened: boolean): void {
+  if (!opened || !this.isScreenSmall) return;
+
+  const forceScrollTop = () => {
+    const content = document.querySelector<HTMLElement>('.fuse-vertical-navigation-content');
+    if (content) content.scrollTop = 0;
+  };
+
+  forceScrollTop();
+  setTimeout(forceScrollTop, 0);
+  setTimeout(forceScrollTop, 50);
+  setTimeout(forceScrollTop, 150);
+  setTimeout(forceScrollTop, 300);
+}
 }

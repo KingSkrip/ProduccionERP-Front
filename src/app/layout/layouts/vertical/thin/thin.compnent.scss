@@ -27,3 +27,11 @@
         z-index: 50 !important;
     }
 }
+
+
+@media (max-width: 768px) {
+  fuse-vertical-navigation .fuse-vertical-navigation-content {
+    height: 100% !important;
+    overflow-y: auto !important;
+  }
+}

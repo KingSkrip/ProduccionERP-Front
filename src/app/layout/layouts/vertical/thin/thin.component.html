@@ -9,7 +9,8 @@
   name="mainNavigation"
   [navigation]="navigation"
   [opened]="isNavOpen"
->
+  (openedChanged)="onNavOpenedChanged($event)"
+> 
   <!-- Navigation header hook -->
   <ng-container fuseVerticalNavigationContentHeader>
     <div class="flex h-20 items-center justify-center">
