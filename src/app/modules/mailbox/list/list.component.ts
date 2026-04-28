@@ -33,12 +33,13 @@ import { MailCategory } from '../mailbox.types';
 })
 export class MailboxListComponent implements OnInit, OnDestroy {
   @ViewChild('mailList') mailList: ElementRef;
-
+  myUserId: number | null = null;
   category: MailCategory;
   mails: any[]; // Cambiado de Mail[] a any[] para aceptar WorkOrders
   mailsLoading: boolean = false;
   pagination: any;
   selectedMail: any;
+  myEmail: string = '';
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
   /**
@@ -57,6 +58,22 @@ export class MailboxListComponent implements OnInit, OnDestroy {
    * On init
    */
   ngOnInit(): void {
+    try {
+      const token = localStorage.getItem('encrypt') ?? '';
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      this.myUserId = payload.sub; // 989
+    } catch (e) {
+      this.myUserId = null;
+    }
+    this.myEmail = (
+      localStorage.getItem('encrypt_user_email') ??
+      localStorage.getItem('userEmail') ??
+      localStorage.getItem('email') ??
+      ''
+    )
+      .toLowerCase()
+      .trim();
+
     this._mailboxService.mailsUpdated$
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe((shouldReload) => {
@@ -235,4 +252,78 @@ export class MailboxListComponent implements OnInit, OnDestroy {
   trackByFn(index: number, item: any): any {
     return item.id || index;
   }
+
+  /**
+   * Check if current user is the receiver (not the sender)
+   */
+  isReceiver(mail: any): boolean {
+    const folderName = (this.category?.name ?? '').toLowerCase();
+    const sentFolders = ['enviados', 'sent', 'borradores', 'drafts'];
+
+    if (sentFolders.some((f) => folderName.includes(f))) return false;
+    if ((mail.mailbox_items?.length ?? 0) > 0) return true;
+    if (!this.myUserId) return false;
+
+    return (mail.task_participants ?? []).some(
+      (p: any) =>
+        p.role === 'receptor' && Number(p?.user?.firebird_user_clave) === Number(this.myUserId),
+    );
+  }
+
+  getStatusTextClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'asignada':
+        return 'text-cyan-500';
+      case 'en proceso':
+        return 'text-orange-500';
+      case 'devuelto':
+        return 'text-yellow-500';
+      case 'finalizado':
+        return 'text-green-500';
+      case 'cancelado':
+        return 'text-red-500';
+      default:
+        return 'text-gray-400';
+    }
+  }
+
+  getParticipants(mail: any): any[] {
+    return (mail.participants ?? []).filter((p) => p.type !== 'emisor');
+  }
+
+  iniciarTicket(event: Event, mail: any): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    this._mailboxService.iniciarTicket(mail).subscribe({
+      error: (err) => console.error('Error', err),
+    });
+  }
+
+  finalizarTicket(event: Event, mail: any): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    this._mailboxService.finalizarTicket(mail).subscribe({
+      error: (err) => console.error('Error', err),
+    });
+  }
+
+
+  getRecipientRole(mail: any): 'cc' | 'bcc' | null {
+  if (!this.myUserId) return null;
+
+  const isCc = (mail.task_participants ?? []).some(
+    (p: any) =>
+      p.role === 'cc' && Number(p?.user?.firebird_user_clave) === Number(this.myUserId),
+  );
+  const isBcc = (mail.task_participants ?? []).some(
+    (p: any) =>
+      p.role === 'bcc' && Number(p?.user?.firebird_user_clave) === Number(this.myUserId),
+  );
+
+  if (isBcc) return 'bcc';
+  if (isCc) return 'cc';
+  return null;
+}
 }

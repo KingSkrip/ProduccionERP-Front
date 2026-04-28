@@ -1,6 +1,6 @@
 import { Overlay, OverlayModule, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
-import { DatePipe, DecimalPipe, NgClass, NgIf, NgPlural, NgPluralCase } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -20,7 +20,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FuseScrollResetDirective } from '@fuse/directives/scroll-reset';
-import { FuseFindByKeyPipe } from '@fuse/pipes/find-by-key/find-by-key.pipe';
 
 import { FormsModule } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -43,19 +42,16 @@ import { MailFolder, MailLabel } from '../mailbox.types';
     MatMenuModule,
     MatRippleModule,
     MatCheckboxModule,
-    NgClass,
     FuseScrollResetDirective,
-    NgPlural,
-    NgPluralCase,
     MatFormFieldModule,
     MatInputModule,
-    FuseFindByKeyPipe,
     DecimalPipe,
     DatePipe,
-    NgIf,
     OverlayModule,
     FormsModule,
     MatTooltipModule,
+    CommonModule,
+    MatMenuModule,
   ],
 })
 export class MailboxDetailsComponent implements OnInit, OnDestroy {
@@ -65,9 +61,10 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   private _attachmentViewer: TemplateRef<any>;
   @ViewChild('infoDetailsPanel')
   private _infoDetailsPanel: TemplateRef<any>;
-
+  currentUserId: number | null = null;
   @ViewChild('replyFileInput') replyFileInput: any;
-
+  private _participantsCache: { id: number; result: any[] } | null = null;
+  replyingTo: { id: number; author: string; body: string } | null = null;
   mail: any;
   labelColors: any;
   labels: MailLabel[];
@@ -79,7 +76,14 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   replyType: 'reply' | 'reply_all' = 'reply';
   replyPreviewMap = new Map<string, string>();
   apiBase = APP_CONFIG.apiBase;
-
+  private readonly PARTICIPANT_COLORS = [
+    { bg: '#F4C0D1', text: '#72243E' },
+    { bg: '#FDE68A', text: '#92400E' },
+    { bg: '#C4B5FD', text: '#4C1D95' },
+    { bg: '#A7F3D0', text: '#065F46' },
+    { bg: '#FED7AA', text: '#9A3412' },
+    { bg: '#BAE6FD', text: '#0C4A6E' },
+  ];
   private _unsubscribeAll: Subject<any> = new Subject<any>();
   avatarUrl: string = '';
   composeAttachments: {
@@ -112,6 +116,8 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
    * On init
    */
   ngOnInit(): void {
+    this.currentUserId = this._myIdentityId();
+
     this._mailboxService.mailsUpdated$
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe((shouldReload) => {
@@ -142,15 +148,11 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
         this.labels = labels;
       });
 
-    // Mail
-    // this._mailboxService.mail$.pipe(takeUntil(this._unsubscribeAll)).subscribe((mail: Mail) => {
-    //   this.mail = mail;
-    // });
-
-    this._mailboxService.mail$.pipe(takeUntil(this._unsubscribeAll)).subscribe((mail) => {
-      this.mail = mail;
-      this.avatarUrl = this.buildAvatar(mail);
-    });
+   this._mailboxService.mail$.pipe(takeUntil(this._unsubscribeAll)).subscribe((mail) => {
+  this._participantsCache = null;
+  this.mail = mail;
+  this.avatarUrl = this.buildAvatar(mail);
+});
 
     this._mailboxService.selectedMailChanged.pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
       this.replyFormActive = false;
@@ -239,18 +241,15 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   /**
    * Toggle importantes
    */
-  toggleimportantes(): void {
-    this.mail.importantes = !this.mail.importantes;
-    this._mailboxService.toggleImportant(this.mail).subscribe();
-  }
+toggleimportantes(): void {
+  this.mail.importantes = !this.mail.importantes;
+  this._mailboxService.toggleImportant(this.mail).subscribe();
+}
 
-  /**
-   * Toggle star
-   */
-  toggleStar(): void {
-    this.mail.destacados = !this.mail.destacados;
-    this._mailboxService.toggleStar(this.mail).subscribe();
-  }
+toggleStar(): void {
+  this.mail.destacados = !this.mail.destacados;
+  this._mailboxService.toggleStar(this.mail).subscribe();
+}
 
   /**
    * Toggle unread
@@ -402,7 +401,7 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
     const payload = {
       workorder_id: this.mail.id,
       reply_type: this.replyType,
-      reply_to_id: this.getLastReplyId(),
+      reply_to_id: this.replyingTo?.id ?? this.getLastReplyId(),
       body: this.replyText,
     };
 
@@ -680,9 +679,15 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
   }
 
   private _myIdentityId(): number | null {
-    const me: any = this._userService.user;
-    const id = me?.identity_id;
-    return typeof id === 'number' ? id : id ? Number(id) : null;
+    try {
+      const token = localStorage.getItem('encrypt') ?? '';
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.sub ? Number(payload.sub) : null;
+    } catch {
+      const me: any = this._userService.user;
+      const id = me?.identity_id ?? me?.id;
+      return id ? Number(id) : null;
+    }
   }
 
   private _iAmRecipient(mail: any): boolean {
@@ -770,13 +775,7 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
 
     if (att.path) {
       const baseUrl = APP_CONFIG.apiBase.replace(/\/$/, '');
-
       let cleanPath = att.path;
-
-      // 🔥 FIX CRÍTICO: El path viene como "task/images/xxx.png"
-      // pero Laravel Storage espera "workorders/task/images/xxx.png"
-
-      // Remover 'public/' si existe
       if (cleanPath.startsWith('public/')) {
         cleanPath = cleanPath.substring(7);
       }
@@ -833,5 +832,213 @@ export class MailboxDetailsComponent implements OnInit, OnDestroy {
 
   getReplyAuthor(reply: any): string {
     return reply?.user?.firebirdUser?.NOMBRE || reply?.user?.firebird_user?.NOMBRE || 'Usuario';
+  }
+
+  getStatusBadgeClass(status: string): string {
+    const map = {
+      asignada: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      'en proceso': 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+      finalizado: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      cancelado: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      devuelto: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    };
+    return map[status?.toLowerCase()] ?? 'bg-gray-100 text-gray-500';
+  }
+
+  getPriorityBadgeClass(priority: string): string {
+    const map = {
+      alta: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      media: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+      baja: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    };
+    return map[priority?.toLowerCase()] ?? 'bg-gray-100 text-gray-500';
+  }
+
+  isOwnReply(reply: any): boolean {
+    const me: any = this._userService.user;
+    const myUserId = me?.id ?? me?.user_id;
+    return Number(reply?.user_id) === Number(myUserId);
+  }
+
+  isOwnMessage(mail: any): boolean {
+    const me: any = this._userService.user;
+    const myUserId = Number(me?.id ?? me?.user_id);
+    // El emisor del mail original está en mail.de_id
+    return Number(mail?.de_id) === myUserId;
+  }
+
+  isOverdue(mail: any): boolean {
+    if (!mail.due_date) return false;
+    return new Date(mail.due_date) < new Date();
+  }
+
+  getStatusDotClass(status: string): string {
+    const map = {
+      asignada: 'bg-blue-500',
+      'en proceso': 'bg-amber-500',
+      finalizado: 'bg-green-500',
+      cancelado: 'bg-red-500',
+      devuelto: 'bg-yellow-500',
+    };
+    return map[status?.toLowerCase()] ?? 'bg-gray-400';
+  }
+
+  getParticipantColor(p: any): { bg: string; text: string } {
+    const name = (p?.name || '').trim();
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const colors = [
+      { bg: '#E3F2FD', text: '#1E88E5' }, // azul
+      { bg: '#E8F5E9', text: '#43A047' }, // verde
+      { bg: '#FFF3E0', text: '#FB8C00' }, // naranja
+      { bg: '#FCE4EC', text: '#D81B60' }, // rosa
+      { bg: '#F3E5F5', text: '#8E24AA' }, // morado
+      { bg: '#E0F2F1', text: '#00897B' }, // teal
+      { bg: '#FBE9E7', text: '#F4511E' }, // rojo suave
+    ];
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  }
+
+  getParticipants(
+    mail: any,
+  ): { name: string; email: string; initials: string; color: { bg: string; text: string } }[] {
+    if (this._participantsCache?.id === mail?.id) {
+      return this._participantsCache.result;
+    }
+
+    const colors = [
+      { bg: '#B5D4F4', text: '#0C447C' },
+      { bg: '#9FE1CB', text: '#085041' },
+      { bg: '#F4C0D1', text: '#72243E' },
+      { bg: '#FDE68A', text: '#92400E' },
+      { bg: '#C4B5FD', text: '#4C1D95' },
+    ];
+
+    const seen = new Set<string>();
+    const participants: any[] = [];
+    const add = (person: any, idx: number) => {
+      const email = person?.contact ?? person?.email ?? person ?? '';
+      const name = person?.name ?? email;
+      if (!email || seen.has(email)) return;
+      seen.add(email);
+      const initials = name
+        .split(' ')
+        .slice(0, 2)
+        .map((w: string) => w[0]?.toUpperCase() ?? '')
+        .join('');
+      participants.push({ name, email, initials, color: colors[idx % colors.length] });
+    };
+    add(mail.from, 0);
+    const allRecipients = [...(mail.to ?? []), ...(mail.cc ?? []), ...(mail.bcc ?? [])];
+    allRecipients.forEach((r, i) => add(r, i + 1));
+    mail.replies?.forEach((reply: any, i: number) => {
+      add(reply.from ?? reply.author, allRecipients.length + i + 1);
+    });
+
+    this._participantsCache = { id: mail.id, result: participants };
+    return participants;
+  }
+
+  getPersonColor(identifier: string): { bg: string; text: string } {
+    let hash = 0;
+    for (let i = 0; i < identifier.length; i++) {
+      hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % this.PARTICIPANT_COLORS.length;
+    return this.PARTICIPANT_COLORS[index];
+  }
+
+  setReplyTo(reply: any): void {
+    this.replyingTo = {
+      id: reply.id,
+      author: this.getReplyAuthor(reply),
+      body: reply.body,
+    };
+  }
+
+  clearReplyTo(): void {
+    this.replyingTo = null;
+  }
+
+  onEnterKey(event: KeyboardEvent): void {
+    if (!event.shiftKey) {
+      event.preventDefault();
+      this.send();
+    }
+  }
+
+  getReplyTo(reply: any, replies: any[]) {
+    if (!reply.reply_to_id) return null;
+    return replies.find((r) => r.id === reply.reply_to_id);
+  }
+
+  truncateFileName(name: string, maxLength: number = 20): string {
+    if (!name) return '';
+    const extIndex = name.lastIndexOf('.');
+    if (extIndex === -1) {
+      return name.substring(0, maxLength) + '....';
+    }
+    const namePart = name.substring(0, extIndex);
+    const ext = name.substring(extIndex);
+    return namePart.substring(0, maxLength) + '....' + ext;
+  }
+
+  isReceiver(mail: any): boolean {
+    if (!this.currentUserId) return false;
+    if ((mail.mailbox_items?.length ?? 0) > 0) return true;
+    return (mail?.task_participants ?? []).some(
+      (p: any) =>
+        p.role === 'receptor' &&
+        Number(p?.user?.firebird_user_clave) === Number(this.currentUserId),
+    );
+  }
+
+  getRecipientRole(mail: any): 'cc' | 'bcc' | null {
+    if (!this.currentUserId) return null;
+    const match = (p: any) =>
+      Number(p?.user_id) === Number(this.currentUserId) ||
+      Number(p?.user?.firebird_user_clave) === Number(this.currentUserId);
+    const isCc = (mail?.task_participants ?? []).some((p: any) => p.role === 'cc' && match(p));
+    const isBcc = (mail?.task_participants ?? []).some((p: any) => p.role === 'bcc' && match(p));
+    if (isBcc) return 'bcc';
+    if (isCc) return 'cc';
+    return null;
+  }
+
+  getStatusTextClass(status: string): string {
+    const map: Record<string, string> = {
+      asignada: 'text-blue-600 dark:text-blue-400',
+      'en proceso': 'text-amber-600 dark:text-amber-400',
+      finalizado: 'text-green-600 dark:text-green-400',
+      cancelado: 'text-red-600 dark:text-red-400',
+      devuelto: 'text-yellow-600 dark:text-yellow-400',
+    };
+    return map[status?.toLowerCase()] ?? 'text-gray-500';
+  }
+
+  iniciarTicket(event: Event, mail: any): void {
+    event.stopPropagation();
+    this._mailboxService.iniciarTicket(mail).subscribe({
+      next: (updated) => {
+        this._participantsCache = null;
+        this.mail = updated;
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
+  finalizarTicket(event: Event, mail: any): void {
+    event.stopPropagation();
+    this._mailboxService.finalizarTicket(mail).subscribe({
+      next: (updated) => {
+        this._participantsCache = null;
+        this.mail = updated;
+      },
+      error: (err) => console.error(err),
+    });
   }
 }

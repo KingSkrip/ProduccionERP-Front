@@ -1,12 +1,15 @@
-<div class="bg-card relative flex w-full flex-auto dark:bg-transparent">
-  <!-- Mails list -->
+<div class="bg-default relative flex w-full flex-auto dark:bg-transparent">
+  <!-- Mails list - se oculta cuando hay un correo seleccionado -->
   <div
-    class="relative z-10 flex w-full min-w-0 flex-auto flex-col border-r lg:min-w-90 lg:max-w-90"
+    class="relative z-10 flex flex-col border-r"
+    [ngClass]="{
+      hidden: selectedMail && selectedMail.id,
+      'w-full': !selectedMail || !selectedMail.id,
+      'lg:min-w-90 lg:max-w-90': selectedMail && selectedMail.id,
+    }"
   >
     <!-- Header - SIEMPRE VISIBLE -->
-    <div
-      class="relative flex h-16 flex-0 items-center justify-between border-b bg-gray-50 px-4 dark:bg-transparent"
-    >
+    <div class="bg-card relative flex h-16 flex-0 items-center justify-between border-b px-4">
       <div class="ml-2 flex items-center">
         <!-- Sidebar toggle button -->
         <button mat-icon-button (click)="mailboxComponent.drawer.toggle()">
@@ -63,70 +66,169 @@
     <!-- Mail list or Empty State -->
     @if (mails && mails.length > 0) {
       <!-- Mail list -->
-      <div class="overflow-y-auto" #mailList>
-        <!-- Item loop -->
+      <div class="space-y-3 overflow-y-auto p-3" #mailList>
         @for (mail of mails; track trackByFn(i, mail); let i = $index) {
-          <!-- Item -->
           <a
-            class="relative flex border-t hover:bg-hover first:border-0"
+            class="group bg-card flex flex-col gap-2 rounded-xl border px-4 py-3 shadow-sm transition hover:shadow-md md:flex-row md:items-center md:gap-4"
             [routerLink]="[mail.id]"
             (click)="onMailSelected(mail)"
           >
-            <!-- Item content -->
-            <div
-              class="flex w-full flex-col items-start justify-start border-l-4 border-transparent py-6 pl-5 pr-4"
-              [ngClass]="{
-                'border-primary': isUnread(mail),
-                'bg-primary-50 dark:bg-black dark:bg-opacity-5':
-                  selectedMail && selectedMail.id === mail.id,
-              }"
-            >
-              <!-- Info -->
-              <div class="flex w-full items-center">
-                <!-- Sender name -->
-                <div class="mr-2 truncate font-semibold">
-                  {{ getSenderName(mail) }}
-                </div>
-                <!-- importantes indicator -->
-                @if (isImportant(mail)) {
+            <!-- MÓVIL: fila superior con ícono + ticket/fecha + título -->
+            <div class="flex items-start gap-3 md:contents">
+              <!-- 1. ÍCONO -->
+              <div class="flex flex-shrink-0 items-center justify-center">
+                <div class="flex h-9 w-9 items-center justify-center rounded-md bg-primary-500">
                   <mat-icon
-                    class="mr-3 text-red-500 icon-size-4 dark:text-red-600"
-                    [svgIcon]="'heroicons_outline:exclamation-circle'"
+                    class="text-white icon-size-4"
+                    [svgIcon]="'heroicons_outline:envelope'"
                   ></mat-icon>
-                }
-                <!-- Date -->
-                <div class="text-hint ml-auto whitespace-nowrap text-right text-md">
-                  {{ getMailDate(mail) ? (getMailDate(mail) | date: 'LLL dd') : '' }}
                 </div>
               </div>
-              <!-- Asunto -->
-              <div class="mt-1 flex w-full items-center">
-                <span class="truncate leading-4">{{ getSubject(mail) }}</span>
-                <!-- Indicators -->
-                @if (hasAttachments(mail) || isStarred(mail)) {
-                  <div class="ml-auto flex pl-2">
-                    <!-- Attachments -->
-                    @if (hasAttachments(mail)) {
-                      <mat-icon
-                        class="flex justify-center icon-size-4"
-                        [svgIcon]="'heroicons_outline:paper-clip'"
-                      ></mat-icon>
-                    }
-                    <!-- destacados -->
-                    @if (isStarred(mail)) {
-                      <mat-icon
-                        class="ml-1 flex justify-center text-orange-500 icon-size-4 dark:text-orange-400"
-                        [svgIcon]="'heroicons_outline:star'"
-                      ></mat-icon>
+
+              <!-- COLUMNA DERECHA EN MÓVIL -->
+              <div class="flex min-w-0 flex-1 flex-col gap-1 md:contents">
+                <!-- FILA: ticket/fecha + título uno al lado del otro en móvil -->
+                <div class="flex min-w-0 items-start gap-3 md:contents">
+                  <!-- 2. NO. TICKET + FECHA -->
+                  <div class="flex flex-shrink-0 flex-col md:w-[13%]">
+                    <span class="text-xs text-black md:text-sm dark:text-white"
+                      >No. ticket • Fecha</span
+                    >
+                    <span class="text-xs text-primary-500 md:text-sm dark:text-accent-500">
+                      @if (mail.ticket_number) {
+                        <span>#{{ mail.ticket_number }}</span>
+                        <span class="mx-1">•</span>
+                      }
+                      <span>{{ getMailDate(mail) | date: 'dd MMM' : '' : 'es-MX' }}</span>
+                    </span>
+                  </div>
+
+                  <!-- 3. TÍTULO + REMITENTE -->
+                  <div class="flex min-w-0 flex-1 flex-col md:w-[30%]">
+                    <div class="flex items-center gap-1">
+                      <span
+                        class="truncate text-xs font-medium text-black md:text-sm dark:text-white"
+                      >
+                        {{ getSubject(mail) }}
+                      </span>
+                      @if (isImportant(mail)) {
+                        <mat-icon
+                          class="flex-shrink-0 text-red-500 icon-size-4"
+                          [svgIcon]="'heroicons_solid:exclamation-circle'"
+                        ></mat-icon>
+                      }
+                      @if (isStarred(mail)) {
+                        <mat-icon
+                          class="flex-shrink-0 text-yellow-500 icon-size-4"
+                          [svgIcon]="'heroicons_solid:star'"
+                        ></mat-icon>
+                      }
+                      @if (getRecipientRole(mail) === 'cc') {
+                        <span
+                          class="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-800 dark:bg-green-900 dark:text-green-200"
+                        >
+                          CC
+                        </span>
+                      }
+                      @if (getRecipientRole(mail) === 'bcc') {
+                        <span
+                          class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-200"
+                        >
+                          BCC
+                        </span>
+                      }
+                    </div>
+                    <span
+                      class="truncate text-xs text-gray-400 md:text-sm md:text-black md:dark:text-white"
+                    >
+                      {{ getSenderName(mail) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. PARTICIPANTES -->
+            <div class="hidden w-[13%] items-start justify-start gap-2 md:flex">
+              @let participants = getParticipants(mail);
+              <div class="flex -space-x-2">
+                @for (user of participants.slice(0, 3); track user.id) {
+                  <div
+                    class="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full border border-primary-500 bg-primary-500 text-[10px] font-medium text-white"
+                  >
+                    @if (user.photo_url) {
+                      <img [src]="user.photo_url" class="h-full w-full object-cover" />
+                    } @else {
+                      {{ user.name?.charAt(0) }}
                     }
                   </div>
                 }
               </div>
-              <!-- Excerpt -->
-              <div class="text-secondary mt-2 line-clamp-2 leading-normal">
-                {{ getContent(mail) }}...
+              @if (participants.length > 3) {
+                <span class="text-sm text-black dark:text-white"
+                  >+{{ participants.length - 3 }}</span
+                >
+              }
+            </div>
+
+            <!-- 5. PRIORIDAD + 6. ESTADO — fila en móvil, columnas en desktop -->
+            <div class="flex flex-row justify-around md:contents">
+              <!-- 5. PRIORIDAD -->
+              <div class="flex flex-col items-center md:w-[13%] md:items-center">
+                <span class="text-xs text-black md:text-sm dark:text-white">Prioridad</span>
+                @if (mail.priority) {
+                  <span class="text-xs md:text-sm" [style.color]="mail.priority.color">
+                    {{ mail.priority.name }}
+                  </span>
+                } @else {
+                  <span class="text-xs text-black md:text-sm dark:text-white">—</span>
+                }
+              </div>
+
+              <!-- 6. ESTADO -->
+              <div class="flex flex-col items-center md:w-[13%] md:items-center">
+                <span class="text-xs text-black md:text-sm dark:text-white">Estado</span>
+                <span
+                  class="text-xs md:text-sm"
+                  [ngClass]="getStatusTextClass(mail.status?.nombre)"
+                >
+                  {{ mail.status?.nombre || '—' }}
+                </span>
               </div>
             </div>
+
+            <!-- 7. ACCIÓN -->
+            @if (isReceiver(mail) && mail.status?.nombre === 'Asignada') {
+              <div class="flex w-full items-end justify-end pr-0 md:w-[13%]">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="flex h-8 min-h-8 w-full items-center justify-center gap-1 px-3 text-sm font-medium text-primary-500 md:w-auto dark:text-accent-500"
+                  (click)="iniciarTicket($event, mail)"
+                >
+                  <mat-icon
+                    class="text-primary-500 icon-size-4 dark:text-accent-500"
+                    [svgIcon]="'heroicons_outline:ticket'"
+                  ></mat-icon>
+                  Iniciar ticket
+                </button>
+              </div>
+            } @else if (isReceiver(mail) && mail.status?.nombre === 'En proceso') {
+              <div class="flex w-full items-end justify-end pr-0 md:w-[13%]">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="flex h-8 min-h-8 w-full items-center justify-center gap-1 px-3 text-sm font-medium text-green-500 md:w-auto dark:text-green-500"
+                  (click)="finalizarTicket($event, mail)"
+                >
+                  <mat-icon
+                    class="text-green-500 icon-size-4 dark:text-green-500"
+                    [svgIcon]="'heroicons_outline:check-circle'"
+                  ></mat-icon>
+                  Finalizar
+                </button>
+              </div>
+            }
           </a>
         }
       </div>
@@ -144,14 +246,8 @@
   </div>
 
   <!-- Mail details -->
-  @if (mails && mails.length > 0) {
-    <div
-      class="flex-auto"
-      [ngClass]="{
-        'absolute inset-0 z-20 flex lg:static lg:inset-auto': selectedMail && selectedMail.id,
-        'hidden lg:flex': !selectedMail || !selectedMail.id,
-      }"
-    >
+  @if (selectedMail && selectedMail.id) {
+    <div class="flex flex-auto">
       <router-outlet></router-outlet>
     </div>
   }

@@ -80,6 +80,7 @@ export class MailboxComposeComponent implements OnInit {
       bcc: [[]],
       Asunto: ['', [Validators.required]],
       body: ['', [Validators.required]],
+      priority_id: [3, [Validators.required]],
     });
     this.setupRemoteSearch('para', this.paraFilterCtrl, (list) => (this.filteredParaUsers = list));
     this.setupRemoteSearch('cc', this.ccFilterCtrl, (list) => (this.filteredCcUsers = list));
@@ -245,6 +246,7 @@ export class MailboxComposeComponent implements OnInit {
       de_id,
       para_id: null,
       status_id: 1,
+      priority_id: this.composeForm.value.priority_id,
       titulo: this.composeForm.value.Asunto,
       descripcion: this.composeForm.value.body,
       participants: participants.length ? participants : undefined,
@@ -310,6 +312,7 @@ export class MailboxComposeComponent implements OnInit {
       de_id,
       para_id: null,
       status_id: 1,
+      priority_id: this.composeForm.value.priority_id,
       titulo: this.composeForm.value.Asunto ?? '(Sin asunto)',
       descripcion: this.composeForm.value.body ?? '',
       participants: participants.length ? participants : undefined,

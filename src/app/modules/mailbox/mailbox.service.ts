@@ -37,6 +37,7 @@ export interface CreateTaskPayload {
   de_id: number;
   para_id?: number | null;
   status_id?: number | null;
+  priority_id?: number | null;
   titulo: string;
   descripcion: string;
   participants?: TaskParticipantPayload[];
@@ -73,14 +74,15 @@ export class MailboxService {
     this._mailsUpdated$.next(true);
   }
 
-  getMailByIdFromApi(id: number): Observable<any> {
-    return this._httpClient.get<any>(`${this.apiUrl}mailbox/workorder/${id}`).pipe(
-      map((resp: any) => resp?.data ?? resp),
-      tap((mail) => {
-        this._mail.next(mail);
-      }),
-    );
-  }
+getMailByIdFromApi(id: number): Observable<any> {
+  return this._httpClient.get<any>(`${this.apiUrl}mailbox/workorder/${id}`).pipe(
+    map((resp: any) => resp?.data ?? resp),
+    map((mail) => this.normalizeWorkorderToMail(mail)),
+    tap((mail) => {
+      this._mail.next(mail);
+    }),
+  );
+}
 
   /**
    * Getter for category
@@ -158,20 +160,21 @@ export class MailboxService {
       .pipe(map((resp) => resp?.data ?? resp));
   }
 
-  toggleStar(mail: any): Observable<any> {
-    const mi = this.getMailboxItemId(mail);
+toggleStar(mail: any): Observable<any> {
+  const mi = this.getMailboxItemId(mail);
 
-    if (mi) {
-      return this._httpClient
-        .patch<any>(`${this.apiUrl}mailbox/${mi}/star`, {})
-        .pipe(map((resp) => resp?.data ?? resp));
-    }
-
-    const wo = this.getWorkorderId(mail);
+  if (mi) {
     return this._httpClient
-      .patch<any>(`${this.apiUrl}mailbox/workorder/${wo}/star`, {})
+      .patch<any>(`${this.apiUrl}mailbox/${mi}/star`, {})
       .pipe(map((resp) => resp?.data ?? resp));
+      // NO hagas tap que actualice _mail aquí
   }
+
+  const wo = this.getWorkorderId(mail);
+  return this._httpClient
+    .patch<any>(`${this.apiUrl}mailbox/workorder/${wo}/star`, {})
+    .pipe(map((resp) => resp?.data ?? resp));
+}
 
   toggleImportant(mail: any): Observable<any> {
     const mi = this.getMailboxItemId(mail);
@@ -1003,26 +1006,32 @@ export class MailboxService {
 
     // También actualizar el mail individual si está abierto
     const currentMail = this._mail.value;
-    if (currentMail && Number(currentMail.id) === Number(workorderId)) {
-      if (currentMail.mailbox_items?.[0]) {
-        const updatedMailboxItems = [
-          {
-            ...currentMail.mailbox_items[0],
-            ...changes,
-          },
-        ];
+if (currentMail && Number(currentMail.id) === Number(workorderId)) {
+  if (currentMail.mailbox_items?.[0]) {
+    const updatedMailboxItems = [
+      {
+        ...currentMail.mailbox_items[0],
+        ...changes,
+      },
+    ];
 
-        this._mail.next({
-          ...currentMail,
-          mailbox_items: updatedMailboxItems,
-          destacados: changes.is_starred ?? currentMail.destacados,
-          importantes: changes.is_important ?? currentMail.importantes,
-          unread: changes.read_at ? false : changes.read_at === null ? true : currentMail.unread,
-        });
-      } else {
-        this._mail.next({ ...currentMail, ...changes });
-      }
-    }
+    this._mail.next({
+      ...currentMail,
+      mailbox_items: updatedMailboxItems,
+      destacados: changes.is_starred ?? currentMail.destacados,
+      importantes: changes.is_important ?? currentMail.importantes,
+      unread: changes.read_at ? false : changes.read_at === null ? true : currentMail.unread,
+    });
+  } else {
+    // NO hagas spread de changes directo, solo actualiza campos conocidos
+    this._mail.next({
+      ...currentMail,
+      destacados: changes.is_starred ?? currentMail.destacados,
+      importantes: changes.is_important ?? currentMail.importantes,
+      unread: changes.read_at ? false : changes.read_at === null ? true : currentMail.unread,
+    });
+  }
+}
   }
 
   /**
@@ -1082,5 +1091,53 @@ export class MailboxService {
     } else if (category.type === 'filter') {
       this.getMailsByCustomFilter(category.name as any).subscribe();
     }
+  }
+
+  iniciarTicket(mail: any): Observable<any> {
+    const workorderId = this.getWorkorderId(mail);
+
+    return this._httpClient
+      .patch<any>(`${this.apiUrl}mailbox/workorder/${workorderId}/iniciar-ticket`, {})
+      .pipe(
+        map((resp) => resp?.data ?? resp),
+        map((workorder) => this.normalizeWorkorderToMail(workorder)),
+        tap((normalizedMail) => {
+          const currentMails = this._mails.value || [];
+          const index = currentMails.findIndex((m) => m.id === normalizedMail.id);
+          if (index !== -1) {
+            currentMails[index] = normalizedMail;
+            this._mails.next([...currentMails]);
+          }
+          if (this._mail.value?.id === normalizedMail.id) {
+            this._mail.next(normalizedMail);
+          }
+        }),
+        catchError((err) => throwError(() => err)),
+      );
+  }
+
+
+
+    finalizarTicket(mail: any): Observable<any> {
+    const workorderId = this.getWorkorderId(mail);
+
+    return this._httpClient
+      .patch<any>(`${this.apiUrl}mailbox/workorder/${workorderId}/finalizar-ticket`, {})
+      .pipe(
+        map((resp) => resp?.data ?? resp),
+        map((workorder) => this.normalizeWorkorderToMail(workorder)),
+        tap((normalizedMail) => {
+          const currentMails = this._mails.value || [];
+          const index = currentMails.findIndex((m) => m.id === normalizedMail.id);
+          if (index !== -1) {
+            currentMails[index] = normalizedMail;
+            this._mails.next([...currentMails]);
+          }
+          if (this._mail.value?.id === normalizedMail.id) {
+            this._mail.next(normalizedMail);
+          }
+        }),
+        catchError((err) => throwError(() => err)),
+      );
   }
 }

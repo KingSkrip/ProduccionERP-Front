@@ -5,7 +5,7 @@
   <div
     class="flex h-14 flex-shrink-0 items-center justify-between bg-primary px-4 text-on-primary md:h-16 md:px-6"
   >
-    <div class="text-base font-medium md:text-lg">Nuevo mensaje</div>
+    <div class="text-base font-medium md:text-lg">Nuevo ticket</div>
     <button mat-icon-button (click)="Cancelar()" [tabIndex]="-1">
       <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
     </button>
@@ -219,6 +219,32 @@
           </mat-select>
         </mat-form-field>
       }
+      <!-- Prioridad -->
+      <mat-form-field>
+        <mat-label>Prioridad</mat-label>
+        <mat-select formControlName="priority_id">
+          <mat-option [value]="1">
+            <div class="flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full" style="background: #22c55e"></span> Baja
+            </div>
+          </mat-option>
+          <mat-option [value]="2">
+            <div class="flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full" style="background: #3b82f6"></span> Media
+            </div>
+          </mat-option>
+          <mat-option [value]="3">
+            <div class="flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full" style="background: #f59e0b"></span> Alta
+            </div>
+          </mat-option>
+          <mat-option [value]="4">
+            <div class="flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full" style="background: #ff0000"></span> Crítica
+            </div>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
       <!-- Asunto -->
       <mat-form-field>
@@ -280,7 +306,7 @@
         <!-- Lista COMPACTA de adjuntos -->
         @if (attachedFiles.length) {
           <div
-            class="space-y-1.5 rounded-lg border border-black/10 bg-black/[0.02] p-2"
+            class="max-h-48 space-y-1.5 overflow-y-auto rounded-lg border border-black/10 bg-black/[0.02] p-2"
             (dragover)="onDragOver($event)"
             (dragleave)="onDragLeave($event)"
             (drop)="onDrop($event)"

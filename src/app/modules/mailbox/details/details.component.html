@@ -1,551 +1,520 @@
-<div class="bg-card flex flex-auto flex-col overflow-y-auto dark:bg-default lg:overflow-hidden">
+<div class="bg-default flex flex-auto flex-col overflow-hidden">
   @if (mail) {
     <!-- Header -->
-    <div class="relative z-10 flex w-full flex-0 flex-col border-b">
-      <!-- Toolbar -->
-      <div
-        class="flex min-h-12 items-center border-b bg-gray-50 px-2 sm:min-h-14 sm:px-4 md:min-h-16 md:px-6 dark:bg-transparent"
-      >
-        <!-- Back button -->
-        <a class="md:-ml-2 lg:hidden" mat-icon-button [routerLink]="['./../']">
+    <div class="bg-card flex min-h-14 flex-col border-b px-4 sm:min-h-16 sm:px-6 sm:py-3">
+      <div class="flex flex-1 items-center gap-1 py-2 sm:min-h-16 sm:py-0">
+        <!-- Botón atrás -->
+        <a class="-ml-2 flex-shrink-0" mat-icon-button [routerLink]="['./../']">
           <mat-icon [svgIcon]="'heroicons_outline:arrow-long-left'"></mat-icon>
         </a>
 
-        <!-- Action buttons container -->
-        <div class="ml-auto flex items-center gap-1 sm:gap-2">
-          <!-- Toggle labels button & menu -->
-          <!-- <button mat-icon-button [matMenuTriggerFor]="toggleLabelMenu">
-            <mat-icon [svgIcon]="'heroicons_outline:tag'"></mat-icon>
-          </button>
-          <mat-menu #toggleLabelMenu="matMenu">
-            @for (label of labels; track trackByFn($index, label)) {
-              <div mat-menu-item (click)="toggleLabel(label)" matRipple>
-                <mat-checkbox
-                  class="pointer-events-none"
-                  [color]="'primary'"
-                  [checked]="(mail?.labels ?? []).includes(label.id)"
-                  [disableRipple]="true"
+        <!-- Meta info + participantes -->
+        <div class="flex min-w-0 flex-1 flex-col gap-1">
+          <!-- Número + fecha -->
+          <span class="font-mono text-[11px] leading-none text-primary-500 dark:text-accent-500">
+            #{{ mail.ticket_number }} · {{ mail.date | date: "d 'de' MMM" : '' : 'es-MX' }}
+          </span>
+
+          <!-- Asunto -->
+          <span class="truncate text-sm font-semibold leading-snug sm:text-base">
+            {{ mail.Asunto }}
+          </span>
+
+          <!-- Participantes (ABAJO DEL ASUNTO) -->
+          <div class="flex items-center">
+            <div
+              class="flex items-center"
+              [style.width.px]="
+                getParticipants(mail).length > 1 ? 20 * (getParticipants(mail).length - 1) + 32 : 32
+              "
+            >
+              @for (p of getParticipants(mail); track p.email; let i = $index) {
+                <div
+                  class="relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-gray-50 dark:ring-gray-900"
+                  [style.background]="p.color.bg"
+                  [style.color]="p.color.text"
+                  [style.left.px]="i * -10"
+                  [style.z-index]="getParticipants(mail).length - i"
+                  [matTooltip]="p.name"
                 >
-                  {{ label.title }}
-                </mat-checkbox>
-              </div>
-            }
-          </mat-menu> -->
-
-          <!-- Toggle importantes button -->
-          <button mat-icon-button (click)="toggleimportantes()">
-            <mat-icon
-              [ngClass]="{
-                'text-red-600 dark:text-red-500': mail.importantes,
-              }"
-              [svgIcon]="'heroicons_outline:exclamation-circle'"
-            ></mat-icon>
-          </button>
-
-          <!-- Toggle destacados button -->
-          <button mat-icon-button (click)="toggleStar()">
-            <mat-icon
-              [ngClass]="{
-                'text-orange-500 dark:text-red-400': mail.destacados,
-              }"
-              [svgIcon]="'heroicons_outline:star'"
-            ></mat-icon>
-          </button>
-
-          <!-- Other actions button & menu -->
-          <button mat-icon-button [matMenuTriggerFor]="mailMenu">
-            <mat-icon [svgIcon]="'heroicons_outline:ellipsis-vertical'"></mat-icon>
-          </button>
-          <mat-menu #mailMenu="matMenu">
-            <!-- Mark as read / unread -->
-            @if (mail.unread) {
-              <button mat-menu-item (click)="toggleUnread(false)">
-                <mat-icon [svgIcon]="'heroicons_outline:envelope-open'"></mat-icon>
-                <span>Marcar como leído</span>
-              </button>
-            }
-            @if (!mail.unread) {
-              <button mat-menu-item (click)="toggleUnread(true)">
-                <mat-icon [svgIcon]="'heroicons_outline:envelope'"></mat-icon>
-                <span>Marcar como no leído</span>
-              </button>
-            }
-            <!-- Marks as spam / not span-->
-            @if (getCurrentFolder() !== 'spam' && getCurrentFolder() !== 'borradores') {
-              <button mat-menu-item (click)="moveToFolder('spam')">
-                <mat-icon [svgIcon]="'heroicons_outline:exclamation-triangle'"></mat-icon>
-                <span>Spam</span>
-              </button>
-            }
-            @if (getCurrentFolder() === 'spam') {
-              <button mat-menu-item (click)="moveToFolder('mensajes')">
-                <mat-icon [svgIcon]="'heroicons_outline:exclamation-triangle'"></mat-icon>
-                <span>No spam</span>
-              </button>
-            }
-            <!-- Delete -->
-            @if (getCurrentFolder() !== 'eliminados') {
-              <button mat-menu-item (click)="moveToFolder('eliminados')">
-                <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
-                <span>Eliminar</span>
-              </button>
-            }
-          </mat-menu>
-        </div>
-      </div>
-
-      <!-- Asunto and Labels -->
-      <div
-        class="flex flex-col gap-2 px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:px-4 sm:py-4 md:px-6 md:py-5"
-      >
-        <!-- Asunto -->
-        <div class="flex-auto break-words text-lg font-medium sm:text-xl md:text-2xl">
-          {{ mail.Asunto }}
-        </div>
-        <!-- Labels -->
-        @if (mail.labels && mail.labels.length > 0) {
-          <div class="flex flex-wrap items-center gap-1.5">
-            @for (label of mail.labels | fuseFindByKey: 'id' : labels; track label) {
-              <div
-                class="whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium sm:px-2.5 sm:text-sm"
-                [ngClass]="labelColors[label.color].combined"
-              >
-                {{ label.title }}
-              </div>
-            }
+                  {{ p.initials }}
+                </div>
+              }
+            </div>
           </div>
-        }
+
+          <!-- Estado + Prioridad + Rol + Acciones -->
+<div class="flex flex-wrap items-center gap-2 mt-1">
+
+  <!-- Estado -->
+  @if (mail.status?.nombre) {
+    <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium dark:bg-gray-800"
+      [ngClass]="getStatusTextClass(mail.status?.nombre)">
+      {{ mail.status.nombre }}
+    </span>
+  }
+
+  <!-- Prioridad -->
+  @if (mail.priority) {
+    <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium dark:bg-gray-800"
+      [style.color]="mail.priority.color">
+      {{ mail.priority.name }}
+    </span>
+  }
+
+  <!-- CC / BCC -->
+  @if (getRecipientRole(mail) === 'cc') {
+    <span class="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
+      CC
+    </span>
+  }
+  @if (getRecipientRole(mail) === 'bcc') {
+    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+      BCC
+    </span>
+  }
+
+  <!-- Iniciar ticket -->
+  @if (isReceiver(mail) && mail.status?.nombre === 'Asignada') {
+    <button mat-stroked-button type="button"
+      class="flex h-7 min-h-7 items-center gap-1 px-2 text-xs font-medium text-primary-500 dark:text-accent-500"
+      (click)="iniciarTicket($event, mail)">
+      <mat-icon class="text-primary-500 icon-size-3.5 dark:text-accent-500" [svgIcon]="'heroicons_outline:ticket'"></mat-icon>
+      Iniciar ticket
+    </button>
+  }
+
+  <!-- Finalizar ticket -->
+  @if (isReceiver(mail) && mail.status?.nombre === 'En proceso') {
+    <button mat-stroked-button type="button"
+      class="flex h-7 min-h-7 items-center gap-1 px-2 text-xs font-medium text-green-500"
+      (click)="finalizarTicket($event, mail)">
+      <mat-icon class="text-green-500 icon-size-3.5" [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
+      Finalizar
+    </button>
+  }
+
+</div>
+        </div>
+
+        <!-- Botón 3 puntos -->
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <mat-icon svgIcon="heroicons_outline:ellipsis-vertical"></mat-icon>
+        </button>
       </div>
     </div>
 
-    <!-- Threads -->
+    <!-- Chat de burbujas -->
     <div
-      class="flex flex-auto shrink-0 flex-col bg-gray-100 p-2 sm:p-3 lg:shrink lg:overflow-y-auto dark:bg-transparent"
-      fuseScrollReset
+      class="bg-default flex min-h-0 w-full flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden p-4"
     >
-      <!-- Thread -->
-      <div
-        class="bg-card flex w-full flex-0 flex-col overflow-hidden rounded-xl shadow sm:rounded-2xl dark:bg-black dark:bg-opacity-10"
-      >
-        <div class="flex flex-col px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8">
-          <!-- Header -->
-          <div class="flex w-full items-start sm:items-center">
-            <!-- Sender avatar -->
-            <div
-              class="flex h-8 w-8 flex-0 items-center justify-center overflow-hidden rounded-full sm:h-10 sm:w-10"
-            >
-              <img class="h-full w-full" [src]="getAvatar(mail)" alt="User avatar" />
-            </div>
-
-            <!-- Info -->
-            <div class="ml-2 min-w-0 flex-1 sm:ml-4">
-              <!-- From -->
-              <div class="truncate text-sm font-semibold sm:text-base">
-                {{ getSenderName(mail) }}
-              </div>
-
-              <!-- To -->
-              <div class="mt-0.5 flex flex-wrap items-center gap-1 text-xs leading-5 sm:text-sm">
-                <div>Para</div>
-                <div class="max-w-[150px] truncate font-semibold sm:max-w-none">
-                  {{ getToSummary(mail) }}
-                </div>
-
-                @if (getOtherRecipientsCount(mail) > 0) {
-                  <div class="flex items-center gap-1">
-                    <span>y</span>
-                    <span class="font-semibold" [ngPlural]="getOtherRecipientsCount(mail)">
-                      <ng-template ngPluralCase="=1">otro</ng-template>
-                      <ng-template ngPluralCase="other">otros</ng-template>
-                    </span>
-                    <span class="font-semibold">{{ getOtherRecipientsCount(mail) }}</span>
-                  </div>
-                }
-
-                <!-- Info details panel button -->
-                <button
-                  class="h-5 min-h-5 w-5 flex-shrink-0"
-                  mat-icon-button
-                  (click)="openInfoDetailsPanel()"
-                  #infoDetailsPanelOrigin
-                >
-                  <mat-icon
-                    class="icon-size-5"
-                    [svgIcon]="'heroicons_outline:chevron-down'"
-                  ></mat-icon>
-                </button>
-
-                <!-- Info details panel -->
-                <ng-template #infoDetailsPanel>
-                  <div
-                    class="bg-card flex w-[calc(100vw-2rem)] max-w-[500px] flex-col space-y-1.5 overflow-auto rounded border px-4 py-3 text-sm shadow-md sm:w-full sm:max-w-160 sm:px-6 sm:py-4 sm:text-md"
-                  >
-                    <!-- From -->
-                    <div class="flex flex-col gap-1 sm:flex-row sm:gap-0">
-                      <div class="min-w-14 font-medium sm:text-right">De:</div>
-                      <div class="whitespace-pre-wrap break-all sm:pl-2">
-                        {{ mail?.from?.contact ?? mail?.from ?? 'Sin remitente' }}
-                      </div>
-                    </div>
-                    <!-- To -->
-                    <div class="flex flex-col gap-1 sm:flex-row sm:gap-0">
-                      <div class="min-w-14 font-medium sm:text-right">Para:</div>
-                      <div class="whitespace-pre-wrap break-all sm:pl-2">
-                        {{ toText(mail?.to) }}
-                      </div>
-                    </div>
-                    <!-- Cc -->
-                    <div class="flex flex-col gap-1 sm:flex-row sm:gap-0" *ngIf="mail?.cc?.length">
-                      <div class="min-w-14 font-medium sm:text-right">CC:</div>
-                      <div class="whitespace-pre-wrap break-all sm:pl-2">
-                        {{ toText(mail.cc) }}
-                      </div>
-                    </div>
-                    <!-- Bcc -->
-                    <div class="flex flex-col gap-1 sm:flex-row sm:gap-0" *ngIf="mail?.bcc?.length">
-                      <div class="min-w-14 font-medium sm:text-right">BCC:</div>
-                      <div class="whitespace-pre-wrap break-all sm:pl-2">
-                        {{ toText(mail.bcc) }}
-                      </div>
-                    </div>
-                    <!-- Date -->
-                    <div class="flex flex-col gap-1 sm:flex-row sm:gap-0">
-                      <div class="min-w-14 font-medium sm:text-right">Fecha:</div>
-                      <div class="whitespace-pre-wrap sm:pl-2">
-                        {{ mail.date | date: "EEEE d 'de' MMMM y - hh:mm a" : undefined : 'es-MX' }}
-                      </div>
-                    </div>
-                    <!-- Asunto -->
-                    <div class="flex flex-col gap-1 sm:flex-row sm:gap-0">
-                      <div class="min-w-14 font-medium sm:text-right">Asunto:</div>
-                      <div class="whitespace-pre-wrap break-words sm:pl-2">
-                        {{ getSubject(mail) }}
-                      </div>
-                    </div>
-                  </div>
-                </ng-template>
-              </div>
-            </div>
+      @if (isOwnMessage(mail)) {
+        <div class="group flex w-full flex-row-reverse items-end gap-2">
+          <div
+            class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+            [style.background]="getPersonColor(getSenderName(mail)).bg"
+            [style.color]="getPersonColor(getSenderName(mail)).text"
+          >
+            {{ getSenderName(mail).charAt(0) }}
           </div>
 
-          <!-- Content -->
-          <div
-            class="overflow-wrap-anywhere mt-4 flex whitespace-pre-line break-words text-sm leading-relaxed sm:mt-6 sm:text-base md:mt-8"
-            [innerHTML]="getContent(mail)"
-          ></div>
+          <div class="flex w-[85%] min-w-0 flex-col sm:w-[90%]">
+            <div
+              class="bg-card w-full overflow-hidden rounded-2xl rounded-br-sm px-4 py-3 text-sm leading-relaxed text-black dark:text-white"
+              style="word-break: break-word; overflow-wrap: break-word"
+              [innerHTML]="getContent(mail)"
+            ></div>
 
-          <!-- Attachments -->
-          @if (mail.attachments && mail.attachments.length > 0) {
-            <div class="flex w-full flex-col">
-              <!-- Title -->
-              <div class="mt-8 flex items-center sm:mt-10 md:mt-12">
-                <mat-icon
-                  class="icon-size-4 sm:icon-size-5"
-                  [svgIcon]="'heroicons_outline:paper-clip'"
-                ></mat-icon>
-                <div class="ml-1.5 text-sm font-semibold sm:ml-2 sm:text-base">
-                  {{ mail.attachments.length }} Adjuntos
-                </div>
-              </div>
-
-              <!-- Files -->
-              <div
-                class="mt-2 grid grid-cols-1 gap-2 sm:mt-3 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3"
-              >
-                @for (attachment of mail.attachments; track attachment) {
+            @if (mail.attachments?.length > 0) {
+              <div class="mt-2 flex w-full min-w-0 flex-col gap-1.5">
+                @for (att of mail.attachments; track att) {
                   <div
-                    class="flex cursor-pointer items-center rounded-lg p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-                    (click)="openAttachmentViewer(attachment)"
+                    class="bg-card flex w-full min-w-0 cursor-pointer items-center gap-2 overflow-hidden rounded-xl px-3 py-2"
+                    (click)="openAttachmentViewer(att)"
                   >
-                    <!-- Preview / Icon único -->
-                    <div
-                      class="flex h-10 w-10 flex-0 items-center justify-center overflow-hidden rounded-md bg-gray-100 sm:h-12 sm:w-12 dark:bg-black/20"
-                    >
-                      @if (
-                        (attachment?.type ?? '').startsWith('image/') &&
-                        attachment?.preview &&
-                        !attachment.__imgError
-                      ) {
-                        <img
-                          class="h-full w-full object-cover"
-                          [src]="'images/apps/mailbox/' + attachment.preview"
-                          (error)="attachment.__imgError = true"
-                          alt="Attachment preview"
-                        />
-                      } @else {
-                        <div class="relative flex h-full w-full items-center justify-center">
-                          <mat-icon
-                            class="icon-size-5 sm:icon-size-6"
-                            [svgIcon]="getAttachmentIcon(attachment)"
-                          ></mat-icon>
-
-                          @if (
-                            (attachment?.type ?? '').toLowerCase() === 'application/pdf' ||
-                            (attachment?.name ?? '').toLowerCase().endsWith('.pdf')
-                          ) {
-                            <span
-                              class="absolute bottom-0 right-0 rounded bg-gray-200 px-0.5 text-[9px] font-semibold sm:px-1 sm:text-[10px] dark:bg-white/10"
-                            >
-                              PDF
-                            </span>
-                          }
-                        </div>
-                      }
-                    </div>
-
-                    <!-- File info -->
-                    <div class="ml-2 min-w-0 flex-1 sm:ml-3">
-                      <div
-                        class="truncate text-xs font-medium sm:text-sm md:text-md"
-                        [title]="attachment.name"
-                      >
-                        {{ attachment.name }}
-                      </div>
-                      <div
-                        class="text-secondary truncate text-[10px] font-medium sm:text-xs"
-                        [title]="attachment.size"
-                      >
-                        {{ attachment.size / 1000 | number: '1.0-2' }} KB
-                      </div>
-                    </div>
+                    <mat-icon
+                      class="flex-shrink-0 text-black icon-size-5 dark:text-white"
+                      [svgIcon]="getAttachmentIcon(att)"
+                    ></mat-icon>
+                    <span class="min-w-0 flex-1 truncate text-sm text-black dark:text-white">
+                      {{ truncateFileName(att.original_name ?? att.name, 12) }}
+                    </span>
+                    <span class="flex-shrink-0 text-sm text-black sm:text-xs dark:text-white">
+                      {{ att.size / 1000 | number: '1.0-1' }} KB
+                    </span>
                   </div>
                 }
               </div>
-            </div>
-          }
+            }
 
-          <!-- CONTENIDO DE RESPUESTAS-->
-          @if (mail.replies && mail.replies.length > 0) {
-            <div class="mt-8 space-y-4">
-              <div class="flex items-center gap-2 text-sm font-semibold text-gray-600">
-                <mat-icon
-                  class="icon-size-5"
-                  [svgIcon]="'heroicons_outline:chat-bubble-left-right'"
-                ></mat-icon>
-                <span
-                  >{{ mail.replies.length }}
-                  {{ mail.replies.length === 1 ? 'Respuesta' : 'Respuestas' }}</span
-                >
-              </div>
+            <span class="mt-1 text-right text-[10px] text-gray-400">
+              {{ mail.date | date: 'HH:mm' : '' : 'es-MX' }}
+            </span>
+          </div>
+     @if (mail.status?.nombre !== 'Finalizado' && mail.status?.nombre !== 'Finalizada') {
+          <button
+            mat-icon-button
+            class="flex-shrink-0 self-center opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+            [matTooltip]="'Responder'"
+            (click)="setReplyTo({ author: getSenderName(mail), body: getContent(mail) })"
+          >
+            <mat-icon
+              class="text-black icon-size-4 dark:text-white"
+              [svgIcon]="'heroicons_outline:arrow-uturn-left'"
+            ></mat-icon>
+          </button>
+        }
+        </div>
+      } @else {
+        <div class="group flex w-full items-end gap-2">
+          <div
+            class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+            [style.background]="getPersonColor(getSenderName(mail)).bg"
+            [style.color]="getPersonColor(getSenderName(mail)).text"
+          >
+            {{ getSenderName(mail).charAt(0) }}
+          </div>
 
-              @for (reply of mail.replies; track trackByReplyId($index, reply)) {
-                <div class="rounded-lg border bg-gray-50 p-4 dark:bg-gray-800/50">
-                  <!-- Header de la respuesta -->
-                  <div class="flex items-start gap-3">
-                    <div class="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full">
-                      <img
-                        [src]="getReplyAvatar(reply)"
-                        alt="Avatar"
-                        class="h-full w-full object-cover"
-                      />
-                    </div>
+          <div class="flex w-[85%] min-w-0 flex-col sm:w-[72%]">
+            <span class="mb-1 text-sm" [style.color]="getPersonColor(getSenderName(mail)).text">
+              {{ getSenderName(mail) }}
+            </span>
+            <div
+              class="bg-card w-full overflow-hidden rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed"
+              style="word-break: break-word; overflow-wrap: break-word"
+              [innerHTML]="getContent(mail)"
+            ></div>
 
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center justify-between">
-                        <div class="text-sm font-semibold">
-                          {{ getReplyAuthor(reply) }}
-                        </div>
-                        <div class="text-xs text-gray-500 dark:text-white">
-                          {{
-                            reply.sent_at | date: "d 'de' MMMM y - hh:mm a" : undefined : 'es-MX'
-                          }}
-                        </div>
-                      </div>
-
-                      <div class="mt-1 text-xs text-gray-500">
-                        {{ reply.reply_type === 'reply_all' ? 'Respondió a todos' : 'Respondió' }}
-                      </div>
-                    </div>
+            @if (mail.attachments?.length > 0) {
+              <div class="mt-2 flex w-full min-w-0 flex-col gap-1.5">
+                @for (att of mail.attachments; track att) {
+                  <div
+                    class="bg-card flex w-full min-w-0 cursor-pointer items-center gap-2 overflow-hidden rounded-xl px-3 py-2"
+                    (click)="openAttachmentViewer(att)"
+                  >
+                    <mat-icon
+                      class="flex-shrink-0 text-black icon-size-5 dark:text-white"
+                      [svgIcon]="getAttachmentIcon(att)"
+                    ></mat-icon>
+                    <span class="min-w-0 flex-1 truncate text-sm text-black dark:text-white">
+                      {{ truncateFileName(att.original_name ?? att.name, 12) }}
+                    </span>
+                    <span class="flex-shrink-0 text-sm text-black sm:text-xs dark:text-white">
+                      {{ att.size / 1000 | number: '1.0-1' }} KB
+                    </span>
                   </div>
+                }
+              </div>
+            }
 
-                  <!-- Contenido de la respuesta -->
-                  <div class="mt-3 whitespace-pre-line text-sm" [innerHTML]="reply.body"></div>
+            <span class="mt-1 text-[10px] text-black dark:text-white">
+              {{ mail.date | date: 'HH:mm' : '' : 'es-MX' }}
+            </span>
+          </div>
+     @if (mail.status?.nombre !== 'Finalizado' && mail.status?.nombre !== 'Finalizada') {
+          <button
+            mat-icon-button
+            class="flex-shrink-0 self-center opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+            [matTooltip]="'Responder'"
+            (click)="setReplyTo({ author: getSenderName(mail), body: getContent(mail) })"
+          >
+            <mat-icon
+              class="text-black icon-size-4 dark:text-white"
+              [svgIcon]="'heroicons_outline:arrow-uturn-left'"
+            ></mat-icon>
+          </button>
+        }
+        </div>
+      }
 
-                  <!-- Attachments de la respuesta -->
-                  @if (reply.attachments && reply.attachments.length > 0) {
-                    <div class="mt-4 space-y-2">
-                      @for (att of reply.attachments; track trackByAttachmentId($index, att)) {
-                        <div
-                          class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800"
-                          (click)="openAttachmentViewer(att)"
-                        >
-                          <mat-icon
-                            class="text-gray-400 icon-size-5"
-                            [svgIcon]="getAttachmentIcon(att)"
-                          ></mat-icon>
-                          <div class="min-w-0 flex-1">
-                            <div class="truncate text-sm font-medium">{{ att.original_name }}</div>
-                            <div class="text-xs text-gray-500">{{ formatFileSize(att.size) }}</div>
-                          </div>
-                        </div>
-                      }
+      <!-- Evento de sistema: asignación -->
+      <div class="flex w-full justify-center overflow-hidden">
+        <div
+          class="bg-card flex min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-xl border border-gray-200 px-4 py-1.5 text-sm text-black dark:border-gray-700 dark:text-white"
+        >
+          <mat-icon
+            class="flex-shrink-0 text-black icon-size-3.5 dark:text-white"
+            [svgIcon]="'heroicons_outline:check-circle'"
+          ></mat-icon>
+          <span class="truncate">
+            Ticket asignado a {{ mail.assigned_to?.name }} ·
+            {{ mail.date | date: 'HH:mm' : '' : 'es-MX' }}
+          </span>
+        </div>
+      </div>
+
+      @if (mail.replies && mail.replies.length > 0) {
+        <div class="mt-8 space-y-4">
+          <div class="flex items-center gap-2 text-sm font-semibold text-black dark:text-white">
+            <mat-icon
+              class="icon-size-5"
+              [svgIcon]="'heroicons_outline:chat-bubble-left-right'"
+            ></mat-icon>
+            <span>
+              {{ mail.replies.length }}
+              {{ mail.replies.length === 1 ? 'Respuesta' : 'Respuestas' }}
+            </span>
+          </div>
+        </div>
+      }
+
+      @for (reply of mail.replies; track reply.id) {
+        @if (isOwnReply(reply)) {
+          <div class="group flex w-full flex-row-reverse items-end gap-2">
+            <div
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+              [style.background]="getPersonColor(getReplyAuthor(reply)).bg"
+              [style.color]="getPersonColor(getReplyAuthor(reply)).text"
+            >
+              {{ getReplyAuthor(reply).charAt(0) }}
+            </div>
+
+            <div class="flex w-[85%] min-w-0 flex-col sm:w-[72%]">
+              <div
+                class="bg-card mb-1 w-full overflow-hidden rounded-lg border-l-4 px-3 py-1 pl-2 text-xs text-black dark:text-white"
+                *ngIf="getReplyTo(reply, mail.replies) as replied"
+                [style.border-left-color]="getPersonColor(getReplyAuthor(replied)).bg"
+              >
+                <div [style.color]="getPersonColor(getReplyAuthor(replied)).text">
+                  {{ getReplyAuthor(replied) }}
+                </div>
+                <div class="truncate text-xs opacity-80">{{ replied.body | slice: 0 : 40 }}...</div>
+              </div>
+              <div
+                class="w-full overflow-hidden rounded-2xl rounded-br-sm px-4 py-3 text-sm leading-relaxed"
+                style="word-break: break-word; overflow-wrap: break-word"
+                [style.background]="getPersonColor(getReplyAuthor(reply)).bg"
+                [style.color]="getPersonColor(getReplyAuthor(reply)).text"
+                [innerHTML]="reply.body"
+              ></div>
+
+              @if (reply.attachments?.length > 0) {
+                <div class="mt-2 flex w-full min-w-0 flex-col gap-1.5">
+                  @for (att of reply.attachments; track att) {
+                    <div
+                      class="bg-card flex w-full min-w-0 cursor-pointer items-center gap-2 overflow-hidden rounded-xl px-3 py-2"
+                      (click)="openAttachmentViewer(att)"
+                    >
+                      <mat-icon
+                        class="flex-shrink-0 text-black icon-size-5 dark:text-white"
+                        [svgIcon]="getAttachmentIcon(att)"
+                      ></mat-icon>
+                      <span class="min-w-0 flex-1 truncate text-sm text-black dark:text-white">
+                        {{ truncateFileName(att.original_name ?? att.name, 12) }}
+                      </span>
+                      <span class="flex-shrink-0 text-sm text-black sm:text-xs dark:text-white">
+                        {{ att.size / 1000 | number: '1.0-1' }} KB
+                      </span>
                     </div>
                   }
                 </div>
               }
+
+              <span class="mt-1 text-right text-[10px] text-gray-400">
+                {{ reply.sent_at | date: 'HH:mm' : '' : 'es-MX' }}
+              </span>
             </div>
+     @if (mail.status?.nombre !== 'Finalizado' && mail.status?.nombre !== 'Finalizada') {
+            <button
+              mat-icon-button
+              class="flex-shrink-0 self-center opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+              [matTooltip]="'Responder'"
+              (click)="setReplyTo(reply)"
+            >
+              <mat-icon
+                class="text-black icon-size-4 dark:text-white"
+                [svgIcon]="'heroicons_outline:arrow-uturn-left'"
+              ></mat-icon>
+            </button>
           }
-        </div>
+          </div>
+        } @else {
+          <div class="group flex w-full items-end gap-2">
+            <div
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+              [style.background]="getPersonColor(getReplyAuthor(reply)).bg"
+              [style.color]="getPersonColor(getReplyAuthor(reply)).text"
+            >
+              {{ getReplyAuthor(reply).charAt(0) }}
+            </div>
+            <div class="flex w-[85%] min-w-0 flex-col sm:w-[72%]">
+              <span
+                class="mb-1 text-xs font-semibold"
+                [style.color]="getPersonColor(getReplyAuthor(reply)).text"
+              >
+                {{ getReplyAuthor(reply) }}
+              </span>
 
-        <!-- Footer -->
-        <div class="flex w-full border-t bg-gray-50 p-3 sm:p-4 md:p-6 dark:bg-transparent">
-          <div class="flex w-full flex-col gap-3 sm:gap-4">
-            <!-- Buttons -->
-            @if (!replyFormActive) {
-              <div class="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <!-- Reply -->
-                <button
-                  class="w-full justify-center sm:w-auto sm:flex-1 sm:justify-start lg:flex-none dark:text-white"
-                  mat-stroked-button
-                  [color]="'primary'"
-                  (click)="reply()"
-                >
-                  <mat-icon
-                    class="icon-size-4 sm:icon-size-5"
-                    [svgIcon]="'heroicons_outline:arrow-uturn-left'"
-                  ></mat-icon>
-                  <span class="ml-1.5 text-xs sm:ml-2 sm:text-sm">Responder</span>
-                </button>
-
-                <!-- Responder a todos -->
-                <button
-                  class="w-full justify-center sm:w-auto sm:flex-1 sm:justify-start lg:flex-none dark:text-white"
-                  mat-stroked-button
-                  [color]="'primary'"
-                  (click)="replyAll()"
-                >
-                  <mat-icon
-                    class="fill-current icon-size-4 sm:icon-size-5 dark:!text-white"
-                    [svgIcon]="'heroicons_outline:arrow-uturn-left'"
-                  ></mat-icon>
-
-                  <span class="ml-1.5 text-xs sm:ml-2 sm:text-sm">Responder a todos</span>
-                </button>
-
-                <!-- Reenviar -->
-                <!-- <button
-                  class="w-full justify-center sm:w-auto sm:flex-1 sm:justify-start lg:flex-none"
-                  mat-stroked-button
-                  [color]="'primary'"
-                  (click)="Reenviar()"
-                >
-                  <mat-icon
-                    class="icon-size-4 sm:icon-size-5"
-                    [color]="'primary'"
-                    [svgIcon]="'heroicons_outline:chevron-double-right'"
-                  ></mat-icon>
-                  <span class="ml-1.5 text-xs sm:ml-2 sm:text-sm">Reenviar</span>
-                </button> -->
-              </div>
-            }
-
-            <!-- Reply form -->
-            @if (replyFormActive) {
-              <div class="flex w-full flex-col">
-                <!-- Textarea -->
-                <mat-form-field [subscriptSizing]="'dynamic'">
-                  <textarea
-                    class="textarea text-sm sm:text-base"
-                    matInput
-                    [(ngModel)]="replyText"
-                    placeholder="Escribe tu respuesta aquí"
-                    rows="4"
-                  ></textarea>
-                </mat-form-field>
-
-                <!-- Hidden file input -->
-                <input
-                  type="file"
-                  #replyFileInput
-                  multiple
-                  hidden
-                  (change)="onReplyFileSelected($event)"
-                />
-
-                <!-- Reply attachments list -->
-                @if (replyAttachments.length > 0) {
-                  <div class="mb-3 flex flex-col gap-2 sm:mb-4">
-                    @for (file of replyAttachments; track file) {
-                      <div
-                        class="flex items-center justify-between rounded-lg border bg-white px-3 py-2 text-sm dark:bg-black/20"
-                      >
-                        <div class="flex min-w-0 flex-1 items-center gap-2">
-                          <mat-icon
-                            class="flex-shrink-0 text-gray-500 icon-size-4"
-                            [svgIcon]="'heroicons_outline:paper-clip'"
-                          ></mat-icon>
-
-                          <div class="min-w-0 truncate">
-                            <span class="font-medium">{{ file.name }}</span>
-                            <span class="ml-1 text-xs text-gray-400">
-                              ({{ file.size / 1024 | number: '1.0-2' }} KB)
-                            </span>
-                          </div>
-                        </div>
-
-                        <button
-                          mat-icon-button
-                          color="warn"
-                          class="flex-shrink-0"
-                          (click)="removeReplyFile(file)"
-                        >
-                          <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_outline:x-mark'"
-                          ></mat-icon>
-                        </button>
-                      </div>
-                    }
-                  </div>
-                }
-
-                <!-- Action buttons -->
+              <div
+                class="bg-card mb-1 w-full overflow-hidden rounded-lg border-r-4 px-3 py-1 pr-2 text-xs text-black dark:text-white"
+                *ngIf="getReplyTo(reply, mail.replies) as replied"
+                [style.border-right-color]="getPersonColor(getReplyAuthor(replied)).bg"
+              >
                 <div
-                  class="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                  class="font-semibold"
+                  [style.color]="getPersonColor(getReplyAuthor(replied)).text"
                 >
-                  <!-- Attach files button -->
-                  <div class="flex">
-                    <button
-                      mat-icon-button
-                      class="-ml-2"
-                      (click)="attachReplyFile()"
-                      [matTooltip]="'Adjuntar archivos'"
+                  {{ getReplyAuthor(replied) }}
+                </div>
+                <div class="truncate text-xs opacity-80">{{ replied.body | slice: 0 : 40 }}...</div>
+              </div>
+
+              <div
+                class="w-full overflow-hidden rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed text-black"
+                style="word-break: break-word; overflow-wrap: break-word"
+                [style.background]="getPersonColor(getReplyAuthor(reply)).bg"
+                [innerHTML]="reply.body"
+              ></div>
+
+              @if (reply.attachments?.length > 0) {
+                <div class="mt-2 flex w-full min-w-0 flex-col gap-1.5">
+                  @for (att of reply.attachments; track att) {
+                    <div
+                      class="bg-card flex w-full min-w-0 cursor-pointer items-center gap-2 overflow-hidden rounded-xl px-3 py-2"
+                      (click)="openAttachmentViewer(att)"
                     >
                       <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_outline:paper-clip'"
+                        class="flex-shrink-0 text-black icon-size-5 dark:text-white"
+                        [svgIcon]="getAttachmentIcon(att)"
                       ></mat-icon>
-                    </button>
-                  </div>
-
-                  <!-- Discard and Send buttons -->
-                  <div class="flex w-full gap-2 sm:w-auto sm:gap-3">
-                    <!-- Discard -->
-                    <button
-                      class="flex-1 sm:min-w-[100px] sm:flex-none"
-                      mat-button
-                      (click)="discard()"
-                    >
-                      <span class="text-xs sm:text-sm">Descartar</span>
-                    </button>
-
-                    <!-- Send -->
-                    <button
-                      class="flex-1 sm:min-w-[100px] sm:flex-none"
-                      mat-flat-button
-                      [color]="'primary'"
-                      (click)="send()"
-                    >
-                      <span class="text-xs sm:text-sm">Enviar</span>
-                    </button>
-                  </div>
+                      <span class="min-w-0 flex-1 truncate text-sm text-black dark:text-white">
+                        {{ truncateFileName(att.original_name ?? att.name, 12) }}
+                      </span>
+                      <span class="flex-shrink-0 text-sm text-black sm:text-xs dark:text-white">
+                        {{ att.size / 1000 | number: '1.0-1' }} KB
+                      </span>
+                    </div>
+                  }
                 </div>
+              }
+
+              <span class="mt-1 text-[10px] text-gray-400">
+                {{ reply.sent_at | date: 'HH:mm' : '' : 'es-MX' }}
+              </span>
+            </div>
+                 @if (mail.status?.nombre !== 'Finalizado' && mail.status?.nombre !== 'Finalizada') {
+            <button
+              mat-icon-button
+              class="flex-shrink-0 self-center opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+              [matTooltip]="'Responder'"
+              (click)="setReplyTo(reply)"
+            >
+              <mat-icon
+                class="text-black icon-size-4 dark:text-white"
+                [svgIcon]="'heroicons_outline:arrow-uturn-left'"
+              ></mat-icon>
+            </button>
+          }
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Input -->
+     @if (mail.status?.nombre !== 'Finalizado' && mail.status?.nombre !== 'Finalizada') {
+    <div class="bg-default flex flex-shrink-0 flex-col sm:px-3 sm:pb-3" fuseScrollReset>
+      <div
+        class="bg-card flex w-full flex-0 flex-col overflow-hidden rounded-xl shadow sm:rounded-2xl"
+      >
+        <div class="flex w-full flex-shrink-0 flex-col border-t">
+          @if (replyingTo) {
+            <div
+              class="bg-card flex items-center gap-2 border-b border-gray-200 px-4 py-2 dark:border-gray-700"
+            >
+              <div class="flex-1 border-l-4 border-blue-500 pl-3">
+                <span class="block text-[11px] font-semibold text-blue-500">
+                  {{ replyingTo.author }}
+                </span>
+                <span
+                  class="line-clamp-1 text-xs text-gray-500 dark:text-gray-400"
+                  [innerHTML]="replyingTo.body"
+                ></span>
               </div>
-            }
+              <button mat-icon-button class="flex-shrink-0" (click)="clearReplyTo()">
+                <mat-icon
+                  class="text-gray-400 icon-size-4"
+                  [svgIcon]="'heroicons_outline:x-mark'"
+                ></mat-icon>
+              </button>
+            </div>
+          }
+
+          @if (replyAttachments.length > 0) {
+            <div
+              class="flex flex-wrap gap-2 border-b border-gray-200 px-4 py-2 dark:border-gray-700"
+            >
+              @for (file of replyAttachments; track file) {
+                <div
+                  class="flex items-center gap-1.5 rounded-lg border bg-white px-2.5 py-1.5 text-xs dark:bg-black/20"
+                >
+                  <mat-icon
+                    class="text-gray-500 icon-size-3.5"
+                    [svgIcon]="'heroicons_outline:paper-clip'"
+                  ></mat-icon>
+                  <span class="max-w-[140px] truncate font-medium">
+                    {{ truncateFileName(file.name, 12) }}
+                  </span>
+                  <button class="ml-1" mat-icon-button (click)="removeReplyFile(file)">
+                    <mat-icon
+                      class="text-gray-400 icon-size-3.5"
+                      [svgIcon]="'heroicons_outline:x-mark'"
+                    ></mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          <div class="flex items-end gap-1 px-2 py-2 sm:gap-2 sm:px-3 sm:py-3">
+            <input
+              type="file"
+              #replyFileInput
+              multiple
+              hidden
+              (change)="onReplyFileSelected($event)"
+            />
+            <button
+              mat-icon-button
+              class="flex-shrink-0 text-gray-400"
+              [matTooltip]="'Adjuntar archivos'"
+              (click)="attachReplyFile()"
+            >
+              <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:paper-clip'"></mat-icon>
+            </button>
+
+            <mat-form-field class="flex-auto" [subscriptSizing]="'dynamic'">
+              <textarea
+                matInput
+                [(ngModel)]="replyText"
+                placeholder="Escribe un mensaje..."
+                rows="1"
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="1"
+                cdkAutosizeMaxRows="6"
+                class="text-sm"
+                (keydown.enter)="onEnterKey($event)"
+              ></textarea>
+            </mat-form-field>
+
+            <button
+              mat-icon-button
+              class="flex-shrink-0"
+              [color]="'primary'"
+              [disabled]="!replyText?.trim() && replyAttachments.length === 0"
+              [matTooltip]="'Enviar'"
+              (click)="send()"
+            >
+              <mat-icon
+                class="icon-size-5"
+                [svgIcon]="'heroicons_outline:paper-airplane'"
+              ></mat-icon>
+            </button>
           </div>
         </div>
       </div>
     </div>
+  }
+
   } @else {
     <div
       class="flex flex-auto flex-col items-center justify-center bg-gray-100 px-4 dark:bg-transparent"
@@ -568,24 +537,15 @@
     class="flex h-full w-full flex-col overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-gray-800"
     style="max-width: 90vw; max-height: 90vh"
   >
-    <!-- Header -->
-    <div
-      class="flex flex-shrink-0 items-center justify-between border-b bg-white px-4 py-3 dark:bg-gray-800"
-    >
-      <div class="truncate text-lg font-semibold">
-        {{ att.name }}
-      </div>
-
+    <div class="bg-card flex flex-shrink-0 items-center justify-between border-b px-4 py-3">
+      <div class="truncate text-lg font-semibold">{{ att.name }}</div>
       <button mat-icon-button (click)="closeAttachmentViewer()">
         <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
       </button>
     </div>
-
-    <!-- Content -->
     <div
       class="flex flex-auto items-center justify-center overflow-hidden bg-white p-4 dark:bg-gray-600"
     >
-      <!-- Imagen -->
       @if (isImageAttachment(att)) {
         <img
           [src]="getSafeAttachmentUrl(att)"
@@ -594,20 +554,14 @@
           [alt]="att.name"
           style="max-height: 80vh; max-width: 85vw"
         />
-      }
-
-      <!-- PDF -->
-      @else if (isPdfAttachment(att)) {
+      } @else if (isPdfAttachment(att)) {
         <iframe
           [src]="getSafePdfUrl(att)"
           class="rounded border-0"
           (error)="onAttachmentError($event, att)"
           style="width: 100%; height: 80vh"
         ></iframe>
-      }
-
-      <!-- Otros archivos -->
-      @else {
+      } @else {
         <div class="flex flex-col items-center space-y-4 p-8">
           <mat-icon
             class="text-gray-400"
@@ -632,3 +586,49 @@
     </div>
   </div>
 </ng-template>
+
+<mat-menu #menu="matMenu">
+  <!-- Importante -->
+  <button mat-menu-item (click)="toggleimportantes()">
+    <mat-icon
+      [ngClass]="{ 'text-red-600 dark:text-red-500': mail.importantes }"
+      [svgIcon]="
+        mail.importantes
+          ? 'heroicons_solid:exclamation-circle'
+          : 'heroicons_outline:exclamation-circle'
+      "
+    ></mat-icon>
+    <span>Importante</span>
+  </button>
+
+  <!-- Destacar -->
+  <button mat-menu-item (click)="toggleStar()">
+    <mat-icon
+      [ngClass]="{ 'text-yellow-500': mail.destacados }"
+      [svgIcon]="mail.destacados ? 'heroicons_solid:star' : 'heroicons_outline:star'"
+    ></mat-icon>
+    <span>Destacar</span>
+  </button>
+
+  <!-- Leído / no leído -->
+  <button mat-menu-item (click)="toggleUnread(!mail.unread)">
+    <mat-icon
+      [svgIcon]="mail.unread ? 'heroicons_outline:envelope-open' : 'heroicons_outline:envelope'"
+    ></mat-icon>
+    <span>
+      {{ mail.unread ? 'Marcar como leído' : 'Marcar como no leído' }}
+    </span>
+  </button>
+
+  <!-- Spam -->
+  <button mat-menu-item (click)="moveToFolder('spam')">
+    <mat-icon svgIcon="heroicons_outline:exclamation-triangle"></mat-icon>
+    <span>Spam</span>
+  </button>
+
+  <!-- Eliminar -->
+  <button mat-menu-item (click)="moveToFolder('eliminados')">
+    <mat-icon svgIcon="heroicons_outline:trash"></mat-icon>
+    <span>Eliminar</span>
+  </button>
+</mat-menu>

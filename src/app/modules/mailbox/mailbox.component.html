@@ -2,7 +2,7 @@
     <mat-drawer-container class="h-full flex-auto">
         <!-- Drawer -->
         <mat-drawer
-            class="w-72 dark:bg-gray-900"
+            class="w-72 bg-card"
             [mode]="drawerMode"
             [opened]="drawerOpened"
             #drawer
@@ -12,9 +12,9 @@
         </mat-drawer>
 
         <!-- Drawer content -->
-        <mat-drawer-content class="flex flex-col overflow-hidden">
+        <mat-drawer-content class="flex flex-col overflow-hidden bg-default">
             <!-- Main -->
-            <div class="flex flex-auto overflow-hidden">
+            <div class="flex flex-auto overflow-hidden ">
                 <router-outlet></router-outlet>
             </div>
         </mat-drawer-content>
