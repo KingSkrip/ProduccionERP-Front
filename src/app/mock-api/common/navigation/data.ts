@@ -4025,22 +4025,22 @@ export const menuColaborador: FuseNavigationItem[] = [
   //icon: 'heroicons_outline:view-columns',
   //link: '/apps/scrumboard',
   //},
-  {
-    id: 'colaborador.scan',
-    title: 'Escaner',
-    tooltip: 'Escaner',
-    type: 'basic',
-    icon: 'heroicons_outline:barcode',
-    link: '/apps/colaborador/Barcode',
-  },
-  {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
-    type: 'basic',
-    icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
-  },
+  // {
+  //   id: 'colaborador.scan',
+  //   title: 'Escaner',
+  //   tooltip: 'Escaner',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:barcode',
+  //   link: '/apps/colaborador/Barcode',
+  // },
+  // {
+  //   id: 'citas',
+  //   title: 'Citas',
+  //   tooltip: 'Citas',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:calendar',
+  //   link: '/apps/Citas',
+  // },
 ];
 
 export const menuSuAdmin_Admin: FuseNavigationItem[] = [
