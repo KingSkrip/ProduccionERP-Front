@@ -32,10 +32,10 @@ import { MailCategory } from '../mailbox.types';
   ],
 })
 export class MailboxListComponent implements OnInit, OnDestroy {
-  @ViewChild('mailList') mailList: ElementRef;
+  @ViewChild('mailList') mailList!: ElementRef;
   myUserId: number | null = null;
-  category: MailCategory;
-  mails: any[]; // Cambiado de Mail[] a any[] para aceptar WorkOrders
+  category!: MailCategory;
+  mails!: any[]; // Cambiado de Mail[] a any[] para aceptar WorkOrders
   mailsLoading: boolean = false;
   pagination: any;
   selectedMail: any;
@@ -260,7 +260,7 @@ export class MailboxListComponent implements OnInit, OnDestroy {
    * Check if current user is the receiver (not the sender)
    */
   isReceiver(mail: any): boolean {
- const folderName = (this.category?.name ?? '').toLowerCase();
+    const folderName = (this.category?.name ?? '').toLowerCase();
     const sentFolders = ['enviados', 'sent', 'borradores', 'drafts'];
     if (sentFolders.some((f) => folderName.includes(f))) return false;
     if (!this.myUserId) return false;

@@ -151,20 +151,15 @@
       <!-- Hora inicio -->
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium text-black dark:text-white">Hora inicio</label>
-
         <div class="relative">
-          <input
-            #horaInicioInput
-            type="time"
+          <select
             [(ngModel)]="formCita.horaInicio"
-            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:opacity-0"
-            style="appearance: none; -webkit-appearance: none; -moz-appearance: none"
-          />
-
-          <!-- Icono -->
+            class="appearance-none w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+          >
+            <option *ngFor="let h of horasDisponibles" [value]="h">{{ h }}</option>
+          </select>
           <mat-icon
-            class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
-            (click)="horaInicioInput.showPicker()"
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
           >
             schedule
           </mat-icon>
@@ -174,20 +169,15 @@
       <!-- Hora fin -->
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium text-black dark:text-white">Hora fin</label>
-
         <div class="relative">
-          <input
-            #horaFinInput
-            type="time"
+          <select
             [(ngModel)]="formCita.horaFin"
-            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:opacity-0"
-            style="appearance: none; -webkit-appearance: none; -moz-appearance: none"
-          />
-
-          <!-- Icono -->
+            class="appearance-none w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+          >
+            <option *ngFor="let h of horasDisponibles" [value]="h">{{ h }}</option>
+          </select>
           <mat-icon
-            class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
-            (click)="horaFinInput.showPicker()"
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
           >
             schedule
           </mat-icon>
@@ -431,21 +421,18 @@
       <div class="grid grid-cols-2 gap-4">
         <!-- Hora Inicio -->
         <div>
-          <label class="text-sm font-medium text-black dark:text-white">Inicio </label>
-
+          <label class="text-sm font-medium text-black dark:text-white">Inicio</label>
           <div class="relative">
-            <input
-              #horaInicioInput
-              type="time"
+            <select
               [(ngModel)]="formCita.horaInicio"
-              class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
-            />
-
-            <div
-              (click)="horaInicioInput.showPicker()"
-              class="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+              class="appearance-none w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
             >
-              <mat-icon class="text-black icon-size-5 dark:text-white"> schedule </mat-icon>
+              <option *ngFor="let h of horasDisponibles" [value]="h">{{ h }}</option>
+            </select>
+            <div
+              class="pointer-events-none absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+            >
+              <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
             </div>
           </div>
         </div>
@@ -453,20 +440,17 @@
         <!-- Hora Fin -->
         <div>
           <label class="text-sm font-medium text-black dark:text-white">Fin</label>
-
           <div class="relative">
-            <input
-              #horaFinInput
-              type="time"
+            <select
               [(ngModel)]="formCita.horaFin"
-              class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
-            />
-
-            <div
-              (click)="horaFinInput.showPicker()"
-              class="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+              class="appearance-none w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
             >
-              <mat-icon class="text-black icon-size-5 dark:text-white"> schedule </mat-icon>
+              <option *ngFor="let h of horasDisponibles" [value]="h">{{ h }}</option>
+            </select>
+            <div
+              class="pointer-events-none absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+            >
+              <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
             </div>
           </div>
         </div>

@@ -305,4 +305,20 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
       this.autocomplete2.openPanel();
     }
   }
+
+
+  // Horarios disponibles: 8am-6pm cada 30min, bloqueando 2pm-3pm
+readonly horasDisponibles: string[] = (() => {
+  const horas: string[] = [];
+  for (let h = 8; h < 18; h++) {
+    for (const m of [0, 30]) {
+      if (h === 14 || h === 15) continue;
+      const hStr = h.toString().padStart(2, '0');
+      const mStr = m.toString().padStart(2, '0');
+      horas.push(`${hStr}:${mStr}`);
+    }
+  }
+  horas.push('18:00');
+  return horas;
+})();
 }

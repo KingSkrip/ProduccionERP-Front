@@ -2629,7 +2629,6 @@ export const menuRh: FuseNavigationItem[] = [
 // ];
 
 export const menuSuAdmin: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4034,7 +4033,7 @@ export const menuColaborador: FuseNavigationItem[] = [
     icon: 'heroicons_outline:barcode',
     link: '/apps/colaborador/Barcode',
   },
-    {
+  {
     id: 'citas',
     title: 'Citas',
     tooltip: 'Citas',
@@ -4045,7 +4044,6 @@ export const menuColaborador: FuseNavigationItem[] = [
 ];
 
 export const menuSuAdmin_Admin: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4086,7 +4084,6 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
 ];
 
 export const menuJacobo: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4269,7 +4266,6 @@ export const menuReporteProd_Jacobo: FuseNavigationItem[] = [
 ];
 
 export const menuClientes: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4304,7 +4300,6 @@ export const menuClientes: FuseNavigationItem[] = [
 ];
 
 export const menuAgentes: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4339,7 +4334,6 @@ export const menuAgentes: FuseNavigationItem[] = [
 ];
 
 export const menuVentas: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4428,7 +4422,6 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
 ];
 
 export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4476,7 +4469,6 @@ export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
 ];
 
 export const menuColaborador_Contraloria: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4525,7 +4517,6 @@ export const menuColaborador_Contraloria: FuseNavigationItem[] = [
 ];
 
 export const menuColaborador_Coordinador: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4573,7 +4564,6 @@ export const menuColaborador_Coordinador: FuseNavigationItem[] = [
 ];
 
 export const menuJefe: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4675,7 +4665,6 @@ export const menuJefe: FuseNavigationItem[] = [
 ];
 
 export const menuJaime: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4778,7 +4767,6 @@ export const menuJaime: FuseNavigationItem[] = [
 ];
 
 export const menuSabu: FuseNavigationItem[] = [
- 
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4878,9 +4866,7 @@ export const menuSabu: FuseNavigationItem[] = [
   },
 ];
 
-
-export const menuProvedores: FuseNavigationItem[] =[
-
+export const menuProvedores: FuseNavigationItem[] = [
   {
     id: 'group.dashboards',
     title: 'Dashboards',
@@ -4903,5 +4889,4 @@ export const menuProvedores: FuseNavigationItem[] =[
     icon: 'heroicons_outline:calendar',
     link: '/apps/Citas',
   },
-
-]; 
+];
