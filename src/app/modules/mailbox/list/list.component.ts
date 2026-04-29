@@ -61,8 +61,10 @@ export class MailboxListComponent implements OnInit, OnDestroy {
     try {
       const token = localStorage.getItem('encrypt') ?? '';
       const payload = JSON.parse(atob(token.split('.')[1]));
-      this.myUserId = payload.sub; // 989
+      this.myUserId = payload.sub;
+      console.log('[DEBUG] myUserId:', this.myUserId, typeof this.myUserId);
     } catch (e) {
+      console.error('[DEBUG] JWT parse falló:', e);
       this.myUserId = null;
     }
     this.myEmail = (
@@ -92,12 +94,14 @@ export class MailboxListComponent implements OnInit, OnDestroy {
 
     // Mails
     this._mailboxService.mails$.pipe(takeUntil(this._unsubscribeAll)).subscribe((mails: any[]) => {
-      this.mails = (mails ?? []).map((m) => ({
-        ...m,
-        _mailDate: m.date ?? m.created_at ?? m.updated_at ?? null,
-      }));
+      this.mails = (mails ?? []).map((m) => {
+        const mail = { ...m, _mailDate: m.date ?? m.created_at ?? m.updated_at ?? null };
+        // Pre-calcular para no evaluar en cada ciclo de CD
+        mail._isReceiver = this.isReceiver(mail);
+        mail._recipientRole = this.getRecipientRole(mail);
+        return mail;
+      });
     });
-
     // Mails loading
     this._mailboxService.mailsLoading$
       .pipe(takeUntil(this._unsubscribeAll))
@@ -166,12 +170,12 @@ export class MailboxListComponent implements OnInit, OnDestroy {
    * Check if mail is unread
    */
   isUnread(mail: any): boolean {
-    // Si tiene estructura Mail
+    if (this.isSpecialFolder()) return false;
+
     if (typeof mail.unread === 'boolean') {
       return mail.unread;
     }
 
-    // Si es WorkOrder con mailbox_items
     const mailboxItem = mail.mailbox_items?.[0];
     return !mailboxItem?.read_at;
   }
@@ -257,17 +261,21 @@ export class MailboxListComponent implements OnInit, OnDestroy {
    * Check if current user is the receiver (not the sender)
    */
   isReceiver(mail: any): boolean {
-    const folderName = (this.category?.name ?? '').toLowerCase();
+ const folderName = (this.category?.name ?? '').toLowerCase();
     const sentFolders = ['enviados', 'sent', 'borradores', 'drafts'];
-
     if (sentFolders.some((f) => folderName.includes(f))) return false;
-    if ((mail.mailbox_items?.length ?? 0) > 0) return true;
     if (!this.myUserId) return false;
 
-    return (mail.task_participants ?? []).some(
+    const isParticipantReceptor = (mail.task_participants ?? []).some(
       (p: any) =>
         p.role === 'receptor' && Number(p?.user?.firebird_user_clave) === Number(this.myUserId),
     );
+    if (isParticipantReceptor) return true;
+
+    const isEmisor = Number(mail.de_id) === Number(this.myUserId);
+    if ((mail.mailbox_items?.length ?? 0) > 0 && !isEmisor) return true;
+
+    return false;
   }
 
   getStatusTextClass(status: string): string {
@@ -309,21 +317,24 @@ export class MailboxListComponent implements OnInit, OnDestroy {
     });
   }
 
-
   getRecipientRole(mail: any): 'cc' | 'bcc' | null {
-  if (!this.myUserId) return null;
+    // if (this.isSpecialFolder()) return null;
+    if (!this.myUserId) return null;
 
-  const isCc = (mail.task_participants ?? []).some(
-    (p: any) =>
-      p.role === 'cc' && Number(p?.user?.firebird_user_clave) === Number(this.myUserId),
-  );
-  const isBcc = (mail.task_participants ?? []).some(
-    (p: any) =>
-      p.role === 'bcc' && Number(p?.user?.firebird_user_clave) === Number(this.myUserId),
-  );
+    const participants = mail.task_participants ?? [];
+    const isBcc = participants.some(
+      (p: any) =>
+        p.role === 'bcc' && Number(p?.user?.firebird_user_clave) === Number(this.myUserId),
+    );
+    const isCc = participants.some(
+      (p: any) => p.role === 'cc' && Number(p?.user?.firebird_user_clave) === Number(this.myUserId),
+    );
+    return isBcc ? 'bcc' : isCc ? 'cc' : null;
+  }
 
-  if (isBcc) return 'bcc';
-  if (isCc) return 'cc';
-  return null;
-}
+  isSpecialFolder(): boolean {
+    const folderName = (this.category?.name ?? '').toLowerCase();
+    const specialFolders = ['trash', 'spam', 'borradores', 'drafts', 'eliminados', 'papelera'];
+    return specialFolders.some((f) => folderName.includes(f));
+  }
 }
