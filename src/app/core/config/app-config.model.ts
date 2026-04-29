@@ -5,10 +5,10 @@ export interface AppConfig {
   environment: 'dev' | 'prod';
   featureFlagX: boolean;
 
-  reverb: {
-    key: string;
-    host: string;
-    port: number;
-    scheme: 'http' | 'https';
-  };
+  // reverb: {
+  //   key: string;
+  //   host: string;
+  //   port: number;
+  //   scheme: 'http' | 'https';
+  // };
 }
