@@ -62,7 +62,6 @@ export class MailboxListComponent implements OnInit, OnDestroy {
       const token = localStorage.getItem('encrypt') ?? '';
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.myUserId = payload.sub;
-      console.log('[DEBUG] myUserId:', this.myUserId, typeof this.myUserId);
     } catch (e) {
       console.error('[DEBUG] JWT parse falló:', e);
       this.myUserId = null;
