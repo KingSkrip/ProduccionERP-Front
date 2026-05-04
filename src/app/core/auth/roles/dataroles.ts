@@ -39,6 +39,8 @@ export const SubRoles = {
   12: 'DIRECCION',
   13: 'CONTRALORIA',
   14: 'COORDINADOR',
+  15: 'COMPRAS',
+  16: 'ALMACEN',
 };
 
 export enum SubRoleEnum {
@@ -56,6 +58,8 @@ export enum SubRoleEnum {
   DIRECCION = 12,
   CONTRALORIA = 13,
   COORDINADOR = 14,
+  COMPRAS = 15,
+  ALMACEN = 16,
 }
 
 //acceso para submenu de produccion
@@ -70,6 +74,8 @@ export const SubRolesWithChildMenuAccess = new Set([
   SubRoleEnum.GERENTE,
   SubRoleEnum.CONTRALORIA,
   SubRoleEnum.COORDINADOR,
+  SubRoleEnum.COMPRAS,
+  SubRoleEnum.ALMACEN,
 ]);
 
 export const RolesWithChildMenuAccess = new Set([RoleEnum.SUADMIN, RoleEnum.COLABORADOR]);

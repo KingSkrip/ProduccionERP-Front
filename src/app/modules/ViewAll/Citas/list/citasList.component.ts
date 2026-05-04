@@ -22,6 +22,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
 import { AuthService } from 'app/core/auth/auth.service';
+import { SubRoleEnum } from 'app/core/auth/roles/dataroles';
 import { NuevaCitaModalComponent } from 'app/modules/modals/Citas/Nueva-cita/nueva-cita-modal.component';
 import { DayCitasModalComponent } from 'app/modules/modals/Citas/Ver-citas/day-citas-modal.component';
 import { DetallesAccesoModalComponent } from 'app/modules/modals/Citas/Ver-citas/detalles/detalles.component';
@@ -84,10 +85,10 @@ export class CitasListComponent implements OnInit, OnDestroy {
     { value: 'dia', label: 'Día', icon: 'view_day' },
     { value: 'lista', label: 'Lista', icon: 'view_list' },
   ] as const;
-
+  nombre_visitante?: string;
   filtroEstado = 'todos';
   citas: Cita[] = [];
-  menuAbiertoCita: Cita | null = null;
+  menuAbiertoCitaId: number | null = null;
   isProveedor = false;
   constructor(
     private _citasService: CitasService,
@@ -99,34 +100,79 @@ export class CitasListComponent implements OnInit, OnDestroy {
   ) {}
 
   // ─── ngOnInit — mapeo corregido ───────────────────────────────────
-  ngOnInit(): void {
-    this._citasService
-      .getCitas()
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((citas: CitaAPI[]) => {
-        this.citas = citas.map((c) => ({
-          id: c.id,
-          id_visitante: c.id_visitante,
-          paciente: c.es_externa
-            ? (c.nombre_proveedor ?? c.usuario?.nombre ?? 'Proveedor')
-            : (c.nombre_visitante ?? c.visitante?.nombre ?? 'Sin nombre'),
-          motivo: c.motivo ?? '',
-          fecha: c.fecha,
-          horaInicio: c.hora_inicio,
-          horaFin: c.hora_fin,
-          estado: c.estado,
-          notas: c.notas,
-          con_vehiculo: (c as any).con_vehiculo ?? false,
-          dia: String(new Date(c.fecha).getDate()),
-          mes: this._mesCorto(new Date(c.fecha).getMonth()),
-          esExterna: c.es_externa ?? false,
-        }));
+ ngOnInit(): void {
+  const user = this._authService.getUser();
 
-        this._cdr.markForCheck();
-      });
+  const idsPermitidos = [252, 235, 264, 256];
+  const rolesPermitidos = [1];
+  const subrolesPermitidos = [6, 15, 16];
+const userClave = Number(user?.id ?? 0);
+const tieneId = idsPermitidos.includes(userClave);
+  const tieneRol = user?.permissions?.some(r => rolesPermitidos.includes(r));
+  const tieneSubrol = user?.sub_permissions?.some(s => subrolesPermitidos.includes(s));
+  const esAdminReal = tieneId && tieneRol && tieneSubrol;
+
+  const fuente$ = esAdminReal
+    ? this._citasService.getCitasAdmin()
+    : this._citasService.getCitas();
+
+  fuente$
+    .pipe(takeUntil(this._unsubscribeAll))
+    .subscribe((citas: CitaAPI[]) => {
+      this.citas = citas.map((c) => ({
+        id: c.id,
+        id_visitante: c.id_visitante,
+        nombre_visitante: c.nombre_visitante,
+        paciente: c.es_externa
+          ? (c.nombre_proveedor ?? c.usuario?.nombre ?? 'Proveedor')
+          : (c.nombre_visitante ?? c.visitante?.nombre ?? 'Sin nombre'),
+        motivo: c.motivo ?? '',
+        fecha: c.fecha,
+        horaInicio: c.hora_inicio,
+        horaFin: c.hora_fin,
+        estado: c.estado,
+        notas: c.notas,
+        con_vehiculo: (c as any).con_vehiculo ?? false,
+        dia: String(new Date(c.fecha).getDate()),
+        mes: this._mesCorto(new Date(c.fecha).getMonth()),
+        esExterna: c.es_externa ?? false,
+      }));
+
+      this._cdr.markForCheck();
+    });
+}
+
+  ngOnDestroy(): void {
+    this._unsubscribeAll.next();
+    this._unsubscribeAll.complete();
   }
 
   // ─── Agrupar citas por fecha + hora_inicio ───────────────────────
+
+  // get citasAgrupadas(): Cita[] {
+  //   const mapa = new Map<string, Cita>();
+
+  //   for (const cita of this.citas) {
+  //     const key = `${cita.fecha}_${cita.horaInicio}_${cita.horaFin}`;
+  //     if (mapa.has(key)) {
+  //       const existente = mapa.get(key)!;
+  //       existente.paciente = `${existente.paciente}, ${cita.paciente}`;
+  //       existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
+  //       existente.visitantes = [
+  //         ...(existente.visitantes ?? []),
+  //         { id: cita.id_visitante!, nombre: cita.paciente },
+  //       ];
+  //     } else {
+  //       mapa.set(key, {
+  //         ...cita,
+  //         ids: [cita.id!],
+  //         visitantes: [{ id: cita.id_visitante!, nombre: cita.paciente }],
+  //       });
+  //     }
+  //   }
+
+  //   return Array.from(mapa.values());
+  // }
 
   get citasAgrupadas(): Cita[] {
     const mapa = new Map<string, Cita>();
@@ -137,25 +183,25 @@ export class CitasListComponent implements OnInit, OnDestroy {
         const existente = mapa.get(key)!;
         existente.paciente = `${existente.paciente}, ${cita.paciente}`;
         existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
-        existente.visitantes = [
-          ...(existente.visitantes ?? []),
-          { id: cita.id_visitante!, nombre: cita.paciente },
-        ];
+        // Solo agrega visitante si tiene id real
+        if (cita.id_visitante != null) {
+          existente.visitantes = [
+            ...(existente.visitantes ?? []),
+            { id: cita.id_visitante!, nombre: cita.paciente },
+          ];
+        }
       } else {
         mapa.set(key, {
           ...cita,
           ids: [cita.id!],
-          visitantes: [{ id: cita.id_visitante!, nombre: cita.paciente }],
+          // Solo incluye visitante si tiene id real
+          visitantes:
+            cita.id_visitante != null ? [{ id: cita.id_visitante!, nombre: cita.paciente }] : [],
         });
       }
     }
 
     return Array.from(mapa.values());
-  }
-
-  ngOnDestroy(): void {
-    this._unsubscribeAll.next();
-    this._unsubscribeAll.complete();
   }
 
   // ─── Mini calendario ────────────────────────────────────────────
@@ -423,7 +469,7 @@ export class CitasListComponent implements OnInit, OnDestroy {
   }
 
   toggleMenuCitaDia(cita: Cita): void {
-    this.menuAbiertoCita = this.menuAbiertoCita === cita ? null : cita;
+    this.menuAbiertoCitaId = this.menuAbiertoCitaId === cita.id ? null : cita.id;
     this._cdr.markForCheck();
   }
 
@@ -596,9 +642,9 @@ export class CitasListComponent implements OnInit, OnDestroy {
   }
 
   esSlotPasado(fecha: string, hora: number): boolean {
-  const hoy = new Date();
-  const [anio, mes, dia] = fecha.split('-').map(Number);
-  const slotDate = new Date(anio, mes - 1, dia, hora);
-  return slotDate < hoy;
-}
+    const hoy = new Date();
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    const slotDate = new Date(anio, mes - 1, dia, hora);
+    return slotDate < hoy;
+  }
 }

@@ -225,12 +225,12 @@
             >
           </button>
           <h2 class="m-0 mx-2 text-base font-bold text-slate-800 dark:text-white">
-            <ng-container *ngIf="['semana', 'lista'].includes(vistaActual)">{{
-              rangoSemanaLabel
-            }}</ng-container>
-            <ng-container *ngIf="vistaActual === 'dia'"
-              >{{ diaSeleccionado }} {{ mesActualLabel }}</ng-container
-            >
+            <ng-container *ngIf="['semana', 'lista'].includes(vistaActual)">
+              {{ rangoSemanaLabel }}
+            </ng-container>
+            <ng-container *ngIf="vistaActual === 'dia'">
+              {{ diaSeleccionado }} {{ mesActualLabel }}
+            </ng-container>
           </h2>
           <button
             class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-300 dark:hover:bg-gray-500"
@@ -378,11 +378,11 @@
                       'bg-blue-50/30': esHoy(dia.fecha),
                       'bg-accent-500/10': !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
                     }"
-          (click)="
-  getCitasEnSlot(dia.fecha, hora).length > 0
-    ? verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0])
-    : !esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora)
-"
+                    (click)="
+                      getCitasEnSlot(dia.fecha, hora).length > 0
+                        ? verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0])
+                        : !esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora)
+                    "
                   >
                     <ng-container *ngFor="let cita of getCitasEnSlot(dia.fecha, hora)">
                       <div
@@ -412,23 +412,30 @@
                       </div>
                     </ng-container>
                     <button
-                      *ngIf="getCitasEnSlot(dia.fecha, hora).length === 0 && !esSlotPasado(dia.fecha, hora)"
+                      *ngIf="
+                        getCitasEnSlot(dia.fecha, hora).length === 0 &&
+                        !esSlotPasado(dia.fecha, hora)
+                      "
                       class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-white opacity-0 shadow transition-opacity hover:bg-primary-700 group-hover:opacity-100"
-                     (click)="!esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora); $event.stopPropagation()">
+                      (click)="
+                        !esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora);
+                        $event.stopPropagation()
+                      "
+                    >
                       <mat-icon class="text-sm text-white">add</mat-icon>
                     </button>
                     <button
-*ngIf="
-  getCitasEnSlot(dia.fecha, hora).length > 0 &&
-  !esSlotPasado(dia.fecha, hora) &&
-  !getCitasEnSlot(dia.fecha, hora)[0].esExterna
-"
+                      *ngIf="
+                        getCitasEnSlot(dia.fecha, hora).length > 0 &&
+                        !esSlotPasado(dia.fecha, hora) &&
+                        !getCitasEnSlot(dia.fecha, hora)[0].esExterna
+                      "
                       class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-accent-500 opacity-0 shadow transition-opacity hover:bg-accent-700 group-hover:opacity-100"
                       (click)="
-  !esSlotPasado(dia.fecha, hora) &&
-    verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0]);
-  $event.stopPropagation()
-"
+                        !esSlotPasado(dia.fecha, hora) &&
+                          verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0]);
+                        $event.stopPropagation()
+                      "
                     >
                       <mat-icon class="text-sm text-black">edit</mat-icon>
                     </button>
@@ -455,8 +462,11 @@
             </div>
             <div
               class="bg-card min-h-[42px] border-l border-gray-200 p-1 lg:p-2 dark:border-gray-500"
-             [class.cursor-pointer]="!esSlotPasado(fechaDiaSeleccionado, hora)"
-(click)="!esSlotPasado(fechaDiaSeleccionado, hora) && crearCitaEnSlot(diaSeleccionadoObj, hora)"
+              [class.cursor-pointer]="!esSlotPasado(fechaDiaSeleccionado, hora)"
+              (click)="
+                !esSlotPasado(fechaDiaSeleccionado, hora) &&
+                  crearCitaEnSlot(diaSeleccionadoObj, hora)
+              "
             >
               <ng-container *ngFor="let cita of getCitasEnSlot(fechaDiaSeleccionado, hora)">
                 <div
@@ -502,13 +512,13 @@
                     <button
                       *ngIf="!esFechaPasada(fechaDiaSeleccionado) && !cita.esExterna"
                       class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
-                      (click)="toggleMenuCitaDia(cita)"
+                      (click)="$event.stopPropagation(); toggleMenuCitaDia(cita)"
                     >
                       <mat-icon class="text-base text-black">more_vert</mat-icon>
                     </button>
                     <div
                       *ngIf="
-                        menuAbiertoCita === cita &&
+                        menuAbiertoCitaId === cita.id &&
                         !esFechaPasada(fechaDiaSeleccionado) &&
                         !cita.esExterna
                       "
@@ -576,8 +586,23 @@
           </div>
           <div class="h-10 w-px shrink-0 bg-gray-200"></div>
           <div class="min-w-0 flex-1">
-            <p class="m-0 truncate text-sm text-black dark:text-white">{{ cita.paciente }}</p>
-            <p class="m-0 text-xs text-black dark:text-white">{{ cita.motivo }}</p>
+            <div class="flex items-center justify-between gap-2">
+              <p class="m-0 truncate text-sm text-black dark:text-white">
+                {{ cita.paciente }}
+              </p>
+
+              <span
+                class="whitespace-nowrap rounded-full px-2 py-[3px] text-[8px] font-semibold capitalize lg:px-3 lg:text-[11px]"
+                [ngClass]="{
+                  'bg-green-100 text-green-600': cita.estado === 'confirmada',
+                  'bg-amber-100 text-amber-600': cita.estado === 'pendiente',
+                  'bg-red-100 text-red-600': cita.estado === 'cancelada',
+                }"
+              >
+                {{ cita.estado }}
+              </span>
+            </div>
+            <p class="m-0 truncate text-xs text-black dark:text-white">{{ cita.motivo }}</p>
             <p class="m-0 mt-1 flex items-center gap-1 text-[10px] text-gray-500 lg:hidden">
               <mat-icon class="text-[12px]">schedule</mat-icon>
               {{ cita.horaInicio }} - {{ cita.horaFin }}
@@ -590,17 +615,6 @@
             {{ cita.horaInicio }} - {{ cita.horaFin }}
           </div>
           <span
-            class="whitespace-nowrap rounded-full px-2 py-[3px] text-[10px] font-semibold capitalize lg:px-3 lg:text-[11px]"
-            [ngClass]="{
-              'bg-green-100 text-green-600': cita.estado === 'confirmada',
-              'bg-amber-100 text-amber-600': cita.estado === 'pendiente',
-              'bg-red-100 text-red-600': cita.estado === 'cancelada',
-            }"
-          >
-            {{ cita.estado }}
-          </span>
-
-          <span
             *ngIf="cita.esExterna"
             class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white lg:h-auto lg:w-auto lg:px-2 lg:py-[3px] lg:text-[10px]"
           >
@@ -608,7 +622,10 @@
             <span class="lg:hidden">E</span>
           </span>
 
-          <div class="flex shrink-0 gap-1" *ngIf="!esFechaPasada(cita.fecha) && !cita.esExterna">
+          <div
+            class="flex shrink-0 flex-col gap-1 lg:flex-row"
+            *ngIf="!esFechaPasada(cita.fecha) && !cita.esExterna"
+          >
             <button
               class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-slate-200"
               (click)="editarCita(cita)"

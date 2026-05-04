@@ -18,17 +18,15 @@
   <!-- Body modal -->
   <div class="flex flex-1 flex-col gap-4 overflow-y-auto px-1 py-5">
     <!-- Visita -->
-    <div class="flex flex-col gap-1">
+    <!-- <div class="flex flex-col gap-1">
       <label class="text-sm font-medium text-black dark:text-white">
         ¿Quién nos va a visitar hoy?
       </label>
 
       <div class="relative">
-        <!-- CONTENEDOR INPUT + CHIPS -->
         <div
           class="appearance-none flex w-full flex-wrap items-center gap-2 rounded-lg border border-slate-300 py-2 pl-2 pr-10 text-sm text-black dark:bg-gray-700 dark:text-white"
         >
-          <!-- CHIPS -->
           <div
             *ngFor="let u of usuariosSeleccionados"
             class="flex items-center gap-1 rounded-full bg-primary-500 px-2 py-1 text-xs text-white"
@@ -39,7 +37,6 @@
             </button>
           </div>
 
-          <!-- INPUT -->
           <input
             #inputNative
             #inputAuto="matAutocompleteTrigger"
@@ -54,7 +51,6 @@
           />
         </div>
 
-        <!-- Icono igual al select -->
         <mat-icon
           (mousedown)="$event.preventDefault()"
           (click)="toggleAutocomplete()"
@@ -64,7 +60,6 @@
         </mat-icon>
       </div>
 
-      <!-- AUTOCOMPLETE -->
       <mat-autocomplete
         #auto="matAutocomplete"
         [displayWith]="displayFn"
@@ -72,9 +67,97 @@
       >
         <mat-option *ngFor="let u of usuariosFiltrados" [value]="u">
           <div class="gap- flex items-center py-0.5">
-            <!-- Initials avatar -->
+         
             <div
               class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white dark:bg-primary-500 dark:text-white"
+            >
+              {{ u.nombre | slice: 0 : 1 }}
+            </div>
+            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ u.nombre }}</span>
+          </div>
+        </mat-option>
+      </mat-autocomplete>
+    </div> -->
+
+    <!-- Visita -->
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-black dark:text-white">
+        ¿Quién nos va a visitar hoy?
+      </label>
+
+      <div class="relative">
+        <!-- Chips + input en el mismo contenedor -->
+        <div
+          class="appearance-none flex w-full flex-wrap items-center gap-2 rounded-lg border border-slate-300 py-2 pl-2 pr-10 text-sm text-black dark:bg-gray-700 dark:text-white"
+        >
+          <!-- Chips de registrados -->
+          <div
+            *ngFor="let u of usuariosSeleccionados"
+            class="flex items-center gap-1 rounded-full bg-primary-500 px-2 py-1 text-xs text-white"
+          >
+            {{ u.nombre }}
+            <button (click)="removerUsuario(u)">
+              <mat-icon class="text-white" style="font-size: 14px">close</mat-icon>
+            </button>
+          </div>
+
+          <!-- Input único: busca registrados, acepta texto libre -->
+          <input
+            #inputNative
+            #inputAuto="matAutocompleteTrigger"
+            matAutocompleteTrigger
+            type="text"
+            [(ngModel)]="busquedaUsuario"
+            (ngModelChange)="filtrarUsuarios()"
+            (focus)="filtrarUsuarios()"
+            [matAutocomplete]="auto"
+            [placeholder]="usuariosSeleccionados.length > 0 ? '' : 'Nombre o busca en la lista'"
+            class="placeholder-gray-400 flex-1 bg-transparent text-sm text-black outline-none dark:text-white"
+          />
+        </div>
+
+        <mat-icon
+          (mousedown)="$event.preventDefault()"
+          (click)="toggleAutocomplete()"
+          class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
+        >
+          expand_more
+        </mat-icon>
+      </div>
+
+      <!-- Hint dinámico -->
+      <p class="text-xs text-gray-400 dark:text-gray-500">
+        <ng-container *ngIf="usuariosSeleccionados.length > 0">
+          Visitante registrado seleccionado.
+        </ng-container>
+        <!-- Crear -->
+        <ng-container
+          *ngIf="!editandoCita && usuariosSeleccionados.length === 0 && busquedaUsuario?.trim()"
+        >
+          Se registrará como visitante externo: <strong>{{ busquedaUsuario }}</strong>
+        </ng-container>
+
+        <!-- Editar -->
+        <ng-container
+          *ngIf="editandoCita && usuariosSeleccionados.length === 0 && busquedaUsuario?.trim()"
+        >
+          Editando visitante externo: <strong>{{ busquedaUsuario }}</strong>
+        </ng-container>
+        <ng-container *ngIf="usuariosSeleccionados.length === 0 && !busquedaUsuario?.trim()">
+          Selecciona de la lista o escribe un nombre externo.
+        </ng-container>
+      </p>
+
+      <!-- Autocomplete -->
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        [displayWith]="displayFn"
+        (optionSelected)="seleccionarUsuario($event.option.value)"
+      >
+        <mat-option *ngFor="let u of usuariosFiltrados" [value]="u">
+          <div class="flex items-center gap-2 py-0.5">
+            <div
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white dark:bg-primary-500"
             >
               {{ u.nombre | slice: 0 : 1 }}
             </div>
@@ -372,6 +455,22 @@
             </div>
           </mat-option>
         </mat-autocomplete>
+
+        <!-- Crear -->
+        <ng-container
+          *ngIf="!editandoCita && usuariosSeleccionados.length === 0 && busquedaUsuario?.trim()"
+          class="text-sm"
+        >
+          Se registrará como visitante externo: <span>{{ busquedaUsuario }}</span>
+        </ng-container>
+
+        <!-- Editar -->
+        <ng-container
+          *ngIf="editandoCita && usuariosSeleccionados.length === 0 && busquedaUsuario?.trim()"
+          class="text-sm"
+        >
+          Editando visitante externo: <span>{{ busquedaUsuario }}</span>
+        </ng-container>
       </div>
 
       <!-- Motivo -->

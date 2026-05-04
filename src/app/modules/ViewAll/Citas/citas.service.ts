@@ -92,4 +92,8 @@ updateEstado(id: number, estado: 'pendiente' | 'confirmada' | 'cancelada'): Obse
   deleteCitaProveedor(ids: number[]): Observable<any> {
     return this._http.delete(`${this._apiUrl}/proveedor/destroy`, { body: { ids } });
   }
+
+  getCitasAdmin(): Observable<CitaAPI[]> {
+  return this._http.get<CitaAPI[]>(`${this._apiUrl}/admin/todas`);
+}
 }

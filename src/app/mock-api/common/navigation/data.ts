@@ -4890,3 +4890,53 @@ export const menuProvedores: FuseNavigationItem[] = [
     link: '/apps/Citas',
   },
 ];
+
+export const menuAlmacen: FuseNavigationItem[] = [
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
+];
+
+export const menuCompras: FuseNavigationItem[] = [
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+  {
+    id: 'citas',
+    title: 'Citas',
+    tooltip: 'Citas',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Citas',
+  },
+];

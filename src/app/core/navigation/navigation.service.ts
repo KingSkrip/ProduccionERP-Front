@@ -4,11 +4,13 @@ import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
 import {
   menuAdmin,
   menuAgentes,
+  menuAlmacen,
   menuClientes,
   menuColaborador,
   menuColaborador_Contraloria,
   menuColaborador_Coordinador,
   menuColaborador_Gerente,
+  menuCompras,
   menuJacobo,
   menuJaime,
   menuJefe,
@@ -233,6 +235,13 @@ export class NavigationService {
         navigation = menuProvedores;
         break;
 
+      case SubRoleEnum.COMPRAS:
+        navigation = menuCompras;
+        break;
+
+      case SubRoleEnum.ALMACEN:
+        navigation = menuAlmacen;
+        break;
 
       default:
         navigation = [];
@@ -307,6 +316,8 @@ export class NavigationService {
       subRoleId === SubRoleEnum.GERENTE ||
       subRoleId === SubRoleEnum.CONTRALORIA ||
       subRoleId === SubRoleEnum.COORDINADOR ||
+      subRoleId === SubRoleEnum.COMPRAS ||
+      subRoleId === SubRoleEnum.ALMACEN ||
       roleId === RoleEnum.SUADMIN
     ) {
       return [...menuReporteProd_Jefe];

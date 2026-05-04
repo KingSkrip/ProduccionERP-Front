@@ -111,7 +111,16 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
         data.cita.con_vehiculo === '1' ||
         data.cita.con_vehiculo === true;
       this._citaIds = data.cita.ids ?? [];
-      this._visitantesIdsIniciales = (data.cita.visitantes ?? []).map((v: any) => v.id);
+      this._visitantesIdsIniciales = (data.cita.visitantes ?? [])
+  .filter((v: any) => v.id != null)
+  .map((v: any) => v.id);
+
+if (this._visitantesIdsIniciales.length === 0) {
+  const nombreExterno = data.cita.nombre_visitante ?? data.cita.paciente;
+  if (nombreExterno) {
+    this.busquedaUsuario = nombreExterno;
+  }
+}
     } else {
       this.editandoCita = false;
       this.formCita = {
@@ -123,24 +132,42 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    const user = this._authService.getUser();
-    this.isProveedor = user?.permissions?.[0] === RoleEnum.PROVEDORES;
-    this.usaVehiculo = this._conVehiculoInicial;
-    this._cdr.markForCheck();
-    this._citasService.getUsuariosPermitidosParaAllUsers().subscribe({
-      next: (res) => {
-        this.usuarios = res;
-        this.usuariosFiltrados = res;
-        if (this._visitantesIdsIniciales.length > 0) {
-          this.usuariosSeleccionados = res.filter((u: any) =>
-            this._visitantesIdsIniciales.includes(u.id),
-          );
+ngOnInit(): void {
+  const user = this._authService.getUser();
+  this.isProveedor = user?.permissions?.[0] === RoleEnum.PROVEDORES;
+  this.usaVehiculo = this._conVehiculoInicial;
+  this._cdr.markForCheck();
+
+  // Guardar el nombre externo antes de que ngOnInit lo pise
+  const nombreExternoInicial = this.busquedaUsuario;
+
+  this._citasService.getUsuariosPermitidosParaAllUsers().subscribe({
+    next: (res) => {
+      this.usuarios = res;
+      this.usuariosFiltrados = res;
+      if (this._visitantesIdsIniciales.length > 0) {
+        this.usuariosSeleccionados = res.filter((u: any) =>
+          this._visitantesIdsIniciales.includes(u.id),
+        );
+        if (this.usuariosSeleccionados.length > 0) {
+          this.busquedaUsuario = '';
         }
-        this._cdr.markForCheck();
-      },
-    });
-  }
+      } else if (nombreExternoInicial) {
+        this.busquedaUsuario = nombreExternoInicial;
+        setTimeout(() => {
+          if (this.inputNativeRef?.nativeElement) {
+            this.inputNativeRef.nativeElement.value = nombreExternoInicial;
+          }
+          if (this.inputNativeRef2?.nativeElement) {
+            this.inputNativeRef2.nativeElement.value = nombreExternoInicial;
+          }
+          this._cdr.detectChanges();
+        }, 0);
+      }
+      this._cdr.markForCheck();
+    },
+  });
+}
 
   // ==================== DRAG TO DISMISS ====================
   onTouchStart(event: TouchEvent): void {
@@ -184,14 +211,30 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
 
   // ==================== ACTIONS ====================
 
+  // Nuevas propiedades (agrega junto a las existentes)
+  modoExterno = false; // true cuando el texto escrito no coincide con nadie de la lista
+
+  // Modifica guardarCita():
   guardarCita(): void {
     const normalizarHora = (h: string = '') => h?.slice(0, 5) || '';
+
+    // Determinar si hay visitante registrado o nombre libre
+    const tieneRegistrado = this.usuariosSeleccionados.length > 0;
+    const nombreLibre = this.busquedaUsuario?.trim();
+    const tieneExterno = !tieneRegistrado && nombreLibre.length > 0;
+
+    if (!tieneRegistrado && !tieneExterno) {
+      this._snackBar.open('Escribe o selecciona al menos un visitante.', 'Cerrar', {
+        duration: 4000,
+      });
+      return;
+    }
+
     if (!this.editandoCita) {
       const fechaHoraInicio = new Date(
         `${this.formCita.fecha}T${normalizarHora(this.formCita.horaInicio)}:00`,
       );
-      const ahora = new Date();
-      if (fechaHoraInicio <= ahora) {
+      if (fechaHoraInicio <= new Date()) {
         this._snackBar.open('No puedes agendar citas en una fecha u hora que ya pasó.', 'Cerrar', {
           duration: 4000,
         });
@@ -199,21 +242,24 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
       }
     }
 
-    const payload = {
+    const payload: any = {
       ...(this.editandoCita ? { ids: this._citaIds } : {}),
       fecha: this.formCita.fecha!,
       hora_inicio: normalizarHora(this.formCita.horaInicio),
       hora_fin: normalizarHora(this.formCita.horaFin),
-      visitantes: this.usuariosSeleccionados.map((u) => u.id),
       motivo: this.formCita.motivo,
       estado: this.formCita.estado,
       notas: this.formCita.notas,
       con_vehiculo: this.usaVehiculo,
+      ...(tieneExterno
+        ? { nombre_visitante_externo: nombreLibre }
+        : { visitantes: this.usuariosSeleccionados.map((u) => u.id) }),
     };
 
     const request$ = this.editandoCita
       ? this._citasService.updateCita(this.data.cita.id, payload)
       : this._citasService.createCita(payload);
+
     request$.subscribe({
       next: () => {
         this._snackBar.open(this.editandoCita ? 'Cita actualizada ✓' : 'Cita creada ✓', 'OK', {
@@ -306,19 +352,18 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
     }
   }
 
-
   // Horarios disponibles: 8am-6pm cada 30min, bloqueando 2pm-3pm
-readonly horasDisponibles: string[] = (() => {
-  const horas: string[] = [];
-  for (let h = 8; h < 18; h++) {
-    for (const m of [0, 30]) {
-      if (h === 14 || h === 15) continue;
-      const hStr = h.toString().padStart(2, '0');
-      const mStr = m.toString().padStart(2, '0');
-      horas.push(`${hStr}:${mStr}`);
+  readonly horasDisponibles: string[] = (() => {
+    const horas: string[] = [];
+    for (let h = 8; h < 18; h++) {
+      for (const m of [0, 30]) {
+        if (h === 14 || h === 15) continue;
+        const hStr = h.toString().padStart(2, '0');
+        const mStr = m.toString().padStart(2, '0');
+        horas.push(`${hStr}:${mStr}`);
+      }
     }
-  }
-  horas.push('18:00');
-  return horas;
-})();
+    horas.push('18:00');
+    return horas;
+  })();
 }
