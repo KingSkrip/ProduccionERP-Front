@@ -54,7 +54,7 @@ export class MailboxComposeComponent implements OnInit {
   isDragging = false;
   attachedFiles: File[] = [];
   isGuardandoBorrador = false;
-  composeForm: UntypedFormGroup;
+  composeForm!: UntypedFormGroup;
   filteredCcUsers: SimpleUser[] = [];
   ccFilterCtrl = new FormControl('');
   filteredBccUsers: SimpleUser[] = [];

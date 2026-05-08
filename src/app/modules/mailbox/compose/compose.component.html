@@ -16,7 +16,7 @@
     <form *ngIf="composeForm" class="flex min-h-full flex-col p-4 md:p-6" [formGroup]="composeForm">
       <mat-form-field>
         <mat-label>Para</mat-label>
-        <mat-select formControlName="para" multiple (selectionChange)="onSelectChange('para')">
+        <mat-select formControlName="para" panelClass="dark-select-panel" multiple (selectionChange)="onSelectChange('para')">
           <mat-select-trigger>
             <div class="flex flex-wrap gap-2">
               @for (id of composeForm.value.para || []; track id) {
@@ -49,13 +49,13 @@
           </mat-select-trigger>
 
           <!--  BUSCADOR (ngx) DENTRO DE mat-option -->
-          <mat-option>
-            <ngx-mat-select-search
-              [formControl]="paraFilterCtrl"
-              placeholderLabel="Buscar por nombre o correo..."
-              noEntriesFoundLabel="No hay resultados"
-            ></ngx-mat-select-search>
-          </mat-option>
+<mat-option class="search-option">
+  <ngx-mat-select-search
+    [formControl]="paraFilterCtrl"
+    placeholderLabel="Buscar por nombre o correo..."
+    noEntriesFoundLabel="No hay resultados"
+  ></ngx-mat-select-search>
+</mat-option>
 
           <!--  LISTA FILTRADA -->
           <mat-option *ngFor="let u of filteredParaUsers" [value]="u.id">
