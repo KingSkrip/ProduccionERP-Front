@@ -22,13 +22,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
 import { AuthService } from 'app/core/auth/auth.service';
-import { SubRoleEnum } from 'app/core/auth/roles/dataroles';
 import { NuevaCitaModalComponent } from 'app/modules/modals/Citas/Nueva-cita/nueva-cita-modal.component';
 import { DayCitasModalComponent } from 'app/modules/modals/Citas/Ver-citas/day-citas-modal.component';
 import { DetallesAccesoModalComponent } from 'app/modules/modals/Citas/Ver-citas/detalles/detalles.component';
 import { Subject, takeUntil } from 'rxjs';
-import { CitaAPI, CitasService } from '../citas.service';
-import { Cita } from '../Types/citas.types';
+import { Cita } from '../Types/agenda.types';
+import { AgendaService, CitaAPI } from '../agenda.service';
 
 export const slideDown = trigger('slideDown', [
   transition(':enter', [
@@ -41,9 +40,9 @@ export const slideDown = trigger('slideDown', [
 ]);
 
 @Component({
-  selector: 'citas-list',
-  templateUrl: './citasList.component.html',
-  styleUrls: ['./citasList.component.scss'],
+  selector: 'agenda-list',
+  templateUrl: './agendaList.component.html',
+  styleUrls: ['./agendaList.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -65,7 +64,7 @@ export const slideDown = trigger('slideDown', [
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [...fuseAnimations, slideDown],
 })
-export class CitasListComponent implements OnInit, OnDestroy {
+export class AgendaListComponent implements OnInit, OnDestroy {
   private _unsubscribeAll = new Subject<void>();
 
   // ─── Estado del calendario ──────────────────────────────────────
@@ -91,7 +90,7 @@ export class CitasListComponent implements OnInit, OnDestroy {
   menuAbiertoCitaId: number | null = null;
   isProveedor = false;
   constructor(
-    private _citasService: CitasService,
+    private _citasService: AgendaService,
     private _snackBar: MatSnackBar,
     private _cdr: ChangeDetectorRef,
     private _breakpointObserver: BreakpointObserver,
@@ -100,47 +99,51 @@ export class CitasListComponent implements OnInit, OnDestroy {
   ) {}
 
   // ─── ngOnInit — mapeo corregido ───────────────────────────────────
- ngOnInit(): void {
-  const user = this._authService.getUser();
+  ngOnInit(): void {
+    const user = this._authService.getUser();
 
-  const idsPermitidos = [252, 235, 264, 256];
-  const rolesPermitidos = [1];
-  const subrolesPermitidos = [6, 15, 16];
-const userClave = Number(user?.id ?? 0);
-const tieneId = idsPermitidos.includes(userClave);
-  const tieneRol = user?.permissions?.some(r => rolesPermitidos.includes(r));
-  const tieneSubrol = user?.sub_permissions?.some(s => subrolesPermitidos.includes(s));
-  const esAdminReal = tieneId && tieneRol && tieneSubrol;
+    const idsPermitidos = [252, 235, 264, 256];
+    const rolesPermitidos = [1];
+    const subrolesPermitidos = [6, 15, 16];
+    const userClave = Number(user?.id ?? 0);
+    const tieneId = idsPermitidos.includes(userClave);
+    const tieneRol = user?.permissions?.some((r) => rolesPermitidos.includes(r));
+    const tieneSubrol = user?.sub_permissions?.some((s) => subrolesPermitidos.includes(s));
+    const esAdminReal = tieneId && tieneRol && tieneSubrol;
 
-  const fuente$ = esAdminReal
-    ? this._citasService.getCitasAdmin()
-    : this._citasService.getCitas();
+    const fuente$ = esAdminReal
+      ? this._citasService.getCitasAdmin()
+      : this._citasService.getCitas();
 
-  fuente$
-    .pipe(takeUntil(this._unsubscribeAll))
-    .subscribe((citas: CitaAPI[]) => {
-      this.citas = citas.map((c) => ({
-        id: c.id,
-        id_visitante: c.id_visitante,
-        nombre_visitante: c.nombre_visitante,
-        paciente: c.es_externa
-          ? (c.nombre_proveedor ?? c.usuario?.nombre ?? 'Proveedor')
-          : (c.nombre_visitante ?? c.visitante?.nombre ?? 'Sin nombre'),
-        motivo: c.motivo ?? '',
-        fecha: c.fecha,
-        horaInicio: c.hora_inicio,
-        horaFin: c.hora_fin,
-        estado: c.estado,
-        notas: c.notas,
-        con_vehiculo: (c as any).con_vehiculo ?? false,
-        dia: String(new Date(c.fecha).getDate()),
-        mes: this._mesCorto(new Date(c.fecha).getMonth()),
-        esExterna: c.es_externa ?? false,
-      }));
-
+    fuente$.pipe(takeUntil(this._unsubscribeAll)).subscribe((citas: CitaAPI[]) => {
+  this.citas = citas.map((c) => ({
+  id: c.id,
+  cita_type_id: c.cita_type_id,
+  id_user: c.id_user,
+  id_visitante: c.id_visitante,
+  nombre_visitante: c.nombre_visitante,
+  paciente: c.es_externa
+    ? c.cita_type_id === 2
+      ? (c.nombre_organizador ?? 'Organizador')
+      : (c.nombre_proveedor ?? c.usuario?.nombre ?? 'Proveedor')
+    : (c.nombre_visitante ?? c.visitante?.nombre ?? 'Sin nombre'),
+  motivo: c.motivo ?? '',
+  fecha: c.fecha,
+  horaInicio: c.hora_inicio,
+  horaFin: c.hora_fin,
+  estado: c.estado,
+  notas: c.notas,
+  sala: (c as any).sala ?? null,
+  con_vehiculo: (c as any).con_vehiculo ?? false,
+  asistencia: (c as any).asistencia ?? null,  // ← ESTA LÍNEA FALTA
+  dia: String(new Date(c.fecha).getDate()),
+  mes: this._mesCorto(new Date(c.fecha).getMonth()),
+  esExterna: c.es_externa ?? false,
+  visitante: c.visitante,
+}));
       this._cdr.markForCheck();
     });
-}
+  }
 
   ngOnDestroy(): void {
     this._unsubscribeAll.next();
@@ -183,20 +186,30 @@ const tieneId = idsPermitidos.includes(userClave);
         const existente = mapa.get(key)!;
         existente.paciente = `${existente.paciente}, ${cita.paciente}`;
         existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
-        // Solo agrega visitante si tiene id real
         if (cita.id_visitante != null) {
           existente.visitantes = [
             ...(existente.visitantes ?? []),
-            { id: cita.id_visitante!, nombre: cita.paciente },
+            {
+              id: cita.id_visitante,
+              nombre: cita.paciente,
+              firebird_user_clave: cita.visitante?.firebird_user_clave, // ← AGREGAR
+            },
           ];
         }
       } else {
         mapa.set(key, {
           ...cita,
           ids: [cita.id!],
-          // Solo incluye visitante si tiene id real
           visitantes:
-            cita.id_visitante != null ? [{ id: cita.id_visitante!, nombre: cita.paciente }] : [],
+            cita.id_visitante != null
+              ? [
+                  {
+                    id: cita.id_visitante,
+                    nombre: cita.paciente,
+                    firebird_user_clave: cita.visitante?.firebird_user_clave, // ← AGREGAR
+                  },
+                ]
+              : [],
         });
       }
     }
@@ -437,7 +450,7 @@ const tieneId = idsPermitidos.includes(userClave);
     if (cita.esExterna) {
       this._dialog
         .open(DetallesAccesoModalComponent, {
-          width: '480px',
+          width: '700px',
           maxWidth: '100vw',
           panelClass: 'modal-cita-panel',
           data: { cita },
@@ -581,16 +594,11 @@ const tieneId = idsPermitidos.includes(userClave);
   }
 
   navegarAnterior(): void {
-    // Si la vista es 'dia', movemos un día
     if (this.vistaActual === 'dia') {
       this.cambiarDia(-1);
-    }
-    // Si la vista es 'semana' (tu calendario Samsung de móvil), movemos el mes
-    else if (this.vistaActual === 'semana') {
+    } else if (this.vistaActual === 'semana') {
       this.semanaAnterior();
-    }
-    // Para la vista lista, mantenemos el movimiento por semana
-    else {
+    } else {
       this.semanaAnterior();
     }
   }
@@ -604,6 +612,7 @@ const tieneId = idsPermitidos.includes(userClave);
       this.semanaSiguiente();
     }
   }
+
   cambiarDia(dias: number): void {
     const partes = this.fechaDiaSeleccionado.split('-');
     const fecha = new Date(+partes[0], +partes[1] - 1, +partes[2]);
@@ -646,5 +655,11 @@ const tieneId = idsPermitidos.includes(userClave);
     const [anio, mes, dia] = fecha.split('-').map(Number);
     const slotDate = new Date(anio, mes - 1, dia, hora);
     return slotDate < hoy;
+  }
+
+  getTipoCita(cita: Cita): 'junta' | 'externa' | 'propia' {
+    if (cita.cita_type_id === 2) return 'junta';
+    if (cita.esExterna) return 'externa';
+    return 'propia';
   }
 }

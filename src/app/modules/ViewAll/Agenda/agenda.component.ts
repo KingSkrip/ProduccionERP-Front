@@ -6,13 +6,13 @@ import {
 import { RouterOutlet } from '@angular/router';
 
 @Component({
-    selector: 'citas',
-    templateUrl: './citas.component.html',
+    selector: 'agenda',
+    templateUrl: './agenda.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [RouterOutlet],
 })
-export class CitasComponent {
+export class AgendaComponent {
     /**
      * Constructor
      */

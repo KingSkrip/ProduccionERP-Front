@@ -2661,12 +2661,12 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     link: '/apps/Edos_cuenta',
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
   {
     id: 'usuarios.pedidos',
@@ -4034,12 +4034,12 @@ export const menuColaborador: FuseNavigationItem[] = [
   //   link: '/apps/colaborador/Barcode',
   // },
   // {
-  //   id: 'citas',
-  //   title: 'Citas',
-  //   tooltip: 'Citas',
+  //   id: 'agenda',
+  //   title: 'Agenda',
+  //   tooltip: 'Agenda',
   //   type: 'basic',
   //   icon: 'heroicons_outline:calendar',
-  //   link: '/apps/Citas',
+  //   link: '/apps/Agenda',
   // },
 ];
 
@@ -4099,12 +4099,12 @@ export const menuJacobo: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
   // =======================
   // PRODUCCIÓN
@@ -4390,12 +4390,12 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
   {
     id: 'bandeja.general',
@@ -4437,12 +4437,12 @@ export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
   {
     id: 'bandeja.general',
@@ -4484,12 +4484,12 @@ export const menuColaborador_Contraloria: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
 
   {
@@ -4532,12 +4532,12 @@ export const menuColaborador_Coordinador: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
   {
     id: 'bandeja.general',
@@ -4579,12 +4579,12 @@ export const menuJefe: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
 
   {
@@ -4681,12 +4681,12 @@ export const menuJaime: FuseNavigationItem[] = [
   },
 
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
 
   {
@@ -4782,12 +4782,12 @@ export const menuSabu: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
   {
     id: 'bandeja.general',
@@ -4882,12 +4882,12 @@ export const menuProvedores: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
 ];
 
@@ -4907,12 +4907,12 @@ export const menuAlmacen: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
 ];
 
@@ -4932,11 +4932,11 @@ export const menuCompras: FuseNavigationItem[] = [
     ],
   },
   {
-    id: 'citas',
-    title: 'Citas',
-    tooltip: 'Citas',
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
     type: 'basic',
     icon: 'heroicons_outline:calendar',
-    link: '/apps/Citas',
+    link: '/apps/Agenda',
   },
 ];

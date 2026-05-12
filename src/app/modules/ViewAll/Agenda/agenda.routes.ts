@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
-import { CitasListComponent } from './list/citasList.component';
-import { CitasComponent } from './citas.component';
+import { AgendaListComponent } from './list/agendaList.component';
+import { AgendaComponent } from './agenda.component';
 
 
 
@@ -15,11 +15,11 @@ export default [
     },
     {
         path: 'list',
-        component: CitasComponent,
+        component: AgendaComponent,
         children: [
             {
                 path: '',
-                component: CitasListComponent,
+                component: AgendaListComponent,
                 resolve: {
                     // brands: () => inject(SuadminService).getBrands(),
                     // categories: () => inject(SuadminService).getCategories(),

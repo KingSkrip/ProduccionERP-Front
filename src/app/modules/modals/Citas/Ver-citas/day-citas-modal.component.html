@@ -46,24 +46,26 @@
       <div
         *ngFor="let cita of citas"
         class="flex cursor-pointer items-start gap-3 rounded-2xl p-4 transition-all duration-200 hover:scale-[1.01] hover:bg-white/5"
-        [ngClass]="{
-          'border border-green-500/20 bg-green-500/10': cita.estado === 'confirmada',
-          'border border-yellow-500/20 bg-yellow-500/10': cita.estado === 'pendiente',
-          'border border-red-500/20 bg-red-500/10': cita.estado === 'cancelada',
-        }"
+       [ngClass]="{
+  'border border-green-500/20 bg-green-500/10': cita.estado === 'confirmada',
+  'border border-yellow-500/20 bg-yellow-500/10': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+  'border border-purple-500/20 bg-purple-500/10': cita.estado === 'pendiente' && cita.cita_type_id === 2,
+  'border border-red-500/20 bg-red-500/10': cita.estado === 'cancelada',
+}"
         (click)="!esFechaPasada() && editarCita(cita)"
       >
-        <!-- Avatar -->
-        <div
-          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold"
-          [ngClass]="{
-            'bg-green-500/20 text-black dark:text-green-300': cita.estado === 'confirmada',
-            'bg-yellow-500/20 text-black dark:text-yellow-300': cita.estado === 'pendiente',
-            'bg-red-500/20 text-black dark:text-red-300': cita.estado === 'cancelada',
-          }"
-        >
-          {{ cita.paciente?.charAt(0)?.toUpperCase() }}
-        </div>
+<!-- Avatar -->
+<div
+  class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold"
+ [ngClass]="{
+  'bg-green-500/20 text-black dark:text-green-300': cita.estado === 'confirmada',
+  'bg-yellow-500/20 text-black dark:text-yellow-300': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+  'bg-purple-500/20 text-black dark:text-purple-300': cita.estado === 'pendiente' && cita.cita_type_id === 2,
+  'bg-red-500/20 text-black dark:text-red-300': cita.estado === 'cancelada',
+}"
+>
+  {{ cita.paciente?.charAt(0)?.toUpperCase() }}
+</div>  
 
         <!-- Info -->
         <div class="min-w-0 flex-1">
@@ -78,22 +80,29 @@
         <!-- Badge -->
         <span
           class="flex-shrink-0 rounded-full px-2 py-1 text-[10px] capitalize"
-          [ngClass]="{
-            'bg-green-500/20 text-black dark:text-green-300': cita.estado === 'confirmada',
-            'bg-yellow-500/20 text-black dark:text-yellow-300': cita.estado === 'pendiente',
-            'bg-red-500/20 text-black dark:text-red-300': cita.estado === 'cancelada',
-          }"
+         [ngClass]="{
+  'bg-green-500/20 text-black dark:text-green-300': cita.estado === 'confirmada',
+  'bg-yellow-500/20 text-black dark:text-yellow-300': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+  'bg-purple-500/20 text-black dark:text-purple-300': cita.estado === 'pendiente' && cita.cita_type_id === 2,
+  'bg-red-500/20 text-black dark:text-red-300': cita.estado === 'cancelada',
+}"
         >
           {{ cita.estado }}
         </span>
 
         <!-- Badge externa -->
-        <div
-          *ngIf="cita.esExterna"
-          class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white"
-        >
-          E
-        </div>
+<div
+  *ngIf="cita.cita_type_id === 2"
+  class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white"
+>
+  J
+</div>
+<div
+  *ngIf="cita.cita_type_id !== 2 && cita.esExterna"
+  class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white"
+>
+  E
+</div>
       </div>
     </ng-container>
 

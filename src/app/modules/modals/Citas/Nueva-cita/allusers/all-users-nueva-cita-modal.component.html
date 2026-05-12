@@ -5,7 +5,12 @@
     class="flex shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-500"
   >
     <h2 class="ml-2 text-lg text-black dark:text-white">
-      {{ editandoCita ? 'Editar cita' : 'Nueva cita' }}
+      <ng-container *ngIf="!editandoCita">
+        {{ tipoFormulario === 'cita' ? 'Nueva cita' : 'Nueva junta' }}
+      </ng-container>
+      <ng-container *ngIf="editandoCita">
+        {{ tipoFormulario === 'cita' ? 'Editar cita' : 'Editar junta' }}
+      </ng-container>
     </h2>
     <button
       class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-500"
@@ -15,14 +20,50 @@
     </button>
   </div>
 
+  <!-- ── TABS PC — reemplaza el bloque de tabs actual ──────────────── -->
+  <div class="mt-3 flex gap-2">
+    <button
+      type="button"
+      (click)="!tipoFormularioFijo && (tipoFormulario = 'cita')"
+      class="flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-sm font-medium transition-all"
+      [ngClass]="
+        tipoFormulario === 'cita'
+          ? 'border-primary-500 bg-primary-500/10 text-primary-600 dark:text-primary-400'
+          : tipoFormularioFijo
+            ? 'cursor-not-allowed border-gray-200 text-gray-300 opacity-40 dark:border-gray-700 dark:text-gray-600'
+            : 'border-gray-300 text-gray-500 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
+      "
+      [disabled]="tipoFormularioFijo && tipoFormulario !== 'cita'"
+    >
+      <mat-icon class="icon-size-4">person_outline</mat-icon>
+      Cita
+    </button>
+
+    <button
+      type="button"
+      (click)="!tipoFormularioFijo && (tipoFormulario = 'junta')"
+      class="flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-sm font-medium transition-all"
+      [ngClass]="
+        tipoFormulario === 'junta'
+          ? 'border-primary-500 bg-primary-500/10 text-primary-600 dark:text-primary-400'
+          : tipoFormularioFijo
+            ? 'cursor-not-allowed border-gray-200 text-gray-300 opacity-40 dark:border-gray-700 dark:text-gray-600'
+            : 'border-gray-300 text-gray-500 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
+      "
+      [disabled]="tipoFormularioFijo && tipoFormulario !== 'junta'"
+    >
+      <mat-icon class="icon-size-4">groups</mat-icon>
+      Junta
+    </button>
+  </div>
+
   <!-- Body modal -->
   <div class="flex flex-1 flex-col gap-4 overflow-y-auto px-1 py-5">
-    <!-- Visita -->
-    <!-- <div class="flex flex-col gap-1">
+    <!-- Visitante (solo cita) -->
+    <div class="flex flex-col gap-1" *ngIf="tipoFormulario === 'cita'">
       <label class="text-sm font-medium text-black dark:text-white">
         ¿Quién nos va a visitar hoy?
       </label>
-
       <div class="relative">
         <div
           class="appearance-none flex w-full flex-wrap items-center gap-2 rounded-lg border border-slate-300 py-2 pl-2 pr-10 text-sm text-black dark:bg-gray-700 dark:text-white"
@@ -36,72 +77,6 @@
               <mat-icon class="text-white" style="font-size: 14px">close</mat-icon>
             </button>
           </div>
-
-          <input
-            #inputNative
-            #inputAuto="matAutocompleteTrigger"
-            matAutocompleteTrigger
-            type="text"
-            [(ngModel)]="busquedaUsuario"
-            (ngModelChange)="filtrarUsuarios()"
-            (focus)="filtrarUsuarios()"
-            [matAutocomplete]="auto"
-            placeholder="Selecciona usuario"
-            class="placeholder-gray-400 flex-1 bg-transparent text-sm text-black outline-none dark:text-white"
-          />
-        </div>
-
-        <mat-icon
-          (mousedown)="$event.preventDefault()"
-          (click)="toggleAutocomplete()"
-          class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
-        >
-          expand_more
-        </mat-icon>
-      </div>
-
-      <mat-autocomplete
-        #auto="matAutocomplete"
-        [displayWith]="displayFn"
-        (optionSelected)="seleccionarUsuario($event.option.value)"
-      >
-        <mat-option *ngFor="let u of usuariosFiltrados" [value]="u">
-          <div class="gap- flex items-center py-0.5">
-         
-            <div
-              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white dark:bg-primary-500 dark:text-white"
-            >
-              {{ u.nombre | slice: 0 : 1 }}
-            </div>
-            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ u.nombre }}</span>
-          </div>
-        </mat-option>
-      </mat-autocomplete>
-    </div> -->
-
-    <!-- Visita -->
-    <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium text-black dark:text-white">
-        ¿Quién nos va a visitar hoy?
-      </label>
-
-      <div class="relative">
-        <!-- Chips + input en el mismo contenedor -->
-        <div
-          class="appearance-none flex w-full flex-wrap items-center gap-2 rounded-lg border border-slate-300 py-2 pl-2 pr-10 text-sm text-black dark:bg-gray-700 dark:text-white"
-        >
-          <!-- Chips de registrados -->
-          <div
-            *ngFor="let u of usuariosSeleccionados"
-            class="flex items-center gap-1 rounded-full bg-primary-500 px-2 py-1 text-xs text-white"
-          >
-            {{ u.nombre }}
-            <button (click)="removerUsuario(u)">
-              <mat-icon class="text-white" style="font-size: 14px">close</mat-icon>
-            </button>
-          </div>
-
-          <!-- Input único: busca registrados, acepta texto libre -->
           <input
             #inputNative
             #inputAuto="matAutocompleteTrigger"
@@ -115,29 +90,22 @@
             class="placeholder-gray-400 flex-1 bg-transparent text-sm text-black outline-none dark:text-white"
           />
         </div>
-
         <mat-icon
           (mousedown)="$event.preventDefault()"
           (click)="toggleAutocomplete()"
           class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
+          >expand_more</mat-icon
         >
-          expand_more
-        </mat-icon>
       </div>
-
-      <!-- Hint dinámico -->
       <p class="text-xs text-gray-400 dark:text-gray-500">
-        <ng-container *ngIf="usuariosSeleccionados.length > 0">
-          Visitante registrado seleccionado.
-        </ng-container>
-        <!-- Crear -->
+        <ng-container *ngIf="usuariosSeleccionados.length > 0"
+          >Visitante registrado seleccionado.</ng-container
+        >
         <ng-container
           *ngIf="!editandoCita && usuariosSeleccionados.length === 0 && busquedaUsuario?.trim()"
         >
           Se registrará como visitante externo: <strong>{{ busquedaUsuario }}</strong>
         </ng-container>
-
-        <!-- Editar -->
         <ng-container
           *ngIf="editandoCita && usuariosSeleccionados.length === 0 && busquedaUsuario?.trim()"
         >
@@ -147,8 +115,6 @@
           Selecciona de la lista o escribe un nombre externo.
         </ng-container>
       </p>
-
-      <!-- Autocomplete -->
       <mat-autocomplete
         #auto="matAutocomplete"
         [displayWith]="displayFn"
@@ -167,14 +133,81 @@
       </mat-autocomplete>
     </div>
 
-    <!-- Motivo -->
+    <!-- Participantes (solo junta) -->
+    <div class="flex flex-col gap-1" *ngIf="tipoFormulario === 'junta'">
+      <label class="text-sm font-medium text-black dark:text-white">¿Quiénes participan?</label>
+      <div class="relative">
+        <div
+          class="appearance-none flex w-full flex-wrap items-center gap-2 rounded-lg border border-slate-300 py-2 pl-2 pr-10 text-sm text-black dark:bg-gray-700 dark:text-white"
+        >
+          <div
+            *ngFor="let u of usuariosSeleccionados"
+            class="flex items-center gap-1 rounded-full bg-primary-500 px-2 py-1 text-xs text-white"
+          >
+            {{ u.nombre }}
+            <button (click)="removerUsuario(u)">
+              <mat-icon class="text-white" style="font-size: 14px">close</mat-icon>
+            </button>
+          </div>
+          <input
+            #inputNative4
+            #inputAuto4="matAutocompleteTrigger"
+            matAutocompleteTrigger
+            type="text"
+            [(ngModel)]="busquedaUsuario"
+            (ngModelChange)="filtrarUsuariosInternos()"
+            (focus)="filtrarUsuariosInternos()"
+            [matAutocomplete]="auto4"
+            [placeholder]="usuariosSeleccionados.length > 0 ? '' : 'Buscar colaborador o jefe...'"
+            class="placeholder-gray-400 flex-1 bg-transparent text-sm text-black outline-none dark:text-white"
+          />
+        </div>
+        <mat-icon
+          (mousedown)="$event.preventDefault()"
+          (click)="toggleAutocomplete4()"
+          class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
+          >expand_more</mat-icon
+        >
+      </div>
+      <p class="text-xs text-gray-400 dark:text-gray-500">Solo colaboradores y jefes internos.</p>
+      <mat-autocomplete
+        #auto4="matAutocomplete"
+        [displayWith]="displayFn"
+        (optionSelected)="seleccionarUsuario($event.option.value)"
+      >
+        <mat-option *ngFor="let u of usuariosFiltrados" [value]="u">
+          <div class="flex items-center gap-2 py-0.5">
+            <div
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+            >
+              {{ u.nombre | slice: 0 : 1 }}
+            </div>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ u.nombre }}</span>
+              <!-- <span class="text-xs text-gray-400">{{ u.puesto || u.depto || 'Colaborador' }}</span> -->
+            </div>
+          </div>
+        </mat-option>
+      </mat-autocomplete>
+    </div>
+
+    <!-- Motivo / Asunto -->
     <div class="flex flex-col gap-1">
-      <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
+      <label class="text-sm font-medium text-black dark:text-white">
+        {{ tipoFormulario === 'cita' ? 'Motivo' : 'Asunto' }}
+      </label>
       <div class="relative">
         <input
           [(ngModel)]="formCita.motivo"
-          placeholder="Ej: Consulta general"
-          class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+          [placeholder]="
+            tipoFormulario === 'cita' ? 'Ej: Consulta general' : 'Ej: Revisión de avances Q2'
+          "
+          class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white"
+          [ngClass]="
+            tipoFormulario === 'cita'
+              ? 'focus:border-primary-500 focus:ring-primary-500'
+              : 'focus:border-primary-500 focus:ring-primary-500'
+          "
         />
         <mat-icon
           class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-black icon-size-5 dark:text-white"
@@ -187,40 +220,33 @@
       <!-- Fecha -->
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium text-black dark:text-white">Fecha</label>
-
         <div class="relative">
           <input
-            #fechaInput
+            #fechaInputPc
             type="date"
             [(ngModel)]="formCita.fecha"
-            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:opacity-0"
+            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:opacity-0"
           />
-
-          <!-- Icono -->
           <mat-icon
             class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
-            (click)="fechaInput.showPicker()"
+            (click)="fechaInputPc.showPicker()"
+            >calendar_today</mat-icon
           >
-            calendar_today
-          </mat-icon>
         </div>
       </div>
 
       <!-- Estado -->
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium text-black dark:text-white">Estado</label>
-
         <div class="relative">
           <select
             [(ngModel)]="formCita.estado"
-            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
           >
             <option value="confirmada">Confirmada</option>
             <option value="pendiente">Pendiente</option>
             <option value="cancelada">Cancelada</option>
           </select>
-
-          <!-- Icono personalizado (solo este debe verse) -->
           <mat-icon
             class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xl text-black icon-size-5 dark:text-white"
           >
@@ -237,15 +263,14 @@
         <div class="relative">
           <select
             [(ngModel)]="formCita.horaInicio"
-            class="appearance-none w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+            class="appearance-none w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
           >
             <option *ngFor="let h of horasDisponibles" [value]="h">{{ h }}</option>
           </select>
           <mat-icon
             class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+            >schedule</mat-icon
           >
-            schedule
-          </mat-icon>
         </div>
       </div>
 
@@ -255,16 +280,38 @@
         <div class="relative">
           <select
             [(ngModel)]="formCita.horaFin"
-            class="appearance-none w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+            class="appearance-none w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
           >
             <option *ngFor="let h of horasDisponibles" [value]="h">{{ h }}</option>
           </select>
           <mat-icon
             class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+            >schedule</mat-icon
           >
-            schedule
-          </mat-icon>
         </div>
+      </div>
+    </div>
+
+    <!-- Sala (solo junta, PC) -->
+    <div class="flex flex-col gap-1" *ngIf="tipoFormulario === 'junta'">
+      <label class="text-sm font-medium text-black dark:text-white">Sala / Lugar</label>
+      <div class="relative">
+        <select
+          [(ngModel)]="formCita.lugar"
+          [ngModel]="formCita.lugar || ''"
+          class="appearance-none w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="" disabled>Selecciona sala</option>
+          <option value="sala_tejido">Sala de juntas de tejido</option>
+          <option value="sala_junta">Sala de juntas (piso 2)</option>
+          <option value="oficina_sabu">Oficina de Sabu</option>
+          <option value="oficina_jaime">Oficina de Jaime</option>
+          <option value="remota">Remota (videollamada)</option>
+        </select>
+        <mat-icon
+          class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+          >meeting_room</mat-icon
+        >
       </div>
     </div>
 
@@ -275,12 +322,17 @@
         [(ngModel)]="formCita.notas"
         rows="3"
         placeholder="Observaciones..."
-        class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-black transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500 dark:bg-gray-700 dark:text-white"
+        class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-black transition focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white"
+        [ngClass]="
+          tipoFormulario === 'cita'
+            ? 'focus:border-primary-500 focus:ring-primary-500'
+            : 'focus:border-primary-500 focus:ring-primary-500'
+        "
       ></textarea>
     </div>
 
-    <!-- ¿Viene en coche? -->
-    <div class="flex flex-col gap-1">
+    <!-- Vehículo (solo cita, PC) -->
+    <div class="flex flex-col gap-1" *ngIf="tipoFormulario === 'cita'">
       <label class="text-sm font-medium text-black dark:text-white">¿Viene en vehículo?</label>
       <div class="flex items-center gap-3">
         <button
@@ -310,11 +362,24 @@
       Cancelar
     </button>
     <button
-      class="mr-2 mt-2 inline-flex items-center gap-1 rounded-lg bg-primary-600 px-4 py-2 text-sm text-white shadow-sm transition-colors hover:bg-primary-700"
+      class="mr-2 mt-2 inline-flex items-center gap-1 rounded-lg px-4 py-2 text-sm text-white shadow-sm transition-colors"
+      [ngClass]="
+        tipoFormulario === 'cita'
+          ? 'bg-primary-600 hover:bg-primary-700'
+          : 'bg-primary-600 hover:bg-primary-700'
+      "
       (click)="guardarCita()"
     >
       <mat-icon class="text-base leading-none text-white icon-size-5">save</mat-icon>
-      {{ editandoCita ? 'Actualizar' : 'Guardar' }}
+      {{
+        editandoCita
+          ? tipoFormulario === 'cita'
+            ? 'Actualizar cita'
+            : 'Actualizar junta'
+          : tipoFormulario === 'cita'
+            ? 'Guardar cita'
+            : 'Guardar junta'
+      }}
     </button>
   </div>
 </div>
@@ -324,8 +389,6 @@
   class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden md:items-center"
   (click)="cerrarModal()"
 >
-  <!-- Bottom Sheet -->
-
   <div
     class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
     [class.select-none]="isDragging"
@@ -351,23 +414,45 @@
       <div class="flex items-center justify-between border-b border-white/10 px-5 pb-4">
         <div class="flex items-center gap-3">
           <div
-            class="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary-500/30 bg-primary-500/10"
+            class="flex h-10 w-10 items-center justify-center rounded-2xl"
+            [ngClass]="
+              tipoFormulario === 'cita'
+                ? 'border border-primary-500/30 bg-primary-500/10'
+                : 'border border-primary-500/30 bg-primary-500/10'
+            "
           >
             <mat-icon
-              class="text-2xl text-primary-500 dark:text-accent-500"
+              class="text-2xl"
+              [ngClass]="
+                tipoFormulario === 'cita'
+                  ? 'text-primary-500 dark:text-primary-500'
+                  : 'text-primary-500'
+              "
               [svgIcon]="
                 editandoCita
                   ? 'heroicons_outline:edit_calendar'
-                  : 'heroicons_outline:calendar_add_on'
+                  : tipoFormulario === 'cita'
+                    ? 'heroicons_outline:calendar_add_on'
+                    : 'heroicons_outline:calendar_add_on'
               "
             >
             </mat-icon>
           </div>
           <div>
             <h2 class="text-lg font-semibold tracking-tight text-black dark:text-white">
-              {{ editandoCita ? 'Editar cita' : 'Nueva cita' }}
+              <ng-container *ngIf="!editandoCita">
+                {{ tipoFormulario === 'cita' ? 'Nueva cita' : 'Nueva junta' }}
+              </ng-container>
+              <ng-container *ngIf="editandoCita">
+                {{ tipoFormulario === 'cita' ? 'Editar cita' : 'Editar junta' }}
+              </ng-container>
             </h2>
-            <p class="text-sm text-primary-400">{{ formCita.fecha || 'Selecciona fecha' }}</p>
+            <p
+              class="text-sm"
+              [ngClass]="tipoFormulario === 'cita' ? 'text-primary-400' : 'text-primary-400'"
+            >
+              {{ formCita.fecha || 'Selecciona fecha' }}
+            </p>
           </div>
         </div>
 
@@ -378,16 +463,79 @@
           <mat-icon>close</mat-icon>
         </button>
       </div>
+
+      <!-- ── TABS MÓVIL — reemplaza los dos botones del bloque de tabs ── -->
+      <div class="flex gap-2 px-5 pt-3">
+        <button
+          type="button"
+          (click)="!tipoFormularioFijo && (tipoFormulario = 'cita')"
+          class="flex flex-1 items-center justify-center gap-2 py-2.5 text-sm font-medium transition-all"
+          style="border-radius: 50px; border-width: 1.5px; border-style: solid"
+          [ngClass]="
+            tipoFormulario === 'cita'
+              ? 'border-primary-500 bg-primary-500'
+              : tipoFormularioFijo
+                ? 'cursor-not-allowed border-gray-200 bg-gray-100 opacity-40 dark:border-gray-700 dark:bg-gray-800'
+                : 'border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-700'
+          "
+          [disabled]="tipoFormularioFijo && tipoFormulario !== 'cita'"
+        >
+          <mat-icon
+            class="icon-size-4"
+            [ngClass]="
+              tipoFormulario === 'cita' ? 'text-white' : 'text-gray-500 dark:text-gray-400'
+            "
+            >person_outline</mat-icon
+          >
+          <span
+            [ngClass]="
+              tipoFormulario === 'cita' ? 'text-white' : 'text-gray-500 dark:text-gray-400'
+            "
+          >
+            Cita
+          </span>
+        </button>
+
+        <button
+          type="button"
+          (click)="!tipoFormularioFijo && (tipoFormulario = 'junta')"
+          class="flex flex-1 items-center justify-center gap-2 py-2.5 text-sm font-medium transition-all"
+          style="border-radius: 50px; border-width: 1.5px; border-style: solid"
+          [ngClass]="
+            tipoFormulario === 'junta'
+              ? 'border-primary-500 bg-primary-500'
+              : tipoFormularioFijo
+                ? 'cursor-not-allowed border-gray-200 bg-gray-100 opacity-40 dark:border-gray-700 dark:bg-gray-800'
+                : 'border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-700'
+          "
+          [disabled]="tipoFormularioFijo && tipoFormulario !== 'junta'"
+        >
+          <mat-icon
+            class="icon-size-4"
+            [ngClass]="
+              tipoFormulario === 'junta' ? 'text-white' : 'text-gray-500 dark:text-gray-400'
+            "
+            >groups</mat-icon
+          >
+          <span
+            [ngClass]="
+              tipoFormulario === 'junta' ? 'text-white' : 'text-gray-500 dark:text-gray-400'
+            "
+          >
+            Junta
+          </span>
+        </button>
+      </div>
     </div>
+
     <!-- Body -->
     <div class="flex-1 space-y-6 overflow-auto p-5 pb-28">
-      <!-- Usuario -->
-      <div>
+      <!-- ── SECCIÓN VISITANTE (solo cita) ── -->
+      <div *ngIf="tipoFormulario === 'cita'">
         <label class="text-sm font-medium text-black dark:text-white">
           ¿Quién nos va a visitar hoy?
         </label>
 
-        <!-- CHIPS seleccionados -->
         <div class="mb-2 flex flex-wrap gap-2" *ngIf="usuariosSeleccionados.length > 0">
           <div
             *ngFor="let u of usuariosSeleccionados"
@@ -401,14 +549,11 @@
         </div>
 
         <div class="relative">
-          <!-- Icono izquierda -->
           <div
             class="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
           >
             <mat-icon class="text-black icon-size-5 dark:text-white">person_outline</mat-icon>
           </div>
-
-          <!-- INPUT -->
           <input
             #inputNative2
             #inputAuto2="matAutocompleteTrigger"
@@ -421,8 +566,6 @@
             placeholder="Selecciona usuario"
             class="placeholder-primary-500 w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
           />
-
-          <!-- Icono derecha -->
           <mat-icon
             (mousedown)="$event.preventDefault()"
             (click)="toggleAutocomplete2()"
@@ -432,7 +575,6 @@
           </mat-icon>
         </div>
 
-        <!-- AUTOCOMPLETE separado para mobile -->
         <mat-autocomplete
           #auto2="matAutocomplete"
           [displayWith]="displayFn"
@@ -445,7 +587,6 @@
             class="!mx-1 !my-0.5 !rounded-xl"
           >
             <div class="flex items-center gap-3 py-0.5">
-              <!-- Initials avatar -->
               <div
                 class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white dark:bg-primary-500 dark:text-white"
               >
@@ -456,26 +597,104 @@
           </mat-option>
         </mat-autocomplete>
 
-        <!-- Crear -->
         <ng-container
           *ngIf="!editandoCita && usuariosSeleccionados.length === 0 && busquedaUsuario?.trim()"
-          class="text-sm"
         >
-          Se registrará como visitante externo: <span>{{ busquedaUsuario }}</span>
+          <p class="mt-1 text-xs text-gray-400">
+            Se registrará como visitante externo: <strong>{{ busquedaUsuario }}</strong>
+          </p>
         </ng-container>
-
-        <!-- Editar -->
         <ng-container
           *ngIf="editandoCita && usuariosSeleccionados.length === 0 && busquedaUsuario?.trim()"
-          class="text-sm"
         >
-          Editando visitante externo: <span>{{ busquedaUsuario }}</span>
+          <p class="mt-1 text-xs text-gray-400">
+            Editando visitante externo: <strong>{{ busquedaUsuario }}</strong>
+          </p>
         </ng-container>
       </div>
 
-      <!-- Motivo -->
+      <!-- ── SECCIÓN PARTICIPANTES (solo junta) ── -->
+      <div *ngIf="tipoFormulario === 'junta'">
+        <label class="text-sm font-medium text-black dark:text-white"> ¿Quiénes participan? </label>
+
+        <div class="mb-2 flex flex-wrap gap-2" *ngIf="usuariosSeleccionados.length > 0">
+          <div
+            *ngFor="let u of usuariosSeleccionados"
+            class="flex items-center gap-1 rounded-full bg-primary-500 px-3 py-1 text-xs text-white"
+          >
+            {{ u.nombre }}
+            <button (click)="removerUsuario(u)">
+              <mat-icon class="text-white icon-size-3">close</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="relative">
+          <div
+            class="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+          >
+            <mat-icon class="text-black icon-size-5 dark:text-white">groups</mat-icon>
+          </div>
+          <input
+            #inputNative3
+            #inputAuto3="matAutocompleteTrigger"
+            matAutocompleteTrigger
+            type="text"
+            [(ngModel)]="busquedaUsuario"
+            (ngModelChange)="filtrarUsuariosInternos()"
+            (focus)="filtrarUsuariosInternos()"
+            [matAutocomplete]="auto3"
+            placeholder="Buscar colaborador o jefe..."
+            class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+          />
+          <mat-icon
+            (mousedown)="$event.preventDefault()"
+            (click)="toggleAutocomplete3()"
+            class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
+          >
+            expand_more
+          </mat-icon>
+        </div>
+
+        <mat-autocomplete
+          #auto3="matAutocomplete"
+          [displayWith]="displayFn"
+          (optionSelected)="seleccionarUsuario($event.option.value)"
+          class="!rounded-2xl !border !border-gray-100 !shadow-lg dark:!border-gray-700"
+        >
+          <mat-option
+            *ngFor="let u of usuariosFiltrados"
+            [value]="u"
+            class="!mx-1 !my-0.5 !rounded-xl"
+          >
+            <div class="flex items-center gap-3 py-0.5">
+              <div
+                class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+              >
+                {{ u.nombre | slice: 0 : 1 }}
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ u.nombre }}
+                </span>
+                <!-- <span class="text-xs text-gray-400">{{
+                  u.puesto || u.depto || 'Colaborador'
+                }}</span> -->
+              </div>
+            </div>
+          </mat-option>
+        </mat-autocomplete>
+
+        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+          Solo colaboradores y jefes internos.
+        </p>
+      </div>
+
+      <!-- Motivo / Asunto -->
       <div>
-        <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
+        <label class="text-sm font-medium text-black dark:text-white">
+          {{ tipoFormulario === 'cita' ? 'Motivo' : 'Asunto' }}
+        </label>
         <div class="relative">
           <div
             class="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
@@ -483,13 +702,19 @@
             <mat-icon
               class="text-black icon-size-5 dark:text-white"
               [svgIcon]="'heroicons_outline:assignment'"
-            >
-            </mat-icon>
+            ></mat-icon>
           </div>
           <input
             [(ngModel)]="formCita.motivo"
-            placeholder="Ej: Consulta general"
-            class="placeholder-primary-500 w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-4 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+            [placeholder]="
+              tipoFormulario === 'cita' ? 'Ej: Consulta general' : 'Ej: Revisión de avances Q2'
+            "
+            class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-4 text-black outline-none transition-all focus:ring-1 dark:bg-gray-500 dark:text-white"
+            [ngClass]="
+              tipoFormulario === 'cita'
+                ? 'focus:border-primary-500 focus:ring-primary-500'
+                : 'focus:border-primary-500 focus:ring-primary-500'
+            "
           />
         </div>
       </div>
@@ -497,7 +722,6 @@
       <!-- Fecha -->
       <div>
         <label class="text-sm font-medium text-black dark:text-white">Fecha</label>
-
         <div class="relative">
           <input
             #fechaInput
@@ -505,20 +729,17 @@
             [(ngModel)]="formCita.fecha"
             class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
           />
-
-          <!-- Icono clicable -->
           <div
             (click)="fechaInput.showPicker()"
             class="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
           >
-            <mat-icon class="text-black icon-size-5 dark:text-white"> calendar_today </mat-icon>
+            <mat-icon class="text-black icon-size-5 dark:text-white">calendar_today</mat-icon>
           </div>
         </div>
       </div>
 
       <!-- Hora Inicio y Fin -->
       <div class="grid grid-cols-2 gap-4">
-        <!-- Hora Inicio -->
         <div>
           <label class="text-sm font-medium text-black dark:text-white">Inicio</label>
           <div class="relative">
@@ -535,8 +756,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Hora Fin -->
         <div>
           <label class="text-sm font-medium text-black dark:text-white">Fin</label>
           <div class="relative">
@@ -555,11 +774,45 @@
         </div>
       </div>
 
+      <!-- Sala (solo junta) -->
+      <div *ngIf="tipoFormulario === 'junta'">
+        <label class="text-sm font-medium text-black dark:text-white">Sala / Lugar</label>
+        <div class="relative">
+          <div
+            class="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+          >
+            <mat-icon class="text-black icon-size-5 dark:text-white">meeting_room</mat-icon>
+          </div>
+          <select
+            [(ngModel)]="formCita.lugar"
+            [ngModel]="formCita.lugar || ''"
+            class="appearance-none w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+          >
+            <option value="" disabled>Selecciona sala</option>
+            <option value="sala_tejido">Sala de juntas de tejido</option>
+            <option value="sala_junta">Sala de juntas (piso 2)</option>
+            <option value="oficina_sabu">Oficina de Sabu</option>
+            <option value="oficina_jaime">Oficina de Jaime</option>
+            <option value="remota">Remota (videollamada)</option>
+          </select>
+          <div
+            class="pointer-events-none absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+          >
+            <mat-icon class="text-black icon-size-5 dark:text-white">expand_more</mat-icon>
+          </div>
+        </div>
+      </div>
+
       <!-- Estado -->
       <div>
         <label class="text-sm font-medium text-black dark:text-white">Estado</label>
         <div
-          class="flex rounded-2xl border border-gray-700 bg-gray-300 p-1 text-black dark:border-gray-300 dark:bg-gray-500 dark:text-white"
+          class="flex rounded-2xl border p-1 text-black dark:text-white"
+          [ngClass]="
+            tipoFormulario === 'cita'
+              ? 'border-gray-700 bg-gray-300 dark:border-gray-300 dark:bg-gray-500'
+              : 'border-gray-700 bg-gray-300 dark:border-gray-300 dark:bg-gray-500'
+          "
         >
           <button
             *ngFor="let estado of ['confirmada', 'pendiente', 'cancelada']"
@@ -568,12 +821,9 @@
             [ngClass]="{
               'bg-green-500/50 text-black dark:text-white':
                 formCita.estado === 'confirmada' && estado === 'confirmada',
-
               'bg-yellow-400/50 text-black dark:text-white':
                 formCita.estado === 'pendiente' && estado === 'pendiente',
-
               'bg-red-500/50 text-white': formCita.estado === 'cancelada' && estado === 'cancelada',
-
               'text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700':
                 formCita.estado !== estado,
             }"
@@ -583,8 +833,8 @@
         </div>
       </div>
 
-      <!-- ¿Viene en coche? -->
-      <div>
+      <!-- Vehículo (solo cita) -->
+      <div *ngIf="tipoFormulario === 'cita'">
         <label class="text-sm font-medium text-black dark:text-white">¿Viene en vehículo?</label>
         <div
           class="mt-1 flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-300 px-4 py-4 dark:bg-gray-500"
@@ -616,7 +866,12 @@
           [(ngModel)]="formCita.notas"
           rows="4"
           placeholder="Añade observaciones..."
-          class="w-full resize-none rounded-3xl border border-gray-300 bg-gray-300 p-4 text-black outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+          class="w-full resize-none rounded-3xl border border-gray-300 bg-gray-300 p-4 text-black outline-none focus:ring-1 dark:bg-gray-500 dark:text-white"
+          [ngClass]="
+            tipoFormulario === 'cita'
+              ? 'focus:border-primary-500 focus:ring-primary-500'
+              : 'focus:border-primary-500 focus:ring-primary-500'
+          "
         ></textarea>
       </div>
     </div>
@@ -634,10 +889,27 @@
         </button>
         <button
           (click)="guardarCita()"
-          class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary-600 py-4 font-semibold text-white transition-all hover:bg-primary-500 active:bg-primary-700"
+          class="flex flex-1 items-center justify-center gap-2 rounded-2xl py-4 font-semibold text-white transition-all"
+          [ngClass]="
+            tipoFormulario === 'cita'
+              ? 'bg-primary-600 hover:bg-primary-500 active:bg-primary-700'
+              : 'bg-primary-600 hover:bg-primary-500 active:bg-primary-700'
+          "
         >
-          <mat-icon class="text-white">{{ editandoCita ? 'sync' : 'add_circle_outline' }}</mat-icon>
-          {{ editandoCita ? 'Actualizar' : 'Crear cita' }}
+          <mat-icon class="text-white">
+            {{
+              editandoCita ? 'sync' : tipoFormulario === 'cita' ? 'add_circle_outline' : 'groups'
+            }}
+          </mat-icon>
+          {{
+            editandoCita
+              ? tipoFormulario === 'cita'
+                ? 'Actualizar cita'
+                : 'Actualizar junta'
+              : tipoFormulario === 'cita'
+                ? 'Crear cita'
+                : 'Crear junta'
+          }}
         </button>
       </div>
     </div>

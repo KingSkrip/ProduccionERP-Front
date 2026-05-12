@@ -11,11 +11,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CitasService } from 'app/modules/ViewAll/Citas/citas.service';
-import { Cita } from 'app/modules/ViewAll/Citas/Types/citas.types';
+
 
 import { Subject, takeUntil } from 'rxjs';
 import { DetallesAccesoModalComponent } from './detalles/detalles.component';
+import { Cita } from 'app/modules/ViewAll/Agenda/Types/agenda.types';
+import { AgendaService } from 'app/modules/ViewAll/Agenda/agenda.service';
 
 @Component({
   selector: 'day-citas-modal',
@@ -43,7 +44,7 @@ export class DayCitasModalComponent {
   constructor(
     public dialogRef: MatDialogRef<DayCitasModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { fecha: string; citas: Cita[] },
-    private _citasService: CitasService,
+    private _citasService: AgendaService,
     private _snackBar: MatSnackBar,
     private _dialog: MatDialog,
   ) {
@@ -104,40 +105,69 @@ export class DayCitasModalComponent {
     }
   }
 
-  cambiarDia(dias: number): void {
-    const partes = this.data.fecha.split('-');
-    const fechaActual = new Date(+partes[0], +partes[1] - 1, +partes[2]);
-    fechaActual.setDate(fechaActual.getDate() + dias);
-    const nuevaFecha = fechaActual.toISOString().split('T')[0];
+cambiarDia(dias: number): void {
+  const partes = this.data.fecha.split('-');
+  const fechaActual = new Date(+partes[0], +partes[1] - 1, +partes[2]);
+  fechaActual.setDate(fechaActual.getDate() + dias);
+  const nuevaFecha = fechaActual.toISOString().split('T')[0];
 
-    // Cambio inmediato
-    this.data.fecha = nuevaFecha;
-    this.citas = [];
-    this.loading = true;
+  this.data.fecha = nuevaFecha;
+  this.citas = [];
+  this.loading = true;
 
-    this._citasService.getCitasPorFecha(nuevaFecha).subscribe({
-      next: (citasAPI) => {
-        const filtradas = citasAPI.filter((c) => c.fecha === nuevaFecha);
+  this._citasService.getCitasPorFecha(nuevaFecha).subscribe({
+    next: (citasAPI) => {
+      const filtradas = citasAPI.filter((c) => c.fecha === nuevaFecha);
 
-        this.citas = filtradas.map((c) => ({
-          id: c.id,
-          id_visitante: c.id_visitante,
-          paciente: c.nombre_visitante || c.visitante?.nombre || 'Sin nombre',
-          fecha: c.fecha,
-          horaInicio: c.hora_inicio,
-          horaFin: c.hora_fin,
-          motivo: c.motivo,
-          estado: c.estado,
-        }));
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar citas:', err);
-        this.loading = false;
-        this._snackBar.open('Error al cargar las citas', 'OK', { duration: 3000 });
-      },
-    });
-  }
+      // Agrupar por fecha+hora (igual que citasAgrupadas en agendaList)
+      const mapa = new Map<string, Cita>();
+      for (const c of filtradas) {
+        const key = `${c.fecha}_${c.hora_inicio}_${c.hora_fin}`;
+        if (mapa.has(key)) {
+          const existente = mapa.get(key)!;
+          existente.paciente = `${existente.paciente}, ${c.nombre_visitante ?? ''}`;
+          existente.ids = [...(existente.ids ?? [existente.id!]), ...(c.id ? [c.id] : [])];
+          if (c.id_visitante != null) {
+            existente.visitantes = [
+              ...(existente.visitantes ?? []),
+              { id: c.id_visitante, nombre: c.nombre_visitante ?? '' },
+            ];
+          }
+        } else {
+          mapa.set(key, {
+  id: c.id,
+  cita_type_id: c.cita_type_id,
+  id_visitante: c.id_visitante,
+  paciente: c.es_externa
+    ? c.cita_type_id === 2
+      ? (c.nombre_organizador ?? 'Organizador')
+      : (c.nombre_proveedor ?? c.usuario?.nombre ?? 'Proveedor')
+    : (c.nombre_visitante ?? c.visitante?.nombre ?? 'Sin nombre'),
+  fecha: c.fecha,
+  horaInicio: c.hora_inicio,
+  horaFin: c.hora_fin,
+  motivo: c.motivo ?? '',
+  estado: c.estado,
+  notas: c.notas,
+  esExterna: c.es_externa ?? false,
+  ids: [c.id],
+  visitantes: c.id_visitante != null
+    ? [{ id: c.id_visitante, nombre: c.nombre_visitante ?? '' }]
+    : [],
+});
+        }
+      }
+
+      this.citas = Array.from(mapa.values());
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error al cargar citas:', err);
+      this.loading = false;
+      this._snackBar.open('Error al cargar las citas', 'OK', { duration: 3000 });
+    },
+  });
+}
 
   animarCambio(direccion: 'left' | 'right') {
     this.animacionClase = direccion === 'left' ? 'slide-left' : 'slide-right';

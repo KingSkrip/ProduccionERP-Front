@@ -21,11 +21,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from 'app/core/auth/auth.service';
 import { RoleEnum } from 'app/core/auth/roles/dataroles';
-import { CitaPayload, CitasService } from 'app/modules/ViewAll/Citas/citas.service';
-import { Cita } from 'app/modules/ViewAll/Citas/Types/citas.types';
 import { AllUsersNuevaCitaModalComponent } from './allusers/all-users-nueva-cita-modal.component';
 import { NotaAccesoModalComponent } from './Nota/nota.component';
 import { ProvedoresNuevaCitaModalComponent } from './provedores/provedores-nueva-cita-modal.component';
+import { AgendaService, CitaPayload } from 'app/modules/ViewAll/Agenda/agenda.service';
+import { Cita } from 'app/modules/ViewAll/Agenda/Types/agenda.types';
 
 export const slideUp = trigger('slideUp', [
   transition(':enter', [
@@ -74,7 +74,7 @@ export class NuevaCitaModalComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<NuevaCitaModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private _citasService: CitasService,
+    private _citasService: AgendaService,
     private _snackBar: MatSnackBar,
     private _dialog: MatDialog,
     private _authService: AuthService,

@@ -1,15 +1,20 @@
 <!-- DESKTOP -->
 <ng-container *ngIf="!isMobile">
-  <div class="bg-card flex flex-col" style="min-width: 380px; max-width: 480px">
+  <div class="bg-card flex flex-col overflow-auto" style="min-width: 300px; max-width: auto">
     <!-- Header -->
     <div
       class="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-500"
     >
       <div class="flex items-center gap-2">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500">
-          <mat-icon class="text-base text-white">event</mat-icon>
+        <div
+          class="flex h-8 w-8 items-center justify-center rounded-lg"
+          [ngClass]="esJunta ? 'bg-primary-500' : 'bg-primary-500'"
+        >
+          <mat-icon class="text-base text-white">{{ esJunta ? 'groups' : 'event' }}</mat-icon>
         </div>
-        <h2 class="text-base font-bold text-black dark:text-white">Detalles de la cita</h2>
+        <h2 class="text-base font-medium text-black dark:text-white">
+          {{ esJunta ? 'Detalles de la junta' : 'Detalles de la cita' }}
+        </h2>
       </div>
       <button
         class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-500"
@@ -21,37 +26,240 @@
 
     <!-- Body -->
     <div class="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-5">
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Agendado por</label>
-        <div
-          class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
-        >
+      <!-- ══ VISTA CITA ══ -->
+      <ng-container *ngIf="!esJunta">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Agendado por</label>
           <div
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
           >
-            {{ data.cita.paciente?.charAt(0) | uppercase }}
+            <div
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+            >
+              {{ data.cita.paciente?.charAt(0) | uppercase }}
+            </div>
+            <span class="text-sm font-medium text-black dark:text-white">{{
+              data.cita.paciente
+            }}</span>
+            <span
+              class="ml-auto flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600"
+            >
+              <span class="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>Externa
+            </span>
           </div>
-          <span class="text-sm font-medium text-black dark:text-white">{{
-            data.cita.paciente
-          }}</span>
-          <span
-            class="ml-auto flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600"
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
+          <div
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
           >
-            <span class="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>Externa
+            <mat-icon class="shrink-0 text-base text-gray-400">assignment</mat-icon>
+            <span class="text-sm text-black dark:text-white">{{ data.cita.motivo || '—' }}</span>
+          </div>
+        </div>
+
+        <div
+          class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+        >
+          <div class="flex items-center gap-2">
+            <mat-icon class="text-base text-gray-400">directions_car</mat-icon>
+            <span class="text-sm text-black dark:text-white">Viene en vehículo</span>
+          </div>
+          <span
+            class="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+            [ngClass]="
+              data.cita.con_vehiculo
+                ? 'bg-green-100 text-green-600'
+                : 'bg-gray-200 text-gray-500 dark:bg-gray-600 dark:text-gray-300'
+            "
+          >
+            {{ data.cita.con_vehiculo ? 'Sí' : 'No' }}
           </span>
         </div>
-      </div>
+      </ng-container>
 
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
-        <div
-          class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
-        >
-          <mat-icon class="shrink-0 text-base text-gray-400">assignment</mat-icon>
-          <span class="text-sm text-black dark:text-white">{{ data.cita.motivo || '—' }}</span>
+      <!-- ══ VISTA JUNTA ══ -->
+      <ng-container *ngIf="esJunta">
+        <!-- Organizador -->
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Organizador</label>
+          <div
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+          >
+            <div
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+            >
+              {{ data.cita.paciente?.charAt(0) | uppercase }}
+            </div>
+            <span class="text-sm font-medium text-black dark:text-white">{{
+              data.cita.paciente
+            }}</span>
+            <span
+              class="ml-auto flex items-center gap-1 rounded-full bg-primary-100 px-2 py-0.5 text-[10px] font-semibold text-primary-600"
+            >
+              <span class="inline-block h-1.5 w-1.5 rounded-full bg-primary-500"></span>Organizador
+            </span>
+          </div>
         </div>
-      </div>
 
+        <!-- Asunto -->
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Asunto</label>
+          <div
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+          >
+            <mat-icon class="shrink-0 text-base text-gray-400">topic</mat-icon>
+            <span class="text-sm text-black dark:text-white">{{ data.cita.motivo || '—' }}</span>
+          </div>
+        </div>
+
+<!-- Sala -->
+<div class="flex flex-col gap-1" *ngIf="data.cita.sala">
+  <label class="text-sm font-medium text-black dark:text-white">Sala</label>
+
+  <div
+    class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+  >
+    <mat-icon class="shrink-0 text-base text-gray-400">
+      meeting_room
+    </mat-icon>
+
+    <span class="text-sm text-black dark:text-white">
+      {{
+        data.cita.sala === 'sala_tejido'
+          ? 'Sala de juntas de tejido'
+          : data.cita.sala === 'sala_junta'
+          ? 'Sala de juntas (piso 2)'
+          : data.cita.sala === 'oficina_sabu'
+          ? 'Oficina de Sabu'
+          : data.cita.sala === 'oficina_jaime'
+          ? 'Oficina de Jaime'
+          : data.cita.sala === 'remota'
+          ? 'Remota (videollamada)'
+          : data.cita.sala
+      }}
+    </span>
+  </div>
+</div>
+
+        <!-- Lista de participantes — SOLO para el organizador -->
+        <div class="flex flex-col gap-1" *ngIf="!esParticipante && participantes?.length">
+          <label class="text-sm font-medium text-black dark:text-white">Participantes</label>
+          <div class="flex flex-col gap-1">
+            <div
+              *ngFor="let p of participantes"
+              class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
+            >
+              <div
+                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-gray-700 dark:bg-gray-600 dark:text-white"
+              >
+                {{ p.nombre?.charAt(0) | uppercase }}
+              </div>
+              <span class="flex-1 text-sm text-black dark:text-white">{{ p.nombre }}</span>
+              <span
+                class="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                [ngClass]="{
+                  'bg-green-100 text-green-600': p.asistencia === 'confirmada',
+                  'bg-red-100 text-red-600': p.asistencia === 'rechazada',
+                  'bg-amber-100 text-amber-600': !p.asistencia || p.asistencia === 'pendiente',
+                }"
+              >
+                {{
+                  p.asistencia === 'confirmada'
+                    ? '✅ Confirmó'
+                    : p.asistencia === 'rechazada'
+                      ? '❌ No asiste'
+                      : '⏳ Pendiente'
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirmación de asistencia — Desktop -->
+        <div *ngIf="esParticipante" class="flex flex-col gap-3">
+          <label class="text-sm font-medium text-black dark:text-white">
+            Confirmación de asistencia
+          </label>
+
+          <div class="flex gap-3">
+            <!-- Confirmar -->
+            <button
+              type="button"
+              (click)="asistenciaSeleccionada = 'confirmada'"
+              class="group relative flex-1 overflow-hidden rounded-2xl border border-gray-300 px-4 py-3 transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] dark:border-gray-700"
+              [ngClass]="
+                asistenciaSeleccionada === 'confirmada'
+                  ? 'bg-green-500/10'
+                  : 'border-gray-300 dark:border-gray-700'
+              "
+            >
+              <div class="flex items-center gap-3">
+                <!-- Checklist -->
+                <div
+                  class="flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all"
+                  [ngClass]="
+                    asistenciaSeleccionada === 'confirmada'
+                      ? 'border-green-500 bg-green-500'
+                      : 'border-gray-400 dark:border-gray-500'
+                  "
+                >
+                  <div
+                    *ngIf="asistenciaSeleccionada === 'confirmada'"
+                    class="h-2 w-2 rounded-sm bg-white"
+                  ></div>
+                </div>
+
+                <span
+                  class="text-sm font-medium text-black dark:text-white"
+                  [ngClass]="asistenciaSeleccionada === 'confirmada'"
+                >
+                  Confirmar
+                </span>
+              </div>
+            </button>
+
+            <!-- Rechazar -->
+            <button
+              type="button"
+              (click)="asistenciaSeleccionada = 'rechazada'"
+              class="group relative flex-1 overflow-hidden rounded-2xl border px-4 py-3 transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]"
+              [ngClass]="
+                asistenciaSeleccionada === 'rechazada'
+                  ? 'bg-red-500/10'
+                  : 'border-gray-300 dark:border-gray-700'
+              "
+            >
+              <div class="flex items-center gap-3">
+                <!-- Checklist -->
+                <div
+                  class="flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all"
+                  [ngClass]="
+                    asistenciaSeleccionada === 'rechazada'
+                      ? 'border-red-500 bg-red-500'
+                      : 'border-gray-400 dark:border-gray-500'
+                  "
+                >
+                  <div
+                    *ngIf="asistenciaSeleccionada === 'rechazada'"
+                    class="h-2 w-2 rounded-sm bg-white"
+                  ></div>
+                </div>
+
+                <span
+                  class="text-sm font-medium text-black dark:text-white"
+                  [ngClass]="asistenciaSeleccionada === 'rechazada'"
+                >
+                  No asistiré
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ══ CAMPOS COMUNES ══ -->
       <div class="grid grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm font-medium text-black dark:text-white">Fecha</label>
@@ -63,34 +271,61 @@
           </div>
         </div>
 
-        <div *ngIf="!isProveedor">
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium text-black dark:text-white">Estado</label>
-            <div
-              class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3.5 dark:border-gray-600 dark:bg-gray-700"
+        <!-- Estado — organizador editable, participante solo lectura -->
+        <div *ngIf="!isProveedor" class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Estado</label>
+
+          <!-- Editable: organizador de junta o cualquiera en cita -->
+          <div
+            *ngIf="!esParticipante"
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3.5 dark:border-gray-600 dark:bg-gray-700"
+          >
+            <span
+              class="h-2 w-2 shrink-0 rounded-full"
+              [ngClass]="{
+                'bg-green-500': estadoSeleccionado === 'confirmada',
+                'bg-amber-400': estadoSeleccionado === 'pendiente',
+                'bg-red-400': estadoSeleccionado === 'cancelada',
+              }"
+            ></span>
+            <select
+              [(ngModel)]="estadoSeleccionado"
+              class="flex-1 cursor-pointer bg-transparent text-sm font-medium capitalize outline-none"
+              [ngClass]="{
+                'text-green-600': estadoSeleccionado === 'confirmada',
+                'text-amber-600': estadoSeleccionado === 'pendiente',
+                'text-red-600': estadoSeleccionado === 'cancelada',
+              }"
             >
-              <span
-                class="h-2 w-2 shrink-0 rounded-full"
-                [ngClass]="{
-                  'bg-green-500': estadoSeleccionado === 'confirmada',
-                  'bg-amber-400': estadoSeleccionado === 'pendiente',
-                  'bg-red-400': estadoSeleccionado === 'cancelada',
-                }"
-              ></span>
-              <select
-                [(ngModel)]="estadoSeleccionado"
-                class="flex-1 cursor-pointer bg-transparent text-sm font-medium capitalize outline-none"
-                [ngClass]="{
-                  'text-green-600': estadoSeleccionado === 'confirmada',
-                  'text-amber-600': estadoSeleccionado === 'pendiente',
-                  'text-red-600': estadoSeleccionado === 'cancelada',
-                }"
-              >
-                <option value="pendiente" class="text-amber-600">Pendiente</option>
-                <option value="confirmada" class="text-green-600">Confirmada</option>
-                <option value="cancelada" class="text-red-600">Cancelada</option>
-              </select>
-            </div>
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+
+          <!-- Solo lectura: participante de junta -->
+          <div
+            *ngIf="esParticipante"
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+          >
+            <span
+              class="h-2 w-2 shrink-0 rounded-full"
+              [ngClass]="{
+                'bg-green-500': data.cita.estado === 'confirmada',
+                'bg-amber-400': data.cita.estado === 'pendiente',
+                'bg-red-400': data.cita.estado === 'cancelada',
+              }"
+            ></span>
+            <span
+              class="text-sm font-medium capitalize"
+              [ngClass]="{
+                'text-green-600': data.cita.estado === 'confirmada',
+                'text-amber-600': data.cita.estado === 'pendiente',
+                'text-red-600': data.cita.estado === 'cancelada',
+              }"
+            >
+              {{ data.cita.estado }}
+            </span>
           </div>
         </div>
       </div>
@@ -126,33 +361,24 @@
           }}</span>
         </div>
       </div>
-
-      <div
-        class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
-      >
-        <div class="flex items-center gap-2">
-          <mat-icon class="text-base text-gray-400">directions_car</mat-icon>
-          <span class="text-sm text-black dark:text-white">Viene en vehículo</span>
-        </div>
-        <span
-          class="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-          [ngClass]="
-            data.cita.con_vehiculo
-              ? 'bg-green-100 text-green-600'
-              : 'bg-gray-200 text-gray-500 dark:bg-gray-600 dark:text-gray-300'
-          "
-        >
-          {{ data.cita.con_vehiculo ? 'Sí' : 'No' }}
-        </span>
-      </div>
     </div>
 
     <!-- Footer -->
     <div
       class="flex shrink-0 justify-end gap-2 border-t border-gray-200 px-4 py-3 dark:border-gray-500"
     >
+      <!-- Guardar asistencia (participante de junta) -->
       <button
-        *ngIf="!isProveedor"
+        *ngIf="esParticipante && esJunta"
+        class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
+        (click)="guardarAsistencia()"
+        [disabled]="guardando"
+      >
+        {{ guardando ? 'Guardando...' : 'Guardar asistencia' }}
+      </button>
+      <!-- Guardar estado (organizador o cita) -->
+      <button
+        *ngIf="!isProveedor && !esParticipante"
         class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
         (click)="guardarEstado()"
         [disabled]="guardando || estadoSeleccionado === data.cita.estado"
@@ -169,7 +395,7 @@
   </div>
 </ng-container>
 
-<!-- MOBILE -->
+<!-- MOBILE — misma lógica, misma estructura -->
 <ng-container *ngIf="isMobile">
   <div class="mobile-sheet bg-card flex flex-col" [class.mobile-sheet--open]="isOpen">
     <!-- Header -->
@@ -183,45 +409,198 @@
         <mat-icon class="text-base text-black dark:text-white">arrow_back</mat-icon>
       </button>
       <div class="flex items-center gap-2">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500">
-          <mat-icon class="text-base text-white">event</mat-icon>
+        <div
+          class="flex h-8 w-8 items-center justify-center rounded-lg"
+          [ngClass]="esJunta ? 'bg-primary-500' : 'bg-primary-500'"
+        >
+          <mat-icon class="text-base text-white">{{ esJunta ? 'groups' : 'event' }}</mat-icon>
         </div>
-        <h2 class="text-base font-bold text-black dark:text-white">Detalles de la cita</h2>
+        <h2 class="text-base font-bold text-black dark:text-white">
+          {{ esJunta ? 'Detalles de la junta' : 'Detalles de la cita' }}
+        </h2>
       </div>
     </div>
 
-    <!-- Body -->
+    <!-- Body (igual que desktop) -->
     <div class="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-5">
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Agendado por</label>
-        <div
-          class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
-        >
+      <ng-container *ngIf="!esJunta">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Agendado por</label>
           <div
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
           >
-            {{ data.cita.paciente?.charAt(0) | uppercase }}
+            <div
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+            >
+              {{ data.cita.paciente?.charAt(0) | uppercase }}
+            </div>
+            <span class="text-sm font-medium text-black dark:text-white">{{
+              data.cita.paciente
+            }}</span>
+            <span
+              class="ml-auto flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600"
+            >
+              <span class="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>Externa
+            </span>
           </div>
-          <span class="text-sm font-medium text-black dark:text-white">{{
-            data.cita.paciente
-          }}</span>
-          <span
-            class="ml-auto flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600"
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
+          <div
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
           >
-            <span class="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>Externa
+            <mat-icon class="shrink-0 text-base text-gray-400">assignment</mat-icon>
+            <span class="text-sm text-black dark:text-white">{{ data.cita.motivo || '—' }}</span>
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+        >
+          <div class="flex items-center gap-2">
+            <mat-icon class="text-base text-gray-400">directions_car</mat-icon>
+            <span class="text-sm text-black dark:text-white">Viene en vehículo</span>
+          </div>
+          <span
+            class="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+            [ngClass]="
+              data.cita.con_vehiculo ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'
+            "
+          >
+            {{ data.cita.con_vehiculo ? 'Sí' : 'No' }}
           </span>
         </div>
-      </div>
+      </ng-container>
 
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
-        <div
-          class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
-        >
-          <mat-icon class="shrink-0 text-base text-gray-400">assignment</mat-icon>
-          <span class="text-sm text-black dark:text-white">{{ data.cita.motivo || '—' }}</span>
+      <ng-container *ngIf="esJunta">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Organizador</label>
+          <div
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+          >
+            <div
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white"
+            >
+              {{ data.cita.paciente?.charAt(0) | uppercase }}
+            </div>
+            <span class="text-sm font-medium text-black dark:text-white">{{
+              data.cita.paciente
+            }}</span>
+            <span
+              class="ml-auto flex items-center gap-1 rounded-full bg-primary-100 px-2 py-0.5 text-[10px] font-semibold text-primary-600"
+            >
+              <span class="inline-block h-1.5 w-1.5 rounded-full bg-primary-500"></span>Organizador
+            </span>
+          </div>
         </div>
-      </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Asunto</label>
+          <div
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+          >
+            <mat-icon class="shrink-0 text-base text-gray-400">topic</mat-icon>
+            <span class="text-sm text-black dark:text-white">{{ data.cita.motivo || '—' }}</span>
+          </div>
+        </div>
+
+<!-- Sala -->
+<div class="flex flex-col gap-1" *ngIf="data.cita.sala">
+  <label class="text-sm font-medium text-black dark:text-white">Sala</label>
+
+  <div
+    class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+  >
+    <mat-icon class="shrink-0 text-base text-gray-400">
+      meeting_room
+    </mat-icon>
+
+    <span class="text-sm text-black dark:text-white">
+      {{
+        data.cita.sala === 'sala_tejido'
+          ? 'Sala de juntas de tejido'
+          : data.cita.sala === 'sala_junta'
+          ? 'Sala de juntas (piso 2)'
+          : data.cita.sala === 'oficina_sabu'
+          ? 'Oficina de Sabu'
+          : data.cita.sala === 'oficina_jaime'
+          ? 'Oficina de Jaime'
+          : data.cita.sala === 'remota'
+          ? 'Remota (videollamada)'
+          : data.cita.sala
+      }}
+    </span>
+  </div>
+</div>
+
+        <div class="flex flex-col gap-1" *ngIf="!esParticipante && participantes?.length">
+          <label class="text-sm font-medium text-black dark:text-white">Participantes</label>
+          <div class="flex flex-col gap-1">
+            <div
+              *ngFor="let p of participantes"
+              class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
+            >
+              <div
+                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold dark:bg-gray-600"
+              >
+                {{ p.nombre?.charAt(0) | uppercase }}
+              </div>
+              <span class="flex-1 text-sm text-black dark:text-white">{{ p.nombre }}</span>
+              <span
+                class="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                [ngClass]="{
+                  'bg-green-100 text-green-600': p.asistencia === 'confirmada',
+                  'bg-red-100 text-red-600': p.asistencia === 'rechazada',
+                  'bg-amber-100 text-amber-600': !p.asistencia || p.asistencia === 'pendiente',
+                }"
+              >
+                {{
+                  p.asistencia === 'confirmada'
+                    ? '✅ Confirmó'
+                    : p.asistencia === 'rechazada'
+                      ? '❌ No asiste'
+                      : '⏳ Pendiente'
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="esParticipante">
+          <label class="text-sm font-medium text-black dark:text-white">
+            Confirmar asistencia
+          </label>
+
+          <div
+            class="bg-default mt-1 flex rounded-2xl border border-gray-700 p-1 text-black dark:border-gray-700 dark:bg-gray-700 dark:text-white"
+          >
+<button
+  (click)="asistenciaSeleccionada = 'confirmada'"
+  class="flex-1 rounded-[14px] py-2 text-sm font-medium transition-all"
+  [ngClass]="{
+    'bg-green-500/50 text-black dark:text-white':
+      asistenciaSeleccionada === 'confirmada',
+
+    'text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700':
+      asistenciaSeleccionada !== 'confirmada'
+  }"
+>
+  Confirmar
+</button>
+
+            <button
+              (click)="asistenciaSeleccionada = 'rechazada'"
+              class="flex-1 rounded-[14px] py-3 text-sm font-medium transition-all"
+              [ngClass]="{
+                'bg-red-500/50 text-white': asistenciaSeleccionada === 'rechazada',
+                'text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700':
+                  asistenciaSeleccionada !== 'rechazada',
+              }"
+            >
+              No asistiré
+            </button>
+          </div>
+        </div>
+      </ng-container>
 
       <div class="grid grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
@@ -234,34 +613,60 @@
           </div>
         </div>
 
-        <div *ngIf="!isProveedor">
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium text-black dark:text-white">Estado</label>
-            <div
-              class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3.5 dark:border-gray-600 dark:bg-gray-700"
+        <div *ngIf="!isProveedor" class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Estado</label>
+
+          <!-- Editable: organizador -->
+          <div
+            *ngIf="!esParticipante"
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3.5 dark:border-gray-600 dark:bg-gray-700"
+          >
+            <span
+              class="h-2 w-2 shrink-0 rounded-full"
+              [ngClass]="{
+                'bg-green-500': estadoSeleccionado === 'confirmada',
+                'bg-amber-400': estadoSeleccionado === 'pendiente',
+                'bg-red-400': estadoSeleccionado === 'cancelada',
+              }"
+            ></span>
+            <select
+              [(ngModel)]="estadoSeleccionado"
+              class="flex-1 cursor-pointer bg-transparent text-sm font-medium capitalize outline-none"
+              [ngClass]="{
+                'text-green-600': estadoSeleccionado === 'confirmada',
+                'text-amber-600': estadoSeleccionado === 'pendiente',
+                'text-red-600': estadoSeleccionado === 'cancelada',
+              }"
             >
-              <span
-                class="h-2 w-2 shrink-0 rounded-full"
-                [ngClass]="{
-                  'bg-green-500': estadoSeleccionado === 'confirmada',
-                  'bg-amber-400': estadoSeleccionado === 'pendiente',
-                  'bg-red-400': estadoSeleccionado === 'cancelada',
-                }"
-              ></span>
-              <select
-                [(ngModel)]="estadoSeleccionado"
-                class="flex-1 cursor-pointer bg-transparent text-sm font-medium capitalize outline-none"
-                [ngClass]="{
-                  'text-green-600': estadoSeleccionado === 'confirmada',
-                  'text-amber-600': estadoSeleccionado === 'pendiente',
-                  'text-red-600': estadoSeleccionado === 'cancelada',
-                }"
-              >
-                <option value="pendiente" class="text-amber-600">Pendiente</option>
-                <option value="confirmada" class="text-green-600">Confirmada</option>
-                <option value="cancelada" class="text-red-600">Cancelada</option>
-              </select>
-            </div>
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+
+          <!-- Solo lectura: participante de junta -->
+          <div
+            *ngIf="esParticipante"
+            class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
+          >
+            <span
+              class="h-2 w-2 shrink-0 rounded-full"
+              [ngClass]="{
+                'bg-green-500': data.cita.estado === 'confirmada',
+                'bg-amber-400': data.cita.estado === 'pendiente',
+                'bg-red-400': data.cita.estado === 'cancelada',
+              }"
+            ></span>
+            <span
+              class="text-sm font-medium capitalize"
+              [ngClass]="{
+                'text-green-600': data.cita.estado === 'confirmada',
+                'text-amber-600': data.cita.estado === 'pendiente',
+                'text-red-600': data.cita.estado === 'cancelada',
+              }"
+            >
+              {{ data.cita.estado }}
+            </span>
           </div>
         </div>
       </div>
@@ -297,25 +702,6 @@
           }}</span>
         </div>
       </div>
-
-      <div
-        class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-gray-600 dark:bg-gray-700"
-      >
-        <div class="flex items-center gap-2">
-          <mat-icon class="text-base text-gray-400">directions_car</mat-icon>
-          <span class="text-sm text-black dark:text-white">Viene en vehículo</span>
-        </div>
-        <span
-          class="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-          [ngClass]="
-            data.cita.con_vehiculo
-              ? 'bg-green-100 text-green-600'
-              : 'bg-gray-200 text-gray-500 dark:bg-gray-600 dark:text-gray-300'
-          "
-        >
-          {{ data.cita.con_vehiculo ? 'Sí' : 'No' }}
-        </span>
-      </div>
     </div>
 
     <!-- Footer -->
@@ -323,15 +709,23 @@
       class="flex shrink-0 justify-end gap-2 border-t border-gray-200 px-4 py-3 dark:border-gray-500"
     >
       <button
-        *ngIf="!isProveedor"
-        class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
+        *ngIf="esParticipante && esJunta"
+        class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50"
+        (click)="guardarAsistencia()"
+        [disabled]="guardando"
+      >
+        {{ guardando ? 'Guardando...' : 'Guardar asistencia' }}
+      </button>
+      <button
+        *ngIf="!isProveedor && !esParticipante"
+        class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50"
         (click)="guardarEstado()"
         [disabled]="guardando || estadoSeleccionado === data.cita.estado"
       >
         {{ guardando ? 'Guardando...' : 'Guardar' }}
       </button>
       <button
-        class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-slate-50 dark:text-white"
+        class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-black hover:bg-slate-50 dark:text-white"
         (click)="cerrar()"
       >
         Cerrar

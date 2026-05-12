@@ -134,7 +134,7 @@ export const appRoutes: Route[] = [
                     { path: 'ReportProd', loadChildren: () => import('app/modules/admin/reportes_produccion/reportprod.routes') },
 
                     //citas
-                    { path: 'Citas', loadChildren: () => import('app/modules/ViewAll/Citas/citas.routes') },
+                    { path: 'Agenda', loadChildren: () => import('app/modules/ViewAll/Agenda/agenda.routes') },
 
                     { path: 'file-manager', loadChildren: () => import('app/modules/admin/apps/file-manager/file-manager.routes') },
                     { path: 'help-center', loadChildren: () => import('app/modules/admin/apps/help-center/help-center.routes') },
