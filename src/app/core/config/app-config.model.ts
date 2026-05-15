@@ -8,10 +8,10 @@ export interface AppConfig {
    tcpPort?: string;        // ← nuevo
   apiLanUrl?: string; 
   
-  // reverb: {
-  //   key: string;
-  //   host: string;
-  //   port: number;
-  //   scheme: 'http' | 'https';
-  // };
+  reverb: {
+    key: string;
+    host: string;
+    port: number;
+    scheme: 'http' | 'https';
+  };
 }

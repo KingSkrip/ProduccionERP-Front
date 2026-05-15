@@ -3,25 +3,23 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
-import { BehaviorSubject, Observable, Subscription, interval, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { ScanEmbarque } from './scan-embarques.types';
 
 @Injectable({ providedIn: 'root' })
 export class ScanService implements OnDestroy {
   private apiUrl = APP_CONFIG.apiUrl;
+  private reverb = APP_CONFIG.reverb;
 
   private _scans$ = new BehaviorSubject<ScanEmbarque[]>([]);
   private _loading$ = new BehaviorSubject<boolean>(false);
 
   private echo: Echo<'reverb'> | null = null;
-  private pollingSubscription: Subscription | null = null;
-  private usingWebSocket = false;
-
-  readonly POLL_INTERVAL = 2000; // reducido a 2s para fallback más ágil
+  private initialized = false;
 
   constructor(
     private _http: HttpClient,
-    private _zone: NgZone, // ← inyectar NgZone aquí
+    private _zone: NgZone,
   ) {}
 
   get scans$(): Observable<ScanEmbarque[]> {
@@ -33,6 +31,9 @@ export class ScanService implements OnDestroy {
   }
 
   init(): void {
+    if (this.initialized) return;
+    this.initialized = true;
+
     this.cargarScans();
     this.conectarWebSocket();
   }
@@ -49,20 +50,23 @@ export class ScanService implements OnDestroy {
   }
 
   private conectarWebSocket(): void {
-    try {
-      (window as any).Pusher = Pusher;
+    if (this.echo) return;
 
-      this.echo = new Echo({
-        broadcaster: 'reverb',
-        key: 'skihewaszkyxb28di1za',
-        wsHost: 'localhost',
-        wsPort: 8080,
-        wssPort: 8080,
-        forceTLS: false,
-        enabledTransports: ['ws'],
-      });
+    (window as any).Pusher = Pusher;
 
-      this.echo.channel('scanner-embarques').listen('.scan.creado', (event: any) => {
+    this.echo = new Echo({
+      broadcaster: 'reverb',
+      key: this.reverb.key,
+      wsHost: this.reverb.host,
+      wsPort: this.reverb.port,
+      wssPort: this.reverb.port,
+      forceTLS: this.reverb.scheme === 'https',
+      enabledTransports: ['ws', 'wss'],
+    });
+
+    this.echo
+      .channel('scanner-embarques')
+      .listen('.scan.creado', (event: any) => {
         const normalizado: ScanEmbarque = {
           CODIGO:     event.codigo     ?? event.CODIGO,
           CODIGOENT:  event.codigoEnt  ?? event.CODIGOENT,
@@ -70,57 +74,16 @@ export class ScanService implements OnDestroy {
           PROCESADO:  event.procesado  ?? event.PROCESADO,
         };
 
-        // ← CLAVE: forzar ejecución dentro de NgZone
         this._zone.run(() => {
           const actual = this._scans$.getValue();
           this._scans$.next([normalizado, ...actual]);
         });
       });
-
-      this.echo.connector.pusher.connection.bind('connected', () => {
-        this.usingWebSocket = true;
-        this.detenerPolling();
-      });
-
-      this.echo.connector.pusher.connection.bind('failed', () => {
-        this.iniciarPolling();
-      });
-
-      this.echo.connector.pusher.connection.bind('unavailable', () => {
-        this.iniciarPolling();
-      });
-
-      setTimeout(() => {
-        if (!this.usingWebSocket) {
-          this.iniciarPolling();
-        }
-      }, 5000);
-
-    } catch (e) {
-      this.iniciarPolling();
-    }
-  }
-
-  private iniciarPolling(): void {
-    if (this.pollingSubscription) return;
-    this.pollingSubscription = interval(this.POLL_INTERVAL)
-      .pipe(
-        switchMap(() =>
-          this._http.get<{ data: ScanEmbarque[] }>(`${this.apiUrl}scanner/embarques`),
-        ),
-      )
-      .subscribe({
-        next: (res) => this._zone.run(() => this._scans$.next(res.data)),
-      });
-  }
-
-  private detenerPolling(): void {
-    this.pollingSubscription?.unsubscribe();
-    this.pollingSubscription = null;
   }
 
   ngOnDestroy(): void {
-    this.detenerPolling();
     this.echo?.disconnect();
+    this.echo = null;
+    this.initialized = false;
   }
 }
