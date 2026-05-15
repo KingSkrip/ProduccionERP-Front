@@ -1,61 +1,135 @@
 <div class="flex min-w-0 flex-auto flex-col">
-  <!-- ENCABEZADO -->
-  <div
-    class="bg-card flex flex-0 flex-col border-b p-6 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8 dark:bg-transparent"
-  >
-    <div class="min-w-0 flex-1">
-      <!-- Title -->
-      <div class="mt-2">
-        <h2
-          class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl"
-        >
-          Escaner
-        </h2>
-      </div>
-    </div>
-    <!-- Actions -->
-    <div class="mt-6 flex shrink-0 items-center gap-3 sm:ml-4 sm:mt-0">
-      <!-- Filtro de Fecha (solo visible en aprobadas y rechazadas) -->
-      <mat-form-field
-        *ngIf="tabActiva !== 'pendientes'"
-        class="fuse-mat-dense fuse-mat-rounded min-w-48"
-        [subscriptSizing]="'dynamic'"
-      >
-        <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
-        <mat-select [formControl]="filtroFechaControl" placeholder="Filtrar por fecha">
-          <mat-option *ngFor="let opcion of opcionesFecha" [value]="opcion.value">
-            {{ opcion.label }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
 
-      <!-- Search -->
-      <mat-form-field
-        class="fuse-mat-dense fuse-mat-rounded min-w-64"
-        [subscriptSizing]="'dynamic'"
+  <div class="flex items-center justify-between p-6 pb-0">
+  <h2 class="text-2xl font-semibold">Escaneos Embarques</h2>
+
+  <!-- Instrucción de conexión -->
+  <div class="flex items-center gap-3 rounded-xl border border-dashed px-4 py-2 text-sm">
+    <mat-icon class="text-base text-green-500">wifi</mat-icon>
+    <div class="flex flex-col">
+      <span class="text-xs text-gray-400">Conecta tu Zebra a:</span>
+      <span
+        class="font-mono font-semibold text-black dark:text-white tracking-wide select-all"
+        matTooltip="Toca para copiar"
+        (click)="copiarIP()"
       >
-        <mat-icon
-          class="icon-size-5"
-          matPrefix
-          [svgIcon]="'heroicons_outline:magnifying-glass'"
-        ></mat-icon>
-        <input
-          matInput
-          [formControl]="searchControl"
-          [autocomplete]="'off'"
-          [placeholder]="'Buscar...'"
-          #searchInput
-        />
-      </mat-form-field>
+        {{ ipLocal }}:{{ tcpPort }}
+      </span>
     </div>
+    <mat-icon
+      class="cursor-pointer text-gray-400 hover:text-primary-500 transition-colors"
+      matTooltip="Copiar"
+      (click)="copiarIP()"
+    >
+      content_copy
+    </mat-icon>
   </div>
 
-  <!-- CUERPO -->
-  <div class="flex flex-auto overflow-hidden">
-    <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-      <!-- CONTENIDO -->
+  <button mat-icon-button (click)="_scanService.cargarScans()" matTooltip="Recargar">
+    <mat-icon>refresh</mat-icon>
+  </button>
+</div>
 
-      <!-- END CONTENIDO -->
-    </div>
+  <!-- Búsqueda -->
+  <div class="px-6 pt-4">
+    <mat-form-field class="w-full" appearance="outline">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput placeholder="Buscar código..." [formControl]="searchControl" />
+    </mat-form-field>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-2 border-b px-6">
+    <button
+      *ngFor="let tab of ['pendientes', 'aprobadas', 'rechazadas']"
+      (click)="cambiarTab(tab)"
+      class="relative rounded-t-xl px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-in-out"
+      [class.bg-white]="tabActiva === tab"
+      [class.dark:bg-gray-900]="tabActiva === tab"
+      [class.shadow-md]="tabActiva === tab"
+      [class.scale-105]="tabActiva === tab"
+      [class.text-primary-600]="tabActiva === tab"
+      [class.dark:text-primary-500]="tabActiva === tab"
+      [class.text-gray-600]="tabActiva !== tab"
+      [class.dark:text-gray-300]="tabActiva !== tab"
+      [class.hover:bg-white]="tabActiva !== tab"
+      [class.dark:hover:bg-gray-700]="tabActiva !== tab"
+    >
+      <!-- Indicador -->
+      <span
+        *ngIf="tabActiva === tab"
+        class="absolute inset-x-3 -bottom-0.5 h-1 rounded-full bg-primary-500"
+      >
+      </span>
+
+      {{ tab | titlecase }}
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-card px-6 pt-4 mx-5 md:mx-5.2 " style="height: calc(100vh - 280px); overflow-y: auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b text-left text-black dark:text-white">
+          <th class="pb-2 pr-4">CÓDIGO</th>
+          <!-- columnas extra: ocultas en móvil, visibles desde sm -->
+          <th class="hidden pb-2 pr-4 sm:table-cell">CÓDIGO ENT</th>
+          <th class="pb-2">FECHA Y HORA</th>
+          <th class="hidden pb-2 pr-4 sm:table-cell">ESTADO</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let scan of scansFiltrados"
+          class="border-b transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+        >
+          <td class="py-2 pr-4 font-mono text-black dark:text-white">{{ scan.CODIGO }}</td>
+
+          <td class="hidden py-2 pr-4 font-mono text-black sm:table-cell dark:text-white">
+            {{ scan.CODIGOENT }}
+          </td>
+
+          <td class="py-2 pr-4 text-black dark:text-white">
+            {{ scan.FECHAYHORA | date: 'dd/MM/yyyy HH:mm:ss' }}
+          </td>
+
+          <td class="py-2">
+            <!-- Punto de color: solo visible en móvil -->
+            <!-- <span
+              class="inline-block hidden h-2.5 w-2.5 rounded-full sm:table-cell"
+              [class.bg-yellow-500]="scan.PROCESADO === 0"
+              [class.bg-green-500]="scan.PROCESADO === 1"
+              [class.bg-red-500]="scan.PROCESADO === 2"
+              [attr.title]="
+                scan.PROCESADO === 0 ? 'Pendiente' : scan.PROCESADO === 1 ? 'Aprobado' : 'Rechazado'
+              "
+            >
+            </span> -->
+
+            <!-- Badge completo: solo visible desde sm -->
+            <span
+              class="hidden rounded-full px-2 py-1 text-xs font-medium sm:inline-flex"
+              [class.bg-yellow-100]="scan.PROCESADO === 0"
+              [class.text-yellow-700]="scan.PROCESADO === 0"
+              [class.bg-green-100]="scan.PROCESADO === 1"
+              [class.text-green-700]="scan.PROCESADO === 1"
+              [class.bg-red-100]="scan.PROCESADO === 2"
+              [class.text-red-700]="scan.PROCESADO === 2"
+            >
+              {{
+                scan.PROCESADO === 0 ? 'Pendiente' : scan.PROCESADO === 1 ? 'Aprobado' : 'Rechazado'
+              }}
+            </span>
+          </td>
+        </tr>
+
+        <tr *ngIf="scansFiltrados.length === 0">
+          <td colspan="4" class="py-8 text-center text-gray-400">
+            <mat-icon class="mb-2">inbox</mat-icon>
+            <p>Sin registros</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

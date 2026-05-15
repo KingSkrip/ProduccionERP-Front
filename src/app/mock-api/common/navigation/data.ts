@@ -1303,7 +1303,14 @@ export const menuRh: FuseNavigationItem[] = [
     icon: 'heroicons_outline:home',
     link: '/dashboards/project',
   },
-
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
   {
     id: 'bandeja.general',
     title: 'Bandeja general',
@@ -2643,7 +2650,14 @@ export const menuSuAdmin: FuseNavigationItem[] = [
       },
     ],
   },
-
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
   {
     id: 'bandeja.general',
     title: 'Bandeja general',
@@ -2659,14 +2673,6 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:banknotes',
     link: '/apps/Edos_cuenta',
-  },
-  {
-    id: 'agenda',
-    title: 'Agenda',
-    tooltip: 'Agenda',
-    type: 'basic',
-    icon: 'heroicons_outline:calendar',
-    link: '/apps/Agenda',
   },
   {
     id: 'usuarios.pedidos',
@@ -2771,6 +2777,14 @@ export const menuAdmin: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:home',
         link: '/dashboards/project',
+      },
+      {
+        id: 'agenda',
+        title: 'Agenda',
+        tooltip: 'Agenda',
+        type: 'basic',
+        icon: 'heroicons_outline:calendar',
+        link: '/apps/Agenda',
       },
       {
         id: 'bandeja.general',
@@ -4010,6 +4024,14 @@ export const menuColaborador: FuseNavigationItem[] = [
     link: '/dashboards/project',
   },
   {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
     id: 'bandeja.general',
     title: 'Bandeja general',
     tooltip: 'Bandeja general',
@@ -4058,7 +4080,14 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
       },
     ],
   },
-
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
   {
     id: 'bandeja.general',
     title: 'Bandeja general',
@@ -4067,6 +4096,22 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
+   {
+      id: 'colaborador.scan',
+    title: 'Escaner',
+    tooltip: 'Escaner',
+    type: 'basic',
+    icon: 'heroicons_outline:barcode',
+    link: '/apps/colaborador/Barcode',
+  },
+  //{
+    //   id: 'colaborador.scan',
+  //   title: 'Escaner',
+  //   tooltip: 'Escaner',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:barcode',
+  //   link: '/apps/colaborador/Barcode',
+  // },
   {
     id: 'group.produccion',
     title: 'Producción',
@@ -4098,6 +4143,7 @@ export const menuJacobo: FuseNavigationItem[] = [
       },
     ],
   },
+
   {
     id: 'agenda',
     title: 'Agenda',
@@ -4133,6 +4179,7 @@ export const menuReporteProd_Jefe: FuseNavigationItem[] = [
     icon: 'heroicons_outline:home',
     link: '/apps/ReportProd/list/inicio',
   },
+
   // {
   //   id: 'bandeja.general',
   //   title: 'Bandeja general',
@@ -4314,7 +4361,14 @@ export const menuAgentes: FuseNavigationItem[] = [
       },
     ],
   },
-
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
   {
     id: 'estados.cuenta',
     title: 'Estados de cuenta',
@@ -4348,7 +4402,14 @@ export const menuVentas: FuseNavigationItem[] = [
       },
     ],
   },
-
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
   {
     id: 'bandeja.general',
     title: 'Bandeja general',
@@ -4389,6 +4450,7 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
       },
     ],
   },
+
   {
     id: 'agenda',
     title: 'Agenda',
@@ -4500,6 +4562,14 @@ export const menuColaborador_Contraloria: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
+    {
+      id: 'colaborador.scan',
+    title: 'Escaner',
+    tooltip: 'Escaner',
+    type: 'basic',
+    icon: 'heroicons_outline:barcode',
+    link: '/apps/colaborador/Barcode',
+  },
   {
     id: 'group.produccion',
     title: 'Producción',
@@ -4595,6 +4665,7 @@ export const menuJefe: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
+
 
   // {
   //   id: 'estados.cuenta',

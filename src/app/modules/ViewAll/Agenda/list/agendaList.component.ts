@@ -152,70 +152,41 @@ export class AgendaListComponent implements OnInit, OnDestroy {
 
   // ─── Agrupar citas por fecha + hora_inicio ───────────────────────
 
-  // get citasAgrupadas(): Cita[] {
-  //   const mapa = new Map<string, Cita>();
+get citasAgrupadas(): Cita[] {
+  const mapa = new Map<string, Cita>();
 
-  //   for (const cita of this.citas) {
-  //     const key = `${cita.fecha}_${cita.horaInicio}_${cita.horaFin}`;
-  //     if (mapa.has(key)) {
-  //       const existente = mapa.get(key)!;
-  //       existente.paciente = `${existente.paciente}, ${cita.paciente}`;
-  //       existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
-  //       existente.visitantes = [
-  //         ...(existente.visitantes ?? []),
-  //         { id: cita.id_visitante!, nombre: cita.paciente },
-  //       ];
-  //     } else {
-  //       mapa.set(key, {
-  //         ...cita,
-  //         ids: [cita.id!],
-  //         visitantes: [{ id: cita.id_visitante!, nombre: cita.paciente }],
-  //       });
-  //     }
-  //   }
-
-  //   return Array.from(mapa.values());
-  // }
-
-  get citasAgrupadas(): Cita[] {
-    const mapa = new Map<string, Cita>();
-
-    for (const cita of this.citas) {
-      const key = `${cita.fecha}_${cita.horaInicio}_${cita.horaFin}`;
-      if (mapa.has(key)) {
-        const existente = mapa.get(key)!;
-        existente.paciente = `${existente.paciente}, ${cita.paciente}`;
-        existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
-        if (cita.id_visitante != null) {
-          existente.visitantes = [
-            ...(existente.visitantes ?? []),
-            {
-              id: cita.id_visitante,
-              nombre: cita.paciente,
-              firebird_user_clave: cita.visitante?.firebird_user_clave, // ← AGREGAR
-            },
-          ];
-        }
-      } else {
-        mapa.set(key, {
-          ...cita,
-          ids: [cita.id!],
-          visitantes:
-            cita.id_visitante != null
-              ? [
-                  {
-                    id: cita.id_visitante,
-                    nombre: cita.paciente,
-                    firebird_user_clave: cita.visitante?.firebird_user_clave, // ← AGREGAR
-                  },
-                ]
-              : [],
-        });
+  for (const cita of this.citas) {
+    // ✅ Incluir cita_type_id en la key — juntas y citas nunca se mezclan
+    const key = `${cita.cita_type_id}_${cita.fecha}_${cita.horaInicio}_${cita.horaFin}`;
+    
+    if (mapa.has(key)) {
+      const existente = mapa.get(key)!;
+      existente.paciente = `${existente.paciente}, ${cita.paciente}`;
+      existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
+      if (cita.id_visitante != null) {
+        existente.visitantes = [
+          ...(existente.visitantes ?? []),
+          {
+            id: cita.id_visitante,
+            nombre: cita.paciente,
+            firebird_user_clave: cita.visitante?.firebird_user_clave,
+          },
+        ];
       }
+    } else {
+      mapa.set(key, {
+        ...cita,
+        ids: [cita.id!],
+        visitantes:
+          cita.id_visitante != null
+            ? [{ id: cita.id_visitante, nombre: cita.paciente, firebird_user_clave: cita.visitante?.firebird_user_clave }]
+            : [],
+      });
     }
-
-    return Array.from(mapa.values());
   }
+
+  return Array.from(mapa.values());
+}
 
   // ─── Mini calendario ────────────────────────────────────────────
 
@@ -662,4 +633,24 @@ export class AgendaListComponent implements OnInit, OnDestroy {
     if (cita.esExterna) return 'externa';
     return 'propia';
   }
+
+
+
+
+
+  // ─── Resumen ─────────────────────────────────────────────────────
+
+get eventosHoy(): Cita[] {
+  return this.citas.filter((c) => c.fecha === this.fechaDiaSeleccionado);
+}
+
+get eventosPendientes(): number {
+  return this.eventosHoy.filter((c) => c.estado === 'pendiente').length;
+}
+
+get eventosConfirmados(): number {
+  return this.eventosHoy.filter((c) => c.estado === 'confirmada').length;
+}
+
+
 }

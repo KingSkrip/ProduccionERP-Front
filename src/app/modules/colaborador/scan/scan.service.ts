@@ -1,346 +1,126 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, map, switchMap, take, tap, throwError } from 'rxjs';
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { APP_CONFIG } from 'app/core/config/app-config';
-import { Usuarios } from 'app/modules/admin/cruds/usuarios/usuarios.types';
-
-
-export interface VacacionSolicitud {
-    id: number;
-    vacacion_id: number;
-    fecha_inicio: string;
-    fecha_fin: string;
-    dias: number;
-    comentarios: string;
-    created_at: string;
-    updated_at: string;
-    vacacion?: {
-        id: number;
-        user_id: number;
-        anio: number;
-        dias_disponibles: number;
-        dias_disfrutados: number;
-        user?: Usuarios;
-    };
-}
-
-export interface WorkOrder {
-    id: number;
-    solicitante_id: number;
-    aprobador_id: number;
-    status_id: number;
-    titulo: string;
-    descripcion: string;
-    fecha_solicitud: string;
-    comentarios_solicitante: string;
-    departamento_id: number;
-    solicitante?: Usuarios;
-    status?: {
-        id: number;
-        nombre: string;
-    };
-}
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+import { BehaviorSubject, Observable, Subscription, interval, switchMap, tap } from 'rxjs';
+import { ScanEmbarque } from './scan-embarques.types';
 
 @Injectable({ providedIn: 'root' })
-export class ScanService {
-    private _usuarios: BehaviorSubject<Usuarios[] | null> = new BehaviorSubject<Usuarios[] | null>(null);
-    private _solicitudes: BehaviorSubject<any[] | null> = new BehaviorSubject<any[] | null>(null);
-    private apiUrl = APP_CONFIG.apiUrl;
+export class ScanService implements OnDestroy {
+  private apiUrl = APP_CONFIG.apiUrl;
 
-    constructor(private _httpClient: HttpClient) { }
+  private _scans$ = new BehaviorSubject<ScanEmbarque[]>([]);
+  private _loading$ = new BehaviorSubject<boolean>(false);
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Accessors
-    // -----------------------------------------------------------------------------------------------------
+  private echo: Echo<'reverb'> | null = null;
+  private pollingSubscription: Subscription | null = null;
+  private usingWebSocket = false;
 
-    get usuarios$(): Observable<Usuarios[]> {
-        return this._usuarios.asObservable();
-    }
+  readonly POLL_INTERVAL = 2000; // reducido a 2s para fallback más ágil
 
-    get solicitudes$(): Observable<any[]> {
-        return this._solicitudes.asObservable();
-    }
+  constructor(
+    private _http: HttpClient,
+    private _zone: NgZone, // ← inyectar NgZone aquí
+  ) {}
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Public methods - Usuarios
-    // -----------------------------------------------------------------------------------------------------
+  get scans$(): Observable<ScanEmbarque[]> {
+    return this._scans$.asObservable();
+  }
 
-    getUsuarios(): Observable<Usuarios[]> {
-        return this._httpClient.get<{ message: string, data: Usuarios[] }>(`${this.apiUrl}colaborador/data`)
-            .pipe(
-                tap(response => this._usuarios.next(response.data)),
-                map(response => response.data),
-                catchError(error => {
-                    console.error('Error al obtener usuarios', error);
-                    return throwError(() => error);
-                })
-            );
-    }
+  get loading$(): Observable<boolean> {
+    return this._loading$.asObservable();
+  }
 
-    getUsuarioById(id: string): Observable<Usuarios> {
-        return this._httpClient.get<{ message: string, user: Usuarios }>(`${this.apiUrl}colaborador/suadmin/${id}`)
-            .pipe(
-                map(response => response.user),
-                catchError(error => {
-                    console.error('Error al obtener usuario', error);
-                    return throwError(() => error);
-                })
-            );
-    }
+  init(): void {
+    this.cargarScans();
+    this.conectarWebSocket();
+  }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Public methods - Vacaciones
-    // -----------------------------------------------------------------------------------------------------
+  cargarScans(): void {
+    this._loading$.next(true);
+    this._http
+      .get<{ data: ScanEmbarque[] }>(`${this.apiUrl}scanner/embarques`)
+      .pipe(tap(() => this._loading$.next(false)))
+      .subscribe({
+        next: (res) => this._scans$.next(res.data),
+        error: () => this._loading$.next(false),
+      });
+  }
 
-    /**
-     * Obtener todas las solicitudes de vacaciones de mis empleados
-     */
-    getSolicitudesVacaciones(): Observable<any[]> {
-        return this._httpClient.get<{ message: string, data: any }>(`${this.apiUrl}colaboradores/vacaciones/1/edit`)
-            .pipe(
-                tap(response => {
-                    // Procesar datos para extraer TODAS las solicitudes (pendientes, aprobadas y rechazadas)
-                    const solicitudes = this.procesarSolicitudes(response.data);
-                    this._solicitudes.next(solicitudes);
-                }),
-                map(response => this.procesarSolicitudes(response.data)),
-                catchError(error => {
-                    console.error('Error al obtener solicitudes', error);
-                    return throwError(() => error);
-                })
-            );
-    }
+  private conectarWebSocket(): void {
+    try {
+      (window as any).Pusher = Pusher;
 
-    /**
-     * Procesar los datos del usuario para extraer las solicitudes de vacaciones
-     */
-    private procesarSolicitudes(usuarios: any[]): any[] {
-        const solicitudes = [];
-        
-        if (!usuarios || !Array.isArray(usuarios)) {
-            return [];
-        }
+      this.echo = new Echo({
+        broadcaster: 'reverb',
+        key: 'skihewaszkyxb28di1za',
+        wsHost: 'localhost',
+        wsPort: 8080,
+        wssPort: 8080,
+        forceTLS: false,
+        enabledTransports: ['ws'],
+      });
 
-        usuarios.forEach(usuario => {
-            // Buscar TODAS las work orders de tipo "Vacaciones" (pendientes: 5, aprobadas: 3, rechazadas: 4)
-            if (usuario.workorders_solicitadas && Array.isArray(usuario.workorders_solicitadas)) {
-                const solicitudesVacaciones = usuario.workorders_solicitadas.filter(
-                    wo => wo.titulo === 'Vacaciones' && [3, 4, 5].includes(wo.status_id)
-                );
-
-                solicitudesVacaciones.forEach(wo => {
-                    // Buscar el historial de vacaciones correspondiente
-                    let historialVacacion = null;
-                    if (usuario.vacaciones && Array.isArray(usuario.vacaciones)) {
-                        usuario.vacaciones.forEach(vac => {
-                            if (vac.historial && Array.isArray(vac.historial)) {
-                                const hist = vac.historial.find(h => 
-                                    h.vacacion_id === vac.id
-                                );
-                                if (hist) {
-                                    historialVacacion = {
-                                        ...hist,
-                                        dias_disponibles: vac.dias_disponibles,
-                                        dias_disfrutados: vac.dias_disfrutados
-                                    };
-                                }
-                            }
-                        });
-                    }
-
-                    solicitudes.push({
-                        workorder: wo,
-                        usuario: usuario,
-                        historial: historialVacacion
-                    });
-                });
-            }
-        });
-
-        return solicitudes;
-    }
-
-    /**
-     * Aprobar solicitud de vacaciones
-     */
-    aprobarSolicitud(historialId: number): Observable<any> {
-        return this._httpClient.put(`${this.apiUrl}colaboradores/vacaciones/${historialId}/update`, {
-            status_id: 3 // Aprobado
-        }).pipe(
-            tap(() => {
-                // Actualizar la lista local
-                this.actualizarSolicitudLocal(historialId, 3);
-            }),
-            catchError(error => {
-                console.error('Error al aprobar solicitud', error);
-                return throwError(() => error);
-            })
-        );
-    }
-
-    /**
-     * Rechazar solicitud de vacaciones
-     */
-    rechazarSolicitud(historialId: number, comentarios?: string): Observable<any> {
-        return this._httpClient.put(`${this.apiUrl}colaboradores/vacaciones/${historialId}/update`, {
-            status_id: 4, // Rechazado
-            comentarios: comentarios
-        }).pipe(
-            tap(() => {
-                // Actualizar la lista local
-                this.actualizarSolicitudLocal(historialId, 4);
-            }),
-            catchError(error => {
-                console.error('Error al rechazar solicitud', error);
-                return throwError(() => error);
-            })
-        );
-    }
-
-    /**
-     * Actualizar solicitud local después de aprobar/rechazar
-     */
-    private actualizarSolicitudLocal(historialId: number, nuevoStatus: number): void {
-        const solicitudesActuales = this._solicitudes.getValue();
-        if (solicitudesActuales) {
-            // Actualizar el status en lugar de eliminar
-            const solicitudesActualizadas = solicitudesActuales.map(s => {
-                if (s.historial?.id === historialId) {
-                    return {
-                        ...s,
-                        workorder: {
-                            ...s.workorder,
-                            status_id: nuevoStatus
-                        }
-                    };
-                }
-                return s;
-            });
-            this._solicitudes.next(solicitudesActualizadas);
-        }
-    }
-
-    /**
-     * Obtener estadísticas de solicitudes
-     */
-    getEstadisticasSolicitudes(): Observable<any> {
-        return this.solicitudes$.pipe(
-            map(solicitudes => {
-                if (!solicitudes) return { pendientes: 0, aprobadas: 0, rechazadas: 0 };
-                
-                return {
-                    pendientes: solicitudes.filter(s => s.workorder?.status_id === 5).length,
-                    aprobadas: solicitudes.filter(s => s.workorder?.status_id === 3).length,
-                    rechazadas: solicitudes.filter(s => s.workorder?.status_id === 4).length
-                };
-            })
-        );
-    }
-
-    /**
-     * Crear usuario (mantener para compatibilidad)
-     */
-    createUsuario(data: any): Observable<Usuarios> {
-        return this.usuarios$.pipe(
-            take(1),
-            switchMap(usuarios => {
-                const isFormData = data instanceof FormData;
-
-                return this._httpClient.post<{ message: string, user: Usuarios }>(
-                    `${this.apiUrl}colaborador/suadmin`,
-                    data,
-                    isFormData ? { headers: { 'Accept': 'application/json' } } : {}
-                ).pipe(
-                    tap(response => {
-                        const current = usuarios || [];
-                        this._usuarios.next([response.user, ...current]);
-                    }),
-                    map(response => response.user),
-                    catchError(err => {
-                        console.error('Error al crear usuario', err);
-                        return throwError(() => err);
-                    })
-                );
-            })
-        );
-    }
-
-    /**
-     * Actualizar usuario
-     */
-    updateUsuario(id: number, data: FormData | any): Observable<Usuarios> {
-        return this.usuarios$.pipe(
-            take(1),
-            switchMap(usuarios =>
-                this._httpClient.post<{ message: string, user: Usuarios }>(
-                    `${this.apiUrl}colaborador/${id}/update`,
-                    data
-                ).pipe(
-                    tap(response => {
-                        const updatedUser = {
-                            ...response.user,
-                            name: response.user.nombre || response.user.name,
-                            email: response.user.correo || response.user.email
-                        };
-                        const updatedUsuarios = (usuarios || []).map(u =>
-                            u.id === id ? updatedUser : u
-                        );
-                        this._usuarios.next(updatedUsuarios);
-                    }),
-                    map(response => ({
-                        ...response.user,
-                        name: response.user.nombre || response.user.name,
-                        email: response.user.correo || response.user.email
-                    })),
-                    catchError(error => {
-                        console.error('Error al actualizar usuario', error);
-                        return throwError(() => error);
-                    })
-                )
-            )
-        );
-    }
-
-    /**
-     * Eliminar usuario
-     */
-    deleteUsuario(id: number): Observable<boolean> {
-        return this.usuarios$.pipe(
-            take(1),
-            switchMap(usuarios =>
-                this._httpClient.delete<{ message: string }>(`${this.apiUrl}colaborador/${id}`)
-                    .pipe(
-                        tap(() => {
-                            const updatedUsuarios = (usuarios || []).filter(u => u.id !== id);
-                            this._usuarios.next(updatedUsuarios);
-                        }),
-                        map(() => true),
-                        catchError(error => {
-                            console.error('Error al eliminar usuario', error);
-                            return throwError(() => error);
-                        })
-                    )
-            )
-        );
-    }
-
-    /**
-     * Agregar usuario a la lista
-     */
-    addUsuarioToList(newUser: Usuarios): void {
-        const current = this._usuarios.getValue() || [];
-        const userWithAliases = {
-            ...newUser,
-            name: newUser.nombre,
-            email: newUser.correo
+      this.echo.channel('scanner-embarques').listen('.scan.creado', (event: any) => {
+        const normalizado: ScanEmbarque = {
+          CODIGO:     event.codigo     ?? event.CODIGO,
+          CODIGOENT:  event.codigoEnt  ?? event.CODIGOENT,
+          FECHAYHORA: event.fechaYHora ?? event.FECHAYHORA,
+          PROCESADO:  event.procesado  ?? event.PROCESADO,
         };
-        this._usuarios.next([userWithAliases, ...current]);
-    }
 
-    /**
-     * Actualizar status de usuario
-     */
-    updateUsuarioStatus(id: number, status_id: number): Observable<any> {
-        return this._httpClient.put(`${this.apiUrl}colaborador/usuarios/${id}/status`, { status_id });
+        // ← CLAVE: forzar ejecución dentro de NgZone
+        this._zone.run(() => {
+          const actual = this._scans$.getValue();
+          this._scans$.next([normalizado, ...actual]);
+        });
+      });
+
+      this.echo.connector.pusher.connection.bind('connected', () => {
+        this.usingWebSocket = true;
+        this.detenerPolling();
+      });
+
+      this.echo.connector.pusher.connection.bind('failed', () => {
+        this.iniciarPolling();
+      });
+
+      this.echo.connector.pusher.connection.bind('unavailable', () => {
+        this.iniciarPolling();
+      });
+
+      setTimeout(() => {
+        if (!this.usingWebSocket) {
+          this.iniciarPolling();
+        }
+      }, 5000);
+
+    } catch (e) {
+      this.iniciarPolling();
     }
+  }
+
+  private iniciarPolling(): void {
+    if (this.pollingSubscription) return;
+    this.pollingSubscription = interval(this.POLL_INTERVAL)
+      .pipe(
+        switchMap(() =>
+          this._http.get<{ data: ScanEmbarque[] }>(`${this.apiUrl}scanner/embarques`),
+        ),
+      )
+      .subscribe({
+        next: (res) => this._zone.run(() => this._scans$.next(res.data)),
+      });
+  }
+
+  private detenerPolling(): void {
+    this.pollingSubscription?.unsubscribe();
+    this.pollingSubscription = null;
+  }
+
+  ngOnDestroy(): void {
+    this.detenerPolling();
+    this.echo?.disconnect();
+  }
 }
