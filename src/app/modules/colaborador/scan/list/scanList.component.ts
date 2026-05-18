@@ -48,7 +48,7 @@ export class ScanListComponent implements OnInit, OnDestroy {
   loading = false;
   ipLocal = '';
   tcpPort = APP_CONFIG.tcpPort ?? '5000';
-
+  private audioDesbloqueado = false;
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -58,6 +58,9 @@ export class ScanListComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    this._scanService.registrarOperador().subscribe(res => {
+      // console.log('operador registrado:', res);
+  });
     this._scanService.init();
 
     // IP sin bloquear el resto del init
@@ -80,6 +83,10 @@ export class ScanListComponent implements OnInit, OnDestroy {
       this.loading = v;
       this._cdr.markForCheck();
     });
+
+  this._scanService.registrarOperador().subscribe(res => {
+      // console.log('operador registrado:', res);
+  });
   }
 
   cambiarTab(tab: 'pendientes' | 'aprobadas' | 'rechazadas'): void {

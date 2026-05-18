@@ -5,22 +5,29 @@ import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { ScanEmbarque } from './scan-embarques.types';
+import { UserService } from 'app/core/user/user.service';
 
 @Injectable({ providedIn: 'root' })
 export class ScanService implements OnDestroy {
   private apiUrl = APP_CONFIG.apiUrl;
   private reverb = APP_CONFIG.reverb;
-
+  private audio = new Audio('sounds/correcto.mp3');
+  private audioListo = false;
   private _scans$ = new BehaviorSubject<ScanEmbarque[]>([]);
   private _loading$ = new BehaviorSubject<boolean>(false);
-
+  private currentUserId: number | null = null;
   private echo: Echo<'reverb'> | null = null;
   private initialized = false;
+  private audioContext: AudioContext | null = null;
+private audioBuffer: AudioBuffer | null = null;
+
+
 
   constructor(
     private _http: HttpClient,
     private _zone: NgZone,
-  ) {}
+    private _userService: UserService,
+  ) { }
 
   get scans$(): Observable<ScanEmbarque[]> {
     return this._scans$.asObservable();
@@ -34,6 +41,11 @@ export class ScanService implements OnDestroy {
     if (this.initialized) return;
     this.initialized = true;
 
+
+    const user = this._userService.user;
+    this.currentUserId = user?.identity_id ?? null;
+
+    this.inicializarAudio(); 
     this.cargarScans();
     this.conectarWebSocket();
   }
@@ -64,22 +76,79 @@ export class ScanService implements OnDestroy {
       enabledTransports: ['ws', 'wss'],
     });
 
+
     this.echo
       .channel('scanner-embarques')
       .listen('.scan.creado', (event: any) => {
         const normalizado: ScanEmbarque = {
-          CODIGO:     event.codigo     ?? event.CODIGO,
-          CODIGOENT:  event.codigoEnt  ?? event.CODIGOENT,
+          CODIGO: event.codigo ?? event.CODIGO,
+          CODIGOENT: event.codigoEnt ?? event.CODIGOENT,
           FECHAYHORA: event.fechaYHora ?? event.FECHAYHORA,
-          PROCESADO:  event.procesado  ?? event.PROCESADO,
+          PROCESADO: event.procesado ?? event.PROCESADO,
         };
 
         this._zone.run(() => {
           const actual = this._scans$.getValue();
           this._scans$.next([normalizado, ...actual]);
-        });
+  
+          const scannedBy = event.scannedBy ?? event.scanned_by;
+          const miId = this._userService.user?.firebird_user_id;
+          
+          // console.log('EVENT COMPLETO:', event); // ← agrega esto
+          // console.log('scannedBy:', scannedBy, typeof scannedBy);
+          // console.log('miId:', miId, typeof miId);
+  
+          if (scannedBy && miId && Number(scannedBy) === Number(miId)) {
+            // console.log('✅ Reproduciendo sonido'); // ← agrega
+              this.playSound();
+          }
+      });
       });
   }
+
+  desbloquearAudio(): void {
+    if (this.audioListo) return;
+    const audio = new Audio('sounds/correcto.mp3');
+    audio.volume = 0;
+    audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+        this.audioListo = true;
+        // console.log('Audio listo ✅');
+    }).catch(() => {});
+}
+
+private playSound(): void {
+  if (!this.audioListo || !this.audioContext || !this.audioBuffer) return;
+  if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
+  }
+
+  const source = this.audioContext.createBufferSource();
+  source.buffer = this.audioBuffer;
+  source.connect(this.audioContext.destination);
+  source.start(0);
+}
+
+  registrarOperador(): Observable<any> {
+    const miId = this._userService.user?.firebird_user_id;
+    return this._http.post(`${this.apiUrl}scanner/registrar-operador`, {
+        user_id: miId
+    });
+}
+
+async inicializarAudio(): Promise<void> {
+  try {
+      this.audioContext = new AudioContext();
+      const response = await fetch('sounds/correcto.mp3');
+      const arrayBuffer = await response.arrayBuffer();
+      this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+      this.audioListo = true;
+      // console.log('Audio listo ✅');
+  } catch (e) {
+      console.log('Error inicializando audio:', e);
+  }
+}
 
   ngOnDestroy(): void {
     this.echo?.disconnect();
