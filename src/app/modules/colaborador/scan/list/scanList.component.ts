@@ -22,6 +22,7 @@ import { APP_CONFIG } from 'app/core/config/app-config';
 import { Subject, takeUntil } from 'rxjs';
 import { ScanEmbarque } from '../scan-embarques.types';
 import { ScanService } from '../scan.service';
+import { ZebraScannerService } from '../zebra-scanner.service';
 
 @Component({
   selector: 'scan-list',
@@ -59,9 +60,28 @@ export class ScanListComponent implements OnInit, OnDestroy {
     protected _scanService: ScanService,
     private _cdr: ChangeDetectorRef,
     private _zone: NgZone,
+    protected _zebraScanner: ZebraScannerService,
   ) {}
 
   async ngOnInit(): Promise<void> {
+    this._zebraScanner.init();
+
+    this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
+      this.escaneando = true;
+      this._cdr.markForCheck();
+
+      this._scanService.enviarScan(codigo).subscribe({
+        next: () => {
+          this.escaneando = false;
+          this._cdr.markForCheck();
+        },
+        error: () => {
+          this.escaneando = false;
+          this._cdr.markForCheck();
+        },
+      });
+    });
+
     this._scanService.init();
 
     this._scanService.scans$.pipe(takeUntil(this._destroy$)).subscribe((scans) => {
