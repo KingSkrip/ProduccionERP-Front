@@ -56,8 +56,6 @@ export class ScanService implements OnDestroy {
 
     const userId = this._userService.user?.firebird_user_id;
     const token  = localStorage.getItem('encrypt');
-   // console.log('📡 [WS] Conectando con:', { userId, token: token?.slice(0,20) + '...' });
-
     (window as any).Pusher = Pusher;
 
     this.echo = new Echo({
@@ -79,7 +77,6 @@ export class ScanService implements OnDestroy {
     this.echo
     .private(`scanner-embarques.${userId}`) 
       .listen('.scan.creado', (event: any) => {
-        // console.log('🟢 [WS] Evento recibido!', event);
         const normalizado: ScanEmbarque = {
           CODIGO:     event.codigo     ?? event.CODIGO,
           CODIGOENT:  event.codigoEnt  ?? event.CODIGOENT,
