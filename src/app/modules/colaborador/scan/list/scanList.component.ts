@@ -3,9 +3,11 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   NgZone,
   OnDestroy,
   OnInit,
+  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -18,7 +20,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { Subject, takeUntil } from 'rxjs';
-import { obtenerIPLocal } from '../ip.service';
 import { ScanEmbarque } from '../scan-embarques.types';
 import { ScanService } from '../scan.service';
 
@@ -42,6 +43,7 @@ import { ScanService } from '../scan.service';
   animations: fuseAnimations,
 })
 export class ScanListComponent implements OnInit, OnDestroy {
+  @ViewChild('scanInput') scanInput!: ElementRef<HTMLInputElement>;
   tabActiva: 'pendientes' | 'aprobadas' | 'rechazadas' = 'pendientes';
   searchControl = new FormControl('');
   scansFiltrados: ScanEmbarque[] = [];
@@ -50,6 +52,8 @@ export class ScanListComponent implements OnInit, OnDestroy {
   tcpPort = APP_CONFIG.tcpPort ?? '5000';
   private audioDesbloqueado = false;
   private _destroy$ = new Subject<void>();
+  scanControl = new FormControl('');
+  escaneando = false;
 
   constructor(
     protected _scanService: ScanService,
@@ -58,16 +62,7 @@ export class ScanListComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this._scanService.registrarOperador().subscribe(res => {
-      // console.log('operador registrado:', res);
-  });
     this._scanService.init();
-
-    // IP sin bloquear el resto del init
-    obtenerIPLocal().then((ip) => {
-      this.ipLocal = ip;
-      this._cdr.markForCheck();
-    });
 
     this._scanService.scans$.pipe(takeUntil(this._destroy$)).subscribe((scans) => {
       this.aplicarFiltros(scans);
@@ -84,9 +79,29 @@ export class ScanListComponent implements OnInit, OnDestroy {
       this._cdr.markForCheck();
     });
 
-  this._scanService.registrarOperador().subscribe(res => {
-      // console.log('operador registrado:', res);
-  });
+    setTimeout(() => this.scanInput?.nativeElement.focus(), 300);
+  }
+
+  onScanEnter(event: KeyboardEvent): void {
+    const valor = this.scanControl.value?.trim();
+    if (event.key !== 'Enter' || !valor) return;
+
+    this.escaneando = true;
+    this._cdr.markForCheck();
+
+    this._scanService.enviarScan(valor).subscribe({
+      next: () => {
+        this.scanControl.reset();
+        this.escaneando = false;
+        this._cdr.markForCheck();
+        this.scanInput?.nativeElement.focus(); // re-enfocar
+      },
+      error: (e) => {
+        console.error('Error scan:', e);
+        this.escaneando = false;
+        this._cdr.markForCheck();
+      },
+    });
   }
 
   cambiarTab(tab: 'pendientes' | 'aprobadas' | 'rechazadas'): void {

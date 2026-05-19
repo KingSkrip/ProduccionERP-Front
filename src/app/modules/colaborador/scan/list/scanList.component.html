@@ -1,34 +1,50 @@
 <div class="flex min-w-0 flex-auto flex-col">
-
   <div class="flex items-center justify-between p-6 pb-0">
-  <h2 class="text-2xl font-semibold">Escaneos Embarques</h2>
+    <h2 class="text-2xl font-semibold">Escaneos Embarques</h2>
 
-  <!-- Instrucción de conexión -->
-  <div class="flex items-center gap-3 rounded-xl border border-dashed px-4 py-2 text-sm">
-    <mat-icon class="text-base text-green-500">wifi</mat-icon>
-    <div class="flex flex-col">
-      <span class="text-xs text-gray-400">Conecta tu Zebra a:</span>
-      <span
-        class="font-mono font-semibold text-black dark:text-white tracking-wide select-all"
-        matTooltip="Toca para copiar"
+    <!-- Instrucción de conexión -->
+    <div class="flex items-center gap-3 rounded-xl border border-dashed px-4 py-2 text-sm">
+      <mat-icon class="text-base text-green-500">wifi</mat-icon>
+      <div class="flex flex-col">
+        <span class="text-xs text-gray-400">Conecta tu Zebra a:</span>
+        <span
+          class="select-all font-mono font-semibold tracking-wide text-black dark:text-white"
+          matTooltip="Toca para copiar"
+          (click)="copiarIP()"
+        >
+          IP:192.168.100.59 Puerto:5000
+        </span>
+      </div>
+      <mat-icon
+        class="cursor-pointer text-gray-400 transition-colors hover:text-primary-500"
+        matTooltip="Copiar"
         (click)="copiarIP()"
       >
-        IP:192.168.100.59 Puerto:5000
-      </span>
+        content_copy
+      </mat-icon>
     </div>
-    <mat-icon
-      class="cursor-pointer text-gray-400 hover:text-primary-500 transition-colors"
-      matTooltip="Copiar"
-      (click)="copiarIP()"
-    >
-      content_copy
-    </mat-icon>
-  </div>
 
-  <button mat-icon-button (click)="_scanService.cargarScans()" matTooltip="Recargar">
-    <mat-icon>refresh</mat-icon>
-  </button>
-</div>
+    <!-- Input invisible que captura el keystroke del scanner -->
+    <input
+      #scanInput
+      [formControl]="scanControl"
+      (keydown)="onScanEnter($event)"
+      class="pointer-events-none absolute h-0 w-0 opacity-0"
+      autocomplete="off"
+    />
+
+    <!-- Indicador visual -->
+    <div class="flex items-center gap-2 text-sm text-gray-500">
+      <mat-icon [class.animate-pulse]="escaneando" class="text-green-500">
+        qr_code_scanner
+      </mat-icon>
+      <span>{{ escaneando ? 'Procesando...' : 'Listo para escanear' }}</span>
+    </div>
+
+    <button mat-icon-button (click)="_scanService.cargarScans()" matTooltip="Recargar">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
 
   <!-- Búsqueda -->
   <div class="px-6 pt-4">
@@ -67,7 +83,10 @@
   </div>
 
   <!-- Tabla -->
-  <div class="bg-card px-6 pt-4 mx-5 md:mx-5.2 " style="height: calc(100vh - 280px); overflow-y: auto">
+  <div
+    class="md:mx-5.2 bg-card mx-5 px-6 pt-4"
+    style="height: calc(100vh - 280px); overflow-y: auto"
+  >
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b text-left text-black dark:text-white">

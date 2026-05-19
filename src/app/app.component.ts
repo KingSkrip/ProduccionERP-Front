@@ -15,7 +15,7 @@ export class AppComponent implements OnInit {
 
     ngOnInit(): void {
         const desbloquear = () => {
-            this._scanService.desbloquearAudio();
+           // this._scanService.desbloquearAudio();
             document.removeEventListener('click', desbloquear);
             document.removeEventListener('keydown', desbloquear);
             document.removeEventListener('touchstart', desbloquear);
