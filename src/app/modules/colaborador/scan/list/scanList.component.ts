@@ -64,22 +64,30 @@ export class ScanListComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this._zebraScanner.init();
-
+    setTimeout(() => {
+      this._zebraScanner.init(this.scanInput?.nativeElement);
+    }, 100);
+  
     this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
+      //console.log('📤 Barcode recibido:', codigo);
+      this.scanControl.setValue(codigo);
       this.escaneando = true;
       this._cdr.markForCheck();
-
-      this._scanService.enviarScan(codigo).subscribe({
-        next: () => {
-          this.escaneando = false;
-          this._cdr.markForCheck();
-        },
-        error: () => {
-          this.escaneando = false;
-          this._cdr.markForCheck();
-        },
-      });
+  
+this._scanService.enviarScan(codigo).subscribe({
+  next: (res) => {
+    // console.log('✅ POST ok:', res); // 👈
+    this.scanControl.reset();
+    this.escaneando = false;
+    this._cdr.markForCheck();
+    this._zebraScanner.focusInput();
+  },
+  error: (e) => {
+    //console.error('❌ POST falló:', e.status, e.error); // 👈
+    this.escaneando = false;
+    this._cdr.markForCheck();
+  },
+});
     });
 
     this._scanService.init();
@@ -102,27 +110,27 @@ export class ScanListComponent implements OnInit, OnDestroy {
     setTimeout(() => this.scanInput?.nativeElement.focus(), 300);
   }
 
-  onScanEnter(event: KeyboardEvent): void {
-    const valor = this.scanControl.value?.trim();
-    if (event.key !== 'Enter' || !valor) return;
+  // onScanEnter(event: KeyboardEvent): void {
+  //   const valor = this.scanControl.value?.trim();
+  //   if (event.key !== 'Enter' || !valor) return;
 
-    this.escaneando = true;
-    this._cdr.markForCheck();
+  //   this.escaneando = true;
+  //   this._cdr.markForCheck();
 
-    this._scanService.enviarScan(valor).subscribe({
-      next: () => {
-        this.scanControl.reset();
-        this.escaneando = false;
-        this._cdr.markForCheck();
-        this.scanInput?.nativeElement.focus(); // re-enfocar
-      },
-      error: (e) => {
-        console.error('Error scan:', e);
-        this.escaneando = false;
-        this._cdr.markForCheck();
-      },
-    });
-  }
+  //   this._scanService.enviarScan(valor).subscribe({
+  //     next: () => {
+  //       this.scanControl.reset();
+  //       this.escaneando = false;
+  //       this._cdr.markForCheck();
+  //       this.scanInput?.nativeElement.focus(); // re-enfocar
+  //     },
+  //     error: (e) => {
+  //       console.error('Error scan:', e);
+  //       this.escaneando = false;
+  //       this._cdr.markForCheck();
+  //     },
+  //   });
+  // }
 
   cambiarTab(tab: 'pendientes' | 'aprobadas' | 'rechazadas'): void {
     this.tabActiva = tab;

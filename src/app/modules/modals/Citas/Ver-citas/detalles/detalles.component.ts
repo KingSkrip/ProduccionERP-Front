@@ -52,8 +52,8 @@ export class DetallesAccesoModalComponent implements OnInit {
     const user = this.authService.getUser();
     const miFirebirdId = user?.firebird_user_clave ?? user?.id;
     const cita = this.data.cita as any;
-      console.log('asistencia raw:', cita.asistencia);
-  console.log('cita completa:', cita);
+  //     console.log('asistencia raw:', cita.asistencia);
+  // console.log('cita completa:', cita);
     this.esJunta = cita.cita_type_id === 2;
     if (this.esJunta) {
       this.participantes = (cita.visitantes ?? []).map((v: any) => ({

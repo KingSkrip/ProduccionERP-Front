@@ -50,10 +50,14 @@ export class ScanService implements OnDestroy {
     return this._http.post(`${this.apiUrl}scanner/embarques`, { barcode });
   }
 
+
   private conectarWebSocket(): void {
     if (this.echo) return;
 
     const userId = this._userService.user?.firebird_user_id;
+    const token  = localStorage.getItem('encrypt');
+   // console.log('📡 [WS] Conectando con:', { userId, token: token?.slice(0,20) + '...' });
+
     (window as any).Pusher = Pusher;
 
     this.echo = new Echo({
@@ -64,12 +68,18 @@ export class ScanService implements OnDestroy {
       wssPort:     this.reverb.port,
       forceTLS:    this.reverb.scheme === 'https',
       enabledTransports: ['ws', 'wss'],
+      authEndpoint: `${APP_CONFIG.apiBase}/broadcasting/auth`,
+      auth: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
     });
-
-    // 👈 Canal privado por usuario
+  
     this.echo
-      .private(`scanner-embarques.${userId}`)
+    .private(`scanner-embarques.${userId}`) 
       .listen('.scan.creado', (event: any) => {
+        // console.log('🟢 [WS] Evento recibido!', event);
         const normalizado: ScanEmbarque = {
           CODIGO:     event.codigo     ?? event.CODIGO,
           CODIGOENT:  event.codigoEnt  ?? event.CODIGOENT,
