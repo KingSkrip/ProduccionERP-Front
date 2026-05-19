@@ -30,7 +30,8 @@
               "crypto-js/hmac-sha256",
               "crypto-js/enc-base64",
               "quill-delta",
-              "crypto-js"
+              "crypto-js",
+              "pusher-js"
             ],
             "assets": [
               {
