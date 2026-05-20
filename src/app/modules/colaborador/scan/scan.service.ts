@@ -60,7 +60,7 @@ private audioBuffers: Record<string, AudioBuffer> = {};
         next:  () => this.reproducirSonido('correcto'),
         error: (e) => {
           if (e.status === 409) {
-            this.reproducirSonido('yaeido');
+            this.reproducirSonido('yaleido');
           }
         },
       })
@@ -108,7 +108,7 @@ desbloquearAudio(): void {
 
   this.audioCtx = new AudioContext();
 
-  const sonidos: Array<'correcto' | 'yaeido'> = ['correcto', 'yaeido'];
+  const sonidos: Array<'correcto' | 'yaleido'> = ['correcto', 'yaleido'];
 
   sonidos.forEach(nombre => {
     fetch(`sounds/${nombre}.mp3`)
@@ -128,7 +128,7 @@ desbloquearAudio(): void {
                                
 }
 
-private reproducirSonido(nombre: 'correcto' | 'yaeido'): void {
+private reproducirSonido(nombre: 'correcto' | 'yaleido'): void {
   const buffer = this.audioBuffers[nombre];
   if (!this.audioCtx || !buffer) {
     console.warn(`⚠️ reproducirSonido: ctx=${!!this.audioCtx} buffer=${!!buffer}`);
