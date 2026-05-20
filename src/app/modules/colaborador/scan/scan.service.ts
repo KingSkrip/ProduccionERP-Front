@@ -104,26 +104,36 @@ private audioBuffers: Record<string, AudioBuffer> = {};
   }
 
 desbloquearAudio(): void {
-  if (this.audioDesbloqueado) return;
+  if (this.audioCtx) return; 
+
   this.audioCtx = new AudioContext();
-  const sonidos = ['correcto', 'yaeido'];
-  Promise.all(
-    sonidos.map(nombre =>
-      fetch(`sounds/${nombre}.mp3`)
-        .then(r => r.arrayBuffer())
-        .then(buf => this.audioCtx!.decodeAudioData(buf))
-        .then(decoded => { this.audioBuffers[nombre] = decoded; })
-    )
-  )
-  .then(() => { this.audioDesbloqueado = true; })
-  .catch(e => console.warn('Audio no cargado:', e));
+
+  const sonidos: Array<'correcto' | 'yaeido'> = ['correcto', 'yaeido'];
+
+  sonidos.forEach(nombre => {
+    fetch(`sounds/${nombre}.mp3`)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} para ${nombre}.mp3`);
+        return r.arrayBuffer();
+      })
+      .then(buf => this.audioCtx!.decodeAudioData(buf))
+      .then(decoded => {
+        this.audioBuffers[nombre] = decoded;
+        console.log(`✅ Audio cargado: ${nombre}`);
+      })
+      .catch(e => console.warn(`❌ Audio ${nombre} falló:`, e));
+  });
+
+  this.audioDesbloqueado = true; 
+                               
 }
 
 private reproducirSonido(nombre: 'correcto' | 'yaeido'): void {
-  if (!this.audioDesbloqueado || !this.audioCtx) return;
   const buffer = this.audioBuffers[nombre];
-  if (!buffer) return;
-
+  if (!this.audioCtx || !buffer) {
+    console.warn(`⚠️ reproducirSonido: ctx=${!!this.audioCtx} buffer=${!!buffer}`);
+    return;
+  }
   const source = this.audioCtx.createBufferSource();
   source.buffer = buffer;
   source.connect(this.audioCtx.destination);
