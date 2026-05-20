@@ -11,12 +11,13 @@ import { ScanEmbarque } from './scan-embarques.types';
 export class ScanService implements OnDestroy {
   private apiUrl = APP_CONFIG.apiUrl;
   private reverb  = APP_CONFIG.reverb;
-
   private _scans$   = new BehaviorSubject<ScanEmbarque[]>([]);
   private _loading$ = new BehaviorSubject<boolean>(false);
-
   private echo: Echo<'reverb'> | null = null;
   private initialized = false;
+    private audioDesbloqueado = false;
+  private audioBuffer: AudioBuffer | null = null;
+  private audioCtx: AudioContext | null = null;
 
   constructor(
     private _http: HttpClient,
@@ -47,7 +48,8 @@ export class ScanService implements OnDestroy {
 
   // 👈 Nuevo: Angular manda el escaneo a Laravel
   enviarScan(barcode: string): Observable<any> {
-    return this._http.post(`${this.apiUrl}scanner/embarques`, { barcode });
+    return this._http.post(`${this.apiUrl}scanner/embarques`, { barcode })
+     .pipe(tap(() => this.reproducirSonido()));
   }
 
 
@@ -88,6 +90,33 @@ export class ScanService implements OnDestroy {
         });
       });
   }
+
+
+  desbloquearAudio(): void {
+    if (this.audioDesbloqueado) return;
+
+    this.audioCtx = new AudioContext();
+
+    // Precarga el MP3 una sola vez
+    fetch('sounds/correcto.mp3')
+      .then(r => r.arrayBuffer())
+      .then(buf => this.audioCtx!.decodeAudioData(buf))
+      .then(decoded => {
+        this.audioBuffer = decoded;
+        this.audioDesbloqueado = true;
+      })
+      .catch(e => console.warn('Audio no cargado:', e));
+  }
+
+  private reproducirSonido(): void {
+    if (!this.audioDesbloqueado || !this.audioCtx || !this.audioBuffer) return;
+
+    const source = this.audioCtx.createBufferSource();
+    source.buffer = this.audioBuffer;
+    source.connect(this.audioCtx.destination);
+    source.start(0);
+  }
+
 
   ngOnDestroy(): void {
     this.echo?.disconnect();
