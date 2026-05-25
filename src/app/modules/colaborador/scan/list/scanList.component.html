@@ -1,53 +1,42 @@
 <div class="flex min-w-0 flex-auto flex-col">
-  <div class="flex items-center justify-between p-6 pb-0">
-    <h2 class="text-2xl font-semibold">Escaneos Embarques</h2>
+  <div
+    class="flex flex-col gap-2 p-4 pb-0 sm:flex-row sm:items-center sm:justify-between sm:p-6 sm:pb-0"
+  >
+    <h2 class="text-xl font-semibold sm:text-2xl">Escaneos Embarques</h2>
 
-    <!-- Instrucción de conexión -->
-    <div class="flex items-center gap-3 rounded-xl border border-dashed px-4 py-2 text-sm">
-      <mat-icon class="text-base text-green-500">wifi</mat-icon>
-      <div class="flex flex-col">
-        <span class="text-xs text-gray-400">Conecta tu Zebra a:</span>
-        <span
-          class="select-all font-mono font-semibold tracking-wide text-black dark:text-white"
-          matTooltip="Toca para copiar"
+    <div class="flex items-center justify-between gap-2 sm:gap-3">
+      <!-- Instrucción de conexión -->
+      <div
+        class="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-dashed px-3 py-2 text-sm sm:px-4"
+      >
+        <mat-icon class="shrink-0 text-base text-green-500">wifi</mat-icon>
+        <div class="flex min-w-0 flex-col">
+          <span class="text-xs text-gray-400">Conecta tu Zebra a:</span>
+          <span
+            class="select-all truncate font-mono text-xs font-semibold tracking-wide text-black sm:text-sm dark:text-white"
+            matTooltip="Toca para copiar"
+            (click)="copiarIP()"
+          >
+            192.168.100.59:5000
+          </span>
+        </div>
+        <mat-icon
+          class="shrink-0 cursor-pointer text-gray-400 transition-colors hover:text-primary-500"
+          matTooltip="Copiar"
           (click)="copiarIP()"
         >
-          IP:192.168.100.59 Puerto:5000
-        </span>
+          content_copy
+        </mat-icon>
       </div>
-      <mat-icon
-        class="cursor-pointer text-gray-400 transition-colors hover:text-primary-500"
-        matTooltip="Copiar"
-        (click)="copiarIP()"
-      >
-        content_copy
-      </mat-icon>
+
+      <button mat-icon-button (click)="_scanService.cargarScans()" matTooltip="Recargar">
+        <mat-icon>refresh</mat-icon>
+      </button>
     </div>
-
-    <!-- Input invisible que captura el keystroke del scanner -->
-    <!-- <input
-      #scanInput
-      [formControl]="scanControl"
-      (keydown)="onScanEnter($event)"
-      class="pointer-events-none absolute h-0 w-0 opacity-0"
-      autocomplete="off"
-    /> -->
-
-    <!-- Indicador visual -->
-    <div class="flex items-center gap-2 text-sm text-gray-500">
-      <mat-icon [class.animate-pulse]="escaneando" class="text-green-500">
-        qr_code_scanner
-      </mat-icon>
-      <span>{{ escaneando ? 'Procesando...' : 'Listo para escanear' }}</span>
-    </div>
-
-    <button mat-icon-button (click)="_scanService.cargarScans()" matTooltip="Recargar">
-      <mat-icon>refresh</mat-icon>
-    </button>
   </div>
 
   <!-- Búsqueda -->
-  <div class="px-6 pt-4">
+  <div class="px-4 pt-3 sm:px-6 sm:pt-4">
     <mat-form-field class="w-full" appearance="outline">
       <mat-icon matPrefix>search</mat-icon>
       <input matInput placeholder="Buscar código..." [formControl]="searchControl" />
@@ -55,11 +44,11 @@
   </div>
 
   <!-- Tabs -->
-  <div class="flex gap-2 border-b px-6">
+  <div class="flex gap-1 border-b px-4 sm:gap-2 sm:px-6">
     <button
       *ngFor="let tab of ['pendientes', 'aprobadas', 'rechazadas']"
       (click)="cambiarTab(tab)"
-      class="relative rounded-t-xl px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-in-out"
+      class="relative rounded-t-xl px-3 py-2 text-xs font-semibold transition-all duration-300 ease-in-out sm:px-5 sm:py-2.5 sm:text-sm"
       [class.bg-white]="tabActiva === tab"
       [class.dark:bg-gray-900]="tabActiva === tab"
       [class.shadow-md]="tabActiva === tab"
@@ -71,30 +60,34 @@
       [class.hover:bg-white]="tabActiva !== tab"
       [class.dark:hover:bg-gray-700]="tabActiva !== tab"
     >
-      <!-- Indicador -->
       <span
         *ngIf="tabActiva === tab"
         class="absolute inset-x-3 -bottom-0.5 h-1 rounded-full bg-primary-500"
-      >
-      </span>
-
+      ></span>
       {{ tab | titlecase }}
     </button>
   </div>
 
   <!-- Tabla -->
   <div
-    class="md:mx-5.2 bg-card mx-5 px-6 pt-4"
+    class="bg-card mx-2 px-3 pt-4 sm:mx-5 sm:px-6"
     style="height: calc(100vh - 280px); overflow-y: auto"
   >
-    <table class="w-full text-sm">
+    <table class="w-full text-sm" style="table-layout: fixed">
+      <colgroup>
+        <col style="width: 38%" />
+        <col class="hidden sm:table-column" style="width: 28%" />
+        <col style="width: 42%" class="sm:w-auto" />
+        <col style="width: 20%" />
+      </colgroup>
       <thead>
         <tr class="border-b text-left text-black dark:text-white">
-          <th class="pb-2 pr-4">CÓDIGO</th>
-          <!-- columnas extra: ocultas en móvil, visibles desde sm -->
-          <th class="hidden pb-2 pr-4 sm:table-cell">CÓDIGO ENT</th>
-          <th class="pb-2">FECHA Y HORA</th>
-          <th class="hidden pb-2 pr-4 sm:table-cell">ESTADO</th>
+          <th class="pb-2 pr-2 text-xs font-semibold sm:pr-4 sm:text-sm">CÓDIGO</th>
+          <th class="hidden pb-2 pr-2 text-xs font-semibold sm:table-cell sm:pr-4 sm:text-sm">
+            CÓDIGO ENT
+          </th>
+          <th class="pb-2 pr-2 text-xs font-semibold sm:pr-4 sm:text-sm">FECHA Y HORA</th>
+          <th class="pb-2 text-xs font-semibold sm:text-sm">ESTADO</th>
         </tr>
       </thead>
       <tbody>
@@ -102,30 +95,36 @@
           *ngFor="let scan of scansFiltrados"
           class="border-b transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
         >
-          <td class="py-2 pr-4 font-mono text-black dark:text-white">{{ scan.CODIGO }}</td>
+          <td class="py-2 pr-2 font-mono text-xs text-black sm:pr-4 sm:text-sm dark:text-white">
+            {{ scan.CODIGO }}
+          </td>
 
-          <td class="hidden py-2 pr-4 font-mono text-black sm:table-cell dark:text-white">
+          <td
+            class="hidden py-2 pr-2 font-mono text-xs text-black sm:table-cell sm:pr-4 sm:text-sm dark:text-white"
+          >
             {{ scan.CODIGOENT }}
           </td>
 
-          <td class="py-2 pr-4 text-black dark:text-white">
-            {{ scan.FECHAYHORA | date: 'dd/MM/yyyy HH:mm:ss' }}
+          <td class="py-2 pr-2 text-xs text-black sm:pr-4 sm:text-sm dark:text-white">
+            <span class="sm:hidden">{{ scan.FECHAYHORA | date: 'dd/MM HH:mm' }}</span>
+            <span class="hidden sm:inline">{{
+              scan.FECHAYHORA | date: 'dd/MM/yyyy HH:mm:ss'
+            }}</span>
           </td>
 
           <td class="py-2">
-            <!-- Punto de color: solo visible en móvil -->
-            <!-- <span
-              class="inline-block hidden h-2.5 w-2.5 rounded-full sm:table-cell"
+            <!-- Punto en móvil -->
+            <span
+              class="inline-block h-2.5 w-2.5 rounded-full sm:hidden"
               [class.bg-yellow-500]="scan.PROCESADO === 0"
               [class.bg-green-500]="scan.PROCESADO === 1"
               [class.bg-red-500]="scan.PROCESADO === 2"
               [attr.title]="
                 scan.PROCESADO === 0 ? 'Pendiente' : scan.PROCESADO === 1 ? 'Aprobado' : 'Rechazado'
               "
-            >
-            </span> -->
+            ></span>
 
-            <!-- Badge completo: solo visible desde sm -->
+            <!-- Badge en desktop -->
             <span
               class="hidden rounded-full px-2 py-1 text-xs font-medium sm:inline-flex"
               [class.bg-yellow-100]="scan.PROCESADO === 0"

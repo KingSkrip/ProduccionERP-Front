@@ -18,7 +18,7 @@ export class ScanService implements OnDestroy {
   private audioDesbloqueado = false;
   private audioBuffer: AudioBuffer | null = null;
   private audioCtx: AudioContext | null = null;
-private audioBuffers: Record<string, AudioBuffer> = {};
+  private audioBuffers: Record<string, AudioBuffer> = {};
 
   constructor(
     private _http: HttpClient,
@@ -52,20 +52,20 @@ private audioBuffers: Record<string, AudioBuffer> = {};
   }
 
   // 👈 Nuevo: Angular manda el escaneo a Laravel
- enviarScan(barcode: string): Observable<any> {
-  return this._http
-    .post(`${this.apiUrl}scanner/embarques`, { barcode })
-    .pipe(
+  enviarScan(barcode: string): Observable<any> {
+    return this._http.post(`${this.apiUrl}scanner/embarques`, { barcode }).pipe(
       tap({
-        next:  () => this.reproducirSonido('correcto'),
+        next: () => this.reproducirSonido('correcto'),
         error: (e) => {
           if (e.status === 409) {
             this.reproducirSonido('yaleido');
+          } else if (e.status === 422) {
+            this.reproducirSonido('error');
           }
         },
-      })
+      }),
     );
-}
+  }
 
   private conectarWebSocket(): void {
     if (this.echo) return;
@@ -103,42 +103,41 @@ private audioBuffers: Record<string, AudioBuffer> = {};
     });
   }
 
-desbloquearAudio(): void {
-  if (this.audioCtx) return; 
+  desbloquearAudio(): void {
+    if (this.audioCtx) return;
 
-  this.audioCtx = new AudioContext();
+    this.audioCtx = new AudioContext();
 
-  const sonidos: Array<'correcto' | 'yaleido'> = ['correcto', 'yaleido'];
+    const sonidos: Array<'correcto' | 'yaleido' | 'error'> = ['correcto', 'yaleido', 'error'];
 
-  sonidos.forEach(nombre => {
-    fetch(`sounds/${nombre}.mp3`)
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status} para ${nombre}.mp3`);
-        return r.arrayBuffer();
-      })
-      .then(buf => this.audioCtx!.decodeAudioData(buf))
-      .then(decoded => {
-        this.audioBuffers[nombre] = decoded;
-        console.log(`✅ Audio cargado: ${nombre}`);
-      })
-      .catch(e => console.warn(`❌ Audio ${nombre} falló:`, e));
-  });
+    sonidos.forEach((nombre) => {
+      fetch(`sounds/${nombre}.mp3`)
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status} para ${nombre}.mp3`);
+          return r.arrayBuffer();
+        })
+        .then((buf) => this.audioCtx!.decodeAudioData(buf))
+        .then((decoded) => {
+          this.audioBuffers[nombre] = decoded;
+          // console.log(`✅ Audio cargado: ${nombre}`);
+        })
+        .catch((e) => console.warn(`❌ Audio ${nombre} falló:`, e));
+    });
 
-  this.audioDesbloqueado = true; 
-                               
-}
-
-private reproducirSonido(nombre: 'correcto' | 'yaleido'): void {
-  const buffer = this.audioBuffers[nombre];
-  if (!this.audioCtx || !buffer) {
-    console.warn(`⚠️ reproducirSonido: ctx=${!!this.audioCtx} buffer=${!!buffer}`);
-    return;
+    this.audioDesbloqueado = true;
   }
-  const source = this.audioCtx.createBufferSource();
-  source.buffer = buffer;
-  source.connect(this.audioCtx.destination);
-  source.start(0);
-}
+
+  private reproducirSonido(nombre: 'correcto' | 'yaleido' | 'error'): void {
+    const buffer = this.audioBuffers[nombre];
+    if (!this.audioCtx || !buffer) {
+      console.warn(`⚠️ reproducirSonido: ctx=${!!this.audioCtx} buffer=${!!buffer}`);
+      return;
+    }
+    const source = this.audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(this.audioCtx.destination);
+    source.start(0);
+  }
 
   ngOnDestroy(): void {
     this.echo?.disconnect();

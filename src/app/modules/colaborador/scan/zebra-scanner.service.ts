@@ -27,7 +27,7 @@ export class ZebraScannerService implements OnDestroy {
   
     // Re-enfocar cada vez que el input pierde foco
     this.inputEl.addEventListener('blur', () => {
-      console.warn('🔵 Input perdió foco, re-enfocando en 50ms...');
+      // console.warn('🔵 Input perdió foco, re-enfocando en 50ms...');
       setTimeout(() => this.inputEl?.focus(), 50);
     });
   
