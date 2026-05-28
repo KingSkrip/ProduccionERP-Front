@@ -6,9 +6,8 @@ export class ZebraScannerService implements OnDestroy {
   private bufferTimer: any = null;
   private readonly BUFFER_TIMEOUT = 300;
   private readonly MIN_LENGTH = 4;
-
   readonly scan$ = new Subject<string>();
-
+private paused = false;
   private inputEl: HTMLInputElement | null = null;
   private boundInput  = () => this.onInput();
   private boundKeydown = (e: KeyboardEvent) => this.onKeydown(e);
@@ -25,11 +24,14 @@ export class ZebraScannerService implements OnDestroy {
       this.inputEl = el;
     }
   
-    // Re-enfocar cada vez que el input pierde foco
-    this.inputEl.addEventListener('blur', () => {
-      // console.warn('🔵 Input perdió foco, re-enfocando en 50ms...');
-      setTimeout(() => this.inputEl?.focus(), 50);
-    });
+this.inputEl.addEventListener('blur', (e: FocusEvent) => {
+  if (this.paused) return;
+  const dest = e.relatedTarget as HTMLElement | null;
+  if (dest && (dest.tagName === 'INPUT' || dest.tagName === 'TEXTAREA')) return;
+  setTimeout(() => {
+    if (!this.paused) this.inputEl?.focus();
+  }, 50);
+});
   
     // Re-enfocar cuando la app vuelve a primer plano
     document.addEventListener('visibilitychange', () => {
@@ -39,17 +41,20 @@ export class ZebraScannerService implements OnDestroy {
       }
     });
   
-    // Polling de seguridad
-    setInterval(() => {
-      if (document.activeElement !== this.inputEl) {
-        this.inputEl?.focus();
-      }
-    }, 800);
+setInterval(() => {
+  if (this.paused) return;
+  const active = document.activeElement;
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+  if (active !== this.inputEl) this.inputEl?.focus();
+}, 800);
   
     this.inputEl.addEventListener('input', this.boundInput);
     this.inputEl.addEventListener('keydown', this.boundKeydown);
     this.inputEl.focus();
   }
+
+pause(): void  { this.paused = true; }
+resume(): void { this.paused = false; setTimeout(() => this.inputEl?.focus(), 100); }
 
   private onKeydown(e: KeyboardEvent): void {
     // console.log('🔑 keydown:', JSON.stringify({
@@ -87,9 +92,11 @@ export class ZebraScannerService implements OnDestroy {
     }, this.BUFFER_TIMEOUT);
   }
 
-  focusInput(): void {
+focusInput(): void {
+  if (!this.paused) {
     this.inputEl?.focus();
   }
+}
 
   ngOnDestroy(): void {
     this.inputEl?.removeEventListener('input', this.boundInput);

@@ -45,7 +45,9 @@ import { ZebraScannerService } from '../zebra-scanner.service';
 })
 export class ScanListComponent implements OnInit, OnDestroy {
   @ViewChild('scanInput') scanInput!: ElementRef<HTMLInputElement>;
-  tabActiva: 'pendientes' | 'aprobadas' | 'rechazadas' = 'pendientes';
+  @ViewChild('searchInputRef') searchInputRef!: ElementRef<HTMLInputElement>;
+private searchFocused = false;
+  tabActiva: 'pendientes' | 'aprobadas' = 'pendientes';
   searchControl = new FormControl('');
   scansFiltrados: ScanEmbarque[] = [];
   loading = false;
@@ -55,6 +57,9 @@ export class ScanListComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<void>();
   scanControl = new FormControl('');
   escaneando = false;
+
+  pageSize = 13;
+  paginaActual = 0;
 
   constructor(
     protected _scanService: ScanService,
@@ -67,27 +72,26 @@ export class ScanListComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this._zebraScanner.init(this.scanInput?.nativeElement);
     }, 100);
-  
+
     this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
       //console.log('📤 Barcode recibido:', codigo);
       this.scanControl.setValue(codigo);
       this.escaneando = true;
       this._cdr.markForCheck();
-  
-this._scanService.enviarScan(codigo).subscribe({
-  next: (res) => {
-    // console.log('✅ POST ok:', res); // 👈
-    this.scanControl.reset();
-    this.escaneando = false;
-    this._cdr.markForCheck();
-    this._zebraScanner.focusInput();
-  },
-  error: (e) => {
-    //console.error('❌ POST falló:', e.status, e.error); // 👈
-    this.escaneando = false;
-    this._cdr.markForCheck();
-  },
-});
+
+      this._scanService.enviarScan(codigo).subscribe({
+next: (res) => {
+  this.scanControl.reset();
+  this.escaneando = false;
+  this._cdr.markForCheck();
+  this._zebraScanner.focusInput(); // el servicio sabe si está pausado o no
+},
+error: (e) => {
+  this.escaneando = false;
+  this._cdr.markForCheck();
+  this._zebraScanner.focusInput();
+},
+      });
     });
 
     this._scanService.init();
@@ -110,36 +114,33 @@ this._scanService.enviarScan(codigo).subscribe({
     setTimeout(() => this.scanInput?.nativeElement.focus(), 300);
   }
 
-  // onScanEnter(event: KeyboardEvent): void {
-  //   const valor = this.scanControl.value?.trim();
-  //   if (event.key !== 'Enter' || !valor) return;
+  // getter calculado
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.scansFiltrados.length / this.pageSize));
+  }
 
-  //   this.escaneando = true;
-  //   this._cdr.markForCheck();
+  get scansPaginados(): ScanEmbarque[] {
+    const start = this.paginaActual * this.pageSize;
+    return this.scansFiltrados.slice(start, start + this.pageSize);
+  }
 
-  //   this._scanService.enviarScan(valor).subscribe({
-  //     next: () => {
-  //       this.scanControl.reset();
-  //       this.escaneando = false;
-  //       this._cdr.markForCheck();
-  //       this.scanInput?.nativeElement.focus(); // re-enfocar
-  //     },
-  //     error: (e) => {
-  //       console.error('Error scan:', e);
-  //       this.escaneando = false;
-  //       this._cdr.markForCheck();
-  //     },
-  //   });
-  // }
+  irPagina(n: number): void {
+    this.paginaActual = n;
+    this._cdr.markForCheck();
+  }
 
-  cambiarTab(tab: 'pendientes' | 'aprobadas' | 'rechazadas'): void {
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  cambiarTab(tab: 'pendientes' | 'aprobadas'): void {
     this.tabActiva = tab;
     this.aplicarFiltros(this._scanService['_scans$'].getValue());
     this._cdr.markForCheck();
   }
 
   private aplicarFiltros(scans: ScanEmbarque[]): void {
-    const tabMap = { pendientes: 0, aprobadas: 1, rechazadas: 2 };
+    const tabMap = { pendientes: 0, aprobadas: 1 };
     const busqueda = (this.searchControl.value || '').toLowerCase();
     this.scansFiltrados = scans
       .filter((s) => s.PROCESADO === tabMap[this.tabActiva])
@@ -149,6 +150,7 @@ this._scanService.enviarScan(codigo).subscribe({
           s.CODIGO.toLowerCase().includes(busqueda) ||
           s.CODIGOENT.toString().includes(busqueda),
       );
+    this.paginaActual = 0;
   }
 
   ngOnDestroy(): void {
@@ -160,4 +162,16 @@ this._scanService.enviarScan(codigo).subscribe({
     const texto = `${this.ipLocal}:${this.tcpPort}`;
     navigator.clipboard.writeText(texto);
   }
+
+  copiarPuerto(): void {
+    navigator.clipboard.writeText(String(this.tcpPort));
+  }
+
+onSearchFocus(): void {
+  this._zebraScanner.pause();
+}
+
+onSearchBlur(): void {
+  this._zebraScanner.resume();
+}
 }
