@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { SimpleUser } from 'app/modules/mailbox/mailbox.service';
-import { catchError, map, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, shareReplay, throwError } from 'rxjs';
 
 // Lo que devuelve el backend (GET)
 export interface CitaAPI {
@@ -22,10 +22,10 @@ export interface CitaAPI {
   visitante?: { id: number; nombre?: string };
   con_vehiculo?: 0 | 1 | boolean;
   es_externa?: boolean;
-    asistencia?: string | null;
+  asistencia?: string | null;
   nombre_proveedor?: string;
-    nombre_organizador?: string;
-    es_organizador?: string;
+  nombre_organizador?: string;
+  es_organizador?: string;
 }
 
 // Lo que manda el frontend (POST/PUT) — el backend extrae id_user del JWT
@@ -73,7 +73,7 @@ export class AgendaService {
   private _apiUrl = `${APP_CONFIG.apiUrl}citas`;
   private _juntasUrl = `${APP_CONFIG.apiUrl}juntas`;
   private readonly apiUrl = APP_CONFIG.apiUrl;
-
+  private _usuariosInternosCache$: Observable<SimpleUser[]> | null = null;
   constructor(private _http: HttpClient) {}
 
   getCitas(): Observable<CitaAPI[]> {
@@ -136,25 +136,52 @@ export class AgendaService {
   //JUNTAS
 
   // ─── JUNTAS ──────────────────────────────────────────────────────
-  getUsuariosDisponiblesJuntas(q = '', limit = 200): Observable<SimpleUser[]> {
-    let params = new HttpParams().set('q', q).set('limit', String(limit));
-
-    return this._http
-      .get<any>(`${this.apiUrl}users/all-juntas`, { params }) // ← cambio aquí
-      .pipe(
-        map((resp: any) => {
-          const usuarios = Array.isArray(resp) ? resp : (resp?.data ?? []);
-          return usuarios.map((u: any) => ({
-            ...u,
-            nombre: u.nombre?.toUpperCase(),
-          }));
-        }),
-        catchError((err) => {
-          console.error('Error cargando usuarios', err);
-          return throwError(() => err);
-        }),
-      );
+getUsuariosDisponiblesJuntas(q = '', limit = 200): Observable<SimpleUser[]> {
+  // Si no hay búsqueda, usar caché
+  if (!q) {
+    if (!this._usuariosInternosCache$) {
+      this._usuariosInternosCache$ = this._http
+        .get<any>(`${this.apiUrl}users/all-juntas`, {
+          params: new HttpParams().set('q', '').set('limit', '500'),
+        })
+        .pipe(
+          map((resp: any) => {
+            const usuarios = Array.isArray(resp) ? resp : (resp?.data ?? []);
+            return usuarios.map((u: any) => ({
+              ...u,
+              nombre: u.nombre?.toUpperCase(),
+            }));
+          }),
+          shareReplay(1), // ← cachea el resultado para todas las suscripciones futuras
+          catchError((err) => {
+            this._usuariosInternosCache$ = null; // limpiar caché si hay error
+            return throwError(() => err);
+          }),
+        );
+    }
+    return this._usuariosInternosCache$;
   }
+
+  // Con búsqueda, no cachear
+  return this._http
+    .get<any>(`${this.apiUrl}users/all-juntas`, {
+      params: new HttpParams().set('q', q).set('limit', String(limit)),
+    })
+    .pipe(
+      map((resp: any) => {
+        const usuarios = Array.isArray(resp) ? resp : (resp?.data ?? []);
+        return usuarios.map((u: any) => ({
+          ...u,
+          nombre: u.nombre?.toUpperCase(),
+        }));
+      }),
+      catchError((err) => throwError(() => err)),
+    );
+}
+
+clearUsuariosCache(): void {
+  this._usuariosInternosCache$ = null;
+}
 
   createJunta(payload: JuntaPayload): Observable<JuntaAPI> {
     return this._http.post<JuntaAPI>(this._juntasUrl, payload);

@@ -114,7 +114,7 @@ export class AgendaListComponent implements OnInit, OnDestroy {
     const fuente$ = esAdminReal
       ? this._citasService.getCitasAdmin()
       : this._citasService.getCitas();
-
+  this._citasService.getUsuariosDisponiblesJuntas('').subscribe();
     fuente$.pipe(takeUntil(this._unsubscribeAll)).subscribe((citas: CitaAPI[]) => {
   this.citas = citas.map((c) => ({
   id: c.id,
