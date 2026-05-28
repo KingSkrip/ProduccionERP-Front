@@ -309,7 +309,8 @@
         </select>
         <mat-icon
           class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
-          >meeting_room</mat-icon
+           (click)="salaSelectPc.click()">
+          meeting_room</mat-icon
         >
       </div>
     </div>
@@ -773,7 +774,7 @@
         </div>
       </div>
 
-      <!-- Sala (solo junta) -->
+      <!-- Sala (solo junta) movil -->
       <div *ngIf="tipoFormulario === 'junta'">
         <label class="text-sm font-medium text-black dark:text-white">Sala / Lugar</label>
         <div class="relative">
@@ -795,7 +796,7 @@
           </select>
           <div
             class="pointer-events-none absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
-          >
+         (click)="salaSelectMobile.click()">
             <mat-icon class="text-black icon-size-5 dark:text-white">expand_more</mat-icon>
           </div>
         </div>
