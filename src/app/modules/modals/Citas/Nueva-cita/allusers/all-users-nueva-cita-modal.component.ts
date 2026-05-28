@@ -80,6 +80,7 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
   private _juntaSearch$ = new Subject<string>();
   editandoCita: boolean = false;
   isProveedor = false;
+  cargandoUsuariosInternos = true;
   usuariosSeleccionados: any[] = [];
   usuarios: any[] = [];
   busquedaUsuario: string = '';
@@ -222,26 +223,35 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
     });
 
     // ── Usuarios para JUNTAS (internos) ──
-    this._citasService.getUsuariosDisponiblesJuntas('', 500).subscribe({
-      next: (res) => {
-        this.usuariosInternos = res;
-        this.usuariosFiltrados = [...res];
+   this._citasService.getUsuariosDisponiblesJuntas('', 500).subscribe({
+  next: (res) => {
+    this.usuariosInternos = res;
+    this.cargandoUsuariosInternos = false;
 
-        if (
-          this.editandoCita &&
-          this.tipoFormulario === 'junta' &&
-          this._visitantesIdsIniciales.length > 0
-        ) {
-          const fromList = res.filter((u: any) =>
-            this._visitantesIdsIniciales.includes(u.mysql_id),
-          );
-          if (fromList.length > 0) {
-            this.usuariosSeleccionados = fromList;
-          }
+    if (this.editandoCita && this.tipoFormulario === 'junta' && this._visitantesIdsIniciales.length > 0) {
+      const fromList = res.filter((u: any) =>
+        this._visitantesIdsIniciales.includes(u.mysql_id),
+      );
+      if (fromList.length > 0) {
+        this.usuariosSeleccionados = fromList;
+      }
+    }
+
+    // Si el panel está abierto (usuario ya tocó el input), recargar resultados
+    if (this.tipoFormulario === 'junta') {
+      this.usuariosFiltrados = [...res];
+      setTimeout(() => {
+        if (this.autocomplete3?.panelOpen) {
+          this._cdr.detectChanges();
+        } else if (this.autocomplete4?.panelOpen) {
+          this._cdr.detectChanges();
         }
-        this._cdr.markForCheck();
-      },
-    });
+      });
+    }
+
+    this._cdr.markForCheck();
+  },
+});
     this._juntaSearch$
       .pipe(
         debounceTime(250),

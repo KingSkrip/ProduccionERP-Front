@@ -629,34 +629,46 @@
           </div>
         </div>
 
-        <div class="relative">
-          <div
-            class="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
-          >
-            <mat-icon class="text-black icon-size-5 dark:text-white">groups</mat-icon>
-          </div>
-          <input
-            #inputNative3
-  #inputAuto3="matAutocompleteTrigger"
-  matAutocompleteTrigger
-  type="text"
-  [(ngModel)]="busquedaUsuario"
-  (ngModelChange)="filtrarUsuariosInternos()"
-  (focus)="filtrarUsuariosInternos()"
-  [matAutocomplete]="auto3"
-  placeholder="Buscar colaborador o jefe..."
-  (touchstart)="$event.stopPropagation()"
-            class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
-          />
-          <mat-icon
-           (mousedown)="$event.preventDefault()"
-  (touchstart)="$event.stopPropagation()"
-  (click)="toggleAutocomplete3()"
-            class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
-          >
-            expand_more
-          </mat-icon>
-        </div>
+ <div class="relative">
+    <div class="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600">
+      <!-- Spinner si carga, ícono si no -->
+      <mat-icon *ngIf="!cargandoUsuariosInternos" class="text-black icon-size-5 dark:text-white">groups</mat-icon>
+      <svg *ngIf="cargandoUsuariosInternos" class="h-5 w-5 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+    </div>
+
+    <input
+      #inputNative3
+      #inputAuto3="matAutocompleteTrigger"
+      matAutocompleteTrigger
+      type="text"
+      [(ngModel)]="busquedaUsuario"
+      (ngModelChange)="filtrarUsuariosInternos()"
+      (focus)="filtrarUsuariosInternos()"
+      [matAutocomplete]="auto3"
+      [placeholder]="cargandoUsuariosInternos ? 'Cargando usuarios...' : 'Buscar colaborador o jefe...'"
+      [disabled]="cargandoUsuariosInternos"
+      (touchstart)="$event.stopPropagation()"
+      class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white disabled:opacity-60"
+    />
+
+    <mat-icon
+      (mousedown)="$event.preventDefault()"
+      (touchstart)="$event.stopPropagation()"
+      (click)="!cargandoUsuariosInternos && toggleAutocomplete3()"
+      class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
+      [class.opacity-40]="cargandoUsuariosInternos"
+    >
+      expand_more
+    </mat-icon>
+  </div>
+
+  <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+    {{ cargandoUsuariosInternos ? 'Cargando lista de colaboradores...' : 'Solo colaboradores y jefes internos.' }}
+  </p>
+</div>
 
         <mat-autocomplete
           #auto3="matAutocomplete"
@@ -779,6 +791,7 @@
       <!-- Sala (solo junta) movil -->
       <div *ngIf="tipoFormulario === 'junta'">
         <label class="text-sm font-medium text-black dark:text-white">Sala / Lugar</label>
+        
         <div class="relative">
           <div
             class="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
@@ -802,6 +815,8 @@
             <mat-icon class="text-black icon-size-5 dark:text-white">expand_more</mat-icon>
           </div>
         </div>
+
+
       </div>
 
       <!-- Estado -->
