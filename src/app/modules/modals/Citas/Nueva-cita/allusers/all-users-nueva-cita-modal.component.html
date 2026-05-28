@@ -637,19 +637,21 @@
           </div>
           <input
             #inputNative3
-            #inputAuto3="matAutocompleteTrigger"
-            matAutocompleteTrigger
-            type="text"
-            [(ngModel)]="busquedaUsuario"
-            (ngModelChange)="filtrarUsuariosInternos()"
-            (focus)="filtrarUsuariosInternos()"
-            [matAutocomplete]="auto3"
-            placeholder="Buscar colaborador o jefe..."
+  #inputAuto3="matAutocompleteTrigger"
+  matAutocompleteTrigger
+  type="text"
+  [(ngModel)]="busquedaUsuario"
+  (ngModelChange)="filtrarUsuariosInternos()"
+  (focus)="filtrarUsuariosInternos()"
+  [matAutocomplete]="auto3"
+  placeholder="Buscar colaborador o jefe..."
+  (touchstart)="$event.stopPropagation()"
             class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
           />
           <mat-icon
-            (mousedown)="$event.preventDefault()"
-            (click)="toggleAutocomplete3()"
+           (mousedown)="$event.preventDefault()"
+  (touchstart)="$event.stopPropagation()"
+  (click)="toggleAutocomplete3()"
             class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black icon-size-5 dark:text-white"
           >
             expand_more
