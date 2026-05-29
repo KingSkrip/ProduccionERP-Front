@@ -686,6 +686,24 @@
           </mat-icon>
         </div>
 
+        <mat-autocomplete #auto3="matAutocomplete" [displayWith]="displayFn"
+        (optionSelected)="seleccionarUsuario($event.option.value)"
+        class="!rounded-2xl !border !border-gray-100 !shadow-lg dark:!border-gray-700">
+        <mat-option *ngFor="let u of usuariosFiltrados" [value]="u" class="!mx-1 !my-0.5 !rounded-xl">
+          <div class="flex items-center gap-3 py-0.5">
+            <div
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white">
+              {{ u.nombre | slice: 0 : 1 }}
+            </div>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-900 dark:text-white">
+                {{ u.nombre }}
+              </span>
+            </div>
+          </div>
+        </mat-option>
+      </mat-autocomplete>
+
         <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
           {{
             cargandoUsuariosInternos
@@ -693,9 +711,11 @@
               : 'Solo colaboradores y jefes internos.'
           }}
         </p>
-      </div>
 
-      <!-- <mat-autocomplete #auto3="matAutocomplete" [displayWith]="displayFn"
+
+
+
+              <!-- <mat-autocomplete #auto3="matAutocomplete" [displayWith]="displayFn"
         (optionSelected)="seleccionarUsuario($event.option.value)"
         class="!rounded-2xl !border !border-gray-100 !shadow-lg dark:!border-gray-700">
         <mat-option *ngFor="let u of usuariosFiltrados" [value]="u" class="!mx-1 !my-0.5 !rounded-xl">
@@ -714,11 +734,15 @@
             </div>
           </div>
         </mat-option>
-      </mat-autocomplete>
+      </mat-autocomplete>-->
 
+<!--
       <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
         Solo colaboradores y jefes internos.
       </p> -->
+
+      </div>
+
 
       <!-- Motivo / Asunto -->
       <div>
