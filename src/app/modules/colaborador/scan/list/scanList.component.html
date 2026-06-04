@@ -1,29 +1,32 @@
-<div class="flex h-full min-h-0 flex-col overflow-hidden">
-
+<div class="flex h-full min-h-0 w-full flex-col overflow-hidden">
   <!-- Header -->
-   <div class="flex flex-col gap-3 px-4 pb-3 pt-4 sm:px-6 sm:pt-5 flex-shrink-0">
-
-
+  <div class="flex flex-shrink-0 flex-col gap-3 px-4 pb-3 pt-4 sm:px-6 sm:pt-5">
     <!-- Fila 1: título + acciones -->
     <div class="flex items-center justify-between gap-3">
       <h2 class="text-lg font-semibold sm:text-xl">Escaneos Embarques</h2>
 
       <div class="flex items-center gap-2">
         <!-- Chip Zebra -->
-        <div class="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-2.5 py-1 text-xs dark:border-gray-600">
+        <div
+          class="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-2.5 py-1 text-xs dark:border-gray-600"
+        >
           <mat-icon class="!h-3.5 !w-3.5 !text-sm leading-none text-green-500">wifi</mat-icon>
           <span class="hidden text-gray-400 sm:inline">Zebra:</span>
           <button
             class="font-mono font-medium text-gray-700 transition-colors hover:text-primary-500 dark:text-gray-300 dark:hover:text-primary-400"
             (click)="copiarIP()"
             matTooltip="Copiar IP"
-          >{{ ipLocal || '192.168.100.59' }}</button>
+          >
+            {{ ipLocal || '192.168.100.59' }}
+          </button>
           <span class="text-gray-300 dark:text-gray-600">:</span>
           <button
             class="font-mono font-medium text-gray-700 transition-colors hover:text-primary-500 dark:text-gray-300 dark:hover:text-primary-400"
             (click)="copiarPuerto()"
             matTooltip="Copiar puerto"
-          >{{ tcpPort }}</button>
+          >
+            {{ tcpPort }}
+          </button>
         </div>
 
         <!-- Reload -->
@@ -36,20 +39,20 @@
     <!-- Fila 2: búsqueda -->
     <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
       <mat-icon matPrefix>search</mat-icon>
-   <input
-  matInput
-  #searchInputRef
-  placeholder="Buscar código..."
-  [formControl]="searchControl"
-  (focus)="onSearchFocus()"
-  (blur)="onSearchBlur()"
-/>
+      <input
+        matInput
+        #searchInputRef
+        placeholder="Buscar código..."
+        [formControl]="searchControl"
+        (focus)="onSearchFocus()"
+        (blur)="onSearchBlur()"
+      />
     </mat-form-field>
 
     <!-- Fila 3: tabs -->
     <div class="flex gap-1 border-b border-gray-200 dark:border-gray-700">
       <button
-        *ngFor="let tab of ['pendientes', 'aprobadas']"
+       *ngFor="let tab of ['pendientes', 'aprobadas', 'inventario']"
         (click)="cambiarTab(tab)"
         class="relative px-4 py-2 text-xs font-semibold transition-colors duration-200 sm:text-sm"
         [class.text-primary-600]="tabActiva === tab"
@@ -68,11 +71,15 @@
   </div>
 
   <!-- Tabla con scroll interno -->
-  <div class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
-
+  <div  *ngIf="tabActiva !== 'inventario'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
     <!-- Contenedor scroll solo del tbody -->
-   <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-      <table class="w-full text-sm" style="table-layout: fixed; border-collapse: separate; border-spacing: 0;">
+    <div
+      class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden rounded-lg border border-gray-200 dark:border-gray-700"
+    >
+      <table
+        class="w-full text-sm"
+        style="table-layout: fixed; border-collapse: separate; border-spacing: 0"
+      >
         <colgroup>
           <col style="width: 36%" />
           <col class="hidden sm:table-column" style="width: 26%" />
@@ -83,10 +90,26 @@
         <!-- Thead sticky -->
         <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800">
           <tr class="border-b border-gray-200 dark:border-gray-700">
-            <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 sm:px-4">Código</th>
-            <th class="hidden px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 sm:table-cell sm:px-4">Cód. Ent</th>
-            <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 sm:px-4">Fecha y Hora</th>
-            <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 sm:px-4">Estado</th>
+            <th
+              class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-4 dark:text-gray-400"
+            >
+              Código
+            </th>
+            <th
+              class="hidden px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:table-cell sm:px-4 dark:text-gray-400"
+            >
+              Cód. Ent
+            </th>
+            <th
+              class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-4 dark:text-gray-400"
+            >
+              Fecha y Hora
+            </th>
+            <th
+              class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-4 dark:text-gray-400"
+            >
+              Estado
+            </th>
           </tr>
         </thead>
 
@@ -95,15 +118,21 @@
             *ngFor="let scan of scansPaginados"
             class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/60"
           >
-            <td class="px-3 py-2.5 font-mono text-xs text-gray-900 sm:px-4 sm:text-sm dark:text-gray-100">
+            <td
+              class="px-3 py-2.5 font-mono text-xs text-gray-900 sm:px-4 sm:text-sm dark:text-gray-100"
+            >
               {{ scan.CODIGO }}
             </td>
-            <td class="hidden px-3 py-2.5 font-mono text-xs text-gray-900 sm:table-cell sm:px-4 sm:text-sm dark:text-gray-100">
+            <td
+              class="hidden px-3 py-2.5 font-mono text-xs text-gray-900 sm:table-cell sm:px-4 sm:text-sm dark:text-gray-100"
+            >
               {{ scan.CODIGOENT }}
             </td>
             <td class="px-3 py-2.5 text-xs text-gray-600 sm:px-4 sm:text-sm dark:text-gray-400">
               <span class="sm:hidden">{{ scan.FECHAYHORA | date: 'dd/MM HH:mm' }}</span>
-              <span class="hidden sm:inline">{{ scan.FECHAYHORA | date: 'dd/MM/yyyy HH:mm:ss' }}</span>
+              <span class="hidden sm:inline">{{
+                scan.FECHAYHORA | date: 'dd/MM/yyyy HH:mm:ss'
+              }}</span>
             </td>
             <td class="px-3 py-2.5 sm:px-4">
               <!-- Móvil: dot -->
@@ -123,14 +152,24 @@
                 [class.bg-red-50]="scan.PROCESADO === 2"
                 [class.text-red-600]="scan.PROCESADO === 2"
               >
-                {{ scan.PROCESADO === 0 ? 'Pendiente' : scan.PROCESADO === 1 ? 'Aprobado' : 'Rechazado' }}
+                {{
+                  scan.PROCESADO === 0
+                    ? 'Pendiente'
+                    : scan.PROCESADO === 1
+                      ? 'Aprobado'
+                      : 'Rechazado'
+                }}
               </span>
             </td>
           </tr>
 
           <tr *ngIf="scansFiltrados.length === 0">
             <td colspan="4" class="py-12 text-center">
-              <mat-icon class="mb-2 text-gray-300 dark:text-gray-600" style="font-size:2rem;width:2rem;height:2rem">inbox</mat-icon>
+              <mat-icon
+                class="mb-2 text-gray-300 dark:text-gray-600"
+                style="font-size: 2rem; width: 2rem; height: 2rem"
+                >inbox</mat-icon
+              >
               <p class="text-sm text-gray-400">Sin registros</p>
             </td>
           </tr>
@@ -139,10 +178,14 @@
     </div>
 
     <!-- Paginador -->
-  <div class="flex flex-shrink-0 items-center justify-between pt-3 text-xs mb-10 text-gray-600 dark:text-gray-400">
+    <div
+      class="mb-10 flex flex-shrink-0 items-center justify-between pt-3 text-xs text-gray-600 dark:text-gray-400"
+    >
       <span class="tabular-nums">
         <ng-container *ngIf="scansFiltrados.length > 0">
-          {{ paginaActual * pageSize + 1 }}–{{ min((paginaActual + 1) * pageSize, scansFiltrados.length) }}
+          {{ paginaActual * pageSize + 1 }}–{{
+            min((paginaActual + 1) * pageSize, scansFiltrados.length)
+          }}
           de {{ scansFiltrados.length }}
         </ng-container>
         <ng-container *ngIf="scansFiltrados.length === 0">0 registros</ng-container>
@@ -168,6 +211,9 @@
         </button>
       </div>
     </div>
-
   </div>
+
+ 
+<!-- DESPUÉS -->
+<inventario-tab *ngIf="tabActiva === 'inventario'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6"></inventario-tab>
 </div>

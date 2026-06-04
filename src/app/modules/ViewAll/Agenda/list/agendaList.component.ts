@@ -114,33 +114,33 @@ export class AgendaListComponent implements OnInit, OnDestroy {
     const fuente$ = esAdminReal
       ? this._citasService.getCitasAdmin()
       : this._citasService.getCitas();
-  this._citasService.getUsuariosDisponiblesJuntas('').subscribe();
+    this._citasService.getUsuariosDisponiblesJuntas('').subscribe();
     fuente$.pipe(takeUntil(this._unsubscribeAll)).subscribe((citas: CitaAPI[]) => {
-  this.citas = citas.map((c) => ({
-  id: c.id,
-  cita_type_id: c.cita_type_id,
-  id_user: c.id_user,
-  id_visitante: c.id_visitante,
-  nombre_visitante: c.nombre_visitante,
-  paciente: c.es_externa
-    ? c.cita_type_id === 2
-      ? (c.nombre_organizador ?? 'Organizador')
-      : (c.nombre_proveedor ?? c.usuario?.nombre ?? 'Proveedor')
-    : (c.nombre_visitante ?? c.visitante?.nombre ?? 'Sin nombre'),
-  motivo: c.motivo ?? '',
-  fecha: c.fecha,
-  horaInicio: c.hora_inicio,
-  horaFin: c.hora_fin,
-  estado: c.estado,
-  notas: c.notas,
-  sala: (c as any).sala ?? null,
-  con_vehiculo: (c as any).con_vehiculo ?? false,
-  asistencia: (c as any).asistencia ?? null,  // ← ESTA LÍNEA FALTA
-  dia: String(new Date(c.fecha).getDate()),
-  mes: this._mesCorto(new Date(c.fecha).getMonth()),
-  esExterna: c.es_externa ?? false,
-  visitante: c.visitante,
-}));
+      this.citas = citas.map((c) => ({
+        id: c.id,
+        cita_type_id: c.cita_type_id,
+        id_user: c.id_user,
+        id_visitante: c.id_visitante,
+        nombre_visitante: c.nombre_visitante,
+        paciente: c.es_externa
+          ? c.cita_type_id === 2
+            ? (c.nombre_organizador ?? 'Organizador')
+            : (c.nombre_proveedor ?? c.usuario?.nombre ?? 'Proveedor')
+          : (c.nombre_visitante ?? c.visitante?.nombre ?? 'Sin nombre'),
+        motivo: c.motivo ?? '',
+        fecha: c.fecha,
+        horaInicio: c.hora_inicio,
+        horaFin: c.hora_fin,
+        estado: c.estado,
+        notas: c.notas,
+        sala: (c as any).sala ?? null,
+        con_vehiculo: (c as any).con_vehiculo ?? false,
+        asistencia: (c as any).asistencia ?? null, // ← ESTA LÍNEA FALTA
+        dia: String(new Date(c.fecha).getDate()),
+        mes: this._mesCorto(new Date(c.fecha).getMonth()),
+        esExterna: c.es_externa ?? false,
+        visitante: c.visitante,
+      }));
       this._cdr.markForCheck();
     });
   }
@@ -152,41 +152,47 @@ export class AgendaListComponent implements OnInit, OnDestroy {
 
   // ─── Agrupar citas por fecha + hora_inicio ───────────────────────
 
-get citasAgrupadas(): Cita[] {
-  const mapa = new Map<string, Cita>();
+  get citasAgrupadas(): Cita[] {
+    const mapa = new Map<string, Cita>();
 
-  for (const cita of this.citas) {
-    // ✅ Incluir cita_type_id en la key — juntas y citas nunca se mezclan
-    const key = `${cita.cita_type_id}_${cita.fecha}_${cita.horaInicio}_${cita.horaFin}`;
-    
-    if (mapa.has(key)) {
-      const existente = mapa.get(key)!;
-      existente.paciente = `${existente.paciente}, ${cita.paciente}`;
-      existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
-      if (cita.id_visitante != null) {
-        existente.visitantes = [
-          ...(existente.visitantes ?? []),
-          {
-            id: cita.id_visitante,
-            nombre: cita.paciente,
-            firebird_user_clave: cita.visitante?.firebird_user_clave,
-          },
-        ];
+    for (const cita of this.citas) {
+      // ✅ Incluir cita_type_id en la key — juntas y citas nunca se mezclan
+      const key = `${cita.cita_type_id}_${cita.fecha}_${cita.horaInicio}_${cita.horaFin}`;
+
+      if (mapa.has(key)) {
+        const existente = mapa.get(key)!;
+        existente.paciente = `${existente.paciente}, ${cita.paciente}`;
+        existente.ids = [...(existente.ids ?? [existente.id!]), ...(cita.id ? [cita.id] : [])];
+        if (cita.id_visitante != null) {
+          existente.visitantes = [
+            ...(existente.visitantes ?? []),
+            {
+              id: cita.id_visitante,
+              nombre: cita.paciente,
+              firebird_user_clave: cita.visitante?.firebird_user_clave,
+            },
+          ];
+        }
+      } else {
+        mapa.set(key, {
+          ...cita,
+          ids: [cita.id!],
+          visitantes:
+            cita.id_visitante != null
+              ? [
+                  {
+                    id: cita.id_visitante,
+                    nombre: cita.paciente,
+                    firebird_user_clave: cita.visitante?.firebird_user_clave,
+                  },
+                ]
+              : [],
+        });
       }
-    } else {
-      mapa.set(key, {
-        ...cita,
-        ids: [cita.id!],
-        visitantes:
-          cita.id_visitante != null
-            ? [{ id: cita.id_visitante, nombre: cita.paciente, firebird_user_clave: cita.visitante?.firebird_user_clave }]
-            : [],
-      });
     }
-  }
 
-  return Array.from(mapa.values());
-}
+    return Array.from(mapa.values());
+  }
 
   // ─── Mini calendario ────────────────────────────────────────────
 
@@ -634,23 +640,17 @@ get citasAgrupadas(): Cita[] {
     return 'propia';
   }
 
-
-
-
-
   // ─── Resumen ─────────────────────────────────────────────────────
 
-get eventosHoy(): Cita[] {
-  return this.citas.filter((c) => c.fecha === this.fechaDiaSeleccionado);
-}
+  get eventosHoy(): Cita[] {
+    return this.citas.filter((c) => c.fecha === this.fechaDiaSeleccionado);
+  }
 
-get eventosPendientes(): number {
-  return this.eventosHoy.filter((c) => c.estado === 'pendiente').length;
-}
+  get eventosPendientes(): number {
+    return this.eventosHoy.filter((c) => c.estado === 'pendiente').length;
+  }
 
-get eventosConfirmados(): number {
-  return this.eventosHoy.filter((c) => c.estado === 'confirmada').length;
-}
-
-
+  get eventosConfirmados(): number {
+    return this.eventosHoy.filter((c) => c.estado === 'confirmada').length;
+  }
 }

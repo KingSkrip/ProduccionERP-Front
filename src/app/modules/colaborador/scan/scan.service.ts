@@ -144,4 +144,17 @@ export class ScanService implements OnDestroy {
     this.echo = null;
     this.initialized = false;
   }
+
+  verificarInventario(barcode: string): Observable<any> {
+    return this._http.post(`${this.apiUrl}scanner/inventario`, { barcode }).pipe(
+      tap({
+        next: () => this.reproducirSonido('correcto'),
+        error: (e) => {
+          if (e.status === 409)
+            this.reproducirSonido('yaleido');
+          else if (e.status === 422) this.reproducirSonido('error');
+        },
+      }),
+    );
+  }
 }

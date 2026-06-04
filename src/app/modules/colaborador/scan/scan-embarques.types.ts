@@ -8,3 +8,10 @@ export interface ScanEmbarque {
 export interface ScanEmbarquesResponse {
   data: ScanEmbarque[];
 }
+
+
+export interface ItemInventario {
+  codigo: string;
+  fechaHora: Date;
+  estado: 'ya_inventariado' | 'no_inventariado' | 'invalido';
+}

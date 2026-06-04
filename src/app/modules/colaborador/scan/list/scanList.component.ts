@@ -23,6 +23,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ScanEmbarque } from '../scan-embarques.types';
 import { ScanService } from '../scan.service';
 import { ZebraScannerService } from '../zebra-scanner.service';
+import { InventarioTabComponent } from './tabs/inventariotab.component';
 
 @Component({
   selector: 'scan-list',
@@ -38,16 +39,18 @@ import { ZebraScannerService } from '../zebra-scanner.service';
     MatFormFieldModule,
     MatInputModule,
     MatTooltipModule,
+     InventarioTabComponent,
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: fuseAnimations,
 })
+
 export class ScanListComponent implements OnInit, OnDestroy {
   @ViewChild('scanInput') scanInput!: ElementRef<HTMLInputElement>;
   @ViewChild('searchInputRef') searchInputRef!: ElementRef<HTMLInputElement>;
 private searchFocused = false;
-  tabActiva: 'pendientes' | 'aprobadas' = 'pendientes';
+ tabActiva: 'pendientes' | 'aprobadas' | 'inventario' = 'pendientes';
   searchControl = new FormControl('');
   scansFiltrados: ScanEmbarque[] = [];
   loading = false;
@@ -133,11 +136,13 @@ error: (e) => {
     return Math.min(a, b);
   }
 
-  cambiarTab(tab: 'pendientes' | 'aprobadas'): void {
-    this.tabActiva = tab;
+cambiarTab(tab: 'pendientes' | 'aprobadas' | 'inventario'): void {
+  this.tabActiva = tab;
+  if (tab !== 'inventario') {
     this.aplicarFiltros(this._scanService['_scans$'].getValue());
-    this._cdr.markForCheck();
   }
+  this._cdr.markForCheck();
+}
 
   private aplicarFiltros(scans: ScanEmbarque[]): void {
     const tabMap = { pendientes: 0, aprobadas: 1 };
