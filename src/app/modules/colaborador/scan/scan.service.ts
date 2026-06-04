@@ -127,7 +127,7 @@ export class ScanService implements OnDestroy {
     this.audioDesbloqueado = true;
   }
 
-  private reproducirSonido(nombre: 'correcto' | 'yaleido' | 'error'): void {
+  private reproducirSonido(nombre: 'correcto' | 'yaleido' | 'error' | 'ya_inventariado'): void {
     const buffer = this.audioBuffers[nombre];
     if (!this.audioCtx || !buffer) {
       console.warn(`⚠️ reproducirSonido: ctx=${!!this.audioCtx} buffer=${!!buffer}`);
@@ -151,7 +151,7 @@ export class ScanService implements OnDestroy {
         next: () => this.reproducirSonido('correcto'),
         error: (e) => {
           if (e.status === 409)
-            this.reproducirSonido('yaleido');
+            this.reproducirSonido('ya_inventariado');
           else if (e.status === 422) this.reproducirSonido('error');
         },
       }),

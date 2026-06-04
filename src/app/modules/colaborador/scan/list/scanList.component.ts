@@ -39,18 +39,17 @@ import { InventarioTabComponent } from './tabs/inventariotab.component';
     MatFormFieldModule,
     MatInputModule,
     MatTooltipModule,
-     InventarioTabComponent,
+    InventarioTabComponent,
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: fuseAnimations,
 })
-
 export class ScanListComponent implements OnInit, OnDestroy {
   @ViewChild('scanInput') scanInput!: ElementRef<HTMLInputElement>;
   @ViewChild('searchInputRef') searchInputRef!: ElementRef<HTMLInputElement>;
-private searchFocused = false;
- tabActiva: 'pendientes' | 'aprobadas' | 'inventario' = 'pendientes';
+  private searchFocused = false;
+  tabActiva: 'pendientes' | 'aprobadas' | 'inventario' = 'pendientes';
   searchControl = new FormControl('');
   scansFiltrados: ScanEmbarque[] = [];
   loading = false;
@@ -83,17 +82,17 @@ private searchFocused = false;
       this._cdr.markForCheck();
 
       this._scanService.enviarScan(codigo).subscribe({
-next: (res) => {
-  this.scanControl.reset();
-  this.escaneando = false;
-  this._cdr.markForCheck();
-  this._zebraScanner.focusInput(); // el servicio sabe si está pausado o no
-},
-error: (e) => {
-  this.escaneando = false;
-  this._cdr.markForCheck();
-  this._zebraScanner.focusInput();
-},
+        next: (res) => {
+          this.scanControl.reset();
+          this.escaneando = false;
+          this._cdr.markForCheck();
+          this._zebraScanner.focusInput(); // el servicio sabe si está pausado o no
+        },
+        error: (e) => {
+          this.escaneando = false;
+          this._cdr.markForCheck();
+          this._zebraScanner.focusInput();
+        },
       });
     });
 
@@ -136,13 +135,13 @@ error: (e) => {
     return Math.min(a, b);
   }
 
-cambiarTab(tab: 'pendientes' | 'aprobadas' | 'inventario'): void {
-  this.tabActiva = tab;
-  if (tab !== 'inventario') {
-    this.aplicarFiltros(this._scanService['_scans$'].getValue());
+  cambiarTab(tab: 'pendientes' | 'aprobadas' | 'inventario'): void {
+    this.tabActiva = tab;
+    if (tab !== 'inventario') {
+      this.aplicarFiltros(this._scanService['_scans$'].getValue());
+    }
+    this._cdr.markForCheck();
   }
-  this._cdr.markForCheck();
-}
 
   private aplicarFiltros(scans: ScanEmbarque[]): void {
     const tabMap = { pendientes: 0, aprobadas: 1 };
@@ -172,11 +171,11 @@ cambiarTab(tab: 'pendientes' | 'aprobadas' | 'inventario'): void {
     navigator.clipboard.writeText(String(this.tcpPort));
   }
 
-onSearchFocus(): void {
-  this._zebraScanner.pause();
-}
+  onSearchFocus(): void {
+    this._zebraScanner.pause();
+  }
 
-onSearchBlur(): void {
-  this._zebraScanner.resume();
-}
+  onSearchBlur(): void {
+    this._zebraScanner.resume();
+  }
 }
