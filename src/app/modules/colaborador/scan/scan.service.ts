@@ -52,20 +52,25 @@ export class ScanService implements OnDestroy {
   }
 
   // 👈 Nuevo: Angular manda el escaneo a Laravel
-  enviarScan(barcode: string): Observable<any> {
-    return this._http.post(`${this.apiUrl}scanner/embarques`, { barcode }).pipe(
-      tap({
-        next: () => this.reproducirSonido('correcto'),
-        error: (e) => {
-          if (e.status === 409) {
+enviarScan(barcode: string): Observable<any> {
+  return this._http.post<any>(`${this.apiUrl}scanner/embarques`, { barcode }).pipe(
+    tap({
+      next: () => this.reproducirSonido('correcto'),
+      error: (e) => {
+        if (e.status === 409) {
+          const motivo = e.error?.motivo;
+          if (motivo === 'ya_inventariado') {
+            this.reproducirSonido('ya_inventariado');
+          } else {
             this.reproducirSonido('yaleido');
-          } else if (e.status === 422) {
-            this.reproducirSonido('error');
           }
-        },
-      }),
-    );
-  }
+        } else if (e.status === 422) {
+          this.reproducirSonido('error');
+        }
+      },
+    }),
+  );
+}
 
   private conectarWebSocket(): void {
     if (this.echo) return;
