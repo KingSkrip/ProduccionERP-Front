@@ -113,7 +113,12 @@ enviarScan(barcode: string): Observable<any> {
 
     this.audioCtx = new AudioContext();
 
-    const sonidos: Array<'correcto' | 'yaleido' | 'error'> = ['correcto', 'yaleido', 'error'];
+  const sonidos: Array<'correcto' | 'yaleido' | 'error' | 'ya_inventariado'> = [
+    'correcto',
+    'yaleido',
+    'error',
+    'ya_inventariado',
+  ];
 
     sonidos.forEach((nombre) => {
       fetch(`sounds/${nombre}.mp3`)
