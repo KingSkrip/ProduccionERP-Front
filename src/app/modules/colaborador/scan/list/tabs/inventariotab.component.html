@@ -1,9 +1,9 @@
 <div class="flex h-full min-h-0 w-full flex-col overflow-hidden">
 
   <!-- Historial de sesión -->
-  <div class="flex flex-shrink-0 flex-col gap-2 px-4 pb-3 pt-4 sm:px-6">
+  <div class="flex flex-shrink-0 flex-col gap-2 px-4 pb-3 sm:px-6">
     <div class="flex items-center justify-between">
-      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+      <h3 class="text-sm font-semibold text-black dark:text-white">
         Sesión actual
       </h3>
       <button mat-icon-button (click)="limpiarHistorial()" matTooltip="Limpiar sesión">
@@ -12,7 +12,7 @@
     </div>
 
     <!-- Chips -->
-    <div class="flex gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-x-visible sm:max-h-20 sm:overflow-y-auto">
+    <!-- <div class="flex gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-x-visible sm:max-h-20 sm:overflow-y-auto">
       <span
         *ngFor="let item of historial"
         class="inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-mono font-medium"
@@ -34,7 +34,7 @@
       <span *ngIf="historial.length === 0" class="text-xs text-gray-400 py-1">
         Aún no has escaneado nada...
       </span>
-    </div>
+    </div> -->
   </div>
 
   <!-- Divisor -->
