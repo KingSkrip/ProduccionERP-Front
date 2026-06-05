@@ -28,7 +28,11 @@
             {{ noInventariados.length }}
           </span>
         </div>
-        <div class="min-h-0 flex-1 overflow-y-auto rounded-lg border border-green-200 bg-green-50/30 dark:border-green-900/40 dark:bg-green-900/10">
+        <div class="min-h-0 flex-1 overflow-y-auto rounded-lg border border-green-200 bg-green-50/30 dark:border-green-900/40 dark:bg-green-900/10
+                    max-h-[30vh] sm:max-h-none">
+          
+          
+          
           <div
             *ngFor="let item of noInventariados"
             class="border-b border-green-100 px-3 py-2 last:border-0 dark:border-green-900/30"
@@ -51,7 +55,11 @@
             {{ yaInventariados.length }}
           </span>
         </div>
-        <div class="min-h-0 flex-1 overflow-y-auto rounded-lg border border-amber-200 bg-amber-50/30 dark:border-amber-900/40 dark:bg-amber-900/10">
+        <div class="min-h-0 flex-1 overflow-y-auto rounded-lg border border-amber-200 bg-amber-50/30 dark:border-amber-900/40 dark:bg-amber-900/10
+                    max-h-[30vh] sm:max-h-none">
+          
+          
+          
           <div
             *ngFor="let item of yaInventariados"
             class="border-b border-amber-100 px-3 py-2 last:border-0 dark:border-amber-900/30"
