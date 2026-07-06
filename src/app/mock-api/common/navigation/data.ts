@@ -4096,8 +4096,8 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
-   {
-      id: 'colaborador.scan',
+  {
+    id: 'colaborador.scan',
     title: 'Escaner',
     tooltip: 'Escaner',
     type: 'basic',
@@ -4105,7 +4105,7 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
     link: '/apps/colaborador/Barcode',
   },
   //{
-    //   id: 'colaborador.scan',
+  //   id: 'colaborador.scan',
   //   title: 'Escaner',
   //   tooltip: 'Escaner',
   //   type: 'basic',
@@ -4562,8 +4562,8 @@ export const menuColaborador_Contraloria: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
-    {
-      id: 'colaborador.scan',
+  {
+    id: 'colaborador.scan',
     title: 'Escaner',
     tooltip: 'Escaner',
     type: 'basic',
@@ -4665,7 +4665,6 @@ export const menuJefe: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
-
 
   // {
   //   id: 'estados.cuenta',
@@ -5011,3 +5010,32 @@ export const menuCompras: FuseNavigationItem[] = [
     link: '/apps/Agenda',
   },
 ];
+
+
+
+
+export const menuAccesos: FuseNavigationItem[] = [
+  {
+    id: 'group.dashboards',
+    title: 'Dashboards',
+    type: 'group',
+    children: [
+      {
+        id: 'dashboards.inicio',
+        title: 'Inicio',
+        type: 'basic',
+        icon: 'heroicons_outline:home',
+        link: '/dashboards/project',
+      },
+    ],
+  },
+  {
+    id: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
+    title: 'Checador',
+    tooltip: 'Checador',
+    type: 'basic',
+    icon: 'heroicons_outline:finger-print',
+    link: '/apps/Agenda',
+  },
+];
+

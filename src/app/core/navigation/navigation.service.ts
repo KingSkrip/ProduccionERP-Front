@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
 import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
 import {
+  menuAccesos,
   menuAdmin,
   menuAgentes,
   menuAlmacen,
@@ -241,6 +242,10 @@ export class NavigationService {
 
       case SubRoleEnum.ALMACEN:
         navigation = menuAlmacen;
+        break;
+
+      case RoleEnum.REGISTRO_ACCESOS:
+        navigation = menuAccesos;
         break;
 
       default:

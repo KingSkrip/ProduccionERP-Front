@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
 import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
 import {
+  menuAccesos,
   menuAdmin,
   menuAgentes,
   menuAlmacen,
@@ -226,6 +227,10 @@ export class FuseNavigationService {
         navigation = menuProvedores;
         break;
 
+      case RoleEnum.REGISTRO_ACCESOS:
+        navigation = menuAccesos;
+        break;
+
       default:
         navigation = [];
         break;
@@ -308,9 +313,8 @@ export class FuseNavigationService {
       subRoleId === SubRoleEnum.GERENTE ||
       subRoleId === SubRoleEnum.CONTRALORIA ||
       subRoleId === SubRoleEnum.COORDINADOR ||
-       subRoleId === SubRoleEnum.COMPRAS ||
-        subRoleId === SubRoleEnum.ALMACEN ||
-
+      subRoleId === SubRoleEnum.COMPRAS ||
+      subRoleId === SubRoleEnum.ALMACEN ||
       roleId === RoleEnum.SUADMIN
     ) {
       return [...menuReporteProd_Jefe];

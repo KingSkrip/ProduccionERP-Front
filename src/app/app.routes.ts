@@ -142,6 +142,11 @@ export const appRoutes: Route[] = [
                     { path: 'notes', loadChildren: () => import('app/modules/admin/apps/notes/notes.routes') },
                     { path: 'scrumboard', loadChildren: () => import('app/modules/admin/apps/scrumboard/scrumboard.routes') },
                     { path: 'tasks', loadChildren: () => import('app/modules/admin/apps/tasks/tasks.routes') },
+
+
+                    //REGISTRO DE ASISTENCIA
+                    { path: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%', loadChildren: () => import('app/modules/ViewAll/Agenda/agenda.routes') },
+
                 ]
             },
 
