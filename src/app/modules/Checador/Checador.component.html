@@ -14,9 +14,9 @@
     <!-- Marco de cámara: solo tiene sentido mostrarlo mientras
          iniciamos/escaneamos/procesamos con cámara activa -->
     <div
-      *ngIf="estado === 'iniciando' || estado === 'escaneando' || estado === 'procesando'"
-      class="checador-video-host relative aspect-square w-full max-w-[360px] overflow-hidden rounded-3xl bg-black ring-1 ring-white/10"
-    >
+  *ngIf="estado !== 'sin-camara' && estado !== 'error-camara'"
+  class="checador-video-host relative aspect-square w-full max-w-[360px] overflow-hidden rounded-3xl bg-black ring-1 ring-white/10"
+>
       <div #lector [id]="lectorId" class="h-full w-full"></div>
 
       <!-- esquinas tipo "visor" -->

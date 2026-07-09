@@ -9,7 +9,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { ChecadorRegistroResultado, ChecadorService } from './checador.service';
@@ -242,6 +242,8 @@ export class ChecadorComponent implements AfterViewInit, OnDestroy {
     this.estado = 'procesando';
     this.mensajeError = null;
 
+    this.pausarCamaraSiActiva();
+
     this.checadorService.registrarPorToken(token).subscribe({
       next: (resultado) => {
         this.resultado = resultado;
@@ -270,9 +272,7 @@ export class ChecadorComponent implements AfterViewInit, OnDestroy {
       this.resultado = null;
       this.mensajeError = null;
       this.estado = this.lector ? 'escaneando' : 'sin-camara';
-
-      // Ya pasado el cooldown se puede volver a leer el mismo QR
-      // (ej. el mismo empleado checando su salida más tarde).
+      this.reanudarCamaraSiPausada();
       this.ultimoTokenLeido = null;
     }, delayMs);
   }
@@ -389,12 +389,32 @@ export class ChecadorComponent implements AfterViewInit, OnDestroy {
   }
 
   get usuarioFotoUrl(): string {
-  const foto = this.resultado?.usuario?.foto;
-  if (!foto) return '';
+    const foto = this.resultado?.usuario?.foto;
+    if (!foto) return '';
 
-  const base = APP_CONFIG.apiBase.endsWith('/') ? APP_CONFIG.apiBase : APP_CONFIG.apiBase + '/';
-  const rutaLimpia = foto.startsWith('/') ? foto.substring(1) : foto;
+    const base = APP_CONFIG.apiBase.endsWith('/') ? APP_CONFIG.apiBase : APP_CONFIG.apiBase + '/';
+    const rutaLimpia = foto.startsWith('/') ? foto.substring(1) : foto;
 
-  return `${base}${rutaLimpia}`;
-}
+    return `${base}${rutaLimpia}`;
+  }
+
+  private pausarCamaraSiActiva(): void {
+    try {
+      if (this.lector && this.lector.getState() === Html5QrcodeScannerState.SCANNING) {
+        this.lector.pause(true);
+      }
+    } catch (error) {
+      console.warn('No se pudo pausar la cámara', error);
+    }
+  }
+
+  private reanudarCamaraSiPausada(): void {
+    try {
+      if (this.lector && this.lector.getState() === Html5QrcodeScannerState.PAUSED) {
+        this.lector.resume();
+      }
+    } catch (error) {
+      console.warn('No se pudo reanudar la cámara', error);
+    }
+  }
 }
