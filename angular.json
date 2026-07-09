@@ -31,7 +31,8 @@
               "crypto-js/enc-base64",
               "quill-delta",
               "crypto-js",
-              "pusher-js"
+              "pusher-js",
+              "qrcode"
             ],
             "assets": [
               {
@@ -65,7 +66,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "3.3mb",
+                  "maximumWarning": "4mb",
                   "maximumError": "5mb"
                 },
                 {
