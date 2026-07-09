@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslocoModule } from '@jsverse/transloco';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { RoleEnum, SubRoleEnum } from 'app/core/auth/roles/dataroles';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { UserService } from 'app/core/user/user.service';
@@ -32,6 +33,7 @@ import { VacacionesComponent } from './Allusers/Tabs/vacaciones/vacaciones.compo
     MatButtonModule,
     MatTabsModule,
     MatTooltipModule,
+    QRCodeComponent,
     AsistenciasComponent,
     VacacionesComponent,
     InicioComponent,
@@ -55,6 +57,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
   incrementoPedidos = 0;
   ordenesPendientes = 0;
   fechaCorte = '';
+ showQrModal = false;
 
   constructor(
     private _userService: UserService,
@@ -106,5 +109,17 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   get isAllUsers(): boolean {
     return !this.isJefeOrSuadmin && !this.isCliente;
+  }
+
+
+    // 🔥 Nuevo: abrir/cerrar modal QR
+  openQrModal(): void {
+    this.showQrModal = true;
+    this._cdr.markForCheck();
+  }
+
+  closeQrModal(): void {
+    this.showQrModal = false;
+    this._cdr.markForCheck();
   }
 }

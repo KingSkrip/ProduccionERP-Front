@@ -1,0 +1,442 @@
+<!-- ============ STEPPER REUTILIZABLE (Solicitado → RH → Jefe) ============ -->
+<ng-template #estadoStepper let-p="p">
+  <div class="flex items-center gap-1">
+    <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-primary-500" title="Solicitado"></span>
+    <span
+      class="h-0.5 w-5 shrink-0 rounded-full transition-colors"
+      [class]="
+        p.estado_rh === 'aprobado'
+          ? 'bg-primary-500'
+          : p.estado_rh === 'rechazado'
+            ? 'bg-red-400'
+            : 'bg-gray-300 dark:bg-gray-700'
+      "
+    ></span>
+    <span
+      class="h-2.5 w-2.5 shrink-0 rounded-full transition-colors"
+      [class]="
+        p.estado_rh === 'aprobado'
+          ? 'bg-primary-500'
+          : p.estado_rh === 'rechazado'
+            ? 'bg-red-500'
+            : 'bg-gray-200 dark:bg-gray-700'
+      "
+      title="RH"
+    ></span>
+    <span
+      class="h-0.5 w-5 shrink-0 rounded-full transition-colors"
+      [class]="
+        p.estado === 'aprobado'
+          ? 'bg-accent-500'
+          : p.estado === 'rechazado' && p.estado_rh === 'aprobado'
+            ? 'bg-red-400'
+            : 'bg-gray-200 dark:bg-gray-700'
+      "
+    ></span>
+    <span
+      class="h-2.5 w-2.5 shrink-0 rounded-full transition-colors"
+      [class]="
+        p.estado === 'aprobado'
+          ? 'bg-accent-500'
+          : p.estado === 'rechazado' && p.estado_rh === 'aprobado'
+            ? 'bg-red-500'
+            : 'bg-gray-200 dark:bg-gray-700'
+      "
+      title="Jefe directo"
+    ></span>
+  </div>
+</ng-template>
+
+<div class="bg-default absolute inset-0 flex min-w-0 flex-col overflow-hidden p-4">
+  <!-- HERO -->
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-accent-500 shadow-md">
+           <mat-icon
+                      class="text-black"
+                      [svgIcon]="'heroicons_outline:clipboard-document-check'"
+                    ></mat-icon>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold leading-tight text-black dark:text-white">
+          Solicitud de permiso
+        </h1>
+        <p class="text-sm text-black dark:text-white">Administra tu tiempo</p>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      (click)="abrirModalPermiso()"
+      class="flex items-center gap-2 rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-primary-500/30 transition hover:shadow-lg hover:brightness-105 active:scale-[.99]"
+    >
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Nueva solicitud
+    </button>
+  </div>
+
+  <!-- ============ TOAST DE MENSAJE ============ -->
+  @if (mensaje) {
+    <div
+      class="flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium shadow-sm"
+      [ngClass]="
+        mensaje.tipo === 'ok'
+          ? 'border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-500/30 dark:bg-primary-500/10 dark:text-primary-400'
+          : 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400'
+      "
+    >
+      @if (mensaje.tipo === 'ok') {
+        <svg
+          class="h-5 w-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+          />
+        </svg>
+      } @else {
+        <svg
+          class="h-5 w-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v3.75m0 3.75h.007M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+          />
+        </svg>
+      }
+      <span>{{ mensaje.texto }}</span>
+    </div>
+  }
+
+  @if (checandoRol) {
+    <!-- ============ SKELETON DE CARGA ============ -->
+    <div class="flex flex-col gap-4">
+      <div class="h-28 w-full animate-pulse rounded-2xl bg-gray-200 dark:bg-gray-800"></div>
+      <div class="h-24 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800"></div>
+      <div class="h-24 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800"></div>
+    </div>
+  } @else if (esRh) {
+    <!-- ============ VISTA RH: bandeja de pendientes ============ -->
+    <div class="flex flex-col gap-6">
+      @if (cargandoPendientes) {
+        <div class="flex flex-col gap-3">
+          <div class="h-28 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800"></div>
+          <div class="h-28 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800"></div>
+        </div>
+      } @else if (!pendientesRh.length) {
+        <div
+          class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-gray-200 py-14 text-center dark:border-gray-700"
+        >
+          <div
+            class="flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-500 dark:bg-primary-500/10"
+          >
+            <svg
+              class="h-7 w-7"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+          </div>
+          <p class="text-secondary text-sm font-medium">
+            Todo limpio por aquí. No hay permisos pendientes 🎉
+          </p>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          @for (p of pendientesRh; track p.id; let i = $index) {
+            <div
+              class="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 pl-6 dark:border-gray-700 dark:bg-gray-800/40"
+            >
+              <span class="absolute inset-y-0 left-0 w-1 bg-primary-500"></span>
+
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-300 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400"
+                  >
+                    <mat-icon
+                      class="text-primary-500 dark:text-accent-500"
+                      [svgIcon]="'heroicons_outline:check-badge'"
+                    ></mat-icon>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-primary-500">
+                      {{ p.catalogo?.nombre ?? 'Permiso' }}
+                    </p>
+
+                    <p class="text-secondary mt-0.5 text-xs font-medium">
+                      {{ p.identity?.nombre ?? 'Empleado' }}
+                      @if (p.identity?.area?.nombre) {
+                        · {{ p.identity?.area?.nombre }}
+                      }
+                    </p>
+                    <p class="text-secondary mt-0.5 text-xs">
+                      {{ rangoFechas(p) }}
+                      @if (p.hora_inicio) {
+                        · {{ p.hora_inicio }}–{{ p.hora_fin }}
+                      }
+                    </p>
+                  </div>
+                </div>
+                <span
+                  class="flex shrink-0 items-center gap-1 rounded-full bg-accent-300 px-1 py-1 text-sm font-medium text-primary-700 dark:bg-primary-500/20 dark:text-primary-400"
+                >
+                  <mat-icon
+                    class="text-primary-500 dark:text-accent-500"
+                    [svgIcon]="'heroicons_outline:clock'"
+                  ></mat-icon>
+                  Pendiente
+                </span>
+              </div>
+
+              <p
+                class="text-secondary rounded-lg bg-gray-50 px-3 py-2 text-xs italic leading-relaxed dark:bg-gray-900/40"
+              >
+                <span class="font-medium">Motivo:</span> <br />
+                “{{ p.motivo }}”
+              </p>
+
+              <textarea
+                rows="2"
+                maxlength="500"
+                placeholder="Comentario (opcional)"
+                (input)="onComentarioChange(p.id, $event)"
+                class="resize-none rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600"
+              ></textarea>
+
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  [disabled]="resolviendoId === p.id"
+                  (click)="aprobar(p)"
+                  class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:-translate-y-px hover:bg-primary-600 hover:shadow-md active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-primary-500"
+                >
+                  @if (resolviendoId !== p.id) {
+                    <svg
+                      class="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M4.5 12.75 9 17.25 19.5 6.75"
+                      />
+                    </svg>
+                  }
+                  {{ resolviendoId === p.id ? 'Procesando…' : 'Aprobar' }}
+                </button>
+                <button
+                  type="button"
+                  [disabled]="resolviendoId === p.id"
+                  (click)="rechazar(p)"
+                  class="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:border-red-500/40 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                >
+                  @if (resolviendoId !== p.id) {
+                    <svg
+                      class="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M6 18 18 6M6 6l12 12"
+                      />
+                    </svg>
+                  }
+                  {{ resolviendoId === p.id ? 'Procesando…' : 'Rechazar' }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  } @else if (!checandoRol && pendientesJefe.length > 0) {
+    <!-- ============ VISTA JEFE: bandeja de colaboradores ============ -->
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        @for (p of pendientesJefe; track p.id; let i = $index) {
+          <div
+            class="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 pl-6 dark:border-gray-700 dark:bg-gray-800/40"
+          >
+            <span class="absolute inset-y-0 left-0 w-1 bg-primary-500"></span>
+
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <div
+                  class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-300 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400"
+                >
+                  <mat-icon
+                    class="text-primary-500 dark:text-accent-500"
+                    [svgIcon]="'heroicons_outline:check-badge'"
+                  ></mat-icon>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-primary-500">
+                    {{ p.catalogo?.nombre ?? 'Permiso' }}
+                  </p>
+                  <p class="text-secondary mt-0.5 text-xs font-medium">
+                    {{ p.identity?.nombre ?? 'Empleado' }}
+                  </p>
+                  <p class="text-secondary mt-0.5 text-xs">
+                    {{ rangoFechas(p) }}
+                    @if (p.hora_inicio) {
+                      · {{ p.hora_inicio }}–{{ p.hora_fin }}
+                    }
+                  </p>
+                </div>
+              </div>
+              <span
+                class="flex shrink-0 items-center gap-1 rounded-full bg-accent-300 px-2 py-1 text-sm font-medium text-primary-700 dark:bg-primary-500/20 dark:text-primary-400"
+              >
+                <mat-icon
+                  class="text-primary-500 icon-size-4 dark:text-accent-500"
+                  [svgIcon]="'heroicons_outline:check'"
+                ></mat-icon>
+                RH aprobó
+              </span>
+            </div>
+
+            <p
+              class="text-secondary rounded-lg bg-gray-50 px-3 py-2 text-xs italic leading-relaxed dark:bg-gray-900/40"
+            >
+              <span class="font-medium">Motivo:</span><br />
+              “{{ p.motivo }}”
+            </p>
+
+            <textarea
+              rows="2"
+              maxlength="500"
+              placeholder="Comentario (opcional)"
+              (input)="onComentarioJefeChange(p.id, $event)"
+              class="resize-none rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 dark:border-gray-600"
+            ></textarea>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                [disabled]="resolviendoJefeId === p.id"
+                (click)="aprobarComoJefe(p)"
+                class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:-translate-y-px hover:bg-primary-600 hover:shadow-md active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-primary-500"
+              >
+                @if (resolviendoId !== p.id) {
+                  <mat-icon
+                    class="text-white icon-size-4 dark:text-accent-500"
+                    [svgIcon]="'heroicons_outline:check'"
+                  ></mat-icon>
+                }
+                {{ resolviendoId === p.id ? 'Procesando…' : 'Aprobar' }}
+              </button>
+              <button
+                type="button"
+                [disabled]="resolviendoJefeId === p.id"
+                (click)="rechazarComoJefe(p)"
+                class="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:border-red-500/40 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+              >
+                @if (resolviendoJefeId !== p.id) {
+                  <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                }
+                {{ resolviendoJefeId === p.id ? 'Procesando…' : 'Rechazar' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <!-- ============ VISTA EMPLEADO: solicitar permiso ============ -->
+    <div class="flex flex-col gap-8">
+<!-- HISTORIAL -->
+<div class="md:bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl p-5">
+        <div class="flex flex-col gap-3 ">
+          @if (cargandoHistorial) {
+            <div class="flex flex-col gap-2">
+              <div class="h-16 w-full animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800"></div>
+              <div class="h-16 w-full animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800"></div>
+            </div>
+          } @else if (!historial.length) {
+            <div
+              class="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-gray-200 py-10 text-center dark:border-gray-700"
+            >
+              <div
+                class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-primary-500 dark:bg-primary-500/10"
+              >
+                <svg
+                  class="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M9 12h3.75M9 15h3.75M9 18h3.75m3-15H6.75A2.25 2.25 0 0 0 4.5 5.25v13.5A2.25 2.25 0 0 0 6.75 21h10.5a2.25 2.25 0 0 0 2.25-2.25V9l-6-6Zm0 0v5.25A.75.75 0 0 0 13.5 9h5.25"
+                  />
+                </svg>
+              </div>
+              <p class="dark:text-whitetext-sm text-black">Aún no has solicitado ningún permiso.</p>
+            </div>
+          } @else {
+            <div class="flex flex-col gap-2 ">
+              @for (p of historial; track p.id; let i = $index) {
+                <div
+                  class="flex flex-col gap-3 rounded-xl border bg-card border-gray-300 p-4 text-black transition hover:border-primary-500 sm:flex-row sm:items-center sm:justify-between dark:text-white"
+                  [style.animation-delay.ms]="i * 40"
+                >
+                  <div>
+                    <p class="text-sm font-medium text-primary-500">
+                      {{ p.catalogo?.nombre ?? 'Permiso' }}
+                    </p>
+                    <p class="text-xs">
+                      {{ rangoFechas(p) }}
+                      @if (p.hora_inicio) {
+                        · {{ p.hora_inicio }}–{{ p.hora_fin }}
+                      }
+                    </p>
+                    <p class="text-sm italic">Motivo: {{ p.motivo }}</p>
+                  </div>
+                  <div class="flex shrink-0 items-center gap-3">
+                    <ng-container
+                      *ngTemplateOutlet="estadoStepper; context: { p: p }"
+                    ></ng-container>
+                    <span
+                      class="w-fit rounded-full px-3 py-1 text-xs font-medium"
+                      [ngClass]="claseBadge(p.estado)"
+                    >
+                      {{ resumenEstado(p) }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

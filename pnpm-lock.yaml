@@ -59,6 +59,9 @@ importers:
       highlight.js:
         specifier: 11.11.1
         version: 11.11.1
+      html5-qrcode:
+        specifier: ^2.3.8
+        version: 2.3.8
       laravel-echo:
         specifier: ^2.3.0
         version: 2.3.4(pusher-js@8.5.0)(socket.io-client@4.8.3)
@@ -3287,6 +3290,9 @@ packages:
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
+
+  html5-qrcode@2.3.8:
+    resolution: {integrity: sha512-jsr4vafJhwoLVEDW3n1KvPnCCXWaQfRng0/EEYk1vNcQGcG/htAdhJX0be8YyqMoSz7+hZvOZSTAepsabiuhiQ==}
 
   htmlparser2@10.1.0:
     resolution: {integrity: sha512-VTZkM9GWRAtEpveh7MSF6SjjrpNVNNVJfFup7xTY3UpFtm67foy9HDVXneLtFVt4pMz5kZtgNcvCniNFb1hlEQ==}
@@ -8475,6 +8481,8 @@ snapshots:
       wbuf: 1.7.3
 
   html-escaper@2.0.2: {}
+
+  html5-qrcode@2.3.8: {}
 
   htmlparser2@10.1.0:
     dependencies:

@@ -2682,6 +2682,8 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     icon: 'heroicons_outline:shopping-bag',
     link: '/apps/Pedidos',
   },
+
+  
   //{
   //id: 'to.do',
   //title: 'Scrumboard',
@@ -4126,6 +4128,15 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
       },
     ],
   },
+
+   {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
 ];
 
 export const menuJacobo: FuseNavigationItem[] = [
@@ -4466,6 +4477,14 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
+  },
+     {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
   },
   {
     id: 'group.produccion',
@@ -5035,7 +5054,7 @@ export const menuAccesos: FuseNavigationItem[] = [
     tooltip: 'Checador',
     type: 'basic',
     icon: 'heroicons_outline:finger-print',
-    link: '/apps/Agenda',
+    link: '/apps/ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
   },
 ];
 

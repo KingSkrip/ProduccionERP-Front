@@ -1,0 +1,387 @@
+<!-- permiso modal-html -->
+
+<!-- modal de pc -->
+<div class="bg-card flex hidden h-full flex-col md:block">
+  <!-- Header modal -->
+  <div
+    class="flex shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-500"
+  >
+    <h2 class="ml-2 text-lg text-black dark:text-white">Nueva solicitud de permiso</h2>
+    <button
+      class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-500"
+      (click)="cerrarModal()"
+    >
+      <mat-icon class="text-base text-black icon-size-5 dark:text-white">close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Body modal -->
+  <form [formGroup]="form" class="flex flex-1 flex-col gap-4 overflow-y-auto px-1 py-5">
+    @if (mensaje) {
+      <div
+        class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium"
+        [ngClass]="
+          mensaje.tipo === 'ok'
+            ? 'border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-500/30 dark:bg-primary-500/10 dark:text-primary-400'
+            : 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400'
+        "
+      >
+        {{ mensaje.texto }}
+      </div>
+    }
+
+    <!-- Tipo de permiso -->
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-black dark:text-white">Tipo de permiso</label>
+      <div class="relative">
+        <select
+          formControlName="checador_catalogo_permiso_id"
+          class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+        >
+          <option [ngValue]="null" disabled>
+            {{ cargandoCatalogo ? 'Cargando catálogo…' : 'Selecciona un tipo' }}
+          </option>
+          @for (item of catalogo; track item.id) {
+            <option [ngValue]="item.id">{{ item.nombre }}</option>
+          }
+        </select>
+        <mat-icon
+          class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+          >expand_more</mat-icon
+        >
+      </div>
+      @if (
+        form.get('checador_catalogo_permiso_id')?.touched &&
+        form.get('checador_catalogo_permiso_id')?.invalid
+      ) {
+        <span class="text-xs text-red-500">Selecciona un tipo de permiso.</span>
+      }
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Fecha inicio -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Fecha inicio</label>
+        <div class="relative">
+          <input
+            #fechaInicioPc
+            type="date"
+            formControlName="fecha_inicio"
+            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:opacity-0"
+          />
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+            >calendar_today</mat-icon
+          >
+        </div>
+      </div>
+
+      <!-- Fecha fin -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Fecha fin</label>
+        <div class="relative">
+          <input
+            #fechaFinPc
+            type="date"
+            formControlName="fecha_fin"
+            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:opacity-0"
+          />
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+            >calendar_today</mat-icon
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Hora inicio -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Hora inicio (opcional)</label>
+        <div class="relative">
+          <input
+            type="time"
+            formControlName="hora_inicio"
+            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+          />
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+            >schedule</mat-icon
+          >
+        </div>
+      </div>
+
+      <!-- Hora fin -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Hora fin (opcional)</label>
+        <div class="relative">
+          <input
+            type="time"
+            formControlName="hora_fin"
+            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+          />
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+            >schedule</mat-icon
+          >
+        </div>
+        <span class="text-xs text-gray-400 dark:text-gray-500"
+          >Esta será tu hora máxima de regreso si te aprueban.</span
+        >
+      </div>
+    </div>
+
+    <!-- Motivo -->
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
+      <textarea
+        formControlName="motivo"
+        rows="3"
+        maxlength="255"
+        placeholder="Ej. Ir a comer, cita médica, etc."
+        class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+      ></textarea>
+      @if (form.get('motivo')?.touched && form.get('motivo')?.invalid) {
+        <span class="text-xs text-red-500">Escribe el motivo del permiso.</span>
+      }
+    </div>
+  </form>
+
+  <!-- Footer modal -->
+  <div class="flex shrink-0 justify-end gap-3 border-t border-gray-200 dark:border-gray-500">
+    <button
+      class="mt-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-slate-50 dark:text-white"
+      (click)="cerrarModal()"
+    >
+      Cancelar
+    </button>
+    <button
+      class="mr-2 mt-2 inline-flex items-center gap-1 rounded-lg bg-primary-600 px-4 py-2 text-sm text-white shadow-sm transition-colors hover:bg-primary-700 disabled:opacity-50"
+      [disabled]="enviando"
+      (click)="enviarSolicitud()"
+    >
+      <mat-icon class="text-base leading-none text-white icon-size-5">save</mat-icon>
+      {{ enviando ? 'Enviando…' : 'Solicitar permiso' }}
+    </button>
+  </div>
+</div>
+
+<!-- modal de movil -->
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden md:items-center"
+  (click)="cerrarModal()"
+>
+  <div
+    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
+    [class.select-none]="isDragging"
+    [style.transform]="dragTransform"
+    [style.transition]="dragTransition"
+    (click)="$event.stopPropagation()"
+    [@slideUpPermiso]
+  >
+    <div
+      class="bg-default dark:bg-card"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd()"
+    >
+      <!-- Drag Handle -->
+      <div class="flex cursor-grab justify-center pb-2 pt-3 active:cursor-grabbing">
+        <div
+          class="h-1.5 w-11 rounded-full bg-gray-400 transition-colors active:bg-primary-500 dark:bg-white/20"
+        ></div>
+      </div>
+
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-white/10 px-5 pb-4">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-500"
+          >
+            <mat-icon
+              class="text-2xl text-black"
+              [svgIcon]="'heroicons_outline:clipboard-document-check'"
+            ></mat-icon>
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold tracking-tight text-black dark:text-white">
+              Nueva solicitud
+            </h2>
+            <p class="text-sm text-primary-400">
+              {{ form.get('fecha_inicio')?.value || 'Selecciona fecha' }}
+            </p>
+          </div>
+        </div>
+
+        <button
+          (click)="cerrarModal()"
+          class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <form [formGroup]="form" class="flex-1 space-y-6 overflow-auto p-5 pb-28">
+      @if (mensaje) {
+        <div
+          class="flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium"
+          [ngClass]="
+            mensaje.tipo === 'ok'
+              ? 'border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-500/30 dark:bg-primary-500/10 dark:text-primary-400'
+              : 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400'
+          "
+        >
+          {{ mensaje.texto }}
+        </div>
+      }
+
+      <!-- Tipo de permiso -->
+      <div>
+        <label class="text-sm font-medium text-black dark:text-white">Tipo de permiso</label>
+        <div class="relative">
+          <div
+            class="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+          >
+            <mat-icon class="text-black icon-size-5 dark:text-white">event_note</mat-icon>
+          </div>
+          <select
+            formControlName="checador_catalogo_permiso_id"
+            class="appearance-none w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+          >
+            <option [ngValue]="null" disabled>
+              {{ cargandoCatalogo ? 'Cargando catálogo…' : 'Selecciona un tipo' }}
+            </option>
+            @for (item of catalogo; track item.id) {
+              <option [ngValue]="item.id">{{ item.nombre }}</option>
+            }
+          </select>
+          <div
+            class="pointer-events-none absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+          >
+            <mat-icon class="text-black icon-size-5 dark:text-white">expand_more</mat-icon>
+          </div>
+        </div>
+        @if (
+          form.get('checador_catalogo_permiso_id')?.touched &&
+          form.get('checador_catalogo_permiso_id')?.invalid
+        ) {
+          <p class="mt-1 text-xs text-red-500">Selecciona un tipo de permiso.</p>
+        }
+      </div>
+
+      <!-- Fecha inicio -->
+      <div>
+        <label class="text-sm font-medium text-black dark:text-white">Fecha inicio</label>
+        <div class="relative">
+          <input
+            #fechaInicioMovil
+            type="date"
+            formControlName="fecha_inicio"
+            class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
+          />
+          <div
+            (click)="abrirFecha(fechaInicioMovil)"
+            class="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+          >
+            <mat-icon class="text-black icon-size-5 dark:text-white">calendar_today</mat-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fecha fin -->
+      <div>
+        <label class="text-sm font-medium text-black dark:text-white">Fecha fin</label>
+        <div class="relative">
+          <input
+            #fechaFinMovil
+            type="date"
+            formControlName="fecha_fin"
+            class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
+          />
+          <div
+            (click)="abrirFecha(fechaFinMovil)"
+            class="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+          >
+            <mat-icon class="text-black icon-size-5 dark:text-white">calendar_today</mat-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hora inicio / fin -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm font-medium text-black dark:text-white">Hora inicio</label>
+          <div class="relative">
+            <input
+              type="time"
+              formControlName="hora_inicio"
+              class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+            />
+            <div
+              class="pointer-events-none absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+            >
+              <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-black dark:text-white">Hora fin</label>
+          <div class="relative">
+            <input
+              type="time"
+              formControlName="hora_fin"
+              class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+            />
+            <div
+              class="pointer-events-none absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+            >
+              <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="-mt-4 text-xs text-gray-400 dark:text-gray-500">
+        La hora fin será tu regreso máximo si te aprueban.
+      </p>
+
+      <!-- Motivo -->
+      <div>
+        <label class="text-sm font-medium text-black dark:text-white">Motivo</label>
+        <textarea
+          formControlName="motivo"
+          rows="4"
+          maxlength="255"
+          placeholder="Ej. Ir a comer, cita médica, etc."
+          class="w-full resize-none rounded-3xl border border-gray-300 bg-gray-300 p-4 text-black outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+        ></textarea>
+        @if (form.get('motivo')?.touched && form.get('motivo')?.invalid) {
+          <p class="mt-1 text-xs text-red-500">Escribe el motivo del permiso.</p>
+        }
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div
+      class="bg-default absolute bottom-0 left-0 right-0 border-t border-white/10 p-4 dark:bg-card"
+    >
+      <div class="flex gap-3">
+        <button
+          (click)="cerrarModal()"
+          class="flex-1 rounded-2xl border border-gray-400 py-4 font-medium text-black transition-colors active:bg-white/5 dark:border-white/10 dark:text-white"
+        >
+          Cancelar
+        </button>
+        <button
+          [disabled]="enviando"
+          (click)="enviarSolicitud()"
+          class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary-600 py-4 font-semibold text-white transition-all hover:bg-primary-500 active:bg-primary-700 disabled:opacity-50"
+        >
+          <mat-icon class="text-white">{{ enviando ? 'sync' : 'add_circle_outline' }}</mat-icon>
+          {{ enviando ? 'Enviando…' : 'Solicitar permiso' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

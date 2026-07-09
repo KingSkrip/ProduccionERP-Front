@@ -155,8 +155,13 @@ export class AuthService {
 
 
 
-    /**
+      /**
      * Obtener el rol principal del usuario
+     * ⚠️ DEPRECATED para lógica de RH/jefe: permissions/sub_permissions
+     * son genéricos por nivel jerárquico (ej. "Gerente" = 1,3 para
+     * CUALQUIER área), no identifican RH ni jefe de área específico.
+     * Úsalo solo si de verdad necesitas el rol crudo del catálogo de
+     * permisos/roles.
      */
     getUserRole(): Observable<{ roleId: number; subRoleId: number | null }> {
         return this._userService.user$.pipe(
@@ -164,7 +169,6 @@ export class AuthService {
                 if (!user || !user.permissions?.length) {
                     return { roleId: null, subRoleId: null };
                 }
-
                 return {
                     roleId: user.permissions[0],
                     subRoleId: user.sub_permissions?.[0] ?? null
@@ -174,9 +178,39 @@ export class AuthService {
     }
 
 
-    /**
-     * Obtener el usuario completo
+   /**
+     * Flags reales de jerarquía, calculados en el backend a partir del
+     * PUESTO activo del usuario (tabla `puestos.es_rh` / `es_gerente` /
+     * `es_jefe_area`). Esta es la fuente de verdad para decidir qué
+     * vista/bandeja mostrar — no `permissions`/`sub_permissions`.
      */
+  getUserFlags(): Observable<{
+    esRh: boolean;
+    esGerente: boolean;
+    esJefeArea: boolean;
+    identityId: number | null;
+    puestoNombre: string | null;
+    areaNombre: string | null;
+}> {
+    return this._userService.user$.pipe(
+        map(user => {
+            const puesto = user?.USER_PUESTO?.PUESTO ?? null;
+            const area = user?.USER_PUESTO?.AREA ?? null;
+            const rawId = user?.identity_id ?? user?.id ?? null;
+            const identityId = rawId != null ? Number(rawId) : null;
+
+            return {
+                esRh: !!puesto?.ES_RH,
+                esGerente: !!puesto?.ES_GERENTE,
+                esJefeArea: !!puesto?.ES_JEFE_AREA,
+                identityId: identityId != null && !Number.isNaN(identityId) ? identityId : null,
+                puestoNombre: puesto?.NOMBRE ?? null,
+                areaNombre: area?.NOMBRE ?? null,
+            };
+        })
+    );
+}
+
     getUser() {
         return this._userService.user;
     }

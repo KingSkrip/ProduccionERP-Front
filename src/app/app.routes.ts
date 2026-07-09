@@ -145,7 +145,11 @@ export const appRoutes: Route[] = [
 
 
                     //REGISTRO DE ASISTENCIA
-                    { path: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%', loadChildren: () => import('app/modules/ViewAll/Agenda/agenda.routes') },
+                    { path: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%', loadChildren: () => import('app/modules/Checador/checador.routes') },
+
+
+
+                 
 
                 ]
             },
@@ -282,6 +286,8 @@ export const appRoutes: Route[] = [
                 path: 'apps/colaborador', children: [
                     // loadChildren: () => import('app/modules/colaborador/dashboards/colaborador/colaborador.routes')
                     { path: 'Barcode', loadChildren: () => import('app/modules/colaborador/scan/scan.routes') },
+                        //Permisos
+                    { path: 'Permisos', loadChildren: () => import('app/modules/ViewAll/Permisos/permisos.routes') },
 
                 ]
             },
