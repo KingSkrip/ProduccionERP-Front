@@ -4041,6 +4041,14 @@ export const menuColaborador: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
+    {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
   //{
   //id: 'to.do',
   //title: 'Scrumboard',

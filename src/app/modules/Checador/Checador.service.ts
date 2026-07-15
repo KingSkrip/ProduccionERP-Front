@@ -4,6 +4,8 @@ import { Injectable } from '@angular/core';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { SILENT_HTTP } from 'app/core/interceptors/silent-http.token';
 import { BehaviorSubject, Observable, catchError, map, of, tap, throwError } from 'rxjs';
+import { ChecadorPermiso } from './types/Checadorpermiso.types';
+import { SolicitarPermisoPayload } from './types/Solicitarpermiso.types';
 
 // ============================================================
 // Tipos
@@ -13,9 +15,9 @@ export interface ChecadorUsuarioInfo {
   nombre: string;
   foto: string | null;
   departamento: { clave: string; nombre: string } | null;
+  area: { clave: string; nombre: string } | null;
   puesto: { clave: string; nombre: string } | null;
 }
-
 
 export interface ChecadorQr {
   token: string;
@@ -47,7 +49,7 @@ export interface ChecadorRegistroResultado {
   usuario: ChecadorUsuarioInfo | null;
   firebird_empresa: string;
   turno_id: number | null;
-  tipo: 'entrada' | 'salida';
+  tipo: 'entrada' | 'salida' | 'Inicio de permiso' | 'Fin de permiso';
   metodo: 'qr' | 'manual';
   fecha: string;
   hora: string;
@@ -95,39 +97,12 @@ export interface ChecadorCatalogoPermiso {
   orden: number;
 }
 
-export interface ChecadorPermiso {
-  id: number;
-  identity_id: number;
-  catalogo: { clave: string; nombre: string } | null;
-  tipo: 'normal' | 'extraordinario';
-  fecha_inicio: string;
-  fecha_fin: string;
-  hora_inicio: string | null;
-  hora_fin: string | null;
-  motivo: string;
-  estado: 'pendiente' | 'aprobado' | 'rechazado';
-  aprobado_por: number | null;
-  fecha_resolucion: string | null;
-  comentarios_aprobador: string | null;
-}
-
 export interface ChecadorPaginado<T> {
   data: T[];
   current_page: number;
   last_page: number;
   total: number;
   per_page: number;
-}
-
-export interface SolicitarPermisoPayload {
-  user_firebird_identity_id: number;
-  checador_catalogo_permiso_id: number;
-  tipo?: 'normal' | 'extraordinario';
-  fecha_inicio: string;
-  fecha_fin: string;
-  hora_inicio?: string;
-  hora_fin?: string;
-  motivo: string;
 }
 
 export interface ResolverPermisoPayload {
@@ -170,18 +145,20 @@ export class ChecadorService {
    * un toast de error genérico; el componente maneja su propio feedback
    * visual (necesita distinguir "QR inválido" de "error de red", etc.).
    */
-registrarPorToken(token: string): Observable<ChecadorRegistroResultado> {
-  return this.http
-    .post<{ data: ChecadorRegistroResultado }>(
-      `${this.baseUrl}/qr/registrar`,
-      { token },
-      { context: new HttpContext().set(SILENT_HTTP, true) },
-    )
-    .pipe(
-      map((res) => res.data), // 👈 desenvolver
-      tap((resultado) => this.ultimoRegistro$.next(resultado)),
-    );
-}
+  registrarPorToken(token: string): Observable<ChecadorRegistroResultado> {
+    return this.http
+      .post<{
+        data: ChecadorRegistroResultado;
+      }>(
+        `${this.baseUrl}/qr/registrar`,
+        { token },
+        { context: new HttpContext().set(SILENT_HTTP, true) },
+      )
+      .pipe(
+        map((res) => res.data), // 👈 desenvolver
+        tap((resultado) => this.ultimoRegistro$.next(resultado)),
+      );
+  }
 
   historial(
     identityId: number,
@@ -207,20 +184,20 @@ registrarPorToken(token: string): Observable<ChecadorRegistroResultado> {
     return this.http.get<ChecadorEmpleadoBusqueda[]>(`${this.baseUrl}/buscar-empleado`, { params });
   }
 
- registrarManual(
-  identityId: number,
-  observaciones?: string,
-): Observable<ChecadorRegistroResultado> {
-  return this.http
-    .post<{ data: ChecadorRegistroResultado }>(`${this.baseUrl}/registrar-manual`, {
-      user_firebird_identity_id: identityId,
-      observaciones: observaciones ?? null,
-    })
-    .pipe(
-      map((res) => res.data), // 👈 desenvolver
-      tap((resultado) => this.ultimoRegistro$.next(resultado)),
-    );
-}
+  registrarManual(
+    identityId: number,
+    observaciones?: string,
+  ): Observable<ChecadorRegistroResultado> {
+    return this.http
+      .post<{ data: ChecadorRegistroResultado }>(`${this.baseUrl}/registrar-manual`, {
+        user_firebird_identity_id: identityId,
+        observaciones: observaciones ?? null,
+      })
+      .pipe(
+        map((res) => res.data), // 👈 desenvolver
+        tap((resultado) => this.ultimoRegistro$.next(resultado)),
+      );
+  }
 
   hoy(firebirdEmpresa?: string): Observable<ChecadorHoyResponse> {
     let params = new HttpParams();

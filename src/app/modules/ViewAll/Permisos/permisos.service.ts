@@ -2,53 +2,16 @@ import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { SILENT_HTTP } from 'app/core/interceptors/silent-http.token';
+import { CatalogoPermiso } from 'app/modules/Checador/types/Catalogopermiso.types';
+import { ChecadorPermiso } from 'app/modules/Checador/types/Checadorpermiso.types';
+import { SolicitarPermisoPayload } from 'app/modules/Checador/types/Solicitarpermiso.types';
 import { BehaviorSubject, Observable, finalize, map, tap } from 'rxjs';
 
-export type EstadoPermiso = 'pendiente' | 'aprobado' | 'rechazado';
+export type EstadoPermiso = 'pendiente' | 'aprobado' | 'rechazado' | 'solicitado';
 
-export interface CatalogoPermiso {
-  id: number;
-  nombre: string;
-  descripcion?: string | null;
-  requiere_horario?: boolean;
-}
+/** Claves de catálogo que requieren que el empleado decida cómo paga el tiempo */
+export const CLAVES_PAGO_TIEMPO = ['EXTRA', 'PERSONAL', 'TRAMITE', 'MEDICO'];
 
-export interface ChecadorPermiso {
-  id: number;
-  user_firebird_identity_id: number;
-  checador_catalogo_permiso_id: number;
-  tipo: 'normal' | 'extraordinario' | null;
-  fecha_inicio: string;
-  fecha_fin: string;
-  hora_inicio: string | null;
-  hora_fin: string | null;
-  motivo: string;
-  estado: EstadoPermiso;
-  estado_rh: EstadoPermiso;
-  estado_jefe: EstadoPermiso;
-  comentarios_rh?: string | null;
-  comentarios_jefe?: string | null;
-  fecha_resolucion_rh?: string | null;
-  fecha_resolucion_jefe?: string | null;
-  catalogo?: CatalogoPermiso;
-  identity?: {
-    id: number;
-    nombre: string | null;
-    area?: { id: number; nombre: string } | null;
-    puesto?: { id: number; nombre: string } | null;
-  };
-  created_at?: string;
-}
-
-export interface SolicitarPermisoPayload {
-  checador_catalogo_permiso_id: number;
-  tipo?: 'normal' | 'extraordinario';
-  fecha_inicio: string;
-  fecha_fin: string;
-  hora_inicio?: string;
-  hora_fin?: string;
-  motivo: string;
-}
 
 interface ApiResource<T> {
   data: T;
@@ -84,10 +47,6 @@ export class PermisosService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Catálogo de tipos de permiso disponibles (vacaciones, cita médica, comida, etc.)
-   * Se marca como silenciosa para no disparar el loader/interceptor global.
-   */
   getCatalogo(): Observable<CatalogoPermiso[]> {
     return this.http
       .get<CatalogoPermiso[] | ApiCollection<CatalogoPermiso>>(
@@ -102,10 +61,6 @@ export class PermisosService {
       );
   }
 
-  /**
-   * Solicita un nuevo permiso. Si el tipo no requiere aprobación,
-   * el backend puede regresarlo ya con estado 'aprobado'.
-   */
   solicitar(payload: SolicitarPermisoPayload): Observable<ApiResource<ChecadorPermiso>> {
     this._solicitando$.next(true);
     return this.http
@@ -116,9 +71,6 @@ export class PermisosService {
       );
   }
 
-  /**
-   * Historial de permisos de una identidad (paginado por el backend).
-   */
   historial(identityId: number, page = 1): Observable<ChecadorPermiso[]> {
     const params = new HttpParams().set('page', page);
     return this.http
@@ -131,35 +83,20 @@ export class PermisosService {
       );
   }
 
-  /**
-   * Bandeja de RH: permisos que esperan su aprobación.
-   * ⚠️ Ajusta la ruta si en tus routes/api.php le pusiste otro nombre
-   * al endpoint que pega a ChecadorPermisoController::pendientesRh
-   */
-  // permisos.service.ts
-
   pendientesRh(page = 1, firebirdEmpresa?: string): Observable<ChecadorPermiso[]> {
     let params = new HttpParams().set('page', page);
     if (firebirdEmpresa) {
       params = params.set('firebird_empresa', firebirdEmpresa);
     }
 
-    return (
-      this.http
-        // 👇 antes decía /permisos/pendientes/rh, tu ruta real es pendientes-rh
-        .get<ApiCollection<ChecadorPermiso>>(`${this.baseUrl}/permisos/pendientes-rh`, { params })
-        .pipe(
-          map((res) => res.data ?? []),
-          tap((pendientes) => this._pendientesRh$.next(pendientes)),
-        )
-    );
+    return this.http
+      .get<ApiCollection<ChecadorPermiso>>(`${this.baseUrl}/permisos/pendientes-rh`, { params })
+      .pipe(
+        map((res) => res.data ?? []),
+        tap((pendientes) => this._pendientesRh$.next(pendientes)),
+      );
   }
 
-  /**
-   * Aprueba o rechaza un permiso en el carril indicado.
-   * El "aprobado_por" lo pone el backend a partir del JWT, no hace falta mandarlo.
-   * ⚠️ Ajusta la ruta si tu endpoint de resolver() está montado distinto.
-   */
   resolver(
     permisoId: number,
     rol: 'rh' | 'jefe',
@@ -172,19 +109,17 @@ export class PermisosService {
       >(`${this.baseUrl}/permisos/${permisoId}/resolver/${rol}`, data)
       .pipe(
         tap(() => {
-          // lo quitamos de la bandeja local, ya no está pendiente
           this._pendientesRh$.next(
             this._pendientesRh$.getValue().filter((p) => p.id !== permisoId),
+          );
+          this._pendientesJefe$.next(
+            this._pendientesJefe$.getValue().filter((p) => p.id !== permisoId),
           );
         }),
         finalize(() => this._resolviendo$.next(false)),
       );
   }
 
-  /**
-   * Bandeja del jefe directo: gente que le reporta (jefe_id en user_puestos)
-   * y que YA pasó RH, solo falta su firma.
-   */
   pendientesJefe(jefeId: number): Observable<ChecadorPermiso[]> {
     return this.http
       .get<ApiCollection<ChecadorPermiso>>(`${this.baseUrl}/permisos/pendientes-jefe/${jefeId}`)
@@ -192,5 +127,11 @@ export class PermisosService {
         map((res) => res.data ?? []),
         tap((pendientes) => this._pendientesJefe$.next(pendientes)),
       );
+  }
+
+  historialEquipo(jefeId: number): Observable<ChecadorPermiso[]> {
+    return this.http
+      .get<ApiCollection<ChecadorPermiso>>(`${this.baseUrl}/permisos/historial-equipo/${jefeId}`)
+      .pipe(map((res) => res.data ?? []));
   }
 }

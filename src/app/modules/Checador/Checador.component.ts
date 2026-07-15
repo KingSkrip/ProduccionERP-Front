@@ -285,27 +285,39 @@ export class ChecadorComponent implements AfterViewInit, OnDestroy {
   get estadoResultado(): EstadoResultado | null {
     if (!this.resultado) return null;
 
-    if (this.resultado.en_permiso) {
-      return this.resultado.tipo === 'salida' ? 'salida-permiso' : 'regreso-permiso';
-    }
-
-    return this.resultado.tipo === 'salida' ? 'salida' : 'entrada';
-  }
-
-  get tituloResultado(): string {
-    switch (this.estadoResultado) {
+    switch (this.resultado.tipo) {
       case 'entrada':
-        return 'Entrada';
+        return 'entrada';
       case 'salida':
-        return 'Salida';
-      case 'salida-permiso':
-        return 'Salida a permiso';
-      case 'regreso-permiso':
-        return 'Regreso de permiso';
+        return 'salida';
+      case 'Inicio de permiso':
+        return 'salida-permiso';
+      case 'Fin de permiso':
+        return 'regreso-permiso';
       default:
-        return '';
+        return null;
     }
   }
+get tituloResultado(): string {
+  switch (this.estadoResultado) {
+    case 'entrada':
+      return 'Entrada';
+    case 'salida':
+      return 'Salida';
+    case 'salida-permiso':
+      return 'Salida a permiso';
+    case 'regreso-permiso':
+      return 'Regreso de permiso';
+    default:
+      return '';
+  }
+}
+
+get etiquetaHora(): string {
+  return this.estadoResultado === 'salida'
+    ? 'Hora de salida:'
+    : 'Hora:';
+}
 
   /** Color de acento según el tipo de checada — se aplica como CSS var en el template. */
   get colorAcento(): string {
@@ -332,13 +344,6 @@ export class ChecadorComponent implements AfterViewInit, OnDestroy {
     return this.resultado?.usuario?.nombre ?? 'Empleado';
   }
 
-  get puestoEmpleado(): string | null {
-    return this.resultado?.usuario?.puesto?.nombre ?? null;
-  }
-
-  get departamentoEmpleado(): string | null {
-    return this.resultado?.usuario?.departamento?.nombre ?? null;
-  }
 
   get iniciales(): string {
     const nombre = this.resultado?.usuario?.nombre?.trim();

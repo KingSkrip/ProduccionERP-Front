@@ -1,12 +1,10 @@
-<!-- permiso modal-html -->
-
-<!-- modal de pc -->
-<div class="bg-card flex hidden h-full flex-col md:block">
-  <!-- Header modal -->
-  <div
-    class="flex shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-500"
-  >
-    <h2 class="ml-2 text-lg text-black dark:text-white">Nueva solicitud de permiso</h2>
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL DE PC
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="bg-card hidden h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl md:flex">
+  <!-- Header -->
+  <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-500">
+    <h2 class="ml-4 text-lg text-black dark:text-white">Nueva solicitud de permiso</h2>
     <button
       class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-500"
       (click)="cerrarModal()"
@@ -15,8 +13,8 @@
     </button>
   </div>
 
-  <!-- Body modal -->
-  <form [formGroup]="form" class="flex flex-1 flex-col gap-4 overflow-y-auto px-1 py-5">
+  <!-- Body -->
+  <form [formGroup]="form" class="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-5">
     @if (mensaje) {
       <div
         class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium"
@@ -58,8 +56,8 @@
       }
     </div>
 
+    <!-- Fechas -->
     <div class="grid grid-cols-2 gap-4">
-      <!-- Fecha inicio -->
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium text-black dark:text-white">Fecha inicio</label>
         <div class="relative">
@@ -75,8 +73,6 @@
           >
         </div>
       </div>
-
-      <!-- Fecha fin -->
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium text-black dark:text-white">Fecha fin</label>
         <div class="relative">
@@ -94,10 +90,41 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <!-- ═══ SWITCH: NO REGRESA (ANTES de las horas) ═══ -->
+    <div
+      class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-gray-600 dark:bg-gray-800"
+    >
+      <div class="flex flex-col gap-0.5">
+        <span class="text-sm font-medium text-black dark:text-white">
+          No regreso el resto del día
+        </span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">
+          @if (noRegresa) {
+            Se registrará tu ausencia hasta el final de tu turno.
+          } @else {
+            Marca esto si te vas y no vuelves hoy.
+          }
+        </span>
+      </div>
+      <label class="relative inline-flex cursor-pointer items-center">
+        <input type="checkbox" formControlName="no_regresa" class="peer sr-only" />
+        <div
+          class="h-6 w-11 rounded-full bg-gray-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:ring-2 peer-focus:ring-primary-300 dark:bg-gray-600 dark:after:border-gray-500"
+        ></div>
+      </label>
+    </div>
+
+    <!-- ═══ HORAS (grid adaptativo: 2 columnas si regresa, 1 si no) ═══ -->
+    <div class="grid gap-4" [class.grid-cols-2]="!noRegresa">
       <!-- Hora inicio -->
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Hora inicio (opcional)</label>
+        <label class="text-sm font-medium text-black dark:text-white">
+          @if (noRegresa) {
+            Hora en que te vas
+          } @else {
+            Hora inicio
+          }
+        </label>
         <div class="relative">
           <input
             type="time"
@@ -109,27 +136,194 @@
             >schedule</mat-icon
           >
         </div>
+        @if (noRegresa) {
+          <span class="text-xs text-gray-400 dark:text-gray-500">
+            Si no la pones, se usa tu hora de entrada como referencia.
+          </span>
+        }
       </div>
 
-      <!-- Hora fin -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Hora fin (opcional)</label>
-        <div class="relative">
-          <input
-            type="time"
-            formControlName="hora_fin"
-            class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-          />
-          <mat-icon
-            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
-            >schedule</mat-icon
-          >
+      <!-- Hora fin (solo si regresa) -->
+      @if (!noRegresa) {
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">
+            Hora fin <span class="text-red-400">*</span>
+          </label>
+          <div class="relative">
+            <input
+              type="time"
+              formControlName="hora_fin"
+              class="w-full rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+            />
+            <mat-icon
+              class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+              >schedule</mat-icon
+            >
+          </div>
+          <span class="text-xs text-gray-400 dark:text-gray-500">
+            Será tu hora máxima de regreso.
+          </span>
+          @if (form.get('hora_fin')?.touched && form.get('hora_fin')?.invalid) {
+            <span class="text-xs text-red-500">Indica a qué hora regresas.</span>
+          }
         </div>
-        <span class="text-xs text-gray-400 dark:text-gray-500"
-          >Esta será tu hora máxima de regreso si te aprueban.</span
-        >
-      </div>
+      }
     </div>
+
+    <!-- ═══ SECCIÓN: PAGO DE TIEMPO ═══ -->
+    @if (requierePagoTiempo) {
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-1.5">
+          <mat-icon class="text-lg text-amber-600 dark:text-amber-400"> schedule </mat-icon>
+
+          <h3 class="text-sm font-semibold leading-none text-amber-800 dark:text-amber-300">
+            Pago de tiempo
+          </h3>
+        </div>
+
+        <p class="text-xs leading-4 text-amber-700 dark:text-amber-400">
+          Este permiso requiere que decidas cómo pagas el tiempo de tu ausencia.
+        </p>
+      </div>
+
+      <!-- Radio-cards -->
+      <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+        @for (opt of pagoTiempoOptions; track opt.value) {
+          <label
+            class="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors"
+            [ngClass]="
+              form.get('tipo_pago_tiempo')?.value === opt.value
+                ? 'border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-500/10'
+                : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
+            "
+          >
+            <input
+              type="radio"
+              formControlName="tipo_pago_tiempo"
+              [value]="opt.value"
+              class="mt-0.5 accent-primary-600"
+            />
+            <div class="flex items-start gap-2">
+              <div>
+                <span class="text-sm font-medium text-black dark:text-white">{{ opt.label }}</span>
+                <p class="text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                  {{ opt.descripcion }}
+                </p>
+              </div>
+            </div>
+          </label>
+        }
+      </div>
+
+      @if (form.get('tipo_pago_tiempo')?.touched && form.get('tipo_pago_tiempo')?.invalid) {
+        <span class="mb-3 block text-xs text-red-500">Selecciona cómo pagarás el tiempo.</span>
+      }
+
+      <!-- ── Campos: TIEMPO POR TIEMPO ── -->
+      @if (muestraReposicionTiempo) {
+        <div class="">
+          <p class="mb-2 text-xs font-medium text-amber-700 dark:text-amber-400">
+            ¿Cuándo y cuánto tiempo pagarás?
+          </p>
+
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-black dark:text-white">
+                Fecha de reposición
+              </label>
+              <input
+                type="date"
+                formControlName="fecha_reposicion"
+                class="w-full rounded-lg border border-slate-300 py-2 pl-3 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-black dark:text-white"> Hora inicio </label>
+              <input
+                type="time"
+                formControlName="hora_inicio_reposicion"
+                class="w-full rounded-lg border border-slate-300 py-2 pl-3 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-black dark:text-white"> Hora fin </label>
+              <input
+                type="time"
+                formControlName="hora_fin_reposicion"
+                class="w-full rounded-lg border border-slate-300 py-2 pl-3 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              />
+              @if (horaFinReposicionInvalida) {
+                <span class="text-xs text-red-500"> Debe ser posterior a la hora inicio. </span>
+              }
+            </div>
+          </div>
+
+          <div
+            class="mt-3 rounded-lg border border-blue-200 bg-blue-50/60 p-3 dark:border-blue-500/30 dark:bg-blue-900/10"
+          >
+            <div class="flex items-start gap-2">
+              <mat-icon class="mt-0.5 text-base text-blue-600 dark:text-blue-400">info</mat-icon>
+              <div class="text-xs leading-relaxed text-blue-800 dark:text-blue-300">
+                <p class="font-medium">¿Cómo funciona?</p>
+                <p class="mt-1 text-blue-700 dark:text-blue-400">
+                  El tiempo que debes se irá pagando automáticamente conforme cheques:
+                </p>
+                <ul class="mt-1 list-inside list-disc space-y-0.5 text-blue-700 dark:text-blue-400">
+                  <li><strong>Antes de tu hora de entrada</strong> → esos minutos pagan deuda</li>
+                  <li><strong>Después de tu hora de salida</strong> → esos minutos pagan deuda</li>
+                </ul>
+                <p class="mt-1 text-blue-600 dark:text-blue-400">
+                  Si no debes tiempo, ese mismo tiempo se contará como tiempo extra.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ── Campos: DÍA DE DESCANSO ── -->
+      @if (muestraReposicionDia) {
+        <div class="mt-3 space-y-3 border-t border-amber-200 pt-3 dark:border-amber-500/20">
+          <p class="text-xs font-medium text-amber-700 dark:text-amber-400">
+            ¿Qué día de descanso vendrás?
+          </p>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-black dark:text-white">
+              Fecha de reposición <span class="text-red-400">*</span>
+            </label>
+            <input
+              type="date"
+              formControlName="fecha_reposicion"
+              class="w-full rounded-lg border border-slate-300 py-2 pl-3 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+            />
+            @if (form.get('fecha_reposicion')?.touched && form.get('fecha_reposicion')?.invalid) {
+              <span class="text-xs text-red-500">Fecha requerida.</span>
+            }
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            Al aprobar este permiso se generará automáticamente tu permiso para venir ese día.
+          </p>
+        </div>
+      }
+
+      <!-- ── Justificación ── -->
+      @if (muestraJustificacionPago) {
+        <div class="mt-3 border-t border-amber-200 pt-3 dark:border-amber-500/20">
+          <label class="text-xs font-medium text-black dark:text-white">
+            Justificación (opcional)
+          </label>
+          <textarea
+            formControlName="justificacion_pago_tiempo"
+            rows="2"
+            maxlength="255"
+            placeholder="Razón adicional sobre cómo pagarás el tiempo…"
+            class="mt-1 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+          ></textarea>
+        </div>
+      }
+    }
 
     <!-- Motivo -->
     <div class="flex flex-col gap-1">
@@ -138,7 +332,7 @@
         formControlName="motivo"
         rows="3"
         maxlength="255"
-        placeholder="Ej. Ir a comer, cita médica, etc."
+        placeholder="Ej. Cita médica, trámite personal, etc."
         class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-black transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
       ></textarea>
       @if (form.get('motivo')?.touched && form.get('motivo')?.invalid) {
@@ -147,8 +341,8 @@
     </div>
   </form>
 
-  <!-- Footer modal -->
-  <div class="flex shrink-0 justify-end gap-3 border-t border-gray-200 dark:border-gray-500">
+  <!-- Footer -->
+  <div class="flex shrink-0 justify-end gap-3 border-t border-gray-200 px-4 dark:border-gray-500">
     <button
       class="mt-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-slate-50 dark:text-white"
       (click)="cerrarModal()"
@@ -166,7 +360,9 @@
   </div>
 </div>
 
-<!-- modal de movil -->
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL MÓVIL (sin cambios)
+     ═══════════════════════════════════════════════════════════════ -->
 <div
   class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden md:items-center"
   (click)="cerrarModal()"
@@ -195,9 +391,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between border-b border-white/10 px-5 pb-4">
         <div class="flex items-center gap-3">
-          <div
-            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-500"
-          >
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-500">
             <mat-icon
               class="text-2xl text-black"
               [svgIcon]="'heroicons_outline:clipboard-document-check'"
@@ -212,7 +406,6 @@
             </p>
           </div>
         </div>
-
         <button
           (click)="cerrarModal()"
           class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white"
@@ -223,7 +416,7 @@
     </div>
 
     <!-- Body -->
-    <form [formGroup]="form" class="flex-1 space-y-6 overflow-auto p-5 pb-28">
+    <form [formGroup]="form" class="flex-1 space-y-5 overflow-auto p-5 pb-28">
       @if (mensaje) {
         <div
           class="flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium"
@@ -271,48 +464,78 @@
         }
       </div>
 
-      <!-- Fecha inicio -->
-      <div>
-        <label class="text-sm font-medium text-black dark:text-white">Fecha inicio</label>
-        <div class="relative">
-          <input
-            #fechaInicioMovil
-            type="date"
-            formControlName="fecha_inicio"
-            class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
-          />
-          <div
-            (click)="abrirFecha(fechaInicioMovil)"
-            class="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
-          >
-            <mat-icon class="text-black icon-size-5 dark:text-white">calendar_today</mat-icon>
-          </div>
-        </div>
-      </div>
-
-      <!-- Fecha fin -->
-      <div>
-        <label class="text-sm font-medium text-black dark:text-white">Fecha fin</label>
-        <div class="relative">
-          <input
-            #fechaFinMovil
-            type="date"
-            formControlName="fecha_fin"
-            class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
-          />
-          <div
-            (click)="abrirFecha(fechaFinMovil)"
-            class="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
-          >
-            <mat-icon class="text-black icon-size-5 dark:text-white">calendar_today</mat-icon>
-          </div>
-        </div>
-      </div>
-
-      <!-- Hora inicio / fin -->
-      <div class="grid grid-cols-2 gap-4">
+      <!-- Fechas -->
+      <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="text-sm font-medium text-black dark:text-white">Hora inicio</label>
+          <label class="text-sm font-medium text-black dark:text-white">Fecha inicio</label>
+          <div class="relative">
+            <input
+              #fechaInicioMovil
+              type="date"
+              formControlName="fecha_inicio"
+              class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
+            />
+            <div
+              (click)="abrirFecha(fechaInicioMovil)"
+              class="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+            >
+              <mat-icon class="text-black icon-size-5 dark:text-white">calendar_today</mat-icon>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-black dark:text-white">Fecha fin</label>
+          <div class="relative">
+            <input
+              #fechaFinMovil
+              type="date"
+              formControlName="fecha_fin"
+              class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-12 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden"
+            />
+            <div
+              (click)="abrirFecha(fechaFinMovil)"
+              class="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+            >
+              <mat-icon class="text-black icon-size-5 dark:text-white">calendar_today</mat-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SWITCH: NO REGRESA (ANTES de las horas) ═══ -->
+      <div
+        class="flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-200 px-4 py-4 dark:border-gray-600 dark:bg-gray-700"
+      >
+        <div class="flex flex-col gap-0.5">
+          <span class="text-sm font-medium text-black dark:text-white"
+            >No regreso el resto del día</span
+          >
+          <span class="text-xs text-gray-500 dark:text-gray-400">
+            @if (noRegresa) {
+              Tu ausencia se registra hasta el final del turno.
+            } @else {
+              Actívalo si te vas y no vuelves.
+            }
+          </span>
+        </div>
+        <label class="relative inline-flex cursor-pointer items-center">
+          <input type="checkbox" formControlName="no_regresa" class="peer sr-only" />
+          <div
+            class="h-6 w-11 rounded-full bg-gray-400 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-600 peer-checked:after:translate-x-full peer-checked:after:border-white dark:after:border-gray-500"
+          ></div>
+        </label>
+      </div>
+
+      <!-- ═══ HORAS (grid adaptativo) ═══ -->
+      <div class="grid gap-3" [class.grid-cols-2]="!noRegresa">
+        <div>
+          <label class="text-sm font-medium text-black dark:text-white">
+            @if (noRegresa) {
+              Hora en que te vas
+            } @else {
+              Hora inicio
+            }
+          </label>
           <div class="relative">
             <input
               type="time"
@@ -325,26 +548,204 @@
               <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
             </div>
           </div>
+          @if (noRegresa) {
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Si no la pones, se usa tu hora de entrada.
+            </p>
+          }
         </div>
-        <div>
-          <label class="text-sm font-medium text-black dark:text-white">Hora fin</label>
-          <div class="relative">
-            <input
-              type="time"
-              formControlName="hora_fin"
-              class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
-            />
-            <div
-              class="pointer-events-none absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
-            >
-              <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
+
+        @if (!noRegresa) {
+          <div>
+            <label class="text-sm font-medium text-black dark:text-white">
+              Hora fin <span class="text-red-400">*</span>
+            </label>
+            <div class="relative">
+              <input
+                type="time"
+                formControlName="hora_fin"
+                class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-4 pr-14 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+              />
+              <div
+                class="pointer-events-none absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+              >
+                <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
+              </div>
             </div>
+            @if (form.get('hora_fin')?.touched && form.get('hora_fin')?.invalid) {
+              <p class="mt-1 text-xs text-red-500">Indica a qué hora regresas.</p>
+            }
           </div>
-        </div>
+        }
       </div>
-      <p class="-mt-4 text-xs text-gray-400 dark:text-gray-500">
-        La hora fin será tu regreso máximo si te aprueban.
-      </p>
+
+      <!-- ═══ SECCIÓN: PAGO DE TIEMPO ═══ -->
+      @if (requierePagoTiempo) {
+        <div
+          class="rounded-2xl border border-amber-400 bg-amber-50/60 p-4 dark:border-amber-500/30 dark:bg-amber-900/10"
+        >
+          <div class="mb-2 flex items-center gap-2">
+            <mat-icon class="text-lg text-amber-600 dark:text-amber-400">schedule</mat-icon>
+            <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-300">Pago de tiempo</h3>
+          </div>
+          <p class="mb-3 text-xs text-amber-700 dark:text-amber-400">
+            Este permiso requiere que decidas cómo pagas tu ausencia.
+          </p>
+
+          <!-- Radio-cards -->
+          <div class="space-y-2">
+            @for (opt of pagoTiempoOptions; track opt.value) {
+              <label
+                class="flex cursor-pointer items-start gap-3 rounded-2xl border p-3 transition-colors"
+                [ngClass]="
+                  form.get('tipo_pago_tiempo')?.value === opt.value
+                    ? 'border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-500/10'
+                    : 'border-gray-300 bg-white/60 dark:border-gray-600 dark:bg-gray-700/60'
+                "
+              >
+                <input
+                  type="radio"
+                  formControlName="tipo_pago_tiempo"
+                  [value]="opt.value"
+                  class="mt-0.5 accent-primary-600"
+                />
+                <div class="flex items-start gap-2">
+                  <mat-icon class="mt-0.5 text-base text-gray-500 dark:text-gray-400">{{
+                    opt.icon
+                  }}</mat-icon>
+                  <div>
+                    <span class="text-sm font-medium text-black dark:text-white">{{
+                      opt.label
+                    }}</span>
+                    <p class="text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                      {{ opt.descripcion }}
+                    </p>
+                  </div>
+                </div>
+              </label>
+            }
+          </div>
+
+          @if (form.get('tipo_pago_tiempo')?.touched && form.get('tipo_pago_tiempo')?.invalid) {
+            <span class="mt-2 block text-xs text-red-500">Selecciona una opción.</span>
+          }
+
+          <!-- Campos: TIEMPO POR TIEMPO MOVIL -->
+          @if (muestraReposicionTiempo) {
+            <div class="mt-3 space-y-3 border-t border-amber-300 pt-3 dark:border-amber-500/20">
+              <p class="text-xs font-medium text-amber-700 dark:text-amber-400">
+                ¿Cuándo y cuánto tiempo pagarás?
+              </p>
+              <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-medium text-black dark:text-white">
+                    Fecha de reposición
+                  </label>
+                  <input
+                    type="date"
+                    formControlName="fecha_reposicion"
+                    class="w-full rounded-2xl border border-gray-300 bg-white py-3 pl-4 text-sm text-black outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-black dark:text-white">
+                      Hora inicio
+                    </label>
+                    <input
+                      type="time"
+                      formControlName="hora_inicio_reposicion"
+                      class="w-full rounded-2xl border border-gray-300 bg-white py-3 pl-4 text-sm text-black outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-black dark:text-white"> Hora fin </label>
+                    <input
+                      type="time"
+                      formControlName="hora_fin_reposicion"
+                      class="w-full rounded-2xl border border-gray-300 bg-white py-3 pl-4 text-sm text-black outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    />
+                    @if (horaFinReposicionInvalida) {
+                      <span class="text-xs text-red-500">Debe ser después.</span>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div
+                class="mt-3 rounded-lg border border-blue-200 bg-blue-50/60 p-3 dark:border-blue-500/30 dark:bg-blue-900/10"
+              >
+                <div class="flex items-start gap-2">
+                  <mat-icon class="mt-0.5 text-base text-blue-600 dark:text-blue-400">
+                    info</mat-icon
+                  >
+                  <div class="text-xs leading-relaxed text-blue-800 dark:text-blue-300">
+                    <p class="font-medium">¿Cómo funciona?</p>
+                    <p class="mt-1 text-blue-700 dark:text-blue-400">
+                      El tiempo que debes se irá pagando automáticamente conforme cheques:
+                    </p>
+                    <ul
+                      class="mt-1 list-inside list-disc space-y-0.5 text-blue-700 dark:text-blue-400"
+                    >
+                      <li>
+                        <strong>Antes de tu hora de entrada</strong> → esos minutos pagan deuda
+                      </li>
+                      <li>
+                        <strong>Después de tu hora de salida</strong> → esos minutos pagan deuda
+                      </li>
+                    </ul>
+                    <p class="mt-1 text-blue-600 dark:text-blue-400">
+                      Si no debes tiempo, ese mismo tiempo se contará como tiempo extra.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Campos: DÍA DE DESCANSO -->
+          @if (muestraReposicionDia) {
+            <div class="mt-3 space-y-2 border-t border-amber-300 pt-3 dark:border-amber-500/20">
+              <p class="text-xs font-medium text-amber-700 dark:text-amber-400">
+                ¿Qué día de descanso vendrás?
+              </p>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-black dark:text-white">
+                  Fecha de reposición <span class="text-red-400">*</span>
+                </label>
+                <input
+                  type="date"
+                  formControlName="fecha_reposicion"
+                  class="w-full rounded-2xl border border-gray-300 bg-white py-3 pl-4 text-sm text-black outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                />
+                @if (
+                  form.get('fecha_reposicion')?.touched && form.get('fecha_reposicion')?.invalid
+                ) {
+                  <span class="text-xs text-red-500">Fecha requerida.</span>
+                }
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                Al aprobar se genera tu permiso para ese día automáticamente.
+              </p>
+            </div>
+          }
+
+          <!-- Justificación -->
+          @if (muestraJustificacionPago) {
+            <div class="mt-3 border-t border-amber-300 pt-3 dark:border-amber-500/20">
+              <label class="text-xs font-medium text-black dark:text-white">
+                Justificación (opcional)
+              </label>
+              <textarea
+                formControlName="justificacion_pago_tiempo"
+                rows="2"
+                maxlength="255"
+                placeholder="Razón adicional…"
+                class="mt-1 w-full resize-none rounded-2xl border border-gray-300 bg-white p-3 text-sm text-black outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              ></textarea>
+            </div>
+          }
+        </div>
+      }
 
       <!-- Motivo -->
       <div>
@@ -353,7 +754,7 @@
           formControlName="motivo"
           rows="4"
           maxlength="255"
-          placeholder="Ej. Ir a comer, cita médica, etc."
+          placeholder="Ej. Cita médica, trámite personal, etc."
           class="w-full resize-none rounded-3xl border border-gray-300 bg-gray-300 p-4 text-black outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
         ></textarea>
         @if (form.get('motivo')?.touched && form.get('motivo')?.invalid) {

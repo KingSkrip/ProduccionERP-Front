@@ -1,0 +1,454 @@
+<!-- empleado.component.html -->
+<ng-template #estadoStepper let-p="p">
+  <div class="flex items-center gap-1">
+    <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-primary-500" title="Solicitado"></span>
+    <span
+      class="h-0.5 w-5 shrink-0 rounded-full transition-colors"
+      [class]="
+        p.estado === 'aprobado'
+          ? 'bg-accent-500'
+          : p.estado === 'rechazado'
+            ? 'bg-red-400'
+            : 'bg-gray-300 dark:bg-gray-700'
+      "
+    ></span>
+    <span
+      class="h-2.5 w-2.5 shrink-0 rounded-full transition-colors"
+      [class]="
+        p.estado === 'aprobado'
+          ? 'bg-accent-500'
+          : p.estado === 'rechazado'
+            ? 'bg-red-500'
+            : 'bg-gray-200 dark:bg-gray-700'
+      "
+      title="Jefe directo"
+    ></span>
+  </div>
+</ng-template>
+
+<!-- TABS -->
+<div class="mb-3 flex shrink-0 gap-2">
+  <button
+    type="button"
+    (click)="cambiarVistaEmpTab('activos')"
+    class="rounded-lg px-4 py-2 text-sm font-medium transition"
+    [ngClass]="
+      vistaEmpTab === 'activos'
+        ? 'bg-primary-500 text-white shadow-sm'
+        : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
+    "
+  >
+    Activos
+  </button>
+  <button
+    type="button"
+    (click)="cambiarVistaEmpTab('historial')"
+    class="rounded-lg px-4 py-2 text-sm font-medium transition"
+    [ngClass]="
+      vistaEmpTab === 'historial'
+        ? 'bg-primary-500 text-white shadow-sm'
+        : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
+    "
+  >
+    Historial
+  </button>
+</div>
+
+<!-- FILTROS -->
+<div class="relative mb-3 flex shrink-0 flex-wrap items-center gap-2">
+  <input
+    type="text"
+    placeholder="Buscar por tipo, motivo o estado…"
+    class="min-w-[220px] flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+    [value]="filtroBusquedaEmp"
+    (input)="onBusquedaEmpChange($event)"
+  />
+
+  <button
+    type="button"
+    (click)="togglePanelFiltrosEmp()"
+    class="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-black dark:border-gray-700 dark:text-white"
+    [ngClass]="
+      hayFiltrosActivosEmp ? 'border-primary-500 text-primary-600 dark:text-primary-400' : ''
+    "
+  >
+    <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
+    {{ filtrosBotonLabelEmp }}
+  </button>
+
+  <button
+    type="button"
+    (click)="abrirModalPermiso()"
+    class="items-center gap-2 rounded-lg bg-primary-500 p-2 text-sm font-medium text-white shadow-md shadow-primary-500/30 transition hover:shadow-lg hover:brightness-105 active:scale-[.99] md:hidden"
+  >
+    <mat-icon class="text-white icon-size-4" [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+  </button>
+
+  @if (mostrarPanelFiltrosEmp) {
+    <div
+      class="absolute right-0 top-11 z-20 w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+    >
+      <div class="mb-3">
+        <label class="mb-1 block text-xs font-medium text-white">Tipo de permiso</label>
+        <select
+          class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+          [value]="filtroCatalogoIdEmp ?? ''"
+          (change)="onFiltroCatalogoEmpChange($event)"
+        >
+          <option value="">Todos los tipos</option>
+          @for (c of catalogo; track c.id) {
+            <option [value]="c.id">{{ c.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="mb-3 grid grid-cols-2 gap-2">
+        <div>
+          <label class="mb-1 block text-xs font-medium text-white">Desde</label>
+          <input
+            type="date"
+            class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            [value]="filtroFechaDesdeEmp"
+            (change)="onFiltroFechaDesdeEmpChange($event)"
+          />
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-white">Hasta</label>
+          <input
+            type="date"
+            class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            [value]="filtroFechaHastaEmp"
+            (change)="onFiltroFechaHastaEmpChange($event)"
+          />
+        </div>
+      </div>
+
+      <div class="mb-3 flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          (click)="filtrarHoyEmp()"
+          class="rounded-full px-2.5 py-1 text-xs font-medium"
+          [ngClass]="
+            filtroRangoActivoEmp === 'hoy'
+              ? 'bg-primary-500 text-white'
+              : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+          "
+        >
+          Hoy
+        </button>
+        <button
+          type="button"
+          (click)="filtrarSemanaEmp()"
+          class="rounded-full px-2.5 py-1 text-xs font-medium"
+          [ngClass]="
+            filtroRangoActivoEmp === 'semana'
+              ? 'bg-primary-500 text-white'
+              : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+          "
+        >
+          Esta semana
+        </button>
+        <button
+          type="button"
+          (click)="filtrarMesEmp()"
+          class="rounded-full px-2.5 py-1 text-xs font-medium"
+          [ngClass]="
+            filtroRangoActivoEmp === 'mes'
+              ? 'bg-primary-500 text-white'
+              : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+          "
+        >
+          Este mes
+        </button>
+        <button
+          type="button"
+          (click)="filtrarAnioEmp()"
+          class="rounded-full px-2.5 py-1 text-xs font-medium"
+          [ngClass]="
+            filtroRangoActivoEmp === 'anio'
+              ? 'bg-primary-500 text-white'
+              : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+          "
+        >
+          Este año
+        </button>
+      </div>
+
+       <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="cerrarPanelFiltrosEmp()"
+        class="w-full rounded-lg bg-primary-500 py-1.5 text-sm font-medium text-white"
+      >
+        Aplicar
+      </button>
+      
+        @if (hayFiltrosActivosEmp) {
+    <button
+      type="button"
+      (click)="limpiarFiltrosEmp()"
+      class="text-xs font-medium text-white hover:text-red-500"
+    >
+      Limpiar
+    </button>
+  }
+
+  </div>
+    </div>
+  }
+</div>
+
+<!-- TAB: ACTIVOS -->
+@if (vistaEmpTab === 'activos') {
+  <div class="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-2xl md:bg-card md:p-5">
+    @if (cargandoHistorial) {
+      <div class="flex flex-col gap-2">
+        <div class="h-16 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
+        <div class="h-16 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
+      </div>
+    } @else if (!permisosActivosFiltrados.length) {
+      <div
+        class="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-gray-200 py-10 text-center dark:border-gray-700"
+      >
+        <div
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-primary-500 dark:bg-primary-500/10"
+        >
+          <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+        </div>
+        <p class="text-sm text-black dark:text-white">No tienes permisos activos hoy.</p>
+      </div>
+    } @else {
+      <div class="flex flex-col gap-2">
+        @for (p of permisosActivosPaginados; track p.id) {
+          <div
+            class="flex flex-col gap-3 rounded-xl border border-gray-300 bg-white p-4 transition hover:border-primary-500 dark:border-gray-700 dark:bg-gray-800/60"
+          >
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold bg-accent-500">
+                  <mat-icon
+                    class="icon-size-4 text-black"
+                    [svgIcon]="'heroicons_outline:clipboard-document-check'"
+                  ></mat-icon>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-primary-500">
+                    {{ p.catalogo?.nombre ?? 'Permiso' }}
+                  </p>
+                  <p class="text-xs text-white">
+                    {{ rangoFechas(p) }}
+                    @if (p.hora_inicio) {
+                      · {{ formatHora(p.hora_inicio) }}–{{ formatHora(p.hora_fin) }}
+                    }
+                  </p>
+                </div>
+              </div>
+              <div class="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-black hover:bg-gray-50 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
+                  (click)="toggleExpandirEmp(p.id)"
+                >
+                  {{ filaExpandidaEmpId === p.id ? 'Ocultar' : 'Ver detalle' }}
+                </button>
+                <ng-container *ngTemplateOutlet="estadoStepper; context: { p: p }"></ng-container>
+                <span
+                  class="w-fit shrink-0 rounded-full px-3 py-1 text-xs font-medium"
+                  [ngClass]="claseBadge(p.estado)"
+                >
+                  {{ resumenEstado(p) }}
+                </span>
+              </div>
+            </div>
+
+            @if (filaExpandidaEmpId === p.id) {
+              <div class="flex flex-col gap-3 border-t border-gray-100 pt-3 dark:border-gray-700">
+                <div
+                  class="rounded-lg bg-gray-50 p-3 text-sm italic text-white dark:bg-gray-900/50 dark:text-gray-400"
+                >
+                  "{{ p.motivo }}"
+                </div>
+                @if (p.comentarios_aprobador) {
+                  <div
+                    class="rounded-lg bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-900/50 dark:text-slate-300"
+                  >
+                    <span class="font-medium">Comentario del aprobador:</span>
+                    {{ p.comentarios_aprobador }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (totalPaginasActivos > 1) {
+        <div class="mt-4 flex items-center justify-center gap-2">
+          <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
+            [disabled]="paginaActualActivos === 1"
+            (click)="paginaAnteriorActivos()"
+          >
+            Anterior
+          </button>
+          @for (pag of [].constructor(totalPaginasActivos); track $index) {
+            <button
+              type="button"
+              class="h-8 w-8 rounded-lg text-sm"
+              [ngClass]="
+                paginaActualActivos === $index + 1
+                  ? 'bg-primary-500 text-white'
+                  : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
+              "
+              (click)="irAPaginaActivos($index + 1)"
+            >
+              {{ $index + 1 }}
+            </button>
+          }
+          <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
+            [disabled]="paginaActualActivos === totalPaginasActivos"
+            (click)="paginaSiguienteActivos()"
+          >
+            Siguiente
+          </button>
+        </div>
+      }
+    }
+  </div>
+}
+
+<!-- TAB: HISTORIAL -->
+@if (vistaEmpTab === 'historial') {
+  <div class="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-2xl md:bg-card md:p-5">
+    @if (cargandoHistorial) {
+      <div class="flex flex-col gap-2">
+        <div class="h-16 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
+        <div class="h-16 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
+      </div>
+    } @else if (!historial.length) {
+      <div
+        class="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-gray-200 py-10 text-center dark:border-gray-700"
+      >
+        <div
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-primary-500 dark:bg-primary-500/10"
+        >
+          <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </div>
+        <p class="text-sm text-black dark:text-white">Aún no has solicitado ningún permiso.</p>
+      </div>
+    } @else if (!historialFiltrado.length) {
+      <div
+        class="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-gray-200 py-10 text-center dark:border-gray-700"
+      >
+        <p class="text-sm text-black dark:text-white">
+          No hay permisos que coincidan con esos filtros.
+        </p>
+      </div>
+    } @else {
+      <div class="flex flex-col gap-2">
+        @for (p of historialPaginado; track p.id) {
+          <div
+            class="flex flex-col gap-3 rounded-xl border border-gray-300 bg-white p-4 transition hover:border-primary-500 dark:border-gray-700 dark:bg-gray-800/60"
+          >
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold bg-accent-500"
+                >
+                  <mat-icon
+                    class="icon-size-4 text-black"
+                    [svgIcon]="'heroicons_outline:clipboard-document-check'"
+                  ></mat-icon>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-primary-500">
+                    {{ p.catalogo?.nombre ?? 'Permiso' }}
+                  </p>
+                  <p class="text-xs text-white">
+                    {{ rangoFechas(p) }}
+                    @if (p.hora_inicio) {
+                      · {{ formatHora(p.hora_inicio) }}–{{ formatHora(p.hora_fin) }}
+                    }
+                  </p>
+                </div>
+              </div>
+              <div class="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-black hover:bg-gray-50 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
+                  (click)="toggleExpandirEmp(p.id)"
+                >
+                  {{ filaExpandidaEmpId === p.id ? 'Ocultar' : 'Ver detalle' }}
+                </button>
+                <ng-container *ngTemplateOutlet="estadoStepper; context: { p: p }"></ng-container>
+                <span
+                  class="w-fit shrink-0 rounded-full px-3 py-1 text-xs font-medium"
+                  [ngClass]="claseBadge(p.estado)"
+                >
+                  {{ resumenEstado(p) }}
+                </span>
+              </div>
+            </div>
+
+            @if (filaExpandidaEmpId === p.id) {
+              <div class="flex flex-col gap-3 border-t border-gray-100 pt-3 dark:border-gray-700">
+                <div
+                  class="rounded-lg bg-gray-50 p-3 text-sm italic text-white dark:bg-gray-900/50 dark:text-gray-400"
+                >
+                  "{{ p.motivo }}"
+                </div>
+                @if (p.comentarios_aprobador) {
+                  <div
+                    class="rounded-lg bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-900/50 dark:text-slate-300"
+                  >
+                    <span class="font-medium">Comentario del aprobador:</span>
+                    {{ p.comentarios_aprobador }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (totalPaginas > 1) {
+        <div class="mt-4 flex items-center justify-center gap-2">
+          <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
+            [disabled]="paginaActual === 1"
+            (click)="paginaAnterior()"
+          >
+            Anterior
+          </button>
+          @for (pag of [].constructor(totalPaginas); track $index) {
+            <button
+              type="button"
+              class="h-8 w-8 rounded-lg text-sm"
+              [ngClass]="
+                paginaActual === $index + 1
+                  ? 'bg-primary-500 text-white'
+                  : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
+              "
+              (click)="irAPagina($index + 1)"
+            >
+              {{ $index + 1 }}
+            </button>
+          }
+          <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
+            [disabled]="paginaActual === totalPaginas"
+            (click)="paginaSiguiente()"
+          >
+            Siguiente
+          </button>
+        </div>
+      }
+    }
+  </div>
+}
