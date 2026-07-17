@@ -14,10 +14,15 @@ import {
 } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 
-import { MatDialog } from '@angular/material/dialog';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { ComponentPortal } from '@angular/cdk/portal';
+import { Injector } from '@angular/core';
+
 import { MatIconModule } from '@angular/material/icon';
+import { CatalogoPermiso } from 'app/modules/Checador/types/Catalogopermiso.types';
+import { ChecadorPermiso } from 'app/modules/Checador/types/Checadorpermiso.types';
 import { PermisosModalComponent } from 'app/modules/modals/Permisos/PermisosModal.component';
-import { CatalogoPermiso, ChecadorPermiso, PermisosService } from '../permisos.service';
+import { PermisosService } from '../permisos.service';
 
 type RangoRapido = 'hoy' | 'semana' | 'mes' | 'anio' | null;
 type Mensaje = { tipo: 'ok' | 'error'; texto: string } | null;
@@ -31,6 +36,7 @@ type Mensaje = { tipo: 'ok' | 'error'; texto: string } | null;
   imports: [CommonModule, MatIconModule],
 })
 export class JefeComponent implements OnInit, OnChanges {
+  private overlayRef: OverlayRef | null = null;
   @Input() identityId: number | null = null;
   @Input() catalogo: CatalogoPermiso[] = [];
   @Output() mensaje = new EventEmitter<Mensaje>();
@@ -63,9 +69,9 @@ export class JefeComponent implements OnInit, OnChanges {
 
   filtroBusquedaJefe = '';
   filtroCatalogoIdJefe: number | null = null;
-  filtroFechaDesde: string = new Date().toISOString().slice(0, 10);
-  filtroFechaHasta: string = new Date().toISOString().slice(0, 10);
-  filtroRangoActivo: RangoRapido = 'hoy';
+  filtroFechaDesde: string = this.calcularSemana().desde;
+  filtroFechaHasta: string = this.calcularSemana().hasta;
+  filtroRangoActivo: RangoRapido = 'semana';
   mostrarPanelFiltrosJefe = false;
 
   private readonly paletaAvatar = [
@@ -81,7 +87,8 @@ export class JefeComponent implements OnInit, OnChanges {
     private permisosService: PermisosService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
-    private dialog: MatDialog,
+    private overlay: Overlay,
+    private injector: Injector,
   ) {}
 
   ngOnInit(): void {
@@ -429,14 +436,13 @@ export class JefeComponent implements OnInit, OnChanges {
   }
 
   filtrarSemana(): void {
-    const hoy = new Date();
-    const dia = hoy.getDay();
-    const diffLunes = dia === 0 ? -6 : 1 - dia;
-    const lunes = new Date(hoy);
-    lunes.setDate(hoy.getDate() + diffLunes);
-    const domingo = new Date(lunes);
-    domingo.setDate(lunes.getDate() + 6);
-    this.aplicarRangoRapido(lunes, domingo, 'semana');
+    const { desde, hasta } = this.calcularSemana();
+    this.filtroFechaDesde = desde;
+    this.filtroFechaHasta = hasta;
+    this.filtroRangoActivo = 'semana';
+    this.paginaActualPendientes = 1;
+    this.paginaActualEquipo = 1;
+    this.cdr.markForCheck();
   }
 
   filtrarMes(): void {
@@ -465,7 +471,7 @@ export class JefeComponent implements OnInit, OnChanges {
   limpiarFiltrosJefe(): void {
     this.filtroCatalogoIdJefe = null;
     this.filtroBusquedaJefe = '';
-    this.filtrarHoy();
+    this.filtrarSemana();
     this.cdr.markForCheck();
   }
 
@@ -545,6 +551,23 @@ export class JefeComponent implements OnInit, OnChanges {
     return `${anio}-${mes}-${dia}`;
   }
 
+  /** Fecha de hoy en formato ISO (America/Mexico_City) para comparar contra los permisos */
+  private hoyISO(): string {
+    return this.fechaAISO(new Date());
+  }
+
+  /** true si el permiso es de hoy en adelante (aún se puede/debe aprobar) */
+  esPermisoVigente(p: ChecadorPermiso): boolean {
+    const referencia = p.fecha_fin ?? p.fecha_inicio;
+    if (!referencia) return true;
+    return referencia.slice(0, 10) >= this.hoyISO();
+  }
+
+  /** true si la fecha del permiso ya pasó sin haber sido resuelto */
+  esPermisoCaducado(p: ChecadorPermiso): boolean {
+    return !this.esPermisoVigente(p);
+  }
+
   rangoFechas(p: ChecadorPermiso): string {
     const inicio = this.formatFecha(p.fecha_inicio);
     const fin = this.formatFecha(p.fecha_fin);
@@ -590,29 +613,91 @@ export class JefeComponent implements OnInit, OnChanges {
     });
   }
 
- abrirModalPermiso(): void {
-    const ref = this.dialog.open(PermisosModalComponent, {
-      width: '480px',
-      maxWidth: '95vw',
-      panelClass: 'permisos-modal-panel',
-      autoFocus: false,
+  abrirModalPermiso(): void {
+    this.overlayRef = this.overlay.create({
+      hasBackdrop: false,
+      positionStrategy: this.overlay.position().global(),
+      scrollStrategy: this.overlay.scrollStrategies.block(),
     });
-    ref.afterClosed().subscribe((result) => {
+
+    const portal = new ComponentPortal(PermisosModalComponent, null, this.injector);
+    const compRef = this.overlayRef.attach(portal);
+
+    compRef.instance.cerrar = (result?: any) => {
+      this.overlayRef?.dispose();
+      this.overlayRef = null;
+
       if (result?.success) {
         this.mensaje.emit({ tipo: 'ok', texto: result.mensaje ?? 'Permiso solicitado.' });
         this.refrescarEmpleadoTrigger++;
         this.cdr.markForCheck();
       }
-    });
+    };
   }
 
   get mostrarIndicadorFiltrosJefe(): boolean {
-  return !!(
-    this.filtroCatalogoIdJefe ||
-    this.filtroBusquedaJefe ||
-    (this.filtroRangoActivo && this.filtroRangoActivo !== 'hoy') ||
-    (!this.filtroRangoActivo && (this.filtroFechaDesde || this.filtroFechaHasta))
-  );
-}
+    return !!(
+      this.filtroCatalogoIdJefe ||
+      this.filtroBusquedaJefe ||
+      (this.filtroRangoActivo && this.filtroRangoActivo !== 'hoy') ||
+      (!this.filtroRangoActivo && (this.filtroFechaDesde || this.filtroFechaHasta))
+    );
+  }
 
+  private calcularSemana(): { desde: string; hasta: string } {
+    const hoy = new Date();
+    const dia = hoy.getDay();
+    const diffLunes = dia === 0 ? -6 : 1 - dia;
+    const lunes = new Date(hoy);
+    lunes.setDate(hoy.getDate() + diffLunes);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+    return { desde: this.fechaAISO(lunes), hasta: this.fechaAISO(domingo) };
+  }
+
+  /** Texto legible del horario del permiso (todo el día / no regresa / rango) */
+  infoHorario(p: ChecadorPermiso): string {
+    if (!p.hora_inicio && !p.hora_fin) {
+      return 'Todo el día';
+    }
+    if (p.no_regresa) {
+      return `Sale ${this.formatHora(p.hora_inicio)} · No regresa`;
+    }
+    if (p.hora_inicio && p.hora_fin) {
+      return `${this.formatHora(p.hora_inicio)} – ${this.formatHora(p.hora_fin)}`;
+    }
+    return this.formatHora(p.hora_inicio) || '—';
+  }
+
+  /** Etiqueta legible de la forma en que se paga el tiempo */
+  etiquetaPagoTiempo(clave: ChecadorPermiso['tipo_pago_tiempo']): string {
+    switch (clave) {
+      case 'tiempo_por_tiempo':
+        return 'Tiempo por tiempo';
+      case 'dia_descanso':
+        return 'Reposición en día de descanso';
+      case 'sin_goce':
+        return 'Sin goce de sueldo';
+      default:
+        return '';
+    }
+  }
+
+  /** Ícono asociado a la forma de pago de tiempo */
+  iconoPagoTiempo(clave: ChecadorPermiso['tipo_pago_tiempo']): string {
+    switch (clave) {
+      case 'tiempo_por_tiempo':
+        return 'sync_alt';
+      case 'dia_descanso':
+        return 'event_repeat';
+      case 'sin_goce':
+        return 'money_off';
+      default:
+        return 'payments';
+    }
+  }
+
+  formatFechaReposicion(p: ChecadorPermiso): string {
+    return this.formatFecha(p.fecha_reposicion);
+  }
 }

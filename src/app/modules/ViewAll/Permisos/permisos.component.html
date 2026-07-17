@@ -3,40 +3,35 @@
   <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-4">
       <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-accent-500 shadow-md">
-        <mat-icon class="text-black" [svgIcon]="'heroicons_outline:clipboard-document-check'"></mat-icon>
+        <mat-icon
+          class="text-black"
+          [svgIcon]="'heroicons_outline:clipboard-document-check'"
+        ></mat-icon>
       </div>
       <div>
-        <h1 class="text-2xl font-bold leading-tight text-black dark:text-white">Solicitud de permiso</h1>
+        <h1 class="text-2xl font-bold leading-tight text-black dark:text-white">
+          Solicitud de permiso
+        </h1>
         <p class="text-sm text-black dark:text-white">Administra tu tiempo</p>
       </div>
     </div>
 
-<button
-  type="button"
-  (click)="abrirModalPermiso()"
-  [ngClass]="
-    esGerente || esJefeArea
-      ? 'hidden md:inline-flex'
-      : 'inline-flex'
-  "
-  class="items-center gap-2 rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-primary-500/30 transition-all duration-200 hover:brightness-110 hover:shadow-lg active:scale-95"
->
-  <svg
-    class="h-4 w-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2.5"
-  >
-    <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      d="M12 4.5v15m7.5-7.5h-15"
-    />
-  </svg>
-
-  <span class="whitespace-nowrap">Nueva solicitud</span>
-</button>
+    <button
+      type="button"
+      (click)="abrirModalPermiso()"
+      class="hidden items-center gap-2 rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-primary-500/30 transition-all duration-200 hover:shadow-lg hover:brightness-110 active:scale-95 md:inline-flex"
+    >
+      <svg
+        class="h-4 w-4 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      <span class="whitespace-nowrap">Nueva solicitud</span>
+    </button>
   </div>
 
   <!-- TOAST -->
@@ -50,12 +45,32 @@
       "
     >
       @if (mensaje.tipo === 'ok') {
-        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        <svg
+          class="h-5 w-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+          />
         </svg>
       } @else {
-        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.007M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        <svg
+          class="h-5 w-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v3.75m0 3.75h.007M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+          />
         </svg>
       }
       <span>{{ mensaje.texto }}</span>
@@ -68,7 +83,14 @@
       <div class="h-24 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800"></div>
       <div class="h-24 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800"></div>
     </div>
-  } @else if (esGerente || esJefeArea) {
+ } @else if (esRH) {
+  <permisos-rh
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    [identityId]="identityId"
+    [catalogo]="catalogo"
+    (mensaje)="mostrarMensaje($event)"
+  ></permisos-rh>
+} @else if (esGerente || esJefeArea) {
     <permisos-jefe
       class="flex min-h-0 flex-1 flex-col overflow-hidden"
       [identityId]="identityId"

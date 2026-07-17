@@ -26,6 +26,70 @@
   </div>
 </ng-template>
 
+<ng-template #detalleExpandido let-p="p">
+  <div class="flex flex-col gap-3 border-t border-gray-100 pt-3 dark:border-gray-700">
+    <!-- Resumen rápido en badges (horario arriba, compacto) -->
+    <div class="flex flex-wrap items-center gap-2">
+      <span
+        class="bg-default flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-black dark:text-white"
+      >
+        <mat-icon class="shrink-0 !text-[15px] text-black icon-size-4 dark:text-white"
+          >schedule</mat-icon
+        >
+        {{ infoHorario(p) }}
+      </span>
+
+      @if (p.tipo_pago_tiempo) {
+        <span
+          class="bg-default flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-black dark:text-white"
+        >
+          <mat-icon class="shrink-0 !text-[15px] text-black icon-size-4 dark:text-white">
+            {{ iconoPagoTiempo(p.tipo_pago_tiempo) }}
+          </mat-icon>
+          Forma de pago: {{ etiquetaPagoTiempo(p.tipo_pago_tiempo) }}
+        </span>
+      }
+
+      @if (p.fecha_reposicion) {
+        <span
+          class="bg-default flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-black dark:text-white"
+        >
+          <mat-icon class="shrink-0 !text-[15px] text-black icon-size-4 dark:text-white"
+            >event_repeat</mat-icon
+          >
+          Repone el {{ formatFechaReposicion(p) }}
+        </span>
+      }
+    </div>
+
+    <!-- Motivo y justificación, lado a lado -->
+    <div
+      class="grid grid-cols-1 gap-3"
+      [ngClass]="p.justificacion_pago_tiempo ? 'md:grid-cols-2' : ''"
+    >
+      <div class="bg-default rounded-lg p-3 text-sm italic text-black dark:text-white">
+        <span class="font-medium">Motivo:</span><br />
+        "{{ p.motivo }}"
+      </div>
+
+      @if (p.justificacion_pago_tiempo) {
+        <div class="bg-default rounded-lg p-3 text-xs text-black dark:text-white">
+          <span class="font-medium">Justificación del pago de tiempo:</span><br />
+          {{ p.justificacion_pago_tiempo }}
+        </div>
+      }
+    </div>
+
+    <!-- Comentario del aprobador -->
+    @if (p.comentarios_aprobador) {
+      <div class="bg-default rounded-lg p-3 text-sm text-black dark:text-white">
+        <span class="font-medium">Comentario del aprobador:</span>
+        {{ p.comentarios_aprobador }}
+      </div>
+    }
+  </div>
+</ng-template>
+
 <!-- TABS -->
 <div class="mb-3 flex shrink-0 gap-2">
   <button
@@ -174,26 +238,25 @@
         </button>
       </div>
 
-       <div class="flex items-center gap-2">
-      <button
-        type="button"
-        (click)="cerrarPanelFiltrosEmp()"
-        class="w-full rounded-lg bg-primary-500 py-1.5 text-sm font-medium text-white"
-      >
-        Aplicar
-      </button>
-      
-        @if (hayFiltrosActivosEmp) {
-    <button
-      type="button"
-      (click)="limpiarFiltrosEmp()"
-      class="text-xs font-medium text-white hover:text-red-500"
-    >
-      Limpiar
-    </button>
-  }
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="cerrarPanelFiltrosEmp()"
+          class="w-full rounded-lg bg-primary-500 py-1.5 text-sm font-medium text-white"
+        >
+          Aplicar
+        </button>
 
-  </div>
+        @if (hayFiltrosActivosEmp) {
+          <button
+            type="button"
+            (click)="limpiarFiltrosEmp()"
+            class="text-xs font-medium text-white hover:text-red-500"
+          >
+            Limpiar
+          </button>
+        }
+      </div>
     </div>
   }
 </div>
@@ -226,9 +289,10 @@
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex items-center gap-3">
                 <div
-                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold bg-accent-500">
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-500 text-xs font-semibold"
+                >
                   <mat-icon
-                    class="icon-size-4 text-black"
+                    class="text-black icon-size-4"
                     [svgIcon]="'heroicons_outline:clipboard-document-check'"
                   ></mat-icon>
                 </div>
@@ -236,7 +300,7 @@
                   <p class="text-sm font-medium text-primary-500">
                     {{ p.catalogo?.nombre ?? 'Permiso' }}
                   </p>
-                  <p class="text-xs text-white">
+                  <p class="text-xs text-black dark:text-white">
                     {{ rangoFechas(p) }}
                     @if (p.hora_inicio) {
                       · {{ formatHora(p.hora_inicio) }}–{{ formatHora(p.hora_fin) }}
@@ -263,21 +327,7 @@
             </div>
 
             @if (filaExpandidaEmpId === p.id) {
-              <div class="flex flex-col gap-3 border-t border-gray-100 pt-3 dark:border-gray-700">
-                <div
-                  class="rounded-lg bg-gray-50 p-3 text-sm italic text-white dark:bg-gray-900/50 dark:text-gray-400"
-                >
-                  "{{ p.motivo }}"
-                </div>
-                @if (p.comentarios_aprobador) {
-                  <div
-                    class="rounded-lg bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-900/50 dark:text-slate-300"
-                  >
-                    <span class="font-medium">Comentario del aprobador:</span>
-                    {{ p.comentarios_aprobador }}
-                  </div>
-                }
-              </div>
+              <ng-container *ngTemplateOutlet="detalleExpandido; context: { p: p }"></ng-container>
             }
           </div>
         }
@@ -357,10 +407,10 @@
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex items-center gap-3">
                 <div
-                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold bg-accent-500"
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-500 text-xs font-semibold"
                 >
                   <mat-icon
-                    class="icon-size-4 text-black"
+                    class="text-black icon-size-4"
                     [svgIcon]="'heroicons_outline:clipboard-document-check'"
                   ></mat-icon>
                 </div>
@@ -368,7 +418,7 @@
                   <p class="text-sm font-medium text-primary-500">
                     {{ p.catalogo?.nombre ?? 'Permiso' }}
                   </p>
-                  <p class="text-xs text-white">
+                  <p class="text-xs text-black dark:text-white">
                     {{ rangoFechas(p) }}
                     @if (p.hora_inicio) {
                       · {{ formatHora(p.hora_inicio) }}–{{ formatHora(p.hora_fin) }}
@@ -395,21 +445,7 @@
             </div>
 
             @if (filaExpandidaEmpId === p.id) {
-              <div class="flex flex-col gap-3 border-t border-gray-100 pt-3 dark:border-gray-700">
-                <div
-                  class="rounded-lg bg-gray-50 p-3 text-sm italic text-white dark:bg-gray-900/50 dark:text-gray-400"
-                >
-                  "{{ p.motivo }}"
-                </div>
-                @if (p.comentarios_aprobador) {
-                  <div
-                    class="rounded-lg bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-900/50 dark:text-slate-300"
-                  >
-                    <span class="font-medium">Comentario del aprobador:</span>
-                    {{ p.comentarios_aprobador }}
-                  </div>
-                }
-              </div>
+              <ng-container *ngTemplateOutlet="detalleExpandido; context: { p: p }"></ng-container>
             }
           </div>
         }

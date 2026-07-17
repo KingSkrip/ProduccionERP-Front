@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
+  Injector,
   Input,
   OnChanges,
   OnInit,
@@ -13,10 +14,13 @@ import {
 } from '@angular/core';
 import { finalize } from 'rxjs';
 
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { ComponentPortal } from '@angular/cdk/portal';
 import { MatIconModule } from '@angular/material/icon';
-import { CatalogoPermiso, ChecadorPermiso, PermisosService } from '../permisos.service';
+import { CatalogoPermiso } from 'app/modules/Checador/types/Catalogopermiso.types';
+import { ChecadorPermiso } from 'app/modules/Checador/types/Checadorpermiso.types';
 import { PermisosModalComponent } from 'app/modules/modals/Permisos/PermisosModal.component';
-import { MatDialog } from '@angular/material/dialog';
+import { PermisosService } from '../permisos.service';
 
 type RangoRapido = 'hoy' | 'semana' | 'mes' | 'anio' | null;
 type Mensaje = { tipo: 'ok' | 'error'; texto: string } | null;
@@ -54,6 +58,8 @@ export class EmpleadoComponent implements OnInit, OnChanges {
   mostrarPanelFiltrosEmp = false;
   filaExpandidaEmpId: number | null = null;
 
+  private overlayRef: OverlayRef | null = null;
+
   private readonly paletaAvatar = [
     'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300',
     'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300',
@@ -66,7 +72,8 @@ export class EmpleadoComponent implements OnInit, OnChanges {
   constructor(
     private permisosService: PermisosService,
     private cdr: ChangeDetectorRef,
-        private dialog: MatDialog,
+    private overlay: Overlay,
+    private injector: Injector,
   ) {}
 
   ngOnInit(): void {
@@ -104,13 +111,19 @@ export class EmpleadoComponent implements OnInit, OnChanges {
           this.historial = historial;
           this.cdr.markForCheck();
         },
-        error: () => this.mensaje.emit({ tipo: 'error', texto: 'No se pudo cargar tu historial de permisos.' }),
+        error: () =>
+          this.mensaje.emit({
+            tipo: 'error',
+            texto: 'No se pudo cargar tu historial de permisos.',
+          }),
       });
   }
 
   resumenEstado(p: ChecadorPermiso): string {
     if (p.estado === 'aprobado') {
-      return p.hora_fin ? `Aprobado · regreso máximo ${this.formatFechaHora(p.hora_fin)}` : 'Aprobado';
+      return p.hora_fin
+        ? `Aprobado · regreso máximo ${this.formatFechaHora(p.hora_fin)}`
+        : 'Aprobado';
     }
     if (p.estado === 'rechazado') return 'Rechazado por tu jefe';
     return 'Falta aprobación de tu jefe';
@@ -203,7 +216,9 @@ export class EmpleadoComponent implements OnInit, OnChanges {
 
   get filtroCatalogoLabelEmp(): string {
     if (!this.filtroCatalogoIdEmp) return 'Todos los tipos';
-    return this.catalogo.find((c) => c.id === this.filtroCatalogoIdEmp)?.nombre ?? 'Todos los tipos';
+    return (
+      this.catalogo.find((c) => c.id === this.filtroCatalogoIdEmp)?.nombre ?? 'Todos los tipos'
+    );
   }
 
   get filtrosBotonLabelEmp(): string {
@@ -373,11 +388,20 @@ export class EmpleadoComponent implements OnInit, OnChanges {
     return inicio === fin ? inicio : `${inicio} — ${fin}`;
   }
 
+  formatFechaReposicion(p: ChecadorPermiso): string {
+    return this.formatFecha(p.fecha_reposicion);
+  }
+
   private formatFecha(fecha: string | null | undefined): string {
     if (!fecha) return '';
     const d = new Date(fecha);
     if (isNaN(d.getTime())) return fecha;
-    return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Mexico_City' });
+    return d.toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'America/Mexico_City',
+    });
   }
 
   formatFechaHora(fecha: string | null | undefined): string {
@@ -385,7 +409,13 @@ export class EmpleadoComponent implements OnInit, OnChanges {
     const d = new Date(fecha);
     if (isNaN(d.getTime())) return fecha;
     return d.toLocaleString('es-MX', {
-      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'America/Mexico_City',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'America/Mexico_City',
     });
   }
 
@@ -393,23 +423,75 @@ export class EmpleadoComponent implements OnInit, OnChanges {
     if (!fecha) return '';
     const d = new Date(fecha);
     if (isNaN(d.getTime())) return fecha;
-    return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'America/Mexico_City' });
+    return d.toLocaleTimeString('es-MX', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'America/Mexico_City',
+    });
   }
 
+  abrirModalPermiso(): void {
+    this.overlayRef = this.overlay.create({
+      hasBackdrop: false,
+      positionStrategy: this.overlay.position().global(),
+      scrollStrategy: this.overlay.scrollStrategies.block(),
+    });
 
-   abrirModalPermiso(): void {
-      const ref = this.dialog.open(PermisosModalComponent, {
-        width: '480px',
-        maxWidth: '95vw',
-        panelClass: 'permisos-modal-panel',
-        autoFocus: false,
-      });
-      ref.afterClosed().subscribe((result) => {
-        if (result?.success) {
-          this.mensaje.emit({ tipo: 'ok', texto: result.mensaje ?? 'Permiso solicitado.' });
-          this.refrescarEmpleadoTrigger++;
-          this.cdr.markForCheck();
-        }
-      });
+    const portal = new ComponentPortal(PermisosModalComponent, null, this.injector);
+    const compRef = this.overlayRef.attach(portal);
+
+    compRef.instance.cerrar = (result?: any) => {
+      this.overlayRef?.dispose();
+      this.overlayRef = null;
+
+      if (result?.success) {
+        this.mensaje.emit({ tipo: 'ok', texto: result.mensaje ?? 'Permiso solicitado.' });
+        this.refrescarEmpleadoTrigger++;
+        this.cdr.markForCheck();
+      }
+    };
+  }
+
+  /** Texto legible del horario del permiso (todo el día / no regresa / rango) */
+  infoHorario(p: ChecadorPermiso): string {
+    if (!p.hora_inicio && !p.hora_fin) {
+      return 'Todo el día';
     }
+    if (p.no_regresa) {
+      return `Sale ${this.formatHora(p.hora_inicio)} · No regresa`;
+    }
+    if (p.hora_inicio && p.hora_fin) {
+      return `${this.formatHora(p.hora_inicio)} – ${this.formatHora(p.hora_fin)}`;
+    }
+    return this.formatHora(p.hora_inicio) || '—';
+  }
+
+  /** Etiqueta legible de la forma en que se paga el tiempo */
+  etiquetaPagoTiempo(clave: ChecadorPermiso['tipo_pago_tiempo']): string {
+    switch (clave) {
+      case 'tiempo_por_tiempo':
+        return 'Tiempo por tiempo';
+      case 'dia_descanso':
+        return 'Reposición en día de descanso';
+      case 'sin_goce':
+        return 'Sin goce de sueldo';
+      default:
+        return '';
+    }
+  }
+
+  /** Ícono asociado a la forma de pago de tiempo */
+  iconoPagoTiempo(clave: ChecadorPermiso['tipo_pago_tiempo']): string {
+    switch (clave) {
+      case 'tiempo_por_tiempo':
+        return 'sync_alt';
+      case 'dia_descanso':
+        return 'event_repeat';
+      case 'sin_goce':
+        return 'money_off';
+      default:
+        return 'payments';
+    }
+  }
 }

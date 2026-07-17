@@ -12,6 +12,57 @@ export type EstadoPermiso = 'pendiente' | 'aprobado' | 'rechazado' | 'solicitado
 /** Claves de catálogo que requieren que el empleado decida cómo paga el tiempo */
 export const CLAVES_PAGO_TIEMPO = ['EXTRA', 'PERSONAL', 'TRAMITE', 'MEDICO'];
 
+export interface PermisoDia {
+  id: number;
+  tipo: string;
+  hora_inicio: string | null;
+  hora_fin: string | null;
+  no_regresa: boolean;
+  motivo: string;
+}
+
+export interface DiaTarjeta {
+  fecha: string;
+  dia_semana: string;
+  es_descanso: boolean;
+  horario_esperado: string;
+  hora_entrada_real: string | null;
+  hora_salida_real: string | null;
+  horas_trabajadas: number;
+  permisos: PermisoDia[];
+}
+
+export interface TarjetaAsistencia {
+  identity_id: number;
+  nombre: string;
+  empresa: string | null;
+  turno: { id: number; nombre: string } | null;
+  semana: { desde: string; hasta: string };
+  dias: DiaTarjeta[];
+  total_horas_semana: number;
+}
+
+export interface RespuestaEquipo {
+  data: TarjetaAsistencia[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    total: number;
+    per_page: number;
+  };
+}
+
+/** Filtros aceptados por la tarjeta de asistencia del equipo */
+export interface FiltrosAsistenciaEquipo {
+  fecha: string;
+  page?: number;
+  empresa?: string;
+  areaId?: number;
+  departamentoId?: number;
+  turnoId?: number;
+  catalogoId?: number;
+  busqueda?: string;
+}
 
 interface ApiResource<T> {
   data: T;
@@ -83,20 +134,6 @@ export class PermisosService {
       );
   }
 
-  pendientesRh(page = 1, firebirdEmpresa?: string): Observable<ChecadorPermiso[]> {
-    let params = new HttpParams().set('page', page);
-    if (firebirdEmpresa) {
-      params = params.set('firebird_empresa', firebirdEmpresa);
-    }
-
-    return this.http
-      .get<ApiCollection<ChecadorPermiso>>(`${this.baseUrl}/permisos/pendientes-rh`, { params })
-      .pipe(
-        map((res) => res.data ?? []),
-        tap((pendientes) => this._pendientesRh$.next(pendientes)),
-      );
-  }
-
   resolver(
     permisoId: number,
     rol: 'rh' | 'jefe',
@@ -133,5 +170,50 @@ export class PermisosService {
     return this.http
       .get<ApiCollection<ChecadorPermiso>>(`${this.baseUrl}/permisos/historial-equipo/${jefeId}`)
       .pipe(map((res) => res.data ?? []));
+  }
+
+  /**
+   * Tarjeta de asistencia del equipo, semana + filtros de:
+   * empresa, área, departamento, turno, tipo de permiso y texto de búsqueda.
+   */
+  asistenciaEquipoSemana(filtros: FiltrosAsistenciaEquipo): Observable<RespuestaEquipo> {
+    let params = new HttpParams()
+      .set('fecha', filtros.fecha)
+      .set('page', filtros.page ?? 1);
+
+    if (filtros.empresa) {
+      params = params.set('empresa', filtros.empresa);
+    }
+    if (filtros.areaId != null) {
+      params = params.set('area_id', filtros.areaId);
+    }
+    if (filtros.departamentoId != null) {
+      params = params.set('departamento_id', filtros.departamentoId);
+    }
+    if (filtros.turnoId != null) {
+      params = params.set('turno_id', filtros.turnoId);
+    }
+    if (filtros.catalogoId != null) {
+      params = params.set('catalogo_id', filtros.catalogoId);
+    }
+    if (filtros.busqueda) {
+      params = params.set('busqueda', filtros.busqueda);
+    }
+
+    return this.http.get<RespuestaEquipo>(`${this.baseUrl}/asistencia/equipo/semana`, { params });
+  }
+
+  descargarExcel(identityId: number, fecha: string): void {
+    window.open(`${this.baseUrl}/asistencia/${identityId}/excel?fecha=${fecha}`, '_blank');
+  }
+
+  descargarExcelTodos(fecha: string, empresa?: string): void {
+    let url = `${this.baseUrl}/asistencia/excel?fecha=${fecha}`;
+
+    if (empresa) {
+      url += `&empresa=${empresa}`;
+    }
+
+    window.open(url, '_blank');
   }
 }

@@ -1,0 +1,371 @@
+<!-- Rh/rh.component.html -->
+<div class="mb-3 flex shrink-0 items-center gap-2">
+  <button
+    type="button"
+    (click)="cambiarTab('aprobaciones')"
+    class="rounded-lg px-4 py-2 text-sm font-medium transition"
+    [ngClass]="
+      vistaRhTab === 'aprobaciones'
+        ? 'bg-primary-500 text-white shadow-sm'
+        : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
+    "
+  >
+    Aprobaciones RH
+    @if (pendientesRh.length) {
+      <span class="ml-1 rounded-full bg-white/25 px-1.5 py-0.5 text-xs font-semibold">{{
+        pendientesRh.length
+      }}</span>
+    }
+  </button>
+  <button
+    type="button"
+    (click)="cambiarTab('asistencia')"
+    class="rounded-lg px-4 py-2 text-sm font-medium transition"
+    [ngClass]="
+      vistaRhTab === 'asistencia'
+        ? 'bg-primary-500 text-white shadow-sm'
+        : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
+    "
+  >
+    Tarjeta de asistencia
+  </button>
+</div>
+
+@if (vistaRhTab === 'aprobaciones') {
+  <div class="flex min-h-0 flex-1 flex-col overflow-y-auto md:bg-card md:rounded-2xl md:p-5">
+    @if (cargandoPendientes) {
+      <div class="h-16 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
+    } @else if (!pendientesRh.length) {
+      <p class="text-sm text-black dark:text-white">No hay solicitudes pendientes de RH.</p>
+    } @else {
+      <div class="flex flex-col gap-2">
+        @for (p of pendientesRh; track p.id) {
+          <div
+            class="flex items-center justify-between rounded-xl border border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/60"
+          >
+            <div>
+              <p class="text-sm font-medium text-black dark:text-white">
+                {{ p.identity?.nombre }} {{ p.identity?.apellido }}
+              </p>
+              <p class="text-xs text-primary-500">
+                {{ p.catalogo?.nombre }} · {{ p.fecha_inicio }}
+              </p>
+              <p class="text-xs italic text-black dark:text-white">"{{ p.motivo }}"</p>
+            </div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                (click)="resolverComoRh(p, 'rechazado')"
+                class="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white"
+              >
+                Rechazar
+              </button>
+              <button
+                type="button"
+                (click)="resolverComoRh(p, 'aprobado')"
+                class="rounded-lg bg-accent-500 px-3 py-1.5 text-xs font-medium text-black"
+              >
+                Aprobar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
+
+@if (vistaRhTab === 'asistencia') {
+  <div class="flex min-h-0 flex-1 flex-col overflow-y-auto md:bg-card md:rounded-2xl md:p-5">
+    <!-- FILTROS -->
+    <div class="relative mb-3 flex shrink-0 flex-wrap items-center gap-2">
+      <input
+        type="text"
+        placeholder="Buscar por colaborador, área, departamento…"
+        class="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+        [value]="filtroBusquedaRh"
+        (input)="onBusquedaRhChange($event)"
+      />
+
+      <button
+        type="button"
+        (click)="togglePanelFiltrosRh()"
+        class="relative flex max-w-[45%] shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-black md:max-w-none dark:border-gray-700 dark:text-white"
+        [ngClass]="
+          hayFiltrosActivosRh ? 'border-primary-500 text-primary-600 dark:text-primary-400' : ''
+        "
+      >
+        <mat-icon class="shrink-0 icon-size-4" [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
+        <span class="truncate">{{ filtrosBotonLabelRh }}</span>
+        @if (mostrarIndicadorFiltrosRh) {
+          <span
+            class="absolute -right-1 -top-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary-500 ring-2 ring-white dark:bg-accent-500 dark:ring-gray-900"
+          ></span>
+        }
+      </button>
+
+      <span class="text-xs text-black dark:text-white">{{ totalEmpleados }} empleados</span>
+
+      <button
+        type="button"
+        (click)="descargarExcelTodos()"
+        class="ml-auto rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-medium text-white"
+      >
+        Exportar todos (CSV)
+      </button>
+
+      @if (mostrarPanelFiltrosRh) {
+        <div
+          class="absolute right-0 top-11 z-20 w-80 rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+        >
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white">Empresa</label>
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              [value]="empresaFiltro"
+              (change)="onEmpresaChange($event)"
+            >
+              <option value="">Todas</option>
+              <option value="01">01</option>
+              <option value="02">02</option>
+              <option value="03">03</option>
+              <option value="04">04</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white">Área</label>
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              [value]="filtroAreaId ?? ''"
+              (change)="onFiltroAreaChange($event)"
+            >
+              <option value="">Todas las áreas</option>
+              @for (a of areas; track a.id) {
+                <option [value]="a.id">{{ a.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white"
+              >Departamento</label
+            >
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              [value]="filtroDepartamentoId ?? ''"
+              (change)="onFiltroDepartamentoChange($event)"
+            >
+              <option value="">Todos los departamentos</option>
+              @for (d of departamentos; track d.id) {
+                <option [value]="d.id">{{ d.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white">Turno</label>
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              [value]="filtroTurnoId ?? ''"
+              (change)="onFiltroTurnoChange($event)"
+            >
+              <option value="">Todos los turnos</option>
+              @for (t of turnos; track t.id) {
+                <option [value]="t.id">{{ t.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white"
+              >Tipo de permiso</label
+            >
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              [value]="filtroCatalogoId ?? ''"
+              (change)="onFiltroCatalogoRhChange($event)"
+            >
+              <option value="">Todos los tipos</option>
+              @for (c of catalogo; track c.id) {
+                <option [value]="c.id">{{ c.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white"
+              >Rango personalizado (viernes, sábado o domingo)</label
+            >
+            <input
+              type="date"
+              [value]="fechaSemana"
+              (change)="onFechaSemanaChange($event)"
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              [ngClass]="errorFechaPersonalizada ? 'border-red-500' : ''"
+            />
+            @if (errorFechaPersonalizada) {
+              <p class="mt-1 text-xs text-red-500">{{ errorFechaPersonalizada }}</p>
+            }
+          </div>
+          <div class="mb-3 flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              (click)="filtrarSemanaPasada()"
+              class="rounded-full px-2.5 py-1 text-xs font-medium"
+              [ngClass]="
+                filtroRangoActivo === 'semana_pasada'
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+              "
+            >
+              Semana pasada
+            </button>
+            <button
+              type="button"
+              (click)="filtrarSemanaActual()"
+              class="rounded-full px-2.5 py-1 text-xs font-medium"
+              [ngClass]="
+                filtroRangoActivo === 'semana_actual'
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+              "
+            >
+              Esta semana
+            </button>
+            <button
+              type="button"
+              (click)="filtrarSemanaSiguiente()"
+              class="rounded-full px-2.5 py-1 text-xs font-medium"
+              [ngClass]="
+                filtroRangoActivo === 'semana_siguiente'
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+              "
+            >
+              Semana siguiente
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="cerrarPanelFiltrosRh()"
+              class="flex-1 rounded-lg bg-primary-500 py-1.5 text-sm font-medium text-white"
+            >
+              Aplicar
+            </button>
+            @if (hayFiltrosActivosRh) {
+              <button
+                type="button"
+                (click)="limpiarFiltrosRh()"
+                class="rounded-lg border border-red-500 px-4 py-1.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-500 hover:text-white"
+              >
+                Limpiar
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (cargandoTarjetas) {
+      <div class="h-24 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
+    } @else if (!tarjetas.length) {
+      <p class="text-sm text-black dark:text-white">
+        No hay empleados que coincidan con este filtro.
+      </p>
+    } @else {
+      <div class="flex flex-col gap-3">
+        @for (t of tarjetas; track t.identity_id) {
+          <div
+            class="rounded-xl border border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/60"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-black dark:text-white">{{ t.nombre }}</p>
+                <p class="text-xs text-primary-500">
+                  Turno: {{ t.turno?.nombre ?? 'Sin turno' }} · Empresa {{ t.empresa }} · Total
+                  semana: {{ t.total_horas_semana }}h
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  (click)="descargarExcel(t.identity_id)"
+                  class="rounded-lg border border-primary-500 px-3 py-1.5 text-xs font-medium text-primary-600"
+                >
+                  CSV
+                </button>
+                <button
+                  type="button"
+                  (click)="toggleExpandir(t.identity_id)"
+                  class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-black dark:border-gray-600 dark:text-white"
+                >
+                  {{ filaExpandidaId === t.identity_id ? 'Ocultar' : 'Ver detalle' }}
+                </button>
+              </div>
+            </div>
+
+            @if (filaExpandidaId === t.identity_id) {
+              <table class="mt-3 w-full text-xs">
+                <thead>
+                  <tr class="text-left text-black dark:text-white">
+                    <th class="py-1">Día</th>
+                    <th>Horario esperado</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                    <th>Horas</th>
+                    <th>Permisos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (d of t.dias; track d.fecha) {
+                    <tr [ngClass]="d.es_descanso ? 'text-gray-400' : 'text-black dark:text-white'">
+                      <td class="py-1">{{ d.dia_semana }} {{ d.fecha }}</td>
+                      <td>{{ d.horario_esperado }}</td>
+                      <td>{{ d.hora_entrada_real ?? '—' }}</td>
+                      <td>{{ d.hora_salida_real ?? '—' }}</td>
+                      <td>{{ d.horas_trabajadas }}</td>
+                      <td>
+                        @if (!d.permisos.length) {
+                          <span>—</span>
+                        } @else {
+                          @for (p of d.permisos; track p.id) {
+                            <div>
+                              {{ p.tipo }}: {{ p.hora_inicio ?? '—' }}-{{
+                                p.hora_fin ?? (p.no_regresa ? 'no regresa' : '—')
+                              }}
+                            </div>
+                          }
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        }
+      </div>
+
+      @if (totalPaginas > 1) {
+        <div class="mt-4 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            [disabled]="paginaActual === 1"
+            (click)="paginaAnterior()"
+            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
+          >
+            Anterior
+          </button>
+          <span class="text-xs text-black dark:text-white">
+            ZPágina {{ paginaActual }} de {{ totalPaginas }}</span
+          >
+          <button
+            type="button"
+            [disabled]="paginaActual === totalPaginas"
+            (click)="paginaSiguiente()"
+            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
+          >
+            Siguiente
+          </button>
+        </div>
+      }
+    }
+  </div>
+}

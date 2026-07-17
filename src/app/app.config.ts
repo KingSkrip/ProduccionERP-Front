@@ -1,13 +1,14 @@
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import {
   APP_INITIALIZER,
   ApplicationConfig,
   inject,
   isDevMode,
+  LOCALE_ID,
   provideAppInitializer,
 } from '@angular/core';
 import { LuxonDateAdapter } from '@angular/material-luxon-adapter';
-import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideFuse } from '@fuse';
@@ -18,21 +19,23 @@ import { provideIcons } from 'app/core/icons/icons.provider';
 import { MockApiService } from 'app/mock-api';
 import { firstValueFrom } from 'rxjs';
 import { decryptInterceptor } from './core/interceptors/decrypt.interceptor';
+import { fuseLoadingSilentInterceptor } from './core/interceptors/fuse-loading-silent.interceptor';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
 import { UserService } from './core/user/user.service';
-import { fuseLoadingSilentInterceptor } from './core/interceptors/fuse-loading-silent.interceptor';
 
 export const appConfig: ApplicationConfig = {
+  
   providers: [
     provideAnimations(),
     provideHttpClient(
-  withInterceptors([
-    decryptInterceptor,
-    fuseLoadingSilentInterceptor, // 👈 aquí
-  ])
-),
+      withInterceptors([
+        decryptInterceptor,
+        fuseLoadingSilentInterceptor, // 👈 aquí
+      ]),
+    ),
     provideRouter(appRoutes, withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })),
-
+{ provide: MAT_DATE_LOCALE, useValue: 'es-MX' },
+    { provide: LOCALE_ID, useValue: 'es-MX' },
     // Date adapter
     { provide: DateAdapter, useClass: LuxonDateAdapter },
     {

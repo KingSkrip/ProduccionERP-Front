@@ -1,0 +1,8 @@
+.ps-radio-card{
+    display:flex;
+    align-items:flex-start;
+}
+
+.ps-radio-card--active {
+  @apply border-primary-500;
+}
