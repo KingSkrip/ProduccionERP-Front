@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
-import { ChecadorComponent } from './checador.component';
+import { ChecadorComponent } from './Checador.component';
+
+
 
 
 export default [

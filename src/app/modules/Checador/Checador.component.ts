@@ -12,7 +12,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 import { APP_CONFIG } from 'app/core/config/app-config';
-import { ChecadorRegistroResultado, ChecadorService } from './checador.service';
+import { ChecadorRegistroResultado, ChecadorService } from './Checador.service';
+
 
 type EstadoChecador =
   | 'iniciando'
