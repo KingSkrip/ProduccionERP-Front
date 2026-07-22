@@ -70,13 +70,7 @@ interface RespuestaEquipo {
   selector: 'permisos-rh',
   templateUrl: './rh.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatDatepickerModule,
-    MatInputModule,
-  ],
+  imports: [CommonModule, MatIconModule, MatFormFieldModule, MatDatepickerModule, MatInputModule],
 })
 export class RhComponent implements OnInit {
   @Input() identityId: number | null = null;
@@ -407,5 +401,59 @@ export class RhComponent implements OnInit {
     this.errorFechaPersonalizada = null;
     this.filtroRangoActivo = 'personalizado';
     this.cargarTarjetas(1);
+  }
+
+  formatHoras(decimalHoras: number | null | undefined): string {
+    if (decimalHoras == null || isNaN(decimalHoras)) return '—';
+
+    const horas = Math.floor(decimalHoras);
+    let minutos = Math.round((decimalHoras - horas) * 60);
+
+    // Corrige el caso borde donde el redondeo da 60 minutos
+    if (minutos === 60) {
+      return `${horas + 1}:00`;
+    }
+
+    return `${horas}:${minutos.toString().padStart(2, '0')}`;
+  }
+
+  /**
+   * Convierte "08:00 - 18:00" en horas totales que dura ese horario (ej. 10)
+   */
+  private horasDelRango(horario: string | null | undefined): number {
+    if (!horario) return 0;
+
+    const match = horario.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+    if (!match) return 0;
+
+    const inicio = Number(match[1]) + Number(match[2]) / 60;
+    let fin = Number(match[3]) + Number(match[4]) / 60;
+
+    // por si algún turno cruza medianoche
+    if (fin <= inicio) fin += 24;
+
+    return fin - inicio;
+  }
+
+  /**
+   * Diferencia entre lo trabajado y lo esperado ese día.
+   * Positivo = tiempo extra a favor. Negativo = le faltó cubrir horas.
+   */
+  tiempoExtra(dia: DiaTarjeta): number {
+    if (dia.es_descanso) return 0;
+
+    const esperadas = this.horasDelRango(dia.horario_esperado);
+    const trabajadas = dia.horas_trabajadas ?? 0;
+    const extra = trabajadas - esperadas;
+
+    return Math.round(extra * 100) / 100; // evita basura de decimales flotantes
+  }
+
+  formatTiempoExtra(dia: DiaTarjeta): string {
+    const extra = this.tiempoExtra(dia);
+    if (extra === 0) return '—';
+
+    const signo = extra > 0 ? '+' : '-';
+    return `${signo}${this.formatHoras(Math.abs(extra))}`;
   }
 }

@@ -7,18 +7,24 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from 'app/core/auth/auth.service';
+import { Area } from 'app/modules/Checador/types/AreaTypes';
 import { CatalogoPermiso } from 'app/modules/Checador/types/Catalogopermiso.types';
+import { Puesto } from 'app/modules/Checador/types/Puesto.types';
+import { Turno } from 'app/modules/Checador/types/TurnoTypes';
 import { PermisosModalComponent } from 'app/modules/modals/Permisos/PermisosModal.component';
 import { EmpleadoComponent } from './Empleado/empleado.component';
 import { JefeComponent } from './Jefe/jefe.component';
 import { PermisosService } from './permisos.service';
 import { RhComponent } from './RH/rh.component';
+import { PuestoService } from 'app/modules/puesto.service';
+import { AreaService } from 'app/modules/area.service';
+import { TurnoService } from 'app/modules/turno.service';
 
 type Mensaje = { tipo: 'ok' | 'error'; texto: string } | null;
 
@@ -43,27 +49,37 @@ export class PermisosComponent implements OnInit {
   mensaje: Mensaje = null;
   refrescarEmpleadoTrigger = 0;
 
+  areas: Area[] = [];
+  departamentos: Puesto[] = [];
+  turnos: Turno[] = [];
+
   private overlayRef: OverlayRef | null = null;
 
   constructor(
-    private authService: AuthService,
-    private permisosService: PermisosService,
-    private overlay: Overlay,
-    private injector: Injector,
-    private cdr: ChangeDetectorRef,
+ private authService: AuthService,
+  private permisosService: PermisosService,
+  private areaService: AreaService,
+  private puestoService: PuestoService,
+  private turnoService: TurnoService,
+  private overlay: Overlay,
+  private injector: Injector,
+  private cdr: ChangeDetectorRef,
   ) {}
 
-  ngOnInit(): void {
-    this.authService.getUserFlags().subscribe(({ esGerente, esJefeArea, esRh, identityId }) => {
-      this.esGerente = esGerente;
-      this.esJefeArea = esJefeArea;
-      this.esRH = esRh;
-      this.identityId = identityId;
-      this.checandoRol = false;
-      this.cargarCatalogo();
-      this.cdr.markForCheck();
-    });
-  }
+ngOnInit(): void {
+  this.authService.getUserFlags().subscribe(({ esGerente, esJefeArea, esRh, identityId }) => {
+    this.esGerente = esGerente;
+    this.esJefeArea = esJefeArea;
+    this.esRH = esRh;
+    this.identityId = identityId;
+    this.checandoRol = false;
+
+    this.cargarCatalogo();
+    this.cargarFiltros();
+
+    this.cdr.markForCheck();
+  });
+}
 
   cargarCatalogo(): void {
     this.cargandoCatalogo = true;
@@ -119,4 +135,27 @@ export class PermisosComponent implements OnInit {
     this.mensaje = msg;
     this.cdr.markForCheck();
   }
+
+
+  cargarFiltros(): void {
+  forkJoin({
+    areas: this.areaService.activas(),
+    departamentos: this.puestoService.activos(),
+    turnos: this.turnoService.activos(),
+  }).subscribe({
+    next: ({ areas, departamentos, turnos }) => {
+      this.areas = areas;
+      this.departamentos = departamentos;
+      this.turnos = turnos;
+
+      this.cdr.markForCheck();
+    },
+    error: () => {
+      this.mostrarMensaje({
+        tipo: 'error',
+        texto: 'No se pudieron cargar los filtros.'
+      });
+    }
+  });
+}
 }

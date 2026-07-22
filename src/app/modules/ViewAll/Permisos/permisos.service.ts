@@ -177,9 +177,7 @@ export class PermisosService {
    * empresa, área, departamento, turno, tipo de permiso y texto de búsqueda.
    */
   asistenciaEquipoSemana(filtros: FiltrosAsistenciaEquipo): Observable<RespuestaEquipo> {
-    let params = new HttpParams()
-      .set('fecha', filtros.fecha)
-      .set('page', filtros.page ?? 1);
+    let params = new HttpParams().set('fecha', filtros.fecha).set('page', filtros.page ?? 1);
 
     if (filtros.empresa) {
       params = params.set('empresa', filtros.empresa);
@@ -204,16 +202,45 @@ export class PermisosService {
   }
 
   descargarExcel(identityId: number, fecha: string): void {
-    window.open(`${this.baseUrl}/asistencia/${identityId}/excel?fecha=${fecha}`, '_blank');
+    this.http
+      .get(`${this.baseUrl}/asistencia/${identityId}/excel`, {
+        params: { fecha },
+        responseType: 'blob',
+      })
+      .subscribe({
+        next: (blob) => this.forzarDescarga(blob, `asistencia_${identityId}_${fecha}.xlsx`),
+        error: () => {
+          // opcional: emitir un mensaje de error hacia el componente
+        },
+      });
   }
 
   descargarExcelTodos(fecha: string, empresa?: string): void {
-    let url = `${this.baseUrl}/asistencia/excel?fecha=${fecha}`;
+    let params: any = { fecha };
+    if (empresa) params.empresa = empresa;
 
-    if (empresa) {
-      url += `&empresa=${empresa}`;
-    }
+    this.http
+      .get(`${this.baseUrl}/asistencia/excel`, {
+        params,
+        responseType: 'blob',
+      })
+      .subscribe({
+        next: (blob) => {
+          const nombre = `asistencia_equipo_${fecha}${empresa ? '_emp' + empresa : ''}.xlsx`;
+          this.forzarDescarga(blob, nombre);
+        },
+        error: () => {},
+      });
+  }
 
-    window.open(url, '_blank');
+  private forzarDescarga(blob: Blob, nombreArchivo: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
   }
 }

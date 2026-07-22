@@ -83,14 +83,17 @@
       <div class="h-24 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800"></div>
       <div class="h-24 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800"></div>
     </div>
- } @else if (esRH) {
-  <permisos-rh
-    class="flex min-h-0 flex-1 flex-col overflow-hidden"
-    [identityId]="identityId"
-    [catalogo]="catalogo"
-    (mensaje)="mostrarMensaje($event)"
-  ></permisos-rh>
-} @else if (esGerente || esJefeArea) {
+  } @else if (esRH) {
+    <permisos-rh
+      class="flex min-h-0 flex-1 flex-col overflow-hidden"
+      [identityId]="identityId"
+      [catalogo]="catalogo"
+      [areas]="areas"
+      [departamentos]="departamentos"
+      [turnos]="turnos"
+      (mensaje)="mostrarMensaje($event)"
+    ></permisos-rh>
+  } @else if (esGerente || esJefeArea) {
     <permisos-jefe
       class="flex min-h-0 flex-1 flex-col overflow-hidden"
       [identityId]="identityId"
