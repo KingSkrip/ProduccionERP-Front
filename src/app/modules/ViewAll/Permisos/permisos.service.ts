@@ -21,6 +21,14 @@ export interface PermisoDia {
   motivo: string;
 }
 
+export interface FiltrosExportarExcel {
+  empresa?: string;
+  areaId?: number;
+  departamentoId?: number;
+  turnoId?: number;
+  busqueda?: string; // "trabajador"
+}
+
 export interface DiaTarjeta {
   fecha: string;
   dia_semana: string;
@@ -50,6 +58,11 @@ export interface RespuestaEquipo {
     total: number;
     per_page: number;
   };
+}
+
+export interface OpcionEmpleado {
+  id: number;
+  nombre: string;
 }
 
 /** Filtros aceptados por la tarjeta de asistencia del equipo */
@@ -215,22 +228,21 @@ export class PermisosService {
       });
   }
 
-  descargarExcelTodos(fecha: string, empresa?: string): void {
+  descargarExcelTodos(fecha: string, filtros: FiltrosExportarExcel = {}): void {
     let params: any = { fecha };
-    if (empresa) params.empresa = empresa;
+    if (filtros.empresa) params.empresa = filtros.empresa;
+    if (filtros.areaId != null) params.area_id = filtros.areaId;
+    if (filtros.departamentoId != null) params.departamento_id = filtros.departamentoId;
+    if (filtros.turnoId != null) params.turno_id = filtros.turnoId;
+    if (filtros.busqueda) params.busqueda = filtros.busqueda;
 
-    this.http
-      .get(`${this.baseUrl}/asistencia/excel`, {
-        params,
-        responseType: 'blob',
-      })
-      .subscribe({
-        next: (blob) => {
-          const nombre = `asistencia_equipo_${fecha}${empresa ? '_emp' + empresa : ''}.xlsx`;
-          this.forzarDescarga(blob, nombre);
-        },
-        error: () => {},
-      });
+    this.http.get(`${this.baseUrl}/asistencia/excel`, { params, responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const nombre = `asistencia_equipo_${fecha}${filtros.empresa ? '_emp' + filtros.empresa : ''}.xlsx`;
+        this.forzarDescarga(blob, nombre);
+      },
+      error: () => {},
+    });
   }
 
   private forzarDescarga(blob: Blob, nombreArchivo: string): void {
@@ -242,5 +254,22 @@ export class PermisosService {
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
+  }
+
+  listaEmpleados(
+    filtros: {
+      empresa?: string;
+      areaId?: number;
+      departamentoId?: number;
+      turnoId?: number;
+    } = {},
+  ): Observable<OpcionEmpleado[]> {
+    let params: any = {};
+    if (filtros.empresa) params.empresa = filtros.empresa;
+    if (filtros.areaId != null) params.area_id = filtros.areaId;
+    if (filtros.departamentoId != null) params.departamento_id = filtros.departamentoId;
+    if (filtros.turnoId != null) params.turno_id = filtros.turnoId;
+
+    return this.http.get<OpcionEmpleado[]>(`${this.baseUrl}/empleados/lista`, { params });
   }
 }

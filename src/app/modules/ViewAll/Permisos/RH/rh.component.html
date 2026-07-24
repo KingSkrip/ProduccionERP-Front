@@ -106,7 +106,7 @@
 
       <button
         type="button"
-        (click)="descargarExcelTodos()"
+        (click)="abrirModalExportarTodos()"
         class="ml-auto rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-medium text-white"
       >
         <mat-icon
@@ -127,11 +127,10 @@
               [value]="empresaFiltro"
               (change)="onEmpresaChange($event)"
             >
-              <option value="">Todas</option>
-              <option value="01">01</option>
-              <option value="02">02</option>
-              <option value="03">03</option>
-              <option value="04">04</option>
+           <option value="">Todas</option>
+  @for (e of empresas; track e.id) {
+    <option [value]="e.id">{{ e.nombre }}</option>
+  }
             </select>
           </div>
           <!-- Área -->
@@ -368,7 +367,7 @@
                         {{ formatHoras(d.horas_trabajadas) }}h
                       </span>
 
-                      <span class="text-black dark:text-white">Tiempo extra</span>
+                      <!-- <span class="text-black dark:text-white">Tiempo extra</span>
                       <span
                         class="text-right font-semibold"
                         [ngClass]="
@@ -380,7 +379,7 @@
                         "
                       >
                         {{ formatTiempoExtra(d) }}
-                      </span>
+                      </span> -->
                     </div>
 
                     @if (d.permisos.length) {
@@ -413,7 +412,7 @@
                       <th class="py-3 pr-3 font-semibold">Entrada</th>
                       <th class="py-3 pr-3 font-semibold">Salida</th>
                       <th class="py-3 pr-3 font-semibold">Horas</th>
-                      <th class="py-3 pr-3 font-semibold">Tiempo extra</th>
+                      <!-- <th class="py-3 pr-3 font-semibold">Tiempo extra</th> -->
                       <th class="py-3 pr-4 font-semibold">Permisos</th>
                     </tr>
                   </thead>
@@ -468,7 +467,7 @@
                           </span>
                         </td>
 
-                        <td class="whitespace-nowrap py-3 pr-3">
+                        <!-- <td class="whitespace-nowrap py-3 pr-3">
                           @if (tiempoExtra(d) === 0) {
                             <span class="text-black/25 dark:text-white/20">—</span>
                           } @else {
@@ -483,7 +482,7 @@
                               {{ formatTiempoExtra(d) }}
                             </span>
                           }
-                        </td>
+                        </td> -->
 
                         <td class="py-3 pr-4">
                           @if (!d.permisos.length) {
