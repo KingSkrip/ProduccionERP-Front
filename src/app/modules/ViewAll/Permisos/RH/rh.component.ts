@@ -11,11 +11,16 @@ import {
 } from '@angular/core';
 import { DateAdapter } from '@angular/material/core';
 import { MatDatepickerInputEvent, MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { CatalogoPermiso } from 'app/modules/Checador/types/Catalogopermiso.types';
 import { ChecadorPermiso } from 'app/modules/Checador/types/Checadorpermiso.types';
+import {
+  ExportarExcelDialogComponent,
+  ExportarExcelResultado,
+} from 'app/modules/modals/TarjetasAsistencia/exportar-excel-dialog.component';
 import { finalize } from 'rxjs';
 import { PermisosService } from '../permisos.service';
 
@@ -66,6 +71,18 @@ interface RespuestaEquipo {
   meta: { current_page: number; last_page: number; total: number; per_page: number };
 }
 
+export interface OpcionEmpresa {
+  id: string;
+  nombre: string;
+}
+
+export const EMPRESAS_ASISTENCIA: OpcionEmpresa[] = [
+  { id: '01', nombre: 'Gordon' },
+  { id: '02', nombre: 'Fibra' },
+  { id: '03', nombre: 'Ballesta' },
+  { id: '04', nombre: 'Comercializadora Fibrasan S.A. de C.V.' },
+];
+
 @Component({
   selector: 'permisos-rh',
   templateUrl: './rh.component.html',
@@ -75,7 +92,7 @@ interface RespuestaEquipo {
 export class RhComponent implements OnInit {
   @Input() identityId: number | null = null;
   @Input() catalogo: CatalogoPermiso[] = [];
-
+  empresas: OpcionEmpresa[] = EMPRESAS_ASISTENCIA;
   /** Listas para los selects del panel de filtros */
   @Input() areas: OpcionFiltro[] = [];
   @Input() departamentos: OpcionFiltro[] = [];
@@ -115,6 +132,7 @@ export class RhComponent implements OnInit {
     private permisosService: PermisosService,
     private cdr: ChangeDetectorRef,
     private dateAdapter: DateAdapter<any>,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -248,9 +266,9 @@ export class RhComponent implements OnInit {
     this.permisosService.descargarExcel(identityId, this.fechaSemana);
   }
 
-  descargarExcelTodos(): void {
-    this.permisosService.descargarExcelTodos(this.fechaSemana, this.empresaFiltro || undefined);
-  }
+  // descargarExcelTodos(): void {
+  //   this.permisosService.descargarExcelTodos(this.fechaSemana, this.empresaFiltro || undefined);
+  // }
 
   // ------------------------------------------------------------------
   // Panel de filtros
@@ -455,5 +473,29 @@ export class RhComponent implements OnInit {
 
     const signo = extra > 0 ? '+' : '-';
     return `${signo}${this.formatHoras(Math.abs(extra))}`;
+  }
+
+  abrirModalExportarTodos(): void {
+    const ref = this.dialog.open(ExportarExcelDialogComponent, {
+   
+      data: {
+        empresas: this.empresas,
+        areas: this.areas,
+        departamentos: this.departamentos,
+        turnos: this.turnos,
+      },
+
+      panelClass: 'ps-dialog-panel',   // 👈 clase para resetear estilos
+  width: '100vw',
+  maxWidth: '100vw',
+  height: '100dvh',
+  hasBackdrop: false,              // tu propio div ya pinta el backdrop (bg-black/60)
+  autoFocus: false,
+    });
+
+    ref.afterClosed().subscribe((resultado: ExportarExcelResultado | undefined) => {
+      if (!resultado) return;
+      this.permisosService.descargarExcelTodos(this.fechaSemana, resultado);
+    });
   }
 }
