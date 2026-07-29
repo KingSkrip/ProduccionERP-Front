@@ -43,6 +43,8 @@ export const SubRoles = {
   14: 'COORDINADOR',
   15: 'COMPRAS',
   16: 'ALMACEN',
+  17: 'ENCARGADO',
+  18: 'ADMINISTRATIVO',
 };
 
 export enum SubRoleEnum {
@@ -62,6 +64,8 @@ export enum SubRoleEnum {
   COORDINADOR = 14,
   COMPRAS = 15,
   ALMACEN = 16,
+  ENCARGADO = 17,
+  ADMINISTRATIVO = 18,
 }
 
 //acceso para submenu de produccion
