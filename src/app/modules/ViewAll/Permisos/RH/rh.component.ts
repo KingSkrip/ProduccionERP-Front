@@ -77,10 +77,11 @@ export interface OpcionEmpresa {
 }
 
 export const EMPRESAS_ASISTENCIA: OpcionEmpresa[] = [
-  { id: '01', nombre: 'Gordon' },
-  { id: '02', nombre: 'Fibra' },
-  { id: '03', nombre: 'Ballesta' },
+  { id: '01', nombre: 'Gordon Lerma Go' },
+  { id: '02', nombre: 'Fibra 26' },
+  { id: '03', nombre: 'Fibra Ballesta' },
   { id: '04', nombre: 'Comercializadora Fibrasan S.A. de C.V.' },
+  { id: '05', nombre: 'BH Continental' },
 ];
 
 @Component({
@@ -477,7 +478,6 @@ export class RhComponent implements OnInit {
 
   abrirModalExportarTodos(): void {
     const ref = this.dialog.open(ExportarExcelDialogComponent, {
-   
       data: {
         empresas: this.empresas,
         areas: this.areas,
@@ -485,12 +485,12 @@ export class RhComponent implements OnInit {
         turnos: this.turnos,
       },
 
-      panelClass: 'ps-dialog-panel',   // 👈 clase para resetear estilos
-  width: '100vw',
-  maxWidth: '100vw',
-  height: '100dvh',
-  hasBackdrop: false,              // tu propio div ya pinta el backdrop (bg-black/60)
-  autoFocus: false,
+      panelClass: 'ps-dialog-panel', // 👈 clase para resetear estilos
+      width: '100vw',
+      maxWidth: '100vw',
+      height: '100dvh',
+      hasBackdrop: false, // tu propio div ya pinta el backdrop (bg-black/60)
+      autoFocus: false,
     });
 
     ref.afterClosed().subscribe((resultado: ExportarExcelResultado | undefined) => {
