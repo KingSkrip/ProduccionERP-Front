@@ -13,18 +13,18 @@ import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from 'app/core/auth/auth.service';
+import { AreaService } from 'app/modules/area.service';
 import { Area } from 'app/modules/Checador/types/AreaTypes';
 import { CatalogoPermiso } from 'app/modules/Checador/types/Catalogopermiso.types';
 import { Puesto } from 'app/modules/Checador/types/Puesto.types';
 import { Turno } from 'app/modules/Checador/types/TurnoTypes';
 import { PermisosModalComponent } from 'app/modules/modals/Permisos/PermisosModal.component';
+import { PuestoService } from 'app/modules/puesto.service';
+import { TurnoService } from 'app/modules/turno.service';
 import { EmpleadoComponent } from './Empleado/empleado.component';
 import { JefeComponent } from './Jefe/jefe.component';
 import { PermisosService } from './permisos.service';
 import { RhComponent } from './RH/rh.component';
-import { PuestoService } from 'app/modules/puesto.service';
-import { AreaService } from 'app/modules/area.service';
-import { TurnoService } from 'app/modules/turno.service';
 
 type Mensaje = { tipo: 'ok' | 'error'; texto: string } | null;
 
@@ -40,6 +40,7 @@ export class PermisosComponent implements OnInit {
   checandoRol = true;
   esGerente = false;
   esJefeArea = false;
+    esJefeAuxiliar = false;
   esRH = false;
   identityId: number | null = null;
 
@@ -56,30 +57,31 @@ export class PermisosComponent implements OnInit {
   private overlayRef: OverlayRef | null = null;
 
   constructor(
- private authService: AuthService,
-  private permisosService: PermisosService,
-  private areaService: AreaService,
-  private puestoService: PuestoService,
-  private turnoService: TurnoService,
-  private overlay: Overlay,
-  private injector: Injector,
-  private cdr: ChangeDetectorRef,
+    private authService: AuthService,
+    private permisosService: PermisosService,
+    private areaService: AreaService,
+    private puestoService: PuestoService,
+    private turnoService: TurnoService,
+    private overlay: Overlay,
+    private injector: Injector,
+    private cdr: ChangeDetectorRef,
   ) {}
 
-ngOnInit(): void {
-  this.authService.getUserFlags().subscribe(({ esGerente, esJefeArea, esRh, identityId }) => {
-    this.esGerente = esGerente;
-    this.esJefeArea = esJefeArea;
-    this.esRH = esRh;
-    this.identityId = identityId;
-    this.checandoRol = false;
+  ngOnInit(): void {
+    this.authService.getUserFlags().subscribe(({ esGerente, esJefeArea, esJefeAuxiliar, esRh, identityId }) => {
+      this.esGerente = esGerente;
+      this.esJefeArea = esJefeArea;
+      this.esJefeAuxiliar = esJefeAuxiliar;
+      this.esRH = esRh;
+      this.identityId = identityId;
+      this.checandoRol = false;
 
-    this.cargarCatalogo();
-    this.cargarFiltros();
+      this.cargarCatalogo();
+      this.cargarFiltros();
 
-    this.cdr.markForCheck();
-  });
-}
+      this.cdr.markForCheck();
+    });
+  }
 
   cargarCatalogo(): void {
     this.cargandoCatalogo = true;
@@ -136,26 +138,25 @@ ngOnInit(): void {
     this.cdr.markForCheck();
   }
 
-
   cargarFiltros(): void {
-  forkJoin({
-    areas: this.areaService.activas(),
-    departamentos: this.puestoService.activos(),
-    turnos: this.turnoService.activos(),
-  }).subscribe({
-    next: ({ areas, departamentos, turnos }) => {
-      this.areas = areas;
-      this.departamentos = departamentos;
-      this.turnos = turnos;
+    forkJoin({
+      areas: this.areaService.activas(),
+      departamentos: this.puestoService.activos(),
+      turnos: this.turnoService.activos(),
+    }).subscribe({
+      next: ({ areas, departamentos, turnos }) => {
+        this.areas = areas;
+        this.departamentos = departamentos;
+        this.turnos = turnos;
 
-      this.cdr.markForCheck();
-    },
-    error: () => {
-      this.mostrarMensaje({
-        tipo: 'error',
-        texto: 'No se pudieron cargar los filtros.'
-      });
-    }
-  });
-}
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.mostrarMensaje({
+          tipo: 'error',
+          texto: 'No se pudieron cargar los filtros.',
+        });
+      },
+    });
+  }
 }

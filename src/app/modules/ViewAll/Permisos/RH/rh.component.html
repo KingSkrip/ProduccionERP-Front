@@ -127,10 +127,10 @@
               [value]="empresaFiltro"
               (change)="onEmpresaChange($event)"
             >
-           <option value="">Todas</option>
-  @for (e of empresas; track e.id) {
-    <option [value]="e.id">{{ e.nombre }}</option>
-  }
+              <option value="">Todas</option>
+              @for (e of empresas; track e.id) {
+                <option [value]="e.id">{{ e.nombre }}</option>
+              }
             </select>
           </div>
           <!-- Área -->

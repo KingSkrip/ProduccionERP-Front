@@ -57,6 +57,10 @@ export interface ChecadorRegistroResultado {
   valido: boolean;
   observaciones: string | null;
   en_permiso: boolean;
+  autorizada_libre: boolean;
+  es_primer_registro_dia: boolean;
+  es_cierre_de_turno: boolean;
+
   permiso: ChecadorPermisoResumen | null;
   puntualidad?: ChecadorPuntualidad;
   jornada?: unknown;

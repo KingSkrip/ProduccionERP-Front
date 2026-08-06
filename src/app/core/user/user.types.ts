@@ -15,6 +15,7 @@ export interface User {
   firebird_user_clave?: string | number;
   roleId?: number;
    USER_PUESTO?: UserPuesto | null;
+     ES_JEFE_AUXILIAR?: boolean; 
 }
 
 export interface UserPuesto {

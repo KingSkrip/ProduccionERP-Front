@@ -35,6 +35,10 @@ export interface ChecadorPermiso {
     apellido: string | null;
     area?: { id: number; nombre: string } | null;
     puesto?: { id: number; nombre: string } | null;
+     puestoActivo?: {
+      jefe_id: number | null;
+      jefe_aux_id: number | null;
+    } | null;
   };
   created_at?: string;
 }

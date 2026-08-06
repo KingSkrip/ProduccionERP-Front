@@ -184,10 +184,11 @@ export class AuthService {
      * `es_jefe_area`). Esta es la fuente de verdad para decidir qué
      * vista/bandeja mostrar — no `permissions`/`sub_permissions`.
      */
-  getUserFlags(): Observable<{
+getUserFlags(): Observable<{
     esRh: boolean;
     esGerente: boolean;
     esJefeArea: boolean;
+    esJefeAuxiliar: boolean;
     identityId: number | null;
     puestoNombre: string | null;
     areaNombre: string | null;
@@ -203,6 +204,7 @@ export class AuthService {
                 esRh: !!puesto?.ES_RH,
                 esGerente: !!puesto?.ES_GERENTE,
                 esJefeArea: !!puesto?.ES_JEFE_AREA,
+                         esJefeAuxiliar: !!user?.ES_JEFE_AUXILIAR,
                 identityId: identityId != null && !Number.isNaN(identityId) ? identityId : null,
                 puestoNombre: puesto?.NOMBRE ?? null,
                 areaNombre: area?.NOMBRE ?? null,

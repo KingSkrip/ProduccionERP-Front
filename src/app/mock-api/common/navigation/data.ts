@@ -1336,6 +1336,14 @@ export const menuRh: FuseNavigationItem[] = [
     icon: 'heroicons_outline:shopping-bag',
     link: '/apps/Pedidos',
   },
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
   //{
   //id: 'to.do',
   //title: 'Scrumboard',
@@ -2683,7 +2691,6 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     link: '/apps/Pedidos',
   },
 
-  
   //{
   //id: 'to.do',
   //title: 'Scrumboard',
@@ -2736,6 +2743,15 @@ export const menuSuAdmin: FuseNavigationItem[] = [
         link: '/apps/Soli_Vac',
       },
     ],
+  },
+
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
   },
 
   // =======================
@@ -4040,8 +4056,8 @@ export const menuColaborador: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
-  },
-    {
+  },  
+  {
     id: 'colaboradores.permisos',
     title: 'Permisos',
     tooltip: 'Permisos',
@@ -4114,6 +4130,15 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
     icon: 'heroicons_outline:barcode',
     link: '/apps/colaborador/Barcode',
   },
+
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
   //{
   //   id: 'colaborador.scan',
   //   title: 'Escaner',
@@ -4135,15 +4160,6 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
         link: '/apps/ReportProd',
       },
     ],
-  },
-
-   {
-    id: 'colaboradores.permisos',
-    title: 'Permisos',
-    tooltip: 'Permisos',
-    type: 'basic',
-    icon: 'heroicons_outline:clipboard-document-check',
-    link: '/apps/colaborador/Permisos',
   },
 ];
 
@@ -4187,6 +4203,15 @@ export const menuJacobo: FuseNavigationItem[] = [
         link: '/apps/ReportProd',
       },
     ],
+  },
+
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
   },
 ];
 
@@ -4452,6 +4477,15 @@ export const menuVentas: FuseNavigationItem[] = [
       },
     ],
   },
+
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
 ];
 
 export const menuColaborador_Gerente: FuseNavigationItem[] = [
@@ -4486,7 +4520,7 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
-     {
+  {
     id: 'colaboradores.permisos',
     title: 'Permisos',
     tooltip: 'Permisos',
@@ -4693,6 +4727,14 @@ export const menuJefe: FuseNavigationItem[] = [
     link: '/pages/mailbox',
   },
 
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
   // {
   //   id: 'estados.cuenta',
   //   title: 'Estados de cuenta',
@@ -4811,6 +4853,14 @@ export const menuJaime: FuseNavigationItem[] = [
     icon: 'heroicons_outline:shopping-bag',
     link: '/apps/PedidosCl1',
   },
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
   //{
   //id: 'to.do',
   //title: 'Scrumboard',
@@ -4910,6 +4960,14 @@ export const menuSabu: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:shopping-bag',
     link: '/apps/PedidosCl1',
+  },
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
   },
   //{
   //id: 'to.do',
@@ -5038,9 +5096,6 @@ export const menuCompras: FuseNavigationItem[] = [
   },
 ];
 
-
-
-
 export const menuAccesos: FuseNavigationItem[] = [
   {
     id: 'group.dashboards',
@@ -5065,4 +5120,3 @@ export const menuAccesos: FuseNavigationItem[] = [
     link: '/apps/ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
   },
 ];
-

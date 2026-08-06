@@ -14,8 +14,6 @@ import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } fro
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { ChecadorRegistroResultado, ChecadorService } from './checador.service';
 
-
-
 type EstadoChecador =
   | 'iniciando'
   | 'escaneando'
@@ -300,26 +298,77 @@ export class ChecadorComponent implements AfterViewInit, OnDestroy {
         return null;
     }
   }
+
 get tituloResultado(): string {
+  if (this.resultado?.es_primer_registro_dia) {
+    return '¡Bienvenido!';
+  }
+
+  const libre = this.resultado?.autorizada_libre;
+  const esCierre = this.resultado?.es_cierre_de_turno;
+
   switch (this.estadoResultado) {
     case 'entrada':
-      return 'Entrada';
+      return 'Regreso autorizado';
+
     case 'salida':
-      return 'Salida';
+      if (!libre) {
+        return '¡Hasta luego!';
+      }
+      return esCierre ? '¡Hasta luego!' : 'Salida autorizada';
+
     case 'salida-permiso':
       return 'Salida a permiso';
+
     case 'regreso-permiso':
       return 'Regreso de permiso';
+
     default:
       return '';
   }
 }
 
-get etiquetaHora(): string {
-  return this.estadoResultado === 'salida'
-    ? 'Hora de salida:'
-    : 'Hora:';
+// NUEVO: texto de detalle debajo de la hora — retardo, anticipación o tiempo extra
+get detalleResultado(): string | null {
+  const p = this.resultado?.puntualidad;
+  if (!p) return null;
+
+  // --- caso entrada (incluye el primer registro del día) ---
+  if (this.estadoResultado === 'entrada') {
+    if (p.es_retardo && p.minutos_retardo > 0) {
+      return `Retardo: ${this.formatearMinutos(p.minutos_retardo)}`;
+    }
+    return null; // llegó a tiempo / dentro de tolerancia → solo se muestra la hora
+  }
+
+  // --- caso salida ---
+  if (this.estadoResultado === 'salida') {
+    if (p.minutos_anticipacion > 0) {
+      return `Salida anticipada: ${this.formatearMinutos(p.minutos_anticipacion)}`;
+    }
+    if (p.horas_extra > 0) {
+      return `Tiempo extra: ${this.formatearHoras(p.horas_extra)}`;
+    }
+    return null; // salió justo a su hora (o dentro de tolerancia)
+  }
+
+  return null;
 }
+
+private formatearMinutos(min: number): string {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return h > 0 ? `${h}h ${m}min` : `${m}min`;
+}
+
+private formatearHoras(horasDecimal: number): string {
+  const totalMin = Math.round(horasDecimal * 60);
+  return this.formatearMinutos(totalMin);
+}
+
+  get etiquetaHora(): string {
+    return this.estadoResultado === 'salida' ? 'Hora de salida:' : 'Hora:';
+  }
 
   /** Color de acento según el tipo de checada — se aplica como CSS var en el template. */
   get colorAcento(): string {
@@ -345,7 +394,6 @@ get etiquetaHora(): string {
   get nombreEmpleado(): string {
     return this.resultado?.usuario?.nombre ?? 'Empleado';
   }
-
 
   get iniciales(): string {
     const nombre = this.resultado?.usuario?.nombre?.trim();

@@ -39,6 +39,9 @@ export class JefeComponent implements OnInit, OnChanges {
   private overlayRef: OverlayRef | null = null;
   @Input() identityId: number | null = null;
   @Input() catalogo: CatalogoPermiso[] = [];
+    @Input() esGerente = false;
+  @Input() esJefeArea = false;
+  @Input() esJefeAuxiliar = false; 
   @Output() mensaje = new EventEmitter<Mensaje>();
 
   pendientesJefe: ChecadorPermiso[] = [];
@@ -63,9 +66,6 @@ export class JefeComponent implements OnInit, OnChanges {
 
   filaExpandidaId: number | null = null;
   filaExpandidaEquipoId: number | null = null;
-
-  esGerente = false;
-  esJefeArea = false;
 
   filtroBusquedaJefe = '';
   filtroCatalogoIdJefe: number | null = null;
@@ -699,5 +699,33 @@ export class JefeComponent implements OnInit, OnChanges {
 
   formatFechaReposicion(p: ChecadorPermiso): string {
     return this.formatFecha(p.fecha_reposicion);
+  }
+
+
+    /**
+   * Para cada permiso: si tú eres el jefe_id del puesto del colaborador
+   * -> "titular"; si eres jefe_aux_id -> "auxiliar". Si por lo que sea
+   * eres ambos (raro, pero posible en catálogos chicos) se prioriza titular.
+   */
+  rolFrenteA(p: ChecadorPermiso): 'titular' | 'auxiliar' | null {
+    if (!this.identityId) return null;
+    const puesto = p.identity?.puestoActivo;
+    if (!puesto) return null;
+    if (puesto.jefe_id === this.identityId) return 'titular';
+    if (puesto.jefe_aux_id === this.identityId) return 'auxiliar';
+    return null;
+  }
+
+  etiquetaRolFrenteA(p: ChecadorPermiso): string {
+    const rol = this.rolFrenteA(p);
+    if (rol === 'titular') return 'Como jefe directo';
+    if (rol === 'auxiliar') return 'Como jefe auxiliar';
+    return '';
+  }
+
+  claseBadgeRol(p: ChecadorPermiso): string {
+    return this.rolFrenteA(p) === 'auxiliar'
+      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300'
+      : 'bg-primary-50 text-primary-700 dark:bg-primary-500/10 dark:text-primary-400';
   }
 }
