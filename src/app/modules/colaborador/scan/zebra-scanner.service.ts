@@ -71,7 +71,7 @@ export class ZebraScannerService implements OnDestroy {
       if (valor.length >= this.MIN_LENGTH) {
         this._zone.run(() => this.scan$.next(valor));
       } else {
-        console.warn('⚠️ Valor muy corto, ignorado:', valor, 'length:', valor.length);
+        console.warn('⚠ Valor muy corto, ignorado:', valor, 'length:', valor.length);
       }
       return;
     }

@@ -1,189 +1,189 @@
-<!-- Cards de resumen - Solo mostrar si hay datos -->
-<div class="md:px-8 md:py-4" *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length > 0">
-  <!-- CARD DESKTOP -->
-  <div class="hidden grid-cols-3 gap-3 md:grid">
-    <!-- ARTICULOS -->
-    <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
-      <div class="mb-1 flex items-center justify-between">
-        <div class="text-secondary text-base font-medium">Total Artículos</div>
-        <mat-icon
-          class="text-yellow-500 icon-size-5"
-          [svgIcon]="'heroicons_outline:cube'"
-        ></mat-icon>
-      </div>
-      <div class="text-2xl font-bold">{{ contarArticulosSaldos() }}</div>
-      <div class="text-secondary text-sm">Artículos con saldo</div>
-    </div>
-
-    <!-- PIEZAS -->
-    <div class="bg-card rounded-xl border-l-4 border-sky-500 p-4 shadow-sm">
-      <div class="mb-1 flex items-center justify-between">
-        <div class="text-secondary text-base font-medium">Total Piezas</div>
-        <mat-icon
-          class="text-sky-500 icon-size-5"
-          [svgIcon]="'heroicons_outline:chart-bar'"
-        ></mat-icon>
-      </div>
-      <div class="text-2xl font-bold">{{ calcularTotalPiezasSaldos() | number: '1.2-2' }}</div>
-      <div class="text-secondary text-sm">Piezas en saldo</div>
-    </div>
-
-    <!-- TOTAL -->
-    <div class="bg-card rounded-xl border-l-4 border-green-500 p-4 shadow-sm">
-      <div class="mb-1 flex items-center justify-between">
-        <div class="text-secondary text-base">Total Saldos</div>
-        <mat-icon
-          class="text-green-500 icon-size-5"
-          [svgIcon]="'heroicons_outline:scale'"
-        ></mat-icon>
-      </div>
-      <div class="text-2xl font-bold">{{ calcularTotalPesoSaldos() | number: '1.2-2' }}</div>
-      <div class="text-secondary text-sm">Kilogramos</div>
-    </div>
-  </div>
-</div>
-
-<!-- Loading State -->
-<div *ngIf="isLoadingSaldos" class="flex flex-col items-center justify-center px-4 py-16">
-  <div
-    class="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"
-  ></div>
-  <p class="text-secondary">Cargando datos de saldos...</p>
-</div>
-
-<!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
-<div
-  *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length === 0 && cargaInicial"
-  class="flex flex-col items-center justify-center px-4 py-16"
->
-  <div class="relative mb-6">
-    <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-cyan-400/10">
-      <mat-icon
-        class="text-cyan-500/40 icon-size-12"
-        [svgIcon]="'heroicons_outline:archive-box'"
-      ></mat-icon>
-    </div>
-  </div>
-
-  <h3 class="mb-2 text-xl font-bold">Sin saldos</h3>
-  <p class="text-secondary mb-4 max-w-md text-center">
-    No se encontraron registros con los filtros seleccionados.
-    <br />Intenta ajustar tus criterios de búsqueda o seleccionar otro periodo.
-  </p>
-
-  <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
-    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
-    Limpiar filtros
-  </button>
-</div>
-
-
-
-<!-- VISTA MÓVIL -->
-<div class="space-y-2 pb-4 md:hidden" *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length > 0">
-
-  <!-- Total strip -->
-  <div class="border-card bg-card mt-1 flex items-center justify-between rounded-xl border px-3 py-3">
-    <span class="text-secondary text-sm">Total</span>
-    <span class="text-base font-bold text-green-600 dark:text-green-400">
-      {{ calcularTotalPesoSaldos() | number: '1.2-2' }} kg
-    </span>
-  </div>
-
-  <!-- Cards artículos -->
-  <div
-    *ngFor="let item of datosSaldosFiltrados"
-    class="bg-card overflow-hidden rounded-2xl border border-gray-100 shadow-sm dark:border-gray-700/60"
-  >
-    <div class="flex items-center gap-3 px-3 py-3">
-      <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-cyan-500/10">
-        <mat-icon
-          class="text-cyan-500 icon-size-4"
-          [svgIcon]="'heroicons_outline:archive-box'"
-        ></mat-icon>
-      </div>
-
-      <div class="min-w-0 flex-1">
-        <p class="truncate text-sm font-semibold leading-tight">{{ item.ARTICULO }}</p>
-      </div>
-
-      <div class="flex-shrink-0 text-right">
-        <p class="text-sm font-semibold text-green-600 dark:text-green-400">
-          {{ item.TOTAL_SALDO | number: '1.2-2' }} kg
-        </p>
-        <p class="mt-0.5 text-xs text-sky-500">{{ item.PIEZAS | number: '1.2-2' }} pz</p>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-
-<!-- VISTA DESKTOP -->
-<div
-  class="mt-6 overflow-x-auto md:px-8 md:pb-8 hidden md:block"
-  *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length > 0"
->
-  <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">
-    <thead class="bg-gray-50 dark:bg-gray-700">
-      <tr>
-        <th
-          class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
-        >
-          Artículo
-        </th>
-        <th
-          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
-        >
-          Piezas
-        </th>
-        <th
-          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
-        >
-          Peso Saldo (kg)
-        </th>
-      </tr>
-    </thead>
-    <tbody class="divide-y">
-      <tr
-        *ngFor="let item of datosSaldosFiltrados"
-        class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-      >
-        <td class="px-3 py-2 md:px-6 md:py-4">
-          <div class="flex items-center gap-3">
-            <mat-icon
-              class="flex-shrink-0 text-yellow-500 icon-size-5"
-              [svgIcon]="'heroicons_outline:archive-box'"
-            ></mat-icon>
-            <span class="font-semibold">{{ item.ARTICULO }}</span>
-          </div>
-        </td>
-        <td class="px-3 py-2 text-right md:px-6 md:py-4">
-          <span class="text-lg font-bold text-sky-600 dark:text-sky-400">
-            {{ item.PIEZAS | number: '1.2-2' }}
-          </span>
-        </td>
-        <td class="px-3 py-2 text-right md:px-6 md:py-4">
-          <span class="text-lg font-bold text-green-600 dark:text-green-400">
-            {{ item.TOTAL_SALDO | number: '1.2-2' }}
-          </span>
-        </td>
-      </tr>
-    </tbody>
-    <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-700">
-      <tr>
-        <td class="px-3 py-2 text-right text-base md:px-6 md:py-4">Total:</td>
-        <td class="px-3 py-2 text-right md:px-6 md:py-4">
-          <span class="text-lg text-sky-600 dark:text-sky-400">
-            {{ calcularTotalPiezasSaldos() | number: '1.2-2' }}
-          </span>
-        </td>
-        <td class="px-3 py-2 text-right md:px-6 md:py-4">
-          <span class="text-lg text-green-600 dark:text-green-400">
-            {{ calcularTotalPesoSaldos() | number: '1.2-2' }}
-          </span>
-        </td>
-      </tr>
-    </tfoot>
-  </table>
-</div>
+<!-- Cards de resumen - Solo mostrar si hay datos -->
+<div class="md:px-8 md:py-4" *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length > 0">
+  <!-- CARD DESKTOP -->
+  <div class="hidden grid-cols-3 gap-3 md:grid">
+    <!-- ARTICULOS -->
+    <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base font-medium">Total Artículos</div>
+        <mat-icon
+          class="text-yellow-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:cube'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ contarArticulosSaldos() }}</div>
+      <div class="text-secondary text-sm">Artículos con saldo</div>
+    </div>
+
+    <!-- PIEZAS -->
+    <div class="bg-card rounded-xl border-l-4 border-sky-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base font-medium">Total Piezas</div>
+        <mat-icon
+          class="text-sky-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:chart-bar'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ calcularTotalPiezasSaldos() | number: '1.2-2' }}</div>
+      <div class="text-secondary text-sm">Piezas en saldo</div>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="bg-card rounded-xl border-l-4 border-green-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base">Total Saldos</div>
+        <mat-icon
+          class="text-green-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:scale'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ calcularTotalPesoSaldos() | number: '1.2-2' }}</div>
+      <div class="text-secondary text-sm">Kilogramos</div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="isLoadingSaldos" class="flex flex-col items-center justify-center px-4 py-16">
+  <div
+    class="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"
+  ></div>
+  <p class="text-secondary">Cargando datos de saldos...</p>
+</div>
+
+<!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
+<div
+  *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length === 0 && cargaInicial"
+  class="flex flex-col items-center justify-center px-4 py-16"
+>
+  <div class="relative mb-6">
+    <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-cyan-400/10">
+      <mat-icon
+        class="text-cyan-500/40 icon-size-12"
+        [svgIcon]="'heroicons_outline:archive-box'"
+      ></mat-icon>
+    </div>
+  </div>
+
+  <h3 class="mb-2 text-xl font-bold">Sin saldos</h3>
+  <p class="text-secondary mb-4 max-w-md text-center">
+    No se encontraron registros con los filtros seleccionados.
+    <br />Intenta ajustar tus criterios de búsqueda o seleccionar otro periodo.
+  </p>
+
+  <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
+    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+    Limpiar filtros
+  </button>
+</div>
+
+
+
+<!-- VISTA MÓVIL -->
+<div class="space-y-2 pb-4 md:hidden" *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length > 0">
+
+  <!-- Total strip -->
+  <div class="border-card bg-card mt-1 flex items-center justify-between rounded-xl border px-3 py-3">
+    <span class="text-secondary text-sm">Total</span>
+    <span class="text-base font-bold text-green-600 dark:text-green-400">
+      {{ calcularTotalPesoSaldos() | number: '1.2-2' }} kg
+    </span>
+  </div>
+
+  <!-- Cards artículos -->
+  <div
+    *ngFor="let item of datosSaldosFiltrados"
+    class="bg-card overflow-hidden rounded-2xl border border-gray-100 shadow-sm dark:border-gray-700/60"
+  >
+    <div class="flex items-center gap-3 px-3 py-3">
+      <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-cyan-500/10">
+        <mat-icon
+          class="text-cyan-500 icon-size-4"
+          [svgIcon]="'heroicons_outline:archive-box'"
+        ></mat-icon>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold leading-tight">{{ item.ARTICULO }}</p>
+      </div>
+
+      <div class="flex-shrink-0 text-right">
+        <p class="text-sm font-semibold text-green-600 dark:text-green-400">
+          {{ item.TOTAL_SALDO | number: '1.2-2' }} kg
+        </p>
+        <p class="mt-0.5 text-xs text-sky-500">{{ item.PIEZAS | number: '1.2-2' }} pz</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- VISTA DESKTOP -->
+<div
+  class="mt-6 overflow-x-auto md:px-8 md:pb-8 hidden md:block"
+  *ngIf="!isLoadingSaldos && datosSaldosFiltrados.length > 0"
+>
+  <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">
+    <thead class="bg-gray-50 dark:bg-gray-700">
+      <tr>
+        <th
+          class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Artículo
+        </th>
+        <th
+          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Piezas
+        </th>
+        <th
+          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Peso Saldo (kg)
+        </th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <tr
+        *ngFor="let item of datosSaldosFiltrados"
+        class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+      >
+        <td class="px-3 py-2 md:px-6 md:py-4">
+          <div class="flex items-center gap-3">
+            <mat-icon
+              class="flex-shrink-0 text-yellow-500 icon-size-5"
+              [svgIcon]="'heroicons_outline:archive-box'"
+            ></mat-icon>
+            <span class="font-semibold">{{ item.ARTICULO }}</span>
+          </div>
+        </td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg font-bold text-sky-600 dark:text-sky-400">
+            {{ item.PIEZAS | number: '1.2-2' }}
+          </span>
+        </td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg font-bold text-green-600 dark:text-green-400">
+            {{ item.TOTAL_SALDO | number: '1.2-2' }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-700">
+      <tr>
+        <td class="px-3 py-2 text-right text-base md:px-6 md:py-4">Total:</td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg text-sky-600 dark:text-sky-400">
+            {{ calcularTotalPiezasSaldos() | number: '1.2-2' }}
+          </span>
+        </td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg text-green-600 dark:text-green-400">
+            {{ calcularTotalPesoSaldos() | number: '1.2-2' }}
+          </span>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>

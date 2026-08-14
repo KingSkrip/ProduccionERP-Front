@@ -1,221 +1,221 @@
-<!-- Cards de resumen - Solo mostrar si hay datos -->
-<div class="md:px-8 md:py-4" *ngIf="!isLoadingPorRevisar && datosPorRevisarFiltrados.length > 0">
-  <!-- CARD desktop -->
-  <div class="hidden grid-cols-3 gap-3 md:grid">
-    <!-- ARTICULOS -->
-    <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
-      <div class="mb-1 flex items-center justify-between">
-        <div class="text-secondary text-base font-medium">Total Artículos</div>
-        <mat-icon
-          class="text-yellow-500 icon-size-5"
-          [svgIcon]="'heroicons_outline:cube'"
-        ></mat-icon>
-      </div>
-      <div class="text-2xl font-bold">{{ contarArticulosPorRevisar() }}</div>
-      <div class="text-secondary text-sm">Artículos pendientes</div>
-    </div>
-
-    <!-- PIEZAS -->
-    <div class="bg-card rounded-xl border-l-4 border-sky-500 p-4 shadow-sm">
-      <div class="mb-1 flex items-center justify-between">
-        <div class="text-secondary text-base font-medium">Total Piezas</div>
-        <mat-icon
-          class="text-sky-500 icon-size-5"
-          [svgIcon]="'heroicons_outline:chart-bar'"
-        ></mat-icon>
-      </div>
-      <div class="text-2xl font-bold">{{ calcularTotalPiezasPorRevisar() | number: '1.2-2' }}</div>
-      <div class="text-secondary text-sm">Piezas pendientes</div>
-    </div>
-
-    <!-- TOTAL -->
-    <div class="bg-card rounded-xl border-l-4 border-green-500 p-4 shadow-sm">
-      <div class="mb-1 flex items-center justify-between">
-        <div class="text-secondary text-base">Total Por Revisar</div>
-        <mat-icon
-          class="text-green-500 icon-size-5"
-          [svgIcon]="'heroicons_outline:scale'"
-        ></mat-icon>
-      </div>
-      <div class="text-2xl font-bold">{{ calcularTotalPesoPorRevisar() | number: '1.2-2' }}</div>
-      <div class="text-secondary text-sm">Kilogramos</div>
-    </div>
-  </div>
-</div>
-
-<!-- Loading State -->
-<div *ngIf="isLoadingPorRevisar" class="flex flex-col items-center justify-center px-4 py-16">
-  <div
-    class="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"
-  ></div>
-  <p class="text-secondary">Cargando datos por revisar...</p>
-</div>
-
-<!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
-<div
-  *ngIf="!isLoadingPorRevisar && datosPorRevisarFiltrados.length === 0 && cargaInicial"
-  class="flex flex-col items-center justify-center px-4 py-16"
->
-  <div class="relative mb-6">
-    <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-violet-500/10">
-      <mat-icon
-        class="text-violet-500/40 icon-size-12"
-        [svgIcon]="'heroicons_outline:clock'"
-      ></mat-icon>
-    </div>
-  </div>
-
-  <h3 class="mb-2 text-xl font-bold">Sin datos por revisar</h3>
-  <p class="text-secondary mb-4 max-w-md text-center">
-    No se encontraron registros con los filtros seleccionados.
-    <br />Intenta ajustar tus criterios de búsqueda o seleccionar otro periodo.
-  </p>
-
-  <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
-    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
-    Limpiar filtros
-  </button>
-</div>
-
-<!-- VISTA PARA MÓVIL -->
-<div
-  class="space-y-2 px-4 pb-5 md:hidden"
-  *ngIf="!isLoadingPorRevisar && datosPorRevisarFiltrados.length > 0"
->
-  <!-- Total general -->
-  <div
-    class="border-card bg-card mt-1 flex items-center justify-between rounded-xl border px-3 py-3"
-  >
-    <span class="text-secondary text-sm">Total</span>
-    <span class="text-base font-bold text-green-600 dark:text-green-400">
-      {{ calcularTotalPesoPorRevisar() | number: '1.2-2' }} kg
-    </span>
-  </div>
-
-  <div
-    *ngFor="let item of datosPorRevisarFiltrados; let i = index"
-    class="bg-card overflow-hidden rounded-2xl border border-gray-100 shadow-sm dark:border-gray-700/60"
-  >
-    <!-- Header del artículo -->
-    <div
-      class="flex cursor-pointer items-center gap-3 px-3 py-3"
-      (click)="toggleArticuloPorRevisar(i)"
-    >
-      <div
-        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-violet-500/10"
-      >
-        <mat-icon
-          class="text-violet-500 icon-size-4"
-          [svgIcon]="'heroicons_outline:clock'"
-        ></mat-icon>
-      </div>
-
-      <div class="min-w-0 flex-1">
-        <p class="truncate text-sm font-semibold leading-tight">{{ item.ARTICULO }}</p>
-      </div>
-
-      <div class="flex-shrink-0 text-right">
-        <p class="text-sm font-semibold text-green-600 dark:text-green-400">
-          {{ item.TOTAL_POR_REVISAR | number: '1.2-2' }} kg
-        </p>
-        <p class="mt-0.5 text-xs text-sky-500">{{ item.PIEZAS | number: '1.2-2' }} pz</p>
-      </div>
-    </div>
-
-    <!-- Detalle expandible -->
-    <div *ngIf="item.expandido" class="border-t border-gray-100 dark:border-gray-700/60">
-      <!-- Fila piezas -->
-      <div
-        class="flex items-center gap-3 border-b border-gray-100 bg-gray-50/70 px-4 py-3 pl-14 dark:border-gray-700/40 dark:bg-gray-800/40"
-      >
-        <span class="-ml-4 mr-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-sky-400"></span>
-        <span class="text-secondary min-w-0 flex-1 text-sm">Piezas pendientes</span>
-        <div class="flex-shrink-0 text-right">
-          <p class="text-sm font-medium text-sky-600 dark:text-sky-400">
-            {{ item.PIEZAS | number: '1.2-2' }} pz
-          </p>
-        </div>
-      </div>
-
-      <!-- Fila peso -->
-      <div class="flex items-center gap-3 bg-gray-50/70 px-4 py-3 pl-14 dark:bg-gray-800/40">
-        <span class="-ml-4 mr-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-400"></span>
-        <span class="text-secondary min-w-0 flex-1 text-sm">Peso por revisar</span>
-        <div class="flex-shrink-0 text-right">
-          <p class="text-sm font-medium text-green-600 dark:text-green-400">
-            {{ item.TOTAL_POR_REVISAR | number: '1.2-2' }} kg
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- VISTA DESKTOP -->
-<div
-  class="mt-6 mb-13 hidden overflow-x-auto md:block md:px-8 md:pb-8"
-  *ngIf="!isLoadingPorRevisar && datosPorRevisarFiltrados.length > 0"
->
-  <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">
-    <thead class="bg-gray-50 dark:bg-gray-700">
-      <tr>
-        <th
-          class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
-        >
-          Artículo
-        </th>
-        <th
-          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
-        >
-          Piezas
-        </th>
-        <th
-          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
-        >
-          Peso Por Revisar (kg)
-        </th>
-      </tr>
-    </thead>
-    <tbody class="divide-y">
-      <tr
-        *ngFor="let item of datosPorRevisarFiltrados"
-        class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-      >
-        <td class="px-3 py-2 md:px-6 md:py-4">
-          <div class="flex items-center gap-3">
-            <mat-icon
-              class="flex-shrink-0 text-yellow-500 icon-size-5"
-              [svgIcon]="'heroicons_outline:clock'"
-            ></mat-icon>
-            <span class="font-semibold">{{ item.ARTICULO }}</span>
-          </div>
-        </td>
-        <td class="px-3 py-2 text-right md:px-6 md:py-4">
-          <span class="text-lg font-bold text-sky-600 dark:text-sky-400">
-            {{ item.PIEZAS | number: '1.2-2' }}
-          </span>
-        </td>
-        <td class="px-3 py-2 text-right md:px-6 md:py-4">
-          <span class="text-lg font-bold text-green-600 dark:text-green-400">
-            {{ item.TOTAL_POR_REVISAR | number: '1.2-2' }}
-          </span>
-        </td>
-      </tr>
-    </tbody>
-    <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-700">
-      <tr>
-        <td class="px-3 py-2 text-right text-base md:px-6 md:py-4">Total:</td>
-        <td class="px-3 py-2 text-right md:px-6 md:py-4">
-          <span class="text-lg text-sky-600 dark:text-sky-400">
-            {{ calcularTotalPiezasPorRevisar() | number: '1.2-2' }}
-          </span>
-        </td>
-        <td class="px-3 py-2 text-right md:px-6 md:py-4">
-          <span class="text-lg text-green-600 dark:text-green-400">
-            {{ calcularTotalPesoPorRevisar() | number: '1.2-2' }}
-          </span>
-        </td>
-      </tr>
-    </tfoot>
-  </table>
-</div>
+<!-- Cards de resumen - Solo mostrar si hay datos -->
+<div class="md:px-8 md:py-4" *ngIf="!isLoadingPorRevisar && datosPorRevisarFiltrados.length > 0">
+  <!-- CARD desktop -->
+  <div class="hidden grid-cols-3 gap-3 md:grid">
+    <!-- ARTICULOS -->
+    <div class="bg-card rounded-xl border-l-4 border-yellow-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base font-medium">Total Artículos</div>
+        <mat-icon
+          class="text-yellow-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:cube'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ contarArticulosPorRevisar() }}</div>
+      <div class="text-secondary text-sm">Artículos pendientes</div>
+    </div>
+
+    <!-- PIEZAS -->
+    <div class="bg-card rounded-xl border-l-4 border-sky-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base font-medium">Total Piezas</div>
+        <mat-icon
+          class="text-sky-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:chart-bar'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ calcularTotalPiezasPorRevisar() | number: '1.2-2' }}</div>
+      <div class="text-secondary text-sm">Piezas pendientes</div>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="bg-card rounded-xl border-l-4 border-green-500 p-4 shadow-sm">
+      <div class="mb-1 flex items-center justify-between">
+        <div class="text-secondary text-base">Total Por Revisar</div>
+        <mat-icon
+          class="text-green-500 icon-size-5"
+          [svgIcon]="'heroicons_outline:scale'"
+        ></mat-icon>
+      </div>
+      <div class="text-2xl font-bold">{{ calcularTotalPesoPorRevisar() | number: '1.2-2' }}</div>
+      <div class="text-secondary text-sm">Kilogramos</div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="isLoadingPorRevisar" class="flex flex-col items-center justify-center px-4 py-16">
+  <div
+    class="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"
+  ></div>
+  <p class="text-secondary">Cargando datos por revisar...</p>
+</div>
+
+<!-- Empty State - Cuando no hay resultados con los filtros aplicados -->
+<div
+  *ngIf="!isLoadingPorRevisar && datosPorRevisarFiltrados.length === 0 && cargaInicial"
+  class="flex flex-col items-center justify-center px-4 py-16"
+>
+  <div class="relative mb-6">
+    <div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-violet-500/10">
+      <mat-icon
+        class="text-violet-500/40 icon-size-12"
+        [svgIcon]="'heroicons_outline:clock'"
+      ></mat-icon>
+    </div>
+  </div>
+
+  <h3 class="mb-2 text-xl font-bold">Sin datos por revisar</h3>
+  <p class="text-secondary mb-4 max-w-md text-center">
+    No se encontraron registros con los filtros seleccionados.
+    <br />Intenta ajustar tus criterios de búsqueda o seleccionar otro periodo.
+  </p>
+
+  <button mat-stroked-button class="rounded-xl" (click)="limpiarFiltrosLocales()">
+    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+    Limpiar filtros
+  </button>
+</div>
+
+<!-- VISTA PARA MÓVIL -->
+<div
+  class="space-y-2 px-4 pb-5 md:hidden"
+  *ngIf="!isLoadingPorRevisar && datosPorRevisarFiltrados.length > 0"
+>
+  <!-- Total general -->
+  <div
+    class="border-card bg-card mt-1 flex items-center justify-between rounded-xl border px-3 py-3"
+  >
+    <span class="text-secondary text-sm">Total</span>
+    <span class="text-base font-bold text-green-600 dark:text-green-400">
+      {{ calcularTotalPesoPorRevisar() | number: '1.2-2' }} kg
+    </span>
+  </div>
+
+  <div
+    *ngFor="let item of datosPorRevisarFiltrados; let i = index"
+    class="bg-card overflow-hidden rounded-2xl border border-gray-100 shadow-sm dark:border-gray-700/60"
+  >
+    <!-- Header del artículo -->
+    <div
+      class="flex cursor-pointer items-center gap-3 px-3 py-3"
+      (click)="toggleArticuloPorRevisar(i)"
+    >
+      <div
+        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-violet-500/10"
+      >
+        <mat-icon
+          class="text-violet-500 icon-size-4"
+          [svgIcon]="'heroicons_outline:clock'"
+        ></mat-icon>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold leading-tight">{{ item.ARTICULO }}</p>
+      </div>
+
+      <div class="flex-shrink-0 text-right">
+        <p class="text-sm font-semibold text-green-600 dark:text-green-400">
+          {{ item.TOTAL_POR_REVISAR | number: '1.2-2' }} kg
+        </p>
+        <p class="mt-0.5 text-xs text-sky-500">{{ item.PIEZAS | number: '1.2-2' }} pz</p>
+      </div>
+    </div>
+
+    <!-- Detalle expandible -->
+    <div *ngIf="item.expandido" class="border-t border-gray-100 dark:border-gray-700/60">
+      <!-- Fila piezas -->
+      <div
+        class="flex items-center gap-3 border-b border-gray-100 bg-gray-50/70 px-4 py-3 pl-14 dark:border-gray-700/40 dark:bg-gray-800/40"
+      >
+        <span class="-ml-4 mr-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-sky-400"></span>
+        <span class="text-secondary min-w-0 flex-1 text-sm">Piezas pendientes</span>
+        <div class="flex-shrink-0 text-right">
+          <p class="text-sm font-medium text-sky-600 dark:text-sky-400">
+            {{ item.PIEZAS | number: '1.2-2' }} pz
+          </p>
+        </div>
+      </div>
+
+      <!-- Fila peso -->
+      <div class="flex items-center gap-3 bg-gray-50/70 px-4 py-3 pl-14 dark:bg-gray-800/40">
+        <span class="-ml-4 mr-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-400"></span>
+        <span class="text-secondary min-w-0 flex-1 text-sm">Peso por revisar</span>
+        <div class="flex-shrink-0 text-right">
+          <p class="text-sm font-medium text-green-600 dark:text-green-400">
+            {{ item.TOTAL_POR_REVISAR | number: '1.2-2' }} kg
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VISTA DESKTOP -->
+<div
+  class="mt-6 mb-13 hidden overflow-x-auto md:block md:px-8 md:pb-8"
+  *ngIf="!isLoadingPorRevisar && datosPorRevisarFiltrados.length > 0"
+>
+  <table class="bg-card w-full overflow-hidden rounded-2xl shadow-sm">
+    <thead class="bg-gray-50 dark:bg-gray-700">
+      <tr>
+        <th
+          class="px-3 py-2 text-left text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Artículo
+        </th>
+        <th
+          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Piezas
+        </th>
+        <th
+          class="px-3 py-2 text-right text-sm font-semibold tracking-wider md:px-6 md:py-4 md:text-base"
+        >
+          Peso Por Revisar (kg)
+        </th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <tr
+        *ngFor="let item of datosPorRevisarFiltrados"
+        class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+      >
+        <td class="px-3 py-2 md:px-6 md:py-4">
+          <div class="flex items-center gap-3">
+            <mat-icon
+              class="flex-shrink-0 text-yellow-500 icon-size-5"
+              [svgIcon]="'heroicons_outline:clock'"
+            ></mat-icon>
+            <span class="font-semibold">{{ item.ARTICULO }}</span>
+          </div>
+        </td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg font-bold text-sky-600 dark:text-sky-400">
+            {{ item.PIEZAS | number: '1.2-2' }}
+          </span>
+        </td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg font-bold text-green-600 dark:text-green-400">
+            {{ item.TOTAL_POR_REVISAR | number: '1.2-2' }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot class="border-t-2 bg-gray-50 font-bold dark:bg-gray-700">
+      <tr>
+        <td class="px-3 py-2 text-right text-base md:px-6 md:py-4">Total:</td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg text-sky-600 dark:text-sky-400">
+            {{ calcularTotalPiezasPorRevisar() | number: '1.2-2' }}
+          </span>
+        </td>
+        <td class="px-3 py-2 text-right md:px-6 md:py-4">
+          <span class="text-lg text-green-600 dark:text-green-400">
+            {{ calcularTotalPesoPorRevisar() | number: '1.2-2' }}
+          </span>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>

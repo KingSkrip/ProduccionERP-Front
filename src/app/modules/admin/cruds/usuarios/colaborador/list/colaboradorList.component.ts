@@ -17,12 +17,13 @@ import { MatInputModule } from '@angular/material/input';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ColaboradorService } from 'app/modules/admin/cruds/usuarios/colaborador/colaborador.service';
-import { Observable, Subject, debounceTime, map, takeUntil } from 'rxjs';
+import { Observable, Subject, debounceTime, distinctUntilChanged, forkJoin, map, takeUntil } from 'rxjs';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { AddcolaboradorComponent } from 'app/modules/modals/Colaborador/add-colaborador/add-colaborador.component';
 import { CatalogosService } from 'app/modules/modals/modals.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmpasswordComponent } from 'app/modules/modals/Colaborador/confirm-password/confirm-password.component';
+import { FuseLoadingService } from '@fuse/services/loading';
 
 interface Step {
     id: number;
@@ -35,7 +36,6 @@ interface Step {
     standalone: true,
     imports: [
         CommonModule,
-        MatProgressBarModule,
         MatIconModule,
         FormsModule,
         ReactiveFormsModule,
@@ -64,9 +64,17 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
 
     usuarios$: Observable<any[]>;
     searchInputControl = new FormControl('');
-    isLoading: boolean = false;
     apiBase = APP_CONFIG.apiBase;
-    departamentos: any[] = [];
+
+    // Catálogos usados por el form de detalle (coinciden con lo que valida ColaboradorController@update)
+    permissions: any[] = [];
+    sub_permissions: any[] = [];
+    puestos: any[] = [];
+    areas: any[] = [];
+    turnos: any[] = [];
+    // Para jefe_id / jefe_aux_id se eligen entre los mismos colaboradores (users_firebird_identities)
+    posiblesJefes: any[] = [];
+
     // Paginación
     currentPage: number = 0;
     itemsPerPage: number = 10;
@@ -80,17 +88,19 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
     selectedUsuarioForm: UntypedFormGroup;
     selectedPhotoUrl: string = '';
     currentDetailStep: number = 1;
-    totalSteps: number = 6;
+    totalSteps: number = 5;
 
     showPassword: boolean = false;
     showPasswordConfirmation: boolean = false;
+
+    // Pasos alineados a los grupos que el backend realmente procesa en update():
+    // name/email/usuario/photo | role_id/subrol_id | puesto_id/area_id/jefe_id/jefe_aux_id | turno_id | password
     steps: Step[] = [
         { id: 1, label: 'Personal' },
-        { id: 2, label: 'Dirección' },
-        { id: 3, label: 'Administrativo' },
-        { id: 4, label: 'Fiscal/IMSS' },
-        { id: 5, label: 'Nómina' },
-        { id: 6, label: 'Credenciales' }
+        { id: 2, label: 'Rol' },
+        { id: 3, label: 'Puesto' },
+        { id: 4, label: 'Turno' },
+        { id: 5, label: 'Credenciales' }
     ];
 
     constructor(
@@ -101,14 +111,15 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
         private _matDialog: MatDialog,
         private _modals: CatalogosService,
         private _snackBar: MatSnackBar,
+        private _fuseLoadingService: FuseLoadingService,
     ) { }
 
     ngOnInit(): void {
         this.initDetailForm();
         this.loadUsuarios();
         this.setupSearch();
-        this.loadDepartamentos();
-
+        this.loadCatalogos();
+        this.loadPosiblesJefes();
     }
 
     ngOnDestroy(): void {
@@ -117,93 +128,82 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
     }
 
     initDetailForm(): void {
+        // Solo campos que ColaboradorController@update valida y procesa.
+        // Se quitaron: curp, telefono, departamento_id, direccion, empleo, fiscal,
+        // seguridad_social, nomina — el backend no los reconoce, se perdían silenciosamente.
         this.selectedUsuarioForm = this._formBuilder.group({
-            curp: [''],
+            // Personal (Firebird USUARIOS)
             name: [''],
             email: [''],
-            telefono: [''],
             usuario: [''],
-            departamento_id: [''],
+
+            // Rol / subrol (model_has_roles)
+            permission_id: [''],
+            sub_permission_id: [''],
+
+            // Puesto (user_puestos)
+            puesto_id: [''],
+            area_id: [''],
+            jefe_id: [''],
+            jefe_aux_id: [''],
+
+            // Turno (user_turnos)
+            turno_id: [''],
+
+            // Credenciales
             password: [''],
-            password_confirmation: [''],
-            direccion: this._formBuilder.group({
-                calle: [''],
-                no_ext: [''],
-                no_int: [''],
-                colonia: [''],
-                cp: [''],
-                municipio: [''],
-                estado: [''],
-                entidad_federativa: ['']
-            }),
-            empleo: this._formBuilder.group({
-                puesto: [''],
-                fecha_inicio: [''],
-                fecha_fin: [''],
-                comentarios: ['']
-            }),
-            fiscal: this._formBuilder.group({
-                rfc: [''],
-                regimen_fiscal: ['']
-            }),
-            seguridad_social: this._formBuilder.group({
-                numero_imss: [''],
-                fecha_alta: [''],
-                tipo_seguro: ['']
-            }),
-            nomina: this._formBuilder.group({
-                numero_tarjeta: [''],
-                banco: [''],
-                clabe_interbancaria: [''],
-                salario_base: [''],
-                frecuencia_pago: ['']
-            })
+            password_confirmation: ['']
         });
     }
 
     loadUsuarios(): void {
-        this.isLoading = true;
-        this._changeDetectorRef.markForCheck();
-
+        this._fuseLoadingService.show();
         this.usuarios$ = this._rhService.usuarios$.pipe(
             map(usuarios => {
-                this.isLoading = false;
                 this.updatePagination(usuarios);
+                this._fuseLoadingService.hide();
                 this._changeDetectorRef.markForCheck();
                 return usuarios;
             })
         );
 
-        this._rhService.getUsuarios().subscribe();
+        this._rhService.getUsuarios().subscribe({
+            error: () => {
+                this._fuseLoadingService.hide();
+            }
+        });
     }
 
     setupSearch(): void {
         this.searchInputControl.valueChanges
             .pipe(
                 debounceTime(300),
+                distinctUntilChanged(),
                 takeUntil(this._unsubscribeAll)
             )
             .subscribe(searchTerm => {
-                this.filterUsuarios(searchTerm || '');
+                this.currentPage = 0; // 👈 reinicia la página al buscar
+                this.filterUsuarios((searchTerm || '').trim());
             });
     }
 
     filterUsuarios(searchTerm: string): void {
         this.usuarios$ = this._rhService.usuarios$.pipe(
             map(usuarios => {
+                const lista = usuarios || [];
 
-
-                if (!searchTerm.trim()) {
-                    this.updatePagination(usuarios);
-                    return usuarios;
+                if (!searchTerm) {
+                    this.updatePagination(lista);
+                    return lista;
                 }
 
-                const filtered = usuarios.filter(u =>
-                    u.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    u.correo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    u.curp?.toLowerCase().includes(searchTerm.toLowerCase())
+                const term = searchTerm.toLowerCase();
+                const filtered = lista.filter(u =>
+                    u.nombre?.toLowerCase().includes(term) ||
+                    u.name?.toLowerCase().includes(term) ||
+                    u.correo?.toLowerCase().includes(term) ||
+                    u.email?.toLowerCase().includes(term) ||
+                    u.usuario?.toLowerCase().includes(term)
                 );
 
                 this.updatePagination(filtered);
@@ -234,7 +234,6 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
         this._changeDetectorRef.markForCheck();
     }
 
-
     nextPage(): void {
         if (this.currentPage < this.totalPages - 1) {
             this.currentPage++;
@@ -254,6 +253,43 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
         this.usuarios$.subscribe(usuarios => this.updatePagination(usuarios));
     }
 
+    /**
+     * Ventana deslizante de números de página. Arranca en la página actual
+     * (si estás en la 8, el primer número que ves es el 8) y no se mete al
+     * bloque de las últimas `tailCount` páginas para no traslaparse con ellas.
+     * `null` en el arreglo representa el separador "…".
+     */
+    private buildVisiblePages(windowSize: number, tailCount: number): (number | null)[] {
+        const total = this.totalPages;
+
+        // Si caben todas sin necesidad de recortar, se muestran todas.
+        if (total <= windowSize + tailCount) {
+            return this.totalPagesArray;
+        }
+
+        // Último arranque posible para que la ventana no choque con el bloque final.
+        const maxStart = total - tailCount - windowSize;
+        const start = Math.min(Math.max(this.currentPage, 0), maxStart);
+
+        const windowPages = Array.from({ length: windowSize }, (_, i) => start + i);
+        const lastPages = Array.from({ length: tailCount }, (_, i) => total - tailCount + i);
+
+        // Si la ventana ya llega hasta pegarse con el bloque final, no hace falta el "…".
+        const needsEllipsis = windowPages[windowPages.length - 1] < lastPages[0] - 1;
+
+        return needsEllipsis ? [...windowPages, null, ...lastPages] : [...windowPages, ...lastPages];
+    }
+
+    // Escritorio: 7 números + … + últimos 3
+    get visiblePages(): (number | null)[] {
+        return this.buildVisiblePages(7, 3);
+    }
+
+    // Mobile: 3 números + … + últimos 3
+    get visiblePagesMobile(): (number | null)[] {
+        return this.buildVisiblePages(3, 3);
+    }
+
     toggleDetails(usuario: any): void {
         if (this.selectedUsuario?.id === usuario.id) {
             this.closeDetails();
@@ -266,41 +302,49 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
         this._changeDetectorRef.markForCheck();
     }
 
-
-   
-
-    compareDepartamentos(d1: any, d2: any) {
-        return d1 && d2 ? d1.id === d2.id : d1 === d2;
+    compareById(a: any, b: any): boolean {
+        if (a === b) return true;
+        const aId = (a && typeof a === 'object') ? a.id : a;
+        const bId = (b && typeof b === 'object') ? b.id : b;
+        return aId != null && bId != null && String(aId) === String(bId);
     }
-
 
     populateDetailForm(usuario: any): void {
         this.selectedPhotoUrl = this.getPhotoUrl(usuario.photo);
 
-        this.selectedUsuarioForm.patchValue({
-            curp: usuario.curp || '',
-            name: usuario.nombre || usuario.name || '',
-            email: usuario.correo || usuario.email || '',
-            telefono: usuario.telefono || '',
-            usuario: usuario.usuario || '',
-            departamento_id: usuario.departamento_id || null, // <-- aquí asignamos el departamento
-        });
+        // TODO: confirmar la forma exacta que regresa UsuarioResource para
+        // 'roles' (rol/subrol activos) y 'user_puesto' (puesto/area/jefe/jefe_aux/turno).
+        // Aquí asumo la estructura más probable según overlayFirebirdData() del controller:
+        // usuario.roles = [{ role_id, subrol_id, role: {...}, subrol: {...} }, ...]
+        // usuario.user_puesto = { puesto_id, area_id, jefe_id, jefe_aux_id, ... }
+        // usuario.turno = { turno_id, ... } (o dentro de user_puesto/otra relación)
 
-        if (usuario.direccion) {
-            this.selectedUsuarioForm.get('direccion')?.patchValue(usuario.direccion);
-        }
-        if (usuario.empleos?.[0]) {
-            this.selectedUsuarioForm.get('empleo')?.patchValue(usuario.empleos[0]);
-        }
-        if (usuario.fiscal) {
-            this.selectedUsuarioForm.get('fiscal')?.patchValue(usuario.fiscal);
-        }
-        if (usuario.seguridad_social) {
-            this.selectedUsuarioForm.get('seguridad_social')?.patchValue(usuario.seguridad_social);
-        }
-        if (usuario.nomina) {
-            this.selectedUsuarioForm.get('nomina')?.patchValue(usuario.nomina);
-        }
+        const permissionActivo = usuario.permissions?.[0] ?? '';
+        const subPermissionActivo = usuario.sub_permissions?.[0] ?? '';
+
+        const puestoActivo = usuario.USER_PUESTO ?? usuario.user_puesto ?? null;
+
+        this.selectedUsuarioForm.patchValue({
+            name: usuario.name || usuario.nombre || '',
+            email: usuario.email || usuario.correo || '',
+            usuario: usuario.usuario || '',
+
+            // Permiso / Subpermiso
+            permission_id: permissionActivo,
+            sub_permission_id: subPermissionActivo,
+
+            // Puesto
+            puesto_id: puestoActivo?.puesto_id || '',
+            area_id: puestoActivo?.area_id || '',
+            jefe_id: puestoActivo?.jefe_id || '',
+            jefe_aux_id: puestoActivo?.jefe_aux_id || '',
+
+            // Turno
+            turno_id: usuario.TURNO_ASIGNADO?.turno_id ||
+                usuario.turno?.turno_id ||
+                usuario.turno_id ||
+                '',
+        });
     }
 
     closeDetails(): void {
@@ -346,8 +390,6 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
             }
         });
     }
-
-
 
     deleteSelectedUsuario(): void {
         if (!this.selectedUsuario) return;
@@ -415,15 +457,33 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
         return item.id || index;
     }
 
+    /**
+     * Carga los catálogos que usa el form de detalle: roles, subroles, puestos, áreas y turnos.
+     * TODO: confirmar los nombres reales de estos métodos en CatalogosService — asumí nombres
+     * simétricos a getDepartamentos() que ya usabas.
+     */
+    loadCatalogos(): void {
+        forkJoin({
+            permisos: this._rhService.getPermisosCatalogo(),
+            puestos: this._rhService.getPuestosActivos(),
+            areas: this._rhService.getAreasActivas(),
+            turnos: this._rhService.getTurnosActivos(),
+        }).subscribe({
+            next: ({ permisos, puestos, areas, turnos }) => {
+                this.permissions = permisos.permissions || [];
+                this.sub_permissions = permisos.sub_permissions || [];
 
-    loadDepartamentos(): void {
-        this._modals.getDepartamentos().subscribe(depts => {
-            this.departamentos = depts;
-            this._changeDetectorRef.markForCheck();
+                this.puestos = puestos || [];
+                this.areas = areas || [];
+                this.turnos = turnos || [];
+
+                this._changeDetectorRef.markForCheck();
+            },
+            error: (err) => {
+                console.error('Error al cargar catálogos', err);
+            }
         });
     }
-
-
     togglePasswordVisibility(): void {
         this.showPassword = !this.showPassword;
     }
@@ -448,7 +508,6 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
     blockPaste(event: ClipboardEvent): void {
         event.preventDefault();
     }
-
 
     updateColaborador(): void {
         if (!this.selectedUsuario) return;
@@ -506,19 +565,15 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
     private performUpdate(data: any, photoFile?: File): void {
         const formData = new FormData();
 
-        // === DATOS BÁSICOS ===
+        // === PERSONAL (Firebird USUARIOS) ===
         formData.append('name', data.name || '');
         formData.append('email', data.email || '');
-        formData.append('telefono', data.telefono || '');
-        formData.append('curp', data.curp || '');
         formData.append('usuario', data.usuario || '');
-        formData.append('departamento_id', data.departamento_id || '');
 
         // === FOTO ===
         if (photoFile) {
             formData.append('photo', photoFile, photoFile.name);
         }
-
 
         // === CONTRASEÑA (solo si se cambió) ===
         if (data.password) {
@@ -526,34 +581,34 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
             formData.append('current_password', data.current_password);
         }
 
-        // === GRUPOS JSON (con conversión de fechas) ===
-        const grupos = ['direccion', 'empleo', 'fiscal', 'seguridad_social', 'nomina'];
-        for (const grupo of grupos) {
-            const grupoData = data[grupo];
-            if (grupoData && Object.values(grupoData).some(v => v !== null && v !== '' && v !== undefined)) {
-                const cleanedData: any = {};
-
-                Object.keys(grupoData).forEach(key => {
-                    let value = grupoData[key];
-
-                    // DETECTAR Y CONVERTIR FECHAS dd/mm/yyyy → yyyy-mm-dd
-                    if (typeof value === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
-                        const [day, month, year] = value.split('/');
-                        value = `${year}-${month}-${day}`; // → 2025-12-18
-                    }
-
-                    if (value !== null && value !== '' && value !== undefined) {
-                        cleanedData[key] = value;
-                    }
-                });
-
-                if (Object.keys(cleanedData).length > 0) {
-                    formData.append(grupo, JSON.stringify(cleanedData));
-                }
-            }
+        // === PERMISO / SUBPERMISO ===
+        if (data.permission_id) {
+            formData.append('permission_id', data.permission_id);
         }
 
-        // === ENVÍO CON PUT (ya tienes corregido el servicio) ===
+        if (data.sub_permission_id) {
+            formData.append('sub_permission_id', data.sub_permission_id);
+        }
+
+        // === PUESTO ===
+        if (data.puesto_id) {
+            formData.append('puesto_id', data.puesto_id);
+        }
+        if (data.area_id) {
+            formData.append('area_id', data.area_id);
+        }
+        if (data.jefe_id) {
+            formData.append('jefe_id', data.jefe_id);
+        }
+        if (data.jefe_aux_id) {
+            formData.append('jefe_aux_id', data.jefe_aux_id);
+        }
+
+        // === TURNO ===
+        if (data.turno_id) {
+            formData.append('turno_id', data.turno_id);
+        }
+
         this._rhService.updateUsuario(this.selectedUsuario.id, formData).subscribe({
             next: (updatedUser) => {
                 this._snackBar.open('Colaborador actualizado correctamente', 'Éxito', {
@@ -596,7 +651,6 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
         });
     }
 
-
     onFileSelected(event: any): void {
         const file = event.target.files[0];
         if (file) {
@@ -610,32 +664,36 @@ export class ColaboradorListComponent implements OnInit, OnDestroy {
         }
     }
 
-
-
-
-
     onStatusChange(usuario: any, isActive: boolean) {
-    const status_id = isActive ? 1 : 2; // 1 = Activo, 2 = Inactivo
-    this._rhService.updateUsuarioStatus(usuario.id, status_id).subscribe({
-        next: (res) => {
-            usuario.status_id = status_id; // actualiza localmente la tabla
-            this._snackBar.open('Estado actualizado', 'Cerrar', {
-                duration: 2000,
-                panelClass: ['success-snackbar'],
-                horizontalPosition: 'end', // derecha
-                verticalPosition: 'top',   // arriba
-            });
-        },
-        error: (err) => {
-            this._snackBar.open('Error al actualizar estado', 'Cerrar', {
-                duration: 2000,
-                panelClass: ['error-snackbar'],
-                horizontalPosition: 'end', // derecha
-                verticalPosition: 'top',   // arriba
-            });
-        }
-    });
-}
+        const status_id = isActive ? 1 : 2; // 1 = Activo, 2 = Inactivo
+        this._rhService.updateUsuarioStatus(usuario.id, status_id).subscribe({
+            next: (res) => {
+                usuario.status_id = status_id; // actualiza localmente la tabla
+                this._snackBar.open('Estado actualizado', 'Cerrar', {
+                    duration: 2000,
+                    panelClass: ['success-snackbar'],
+                    horizontalPosition: 'end',
+                    verticalPosition: 'top',
+                });
+            },
+            error: (err) => {
+                this._snackBar.open('Error al actualizar estado', 'Cerrar', {
+                    duration: 2000,
+                    panelClass: ['error-snackbar'],
+                    horizontalPosition: 'end',
+                    verticalPosition: 'top',
+                });
+            }
+        });
+    }
 
 
+    loadPosiblesJefes(): void {
+        this._rhService.jefes$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(jefes => {
+                this.posiblesJefes = jefes || [];
+                this._changeDetectorRef.markForCheck(); // OnPush, no lo olvides
+            });
+    }
 }

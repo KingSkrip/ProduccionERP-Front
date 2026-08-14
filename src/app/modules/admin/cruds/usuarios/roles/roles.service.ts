@@ -47,7 +47,7 @@ export class RolesService {
     // ------------------------------------------------------------------
     // Crear rol
     // ------------------------------------------------------------------
-    createRol(payload: { NOMBRE: string; GUARD_NAME: string }): Observable<{ok: boolean, msg: string, data: Rol}> {
+    createRol(payload: { nombre: string; guard_name: string }): Observable<{ok: boolean, msg: string, data: Rol}> {
     return this.roles$.pipe(
         take(1),
         switchMap(currentRoles =>
@@ -65,14 +65,14 @@ export class RolesService {
     // ------------------------------------------------------------------
     // Actualizar rol
     // ------------------------------------------------------------------
-    updateRol(id: number, payload: { NOMBRE: string; GUARD_NAME: string }): Observable<Rol> {
+    updateRol(id: number, payload: { nombre: string; guard_name: string }): Observable<Rol> {
         return this.roles$.pipe(
             take(1),
             switchMap(currentRoles =>
                 this.http.put<{ ok: boolean; data: Rol }>(`${this.apiUrl}rol/${id}`, payload).pipe(
                     tap(res => {
                         const rolesUpdated = (currentRoles || []).map(r =>
-                            r.CLAVE === id ? res.data : r
+                            r.id === id ? res.data : r
                         );
                         this._roles.next(rolesUpdated);
                     }),
@@ -91,7 +91,7 @@ export class RolesService {
             switchMap(currentRoles =>
                 this.http.delete<{ ok: boolean }>(`${this.apiUrl}rol/${id}`).pipe(
                     tap(() => {
-                        const updated = (currentRoles || []).filter(r => r.CLAVE !== id);
+                        const updated = (currentRoles || []).filter(r => r.id !== id);
                         this._roles.next(updated);
                     }),
                     map(() => true)

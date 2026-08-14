@@ -1,124 +1,124 @@
-<div
-  class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm md:items-center md:p-4"
-  (click)="dialogRef.close()"
->
-  <div
-    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-300 shadow-2xl md:max-h-[88vh] md:rounded-2xl dark:border-gray-700"
-    (click)="$event.stopPropagation()"
-  >
-    <!-- ── Header ── -->
-    <div class="bg-default shrink-0">
-      <!-- Drag handle (solo móvil) -->
-      <div class="flex cursor-grab justify-center pb-1 pt-2 active:cursor-grabbing md:hidden">
-        <div class="h-1.5 w-11 rounded-full bg-primary-500"></div>
-      </div>
-
-      <div class="bg-default flex items-center justify-between gap-3 px-5 py-4">
-        <div class="flex min-w-0 items-center gap-3">
-          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-500">
-            <mat-icon class="text-black dark:text-primary-400">download</mat-icon>
-          </div>
-          <div class="min-w-0">
-            <h2 class="truncate text-base font-semibold leading-tight text-black dark:text-white">
-              Exportar asistencia
-            </h2>
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              Filtra la información antes de exportar
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          class="flex hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-black md:block dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-          (click)="dialogRef.close()"
-          aria-label="Cerrar"
-        >
-          <mat-icon class="text-base">close</mat-icon>
-        </button>
-      </div>
-    </div>
-
-    <!-- ── Body ── -->
-    <div class="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-5 md:px-8">
-      <div class="min-w-0 max-w-lg">
-        <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
-          ¿Qué datos quieres exportar?
-        </h3>
-        <p class="mt-1 text-sm text-black dark:text-white">
-          Los filtros son opcionales. Si no seleccionas nada, se exportará todo.
-        </p>
-      </div>
-
-      <!-- Empresa -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Empresa (opcional)</label>
-        <div class="relative">
-          <select
-            [(ngModel)]="empresa"
-            (change)="onFiltroCambio()"
-            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option [ngValue]="undefined">Todas</option>
-            <option *ngFor="let e of data.empresas" [ngValue]="e.id">{{ e.nombre }}</option>
-          </select>
-          <mat-icon
-            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
-            >business</mat-icon
-          >
-        </div>
-      </div>
-
-      <!-- Área -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Área (opcional)</label>
-        <div class="relative">
-          <select
-            [(ngModel)]="areaId"
-            (change)="onFiltroCambio()"
-            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option [ngValue]="undefined">Todas</option>
-            <option *ngFor="let a of data.areas" [ngValue]="a.id">{{ a.nombre }}</option>
-          </select>
-          <mat-icon
-            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
-            >apartment</mat-icon
-          >
-        </div>
-      </div>
-
-      <!-- Trabajador -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-black dark:text-white">Trabajador (opcional)</label>
-        <div class="relative">
-          <select
-            [(ngModel)]="identityId"
-            [disabled]="cargandoEmpleados"
-            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-700 dark:text-white"
-          >
-            <option [ngValue]="undefined">{{ cargandoEmpleados ? 'Cargando…' : 'Todos' }}</option>
-            <option *ngFor="let emp of empleados" [ngValue]="emp.id">{{ emp.nombre }}</option>
-          </select>
-          <mat-icon
-            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
-            >person</mat-icon
-          >
-        </div>
-        <p *ngIf="cargandoEmpleados" class="text-xs text-gray-400 dark:text-gray-500">
-          Cargando empleados…
-        </p>
-      </div>
-    </div>
-
-    <!-- ── Footer fijo ── -->
-    <div class="ps-footer bg-default flex shrink-0 justify-between gap-3 px-5 py-4 md:px-8 md:py-5">
-      <button type="button" class="ps-btn ps-btn--ghost" (click)="dialogRef.close()">
-        Cancelar
-      </button>
-      <button type="button" class="ps-btn ps-btn--primary" (click)="exportar()">
-        <mat-icon class="!text-[18px]">download</mat-icon>
-        Exportar
-      </button>
-    </div>
-  </div>
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm md:items-center md:p-4"
+  (click)="dialogRef.close()"
+>
+  <div
+    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-300 shadow-2xl md:max-h-[88vh] md:rounded-2xl dark:border-gray-700"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- ── Header ── -->
+    <div class="bg-default shrink-0">
+      <!-- Drag handle (solo móvil) -->
+      <div class="flex cursor-grab justify-center pb-1 pt-2 active:cursor-grabbing md:hidden">
+        <div class="h-1.5 w-11 rounded-full bg-primary-500"></div>
+      </div>
+
+      <div class="bg-default flex items-center justify-between gap-3 px-5 py-4">
+        <div class="flex min-w-0 items-center gap-3">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-500">
+            <mat-icon class="text-black dark:text-primary-400">download</mat-icon>
+          </div>
+          <div class="min-w-0">
+            <h2 class="truncate text-base font-semibold leading-tight text-black dark:text-white">
+              Exportar asistencia
+            </h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Filtra la información antes de exportar
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="flex hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-black md:block dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+          (click)="dialogRef.close()"
+          aria-label="Cerrar"
+        >
+          <mat-icon class="text-base">close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Body ── -->
+    <div class="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-5 md:px-8">
+      <div class="min-w-0 max-w-lg">
+        <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
+          ¿Qué datos quieres exportar?
+        </h3>
+        <p class="mt-1 text-sm text-black dark:text-white">
+          Los filtros son opcionales. Si no seleccionas nada, se exportará todo.
+        </p>
+      </div>
+
+      <!-- Empresa -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Empresa (opcional)</label>
+        <div class="relative">
+          <select
+            [(ngModel)]="empresa"
+            (change)="onFiltroCambio()"
+            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+          >
+            <option [ngValue]="undefined">Todas</option>
+            <option *ngFor="let e of data.empresas" [ngValue]="e.id">{{ e.nombre }}</option>
+          </select>
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+            >business</mat-icon
+          >
+        </div>
+      </div>
+
+      <!-- Área -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Área (opcional)</label>
+        <div class="relative">
+          <select
+            [(ngModel)]="areaId"
+            (change)="onFiltroCambio()"
+            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+          >
+            <option [ngValue]="undefined">Todas</option>
+            <option *ngFor="let a of data.areas" [ngValue]="a.id">{{ a.nombre }}</option>
+          </select>
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+            >apartment</mat-icon
+          >
+        </div>
+      </div>
+
+      <!-- Trabajador -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Trabajador (opcional)</label>
+        <div class="relative">
+          <select
+            [(ngModel)]="identityId"
+            [disabled]="cargandoEmpleados"
+            class="appearance-none w-full cursor-pointer rounded-lg border border-slate-300 py-2.5 pl-3 pr-10 text-sm text-black transition [-moz-appearance:none] [-webkit-appearance:none] focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-700 dark:text-white"
+          >
+            <option [ngValue]="undefined">{{ cargandoEmpleados ? 'Cargando…' : 'Todos' }}</option>
+            <option *ngFor="let emp of empleados" [ngValue]="emp.id">{{ emp.nombre }}</option>
+          </select>
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+            >person</mat-icon
+          >
+        </div>
+        <p *ngIf="cargandoEmpleados" class="text-xs text-gray-400 dark:text-gray-500">
+          Cargando empleados…
+        </p>
+      </div>
+    </div>
+
+    <!-- ── Footer fijo ── -->
+    <div class="ps-footer bg-default flex shrink-0 justify-between gap-3 px-5 py-4 md:px-8 md:py-5">
+      <button type="button" class="ps-btn ps-btn--ghost" (click)="dialogRef.close()">
+        Cancelar
+      </button>
+      <button type="button" class="ps-btn ps-btn--primary" (click)="exportar()">
+        <mat-icon class="!text-[18px]">download</mat-icon>
+        Exportar
+      </button>
+    </div>
+  </div>
 </div>

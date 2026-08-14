@@ -14,10 +14,8 @@
   color: #fff;
 }
 
-
 /* ===== Tabs estilo "pestañas" ===== */
 .tabs-pestanas {
-
   /* quita la línea/indicador */
   .mat-mdc-tab-indicator {
     display: none;
@@ -68,8 +66,6 @@
     border-bottom: 0;
   }
 
-
-
   /* === FIX: quitar underline/inkbar en Angular Material MDC === */
   .tabs-pestanas .mat-mdc-tab-indicator,
   .tabs-pestanas .mat-mdc-tab-indicator__content,
@@ -86,10 +82,6 @@
     content: none !important;
     border: 0 !important;
   }
-
-
-
-
 
   .search-compact {
     --mat-form-field-container-height: 44px;
@@ -114,12 +106,8 @@
     }
   }
 
-
-
-
   /* Solo el nav hijo */
-  fuse-vertical-navigation[name="reportProdNav"] {
-
+  fuse-vertical-navigation[name='reportProdNav'] {
     /* Reduce ancho total del nav */
     width: 64px !important;
 
@@ -127,22 +115,21 @@
       padding: 6px 0 !important;
     }
 
-    
-
     /* Texto debajo del icono */
     .fuse-vertical-navigation-item-title {
       font-size: 10px !important;
       margin-top: 2px;
     }
   }
-
-
-
 }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-
-
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
 
 /* Esto es lo único de CSS que necesitas para matar el margen de Material */
 ::ng-deep .day-citas-modal-panel {
@@ -153,7 +140,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   }
 }
 
-
 .modal-cita-panel .mat-mdc-dialog-container {
   padding: 0 !important;
 }
@@ -161,18 +147,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .modal-cita-panel .mat-mdc-dialog-surface {
   padding: 0 !important;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // styles.scss (global)
 .ps-dialog-panel {
@@ -196,4 +170,16 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   max-width: 100vw !important;
   width: 100vw !important;
   height: 100dvh !important;
+}
+
+//ADD-ROL
+.modal-rol-panel .mat-mdc-dialog-container {
+  padding: 0 !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+}
+
+.modal-rol-panel .mat-mdc-dialog-surface {
+  padding: 0 !important;
+  border-radius: 18px !important;
 }

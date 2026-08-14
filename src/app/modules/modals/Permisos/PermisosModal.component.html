@@ -1,571 +1,571 @@
-<div
-  class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm md:items-center md:p-4"
-  (click)="cerrarModal()"
->
-  <div
-    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-300 shadow-2xl md:max-h-[88vh] md:max-w-2xl md:rounded-2xl dark:border-gray-700"
-    [class.select-none]="isDragging"
-    [style.transform]="dragTransform"
-    [style.transition]="dragTransition"
-    (click)="$event.stopPropagation()"
-    [@slideUpPermiso]
-  >
-    <!-- ── Header (fijo) ── -->
-    <div
-      class="bg-default shrink-0"
-      (touchstart)="onTouchStart($event)"
-      (touchmove)="onTouchMove($event)"
-      (touchend)="onTouchEnd()"
-    >
-      <!-- Drag handle (solo móvil) -->
-      <div class="flex cursor-grab justify-center pb-1 pt-2 active:cursor-grabbing md:hidden">
-        <div
-          class="h-1.5 w-11 rounded-full bg-primary-500 transition-colors active:bg-primary-500"
-        ></div>
-      </div>
-      <!-- header -->
-      <div class="bg-default flex items-center justify-between gap-3 px-5 py-4">
-        <div class="flex min-w-0 items-center gap-3">
-          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-500">
-            <mat-icon class="text-black dark:text-primary-400">event_available</mat-icon>
-          </div>
-          <div class="min-w-0">
-            <h2 class="truncate text-base font-semibold leading-tight text-black dark:text-white">
-              Nueva solicitud de permiso
-            </h2>
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              Paso {{ (stepper.selectedIndex ?? 0) + 1 }} de {{ requierePagoTiempo ? 4 : 3 }}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          class="flex hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-black md:block dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-          (click)="cerrarModal()"
-          aria-label="Cerrar"
-        >
-          <mat-icon class="text-base">close</mat-icon>
-        </button>
-      </div>
-
-      <mat-progress-bar
-        mode="determinate"
-        color="primary"
-        [value]="(((stepper.selectedIndex ?? 0) + 1) / (requierePagoTiempo ? 4 : 3)) * 100"
-      ></mat-progress-bar>
-    </div>
-
-    @if (mensaje) {
-      <div
-        class="mx-5 mt-4 flex shrink-0 items-start gap-3 rounded-2xl border px-4 py-3.5 text-[13.5px] font-medium leading-snug md:mx-8"
-        role="alert"
-        aria-live="polite"
-        [ngClass]="
-          mensaje.tipo === 'ok'
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400'
-            : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400'
-        "
-      >
-        <mat-icon class="mt-0.5 shrink-0 !text-[18px]">{{
-          mensaje.tipo === 'ok' ? 'check_circle' : 'error'
-        }}</mat-icon>
-        <span class="min-w-0">{{ mensaje.texto }}</span>
-      </div>
-    }
-
-    <!-- ── Body: Wizard ── -->
-    <form [formGroup]="form" class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <mat-stepper #stepper linear class="ps-stepper flex min-w-0 flex-1 flex-col overflow-hidden">
-        <!-- ═══ PASO 1 · Tipo de permiso ═══ -->
-        <mat-step
-          label="Tipo de permiso"
-          [completed]="!!form.get('checador_catalogo_permiso_id')?.valid"
-        >
-          <div class="flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto">
-            <div class="min-w-0 max-w-lg">
-              <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
-                ¿Qué permiso necesitas?
-              </h3>
-              <p class="mt-1 text-sm text-black dark:text-white">
-                Elige el tipo de solicitud. Los siguientes pasos se ajustan según tu selección.
-              </p>
-            </div>
-
-            <mat-form-field appearance="outline" class="ps-field w-full">
-              <mat-label class="text-black dark:text-white">Tipo de permiso</mat-label>
-              <mat-select
-                formControlName="checador_catalogo_permiso_id"
-                [disabled]="cargandoCatalogo"
-                panelClass="permisos-select-panel"
-              >
-                @for (item of catalogo; track item.id) {
-                  <mat-option [value]="item.id">{{ item.nombre }}</mat-option>
-                }
-              </mat-select>
-              <mat-icon matPrefix class="ps-prefix-icon text-black dark:text-white"
-                >event_note</mat-icon
-              >
-              @if (cargandoCatalogo) {
-                <mat-hint>Cargando catálogo…</mat-hint>
-              }
-              @if (
-                form.get('checador_catalogo_permiso_id')?.touched &&
-                form.get('checador_catalogo_permiso_id')?.invalid
-              ) {
-                <mat-error>Selecciona un tipo de permiso.</mat-error>
-              }
-            </mat-form-field>
-          </div>
-        </mat-step>
-
-        <!-- ═══ PASO 2 · Fechas y horario ═══ -->
-        <mat-step
-          label="Fechas y horario"
-          [completed]="
-            !!form.get('fecha_inicio')?.valid &&
-            !!form.get('fecha_fin')?.valid &&
-            (todoElDia || noRegresa || !!form.get('hora_fin')?.valid)
-          "
-          class="overflow-hidden"
-        >
-          <div class="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden">
-            <div class="min-w-0">
-              <div class="min-w-0 max-w-lg">
-                <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
-                  ¿Cuándo será el permiso?
-                </h3>
-                <p class="mt-1 text-sm text-black dark:text-white">
-                  Si es un solo día, usa la misma fecha en ambos campos.
-                </p>
-              </div>
-
-              <div class="mt-4 grid min-w-0 grid-cols-1 gap-3.5 md:grid-cols-2 md:gap-4">
-                <mat-form-field appearance="outline" class="ps-field min-w-0">
-                  <mat-label class="text-black dark:text-white">Fecha de inicio</mat-label>
-                  <input matInput type="date" formControlName="fecha_inicio" #fechaInicioPc />
-                  <button
-                    mat-icon-button
-                    matSuffix
-                    type="button"
-                    class="ps-suffix-btn"
-                    (click)="abrirFecha(fechaInicioPc)"
-                    tabindex="-1"
-                  >
-                    <mat-icon class="text-black icon-size-5 dark:text-white">
-                      calendar_today
-                    </mat-icon>
-                  </button>
-                  @if (form.get('fecha_inicio')?.touched && form.get('fecha_inicio')?.invalid) {
-                    <mat-error>Requerida.</mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="ps-field min-w-0">
-                  <mat-label class="text-black dark:text-white">Fecha de término</mat-label>
-                  <input matInput type="date" formControlName="fecha_fin" #fechaFinPc />
-                  <button
-                    mat-icon-button
-                    matSuffix
-                    type="button"
-                    class="ps-suffix-btn"
-                    (click)="abrirFecha(fechaFinPc)"
-                    tabindex="-1"
-                  >
-                    <mat-icon class="text-black icon-size-5 dark:text-white"
-                      >calendar_today</mat-icon
-                    >
-                  </button>
-                  @if (form.get('fecha_fin')?.touched && form.get('fecha_fin')?.invalid) {
-                    <mat-error>Requerida.</mat-error>
-                  }
-                </mat-form-field>
-              </div>
-
-              <div class="grid min-w-0 grid-cols-1 gap-3.5 md:grid-cols-2 md:gap-2">
-                <!-- Todo el día -->
-                <label
-                  class="ps-toggle-row bg-default h-full min-w-0 rounded-lg border border-gray-400 p-2"
-                  [class.ps-toggle-row--active]="todoElDia"
-                  [ngClass]="todoElDia ? 'border-primary-500' : 'border-gray-400'"
-                >
-                  <div class="flex min-w-0 items-center gap-3.5">
-                    <div class="flex min-w-0 flex-col">
-                      <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
-                        Voy a faltar todo el día
-                      </h3>
-                      <p class="mt-1 text-xs text-black dark:text-white">
-                        @if (todoElDia) {
-                          No checarás entrada ni salida. Se registra como ausencia completa.
-                        } @else {
-                          Actívalo si de plano no vas a venir en todo el día.
-                        }
-                      </p>
-                    </div>
-                  </div>
-
-                  <mat-slide-toggle formControlName="todo_el_dia" class="ps-toggle shrink-0">
-                  </mat-slide-toggle>
-                </label>
-
-                <!-- No regresa -->
-                @if (!todoElDia) {
-                  <label
-                    class="ps-toggle-row bg-default h-full min-w-0 rounded-lg border border-gray-400 p-2"
-                    [class.ps-toggle-row--active]="noRegresa"
-                    [ngClass]="noRegresa ? 'border-primary-500' : 'border-gray-400'"
-                  >
-                    <div class="flex min-w-0 items-center gap-3.5">
-                      <div class="flex min-w-0 flex-col">
-                        <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
-                          No regreso el resto del día
-                        </h3>
-                        <p class="mt-1 text-xs text-black dark:text-white">
-                          @if (noRegresa) {
-                            Se registrará tu ausencia hasta el final de tu turno.
-                          } @else {
-                            Marca esto si te vas y no vuelves hoy.
-                          }
-                        </p>
-                      </div>
-                    </div>
-
-                    <mat-slide-toggle formControlName="no_regresa" class="ps-toggle shrink-0">
-                    </mat-slide-toggle>
-                  </label>
-                }
-              </div>
-
-              @if (!todoElDia) {
-                <div
-                  class="mt-4 grid min-w-0 gap-3.5 md:gap-4"
-                  [ngClass]="{ 'md:grid-cols-2': !noRegresa }"
-                >
-                  <mat-form-field appearance="outline" class="ps-field min-w-0">
-                    <mat-label class="text-black dark:text-white">
-                      {{ noRegresa ? 'Hora de salida' : 'Hora de inicio' }}
-                    </mat-label>
-                    <input
-                      #horaInicio
-                      matInput
-                      type="time"
-                      formControlName="hora_inicio"
-                      class="text-black dark:text-white"
-                    />
-                    <button
-                      mat-icon-button
-                      matSuffix
-                      type="button"
-                      class="ps-suffix-btn"
-                      (click)="abrirHora(horaInicio)"
-                      tabindex="-1"
-                    >
-                      <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
-                    </button>
-                    @if (noRegresa) {
-                      <mat-hint>Si no la indicas, se usará tu hora de entrada.</mat-hint>
-                    }
-                  </mat-form-field>
-
-                  @if (!noRegresa) {
-                    <mat-form-field appearance="outline" class="ps-field min-w-0">
-                      <mat-label>Hora de regreso</mat-label>
-                      <input #horaFin matInput type="time" formControlName="hora_fin" />
-                      <button
-                        mat-icon-button
-                        matSuffix
-                        type="button"
-                        class="ps-suffix-btn"
-                        (click)="abrirHora(horaFin)"
-                        tabindex="-1"
-                      >
-                        <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
-                      </button>
-                      @if (form.get('hora_fin')?.touched && form.get('hora_fin')?.invalid) {
-                        <mat-error>Indica a qué hora regresas.</mat-error>
-                      } @else {
-                        <mat-hint>Será tu hora máxima de regreso.</mat-hint>
-                      }
-                    </mat-form-field>
-                  }
-                </div>
-              }
-            </div>
-          </div>
-        </mat-step>
-
-        <!-- ═══ PASO 3 · Pago de tiempo (solo si aplica) ═══ -->
-        @if (requierePagoTiempo) {
-          <mat-step
-            label="Pago de tiempo"
-            [completed]="
-              !!form.get('tipo_pago_tiempo')?.valid &&
-              (!muestraReposicionDia || !!form.get('fecha_reposicion')?.valid)
-            "
-          >
-            <div class="flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden">
-              <div class="min-w-0 max-w-lg">
-                <div class="flex items-center gap-2">
-                  <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
-                    ¿Cómo pagarás el tiempo?
-                  </h3>
-                  <mat-icon
-                    class="shrink-0 !text-[16px] text-black dark:text-white"
-                    matTooltip="Este permiso requiere que decidas cómo se compensará el tiempo de tu ausencia."
-                  >
-                    info_outline
-                  </mat-icon>
-                </div>
-                <p class="text-sm text-black dark:text-white">
-                  Elige la forma en que se compensará tu tiempo de ausencia.
-                </p>
-              </div>
-
-              <mat-radio-group formControlName="tipo_pago_tiempo" class="flex flex-col gap-3">
-                @for (opt of pagoTiempoOptions; track opt.value) {
-                  <label
-                    class="ps-radio-card bg-default flex cursor-pointer items-start gap-3 rounded-lg border border-gray-400 p-4"
-                    [class.ps-radio-card--active]="
-                      form.get('tipo_pago_tiempo')?.value === opt.value
-                    "
-                  >
-                    <mat-radio-button [value]="opt.value" class="mt-1 shrink-0"> </mat-radio-button>
-
-                    <div class="ps-radio-card__icon mt-1 shrink-0">
-                      <mat-icon class="icon-size-5">
-                        {{ opt.icon }}
-                      </mat-icon>
-                    </div>
-
-                    <div class="min-w-0 flex-1">
-                      <div class="text-[14px] font-medium text-black dark:text-white">
-                        {{ opt.label }}
-                      </div>
-
-                      <p class="mt-1 text-sm leading-5 text-black dark:text-white">
-                        {{ opt.descripcion }}
-                      </p>
-                    </div>
-                  </label>
-                }
-              </mat-radio-group>
-
-              @if (form.get('tipo_pago_tiempo')?.touched && form.get('tipo_pago_tiempo')?.invalid) {
-                <span class="flex items-center gap-1.5 text-[12.5px] font-medium text-rose-500">
-                  <mat-icon class="shrink-0 !text-[15px]">error_outline</mat-icon>
-                  Selecciona cómo pagarás el tiempo.
-                </span>
-              }
-
-              @if (muestraInfoTiempoPorTiempo) {
-                <div class="ps-info-box min-w-0">
-                  <div
-                    class="flex items-start gap-2.5 rounded-lg border border-primary-500 bg-accent-500/30 p-2 text-black dark:text-white"
-                  >
-                    <mat-icon class="mt-0.5 shrink-0 text-black dark:text-white"> info </mat-icon>
-                    <div class="min-w-0 text-xs leading-relaxed">
-                      <p class="font-semibold">¿Cómo funciona?</p>
-                      <p class="mt-1">
-                        El tiempo que debes se irá pagando automáticamente conforme cheques:
-                      </p>
-                      <ul class="mt-1.5 list-inside list-disc space-y-1">
-                        <li>
-                          <strong class="font-medium">Antes de tu hora de entrada</strong> → esos
-                          minutos pagan deuda
-                        </li>
-                        <li>
-                          <strong class="font-medium">Después de tu hora de salida</strong> → esos
-                          minutos pagan deuda
-                        </li>
-                      </ul>
-                      <p class="mt-1.5">
-                        Si no debes tiempo, ese mismo tiempo se contará como tiempo extra.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              }
-
-              @if (muestraReposicionDia) {
-                <mat-form-field appearance="outline" class="ps-field w-full">
-                  <mat-label>Fecha de reposición</mat-label>
-                  <input matInput type="date" formControlName="fecha_reposicion" #fechaReposicion />
-                  <button
-                    mat-icon-button
-                    matSuffix
-                    type="button"
-                    class="ps-suffix-btn"
-                    (click)="abrirFecha(fechaReposicion)"
-                    tabindex="-1"
-                  >
-                    <mat-icon class="!text-[18px]">calendar_today</mat-icon>
-                  </button>
-                  <mat-hint
-                    >Al aprobar se generará automáticamente tu permiso para venir ese día.</mat-hint
-                  >
-                  @if (
-                    form.get('fecha_reposicion')?.touched && form.get('fecha_reposicion')?.invalid
-                  ) {
-                    <mat-error>Fecha requerida.</mat-error>
-                  }
-                </mat-form-field>
-              }
-
-              @if (muestraJustificacionPago) {
-                <mat-form-field appearance="outline" class="ps-field w-full">
-                  <mat-label>Justificación (opcional)</mat-label>
-                  <textarea
-                    matInput
-                    formControlName="justificacion_pago_tiempo"
-                    rows="2"
-                    maxlength="255"
-                    placeholder="Razón adicional sobre cómo pagarás el tiempo…"
-                  ></textarea>
-                </mat-form-field>
-              }
-            </div>
-          </mat-step>
-        }
-
-        <!-- ═══ PASO 4 · Motivo y revisión ═══ -->
-        <mat-step label="Motivo y revisión" [completed]="!!form.get('motivo')?.valid">
-          <div class="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden">
-            <div class="min-w-0 max-w-lg">
-              <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
-                Revisa tu solicitud y envíala
-              </h3>
-              <p class="mt-1 text-sm text-black dark:text-white">
-                Cuéntanos brevemente el motivo antes de enviar.
-              </p>
-            </div>
-
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label class="text-black dark:text-white">Motivo del permiso</mat-label>
-              <textarea
-                matInput
-                formControlName="motivo"
-                rows="3"
-                maxlength="255"
-                placeholder="Ej. Cita médica, trámite personal, etc."
-              ></textarea>
-              <mat-hint align="end">{{ form.get('motivo')?.value?.length || 0 }}/255</mat-hint>
-              @if (form.get('motivo')?.touched && form.get('motivo')?.invalid) {
-                <mat-error>Escribe el motivo del permiso.</mat-error>
-              }
-            </mat-form-field>
-
-            <p class="text-sm text-black dark:text-white">Resumen de tu solicitud</p>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-x-6 md:gap-y-4">
-              <div class="ps-summary__row">
-                <mat-icon class="shrink-0 text-black icon-size-5 dark:text-white">
-                  event_note
-                </mat-icon>
-                <span class="min-w-0 text-[13.5px] font-medium text-black dark:text-white">
-                  {{ nombreTipoPermisoSeleccionado }}
-                </span>
-              </div>
-
-              <div class="ps-summary__row">
-                <mat-icon class="shrink-0 text-black icon-size-5 dark:text-white">
-                  calendar_today
-                </mat-icon>
-                <span class="min-w-0 text-[13.5px] font-medium text-black dark:text-white">
-                  {{ form.get('fecha_inicio')?.value }} → {{ form.get('fecha_fin')?.value }}
-                </span>
-              </div>
-
-              <div class="ps-summary__row">
-                <mat-icon class="shrink-0 text-black icon-size-5 dark:text-white">
-                  schedule
-                </mat-icon>
-
-                <span class="min-w-0 text-[13.5px] font-medium text-black dark:text-white">
-                  @if (todoElDia) {
-                    Todo el día
-                  } @else if (noRegresa) {
-                    Sale {{ form.get('hora_inicio')?.value || '—' }} · No regresa
-                  } @else {
-                    {{ form.get('hora_inicio')?.value || '—' }} -
-                    {{ form.get('hora_fin')?.value || '—' }}
-                  }
-                </span>
-              </div>
-
-              @if (requierePagoTiempo && form.get('tipo_pago_tiempo')?.value) {
-                <div class="ps-summary__row">
-                  <mat-icon class="shrink-0 text-black icon-size-5 dark:text-white">
-                    payments
-                  </mat-icon>
-
-                  <span class="min-w-0 text-[13.5px] font-medium text-black dark:text-white">
-                    {{ pagoTiempoOptionLabel() }}
-                  </span>
-                </div>
-
-                @if (muestraReposicionDia && form.get('fecha_reposicion')?.value) {
-                  <div
-                    class="flex items-center gap-2 pl-[26px] text-[12px] text-gray-400 md:col-span-2 dark:text-gray-500"
-                  >
-                    <mat-icon class="!text-[15px]">event_repeat</mat-icon>
-                    <span>Repone el {{ form.get('fecha_reposicion')?.value }}</span>
-                  </div>
-                }
-              }
-            </div>
-
-            <div class="mt-5 flex flex-wrap gap-2">
-              @if (todoElDia) {
-                <span class="ps-chip ps-chip--primary">Ausencia completa</span>
-              }
-
-              @if (noRegresa && !todoElDia) {
-                <span class="ps-chip ps-chip--primary">No regresa</span>
-              }
-
-              @if (requiereReposicionTiempo) {
-                <span class="ps-chip ps-chip--amber"> Requiere pago de tiempo </span>
-              }
-            </div>
-          </div>
-        </mat-step>
-      </mat-stepper>
-
-      <!-- ── Footer fijo único (Atrás / Siguiente / Solicitar) ── -->
-      <div
-        class="ps-footer bg-default flex shrink-0 justify-between gap-3 px-5 py-4 md:px-8 md:py-5"
-      >
-        @if ((stepper.selectedIndex ?? 0) > 0) {
-          <button type="button" class="ps-btn ps-btn--ghost" (click)="stepper.previous()">
-            <mat-icon class="!text-[18px]">arrow_back</mat-icon>
-            Atrás
-          </button>
-        } @else {
-          <span></span>
-        }
-
-        @if (esUltimoPaso(stepper.selectedIndex ?? 0)) {
-          <button
-            type="button"
-            class="ps-btn ps-btn--primary"
-            [disabled]="enviando"
-            (click)="enviarSolicitud()"
-          >
-            <mat-icon class="!text-[18px]" [class.animate-spin]="enviando">{{
-              enviando ? 'sync' : 'save'
-            }}</mat-icon>
-            {{ enviando ? 'Enviando…' : 'Solicitar permiso' }}
-          </button>
-        } @else {
-          <button
-            type="button"
-            class="ps-btn ps-btn--primary"
-            [disabled]="siguienteDeshabilitado(stepper.selectedIndex ?? 0)"
-            (click)="siguiente(stepper)"
-          >
-            Siguiente
-            <mat-icon class="!text-[18px]">arrow_forward</mat-icon>
-          </button>
-        }
-      </div>
-    </form>
-  </div>
-</div>
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm md:items-center md:p-4"
+  (click)="cerrarModal()"
+>
+  <div
+    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-300 shadow-2xl md:max-h-[88vh] md:max-w-2xl md:rounded-2xl dark:border-gray-700"
+    [class.select-none]="isDragging"
+    [style.transform]="dragTransform"
+    [style.transition]="dragTransition"
+    (click)="$event.stopPropagation()"
+    [@slideUpPermiso]
+  >
+    <!-- ── Header (fijo) ── -->
+    <div
+      class="bg-default shrink-0"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd()"
+    >
+      <!-- Drag handle (solo móvil) -->
+      <div class="flex cursor-grab justify-center pb-1 pt-2 active:cursor-grabbing md:hidden">
+        <div
+          class="h-1.5 w-11 rounded-full bg-primary-500 transition-colors active:bg-primary-500"
+        ></div>
+      </div>
+      <!-- header -->
+      <div class="bg-default flex items-center justify-between gap-3 px-5 py-4">
+        <div class="flex min-w-0 items-center gap-3">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-500">
+            <mat-icon class="text-black dark:text-primary-400">event_available</mat-icon>
+          </div>
+          <div class="min-w-0">
+            <h2 class="truncate text-base font-semibold leading-tight text-black dark:text-white">
+              Nueva solicitud de permiso
+            </h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Paso {{ (stepper.selectedIndex ?? 0) + 1 }} de {{ requierePagoTiempo ? 4 : 3 }}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="flex hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-black md:block dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+          (click)="cerrarModal()"
+          aria-label="Cerrar"
+        >
+          <mat-icon class="text-base">close</mat-icon>
+        </button>
+      </div>
+
+      <mat-progress-bar
+        mode="determinate"
+        color="primary"
+        [value]="(((stepper.selectedIndex ?? 0) + 1) / (requierePagoTiempo ? 4 : 3)) * 100"
+      ></mat-progress-bar>
+    </div>
+
+    @if (mensaje) {
+      <div
+        class="mx-5 mt-4 flex shrink-0 items-start gap-3 rounded-2xl border px-4 py-3.5 text-[13.5px] font-medium leading-snug md:mx-8"
+        role="alert"
+        aria-live="polite"
+        [ngClass]="
+          mensaje.tipo === 'ok'
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400'
+            : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400'
+        "
+      >
+        <mat-icon class="mt-0.5 shrink-0 !text-[18px]">{{
+          mensaje.tipo === 'ok' ? 'check_circle' : 'error'
+        }}</mat-icon>
+        <span class="min-w-0">{{ mensaje.texto }}</span>
+      </div>
+    }
+
+    <!-- ── Body: Wizard ── -->
+    <form [formGroup]="form" class="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <mat-stepper #stepper linear class="ps-stepper flex min-w-0 flex-1 flex-col overflow-hidden">
+        <!-- ═══ PASO 1 · Tipo de permiso ═══ -->
+        <mat-step
+          label="Tipo de permiso"
+          [completed]="!!form.get('checador_catalogo_permiso_id')?.valid"
+        >
+          <div class="flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto">
+            <div class="min-w-0 max-w-lg">
+              <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
+                ¿Qué permiso necesitas?
+              </h3>
+              <p class="mt-1 text-sm text-black dark:text-white">
+                Elige el tipo de solicitud. Los siguientes pasos se ajustan según tu selección.
+              </p>
+            </div>
+
+            <mat-form-field appearance="outline" class="ps-field w-full">
+              <mat-label class="text-black dark:text-white">Tipo de permiso</mat-label>
+              <mat-select
+                formControlName="checador_catalogo_permiso_id"
+                [disabled]="cargandoCatalogo"
+                panelClass="permisos-select-panel"
+              >
+                @for (item of catalogo; track item.id) {
+                  <mat-option [value]="item.id">{{ item.nombre }}</mat-option>
+                }
+              </mat-select>
+              <mat-icon matPrefix class="ps-prefix-icon text-black dark:text-white"
+                >event_note</mat-icon
+              >
+              @if (cargandoCatalogo) {
+                <mat-hint>Cargando catálogo…</mat-hint>
+              }
+              @if (
+                form.get('checador_catalogo_permiso_id')?.touched &&
+                form.get('checador_catalogo_permiso_id')?.invalid
+              ) {
+                <mat-error>Selecciona un tipo de permiso.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </mat-step>
+
+        <!-- ═══ PASO 2 · Fechas y horario ═══ -->
+        <mat-step
+          label="Fechas y horario"
+          [completed]="
+            !!form.get('fecha_inicio')?.valid &&
+            !!form.get('fecha_fin')?.valid &&
+            (todoElDia || noRegresa || !!form.get('hora_fin')?.valid)
+          "
+          class="overflow-hidden"
+        >
+          <div class="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden">
+            <div class="min-w-0">
+              <div class="min-w-0 max-w-lg">
+                <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
+                  ¿Cuándo será el permiso?
+                </h3>
+                <p class="mt-1 text-sm text-black dark:text-white">
+                  Si es un solo día, usa la misma fecha en ambos campos.
+                </p>
+              </div>
+
+              <div class="mt-4 grid min-w-0 grid-cols-1 gap-3.5 md:grid-cols-2 md:gap-4">
+                <mat-form-field appearance="outline" class="ps-field min-w-0">
+                  <mat-label class="text-black dark:text-white">Fecha de inicio</mat-label>
+                  <input matInput type="date" formControlName="fecha_inicio" #fechaInicioPc />
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    type="button"
+                    class="ps-suffix-btn"
+                    (click)="abrirFecha(fechaInicioPc)"
+                    tabindex="-1"
+                  >
+                    <mat-icon class="text-black icon-size-5 dark:text-white">
+                      calendar_today
+                    </mat-icon>
+                  </button>
+                  @if (form.get('fecha_inicio')?.touched && form.get('fecha_inicio')?.invalid) {
+                    <mat-error>Requerida.</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="ps-field min-w-0">
+                  <mat-label class="text-black dark:text-white">Fecha de término</mat-label>
+                  <input matInput type="date" formControlName="fecha_fin" #fechaFinPc />
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    type="button"
+                    class="ps-suffix-btn"
+                    (click)="abrirFecha(fechaFinPc)"
+                    tabindex="-1"
+                  >
+                    <mat-icon class="text-black icon-size-5 dark:text-white"
+                      >calendar_today</mat-icon
+                    >
+                  </button>
+                  @if (form.get('fecha_fin')?.touched && form.get('fecha_fin')?.invalid) {
+                    <mat-error>Requerida.</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <div class="grid min-w-0 grid-cols-1 gap-3.5 md:grid-cols-2 md:gap-2">
+                <!-- Todo el día -->
+                <label
+                  class="ps-toggle-row bg-default h-full min-w-0 rounded-lg border border-gray-400 p-2"
+                  [class.ps-toggle-row--active]="todoElDia"
+                  [ngClass]="todoElDia ? 'border-primary-500' : 'border-gray-400'"
+                >
+                  <div class="flex min-w-0 items-center gap-3.5">
+                    <div class="flex min-w-0 flex-col">
+                      <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
+                        Voy a faltar todo el día
+                      </h3>
+                      <p class="mt-1 text-xs text-black dark:text-white">
+                        @if (todoElDia) {
+                          No checarás entrada ni salida. Se registra como ausencia completa.
+                        } @else {
+                          Actívalo si de plano no vas a venir en todo el día.
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  <mat-slide-toggle formControlName="todo_el_dia" class="ps-toggle shrink-0">
+                  </mat-slide-toggle>
+                </label>
+
+                <!-- No regresa -->
+                @if (!todoElDia) {
+                  <label
+                    class="ps-toggle-row bg-default h-full min-w-0 rounded-lg border border-gray-400 p-2"
+                    [class.ps-toggle-row--active]="noRegresa"
+                    [ngClass]="noRegresa ? 'border-primary-500' : 'border-gray-400'"
+                  >
+                    <div class="flex min-w-0 items-center gap-3.5">
+                      <div class="flex min-w-0 flex-col">
+                        <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
+                          No regreso el resto del día
+                        </h3>
+                        <p class="mt-1 text-xs text-black dark:text-white">
+                          @if (noRegresa) {
+                            Se registrará tu ausencia hasta el final de tu turno.
+                          } @else {
+                            Marca esto si te vas y no vuelves hoy.
+                          }
+                        </p>
+                      </div>
+                    </div>
+
+                    <mat-slide-toggle formControlName="no_regresa" class="ps-toggle shrink-0">
+                    </mat-slide-toggle>
+                  </label>
+                }
+              </div>
+
+              @if (!todoElDia) {
+                <div
+                  class="mt-4 grid min-w-0 gap-3.5 md:gap-4"
+                  [ngClass]="{ 'md:grid-cols-2': !noRegresa }"
+                >
+                  <mat-form-field appearance="outline" class="ps-field min-w-0">
+                    <mat-label class="text-black dark:text-white">
+                      {{ noRegresa ? 'Hora de salida' : 'Hora de inicio' }}
+                    </mat-label>
+                    <input
+                      #horaInicio
+                      matInput
+                      type="time"
+                      formControlName="hora_inicio"
+                      class="text-black dark:text-white"
+                    />
+                    <button
+                      mat-icon-button
+                      matSuffix
+                      type="button"
+                      class="ps-suffix-btn"
+                      (click)="abrirHora(horaInicio)"
+                      tabindex="-1"
+                    >
+                      <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
+                    </button>
+                    @if (noRegresa) {
+                      <mat-hint>Si no la indicas, se usará tu hora de entrada.</mat-hint>
+                    }
+                  </mat-form-field>
+
+                  @if (!noRegresa) {
+                    <mat-form-field appearance="outline" class="ps-field min-w-0">
+                      <mat-label>Hora de regreso</mat-label>
+                      <input #horaFin matInput type="time" formControlName="hora_fin" />
+                      <button
+                        mat-icon-button
+                        matSuffix
+                        type="button"
+                        class="ps-suffix-btn"
+                        (click)="abrirHora(horaFin)"
+                        tabindex="-1"
+                      >
+                        <mat-icon class="text-black icon-size-5 dark:text-white">schedule</mat-icon>
+                      </button>
+                      @if (form.get('hora_fin')?.touched && form.get('hora_fin')?.invalid) {
+                        <mat-error>Indica a qué hora regresas.</mat-error>
+                      } @else {
+                        <mat-hint>Será tu hora máxima de regreso.</mat-hint>
+                      }
+                    </mat-form-field>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </mat-step>
+
+        <!-- ═══ PASO 3 · Pago de tiempo (solo si aplica) ═══ -->
+        @if (requierePagoTiempo) {
+          <mat-step
+            label="Pago de tiempo"
+            [completed]="
+              !!form.get('tipo_pago_tiempo')?.valid &&
+              (!muestraReposicionDia || !!form.get('fecha_reposicion')?.valid)
+            "
+          >
+            <div class="flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden">
+              <div class="min-w-0 max-w-lg">
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
+                    ¿Cómo pagarás el tiempo?
+                  </h3>
+                  <mat-icon
+                    class="shrink-0 !text-[16px] text-black dark:text-white"
+                    matTooltip="Este permiso requiere que decidas cómo se compensará el tiempo de tu ausencia."
+                  >
+                    info_outline
+                  </mat-icon>
+                </div>
+                <p class="text-sm text-black dark:text-white">
+                  Elige la forma en que se compensará tu tiempo de ausencia.
+                </p>
+              </div>
+
+              <mat-radio-group formControlName="tipo_pago_tiempo" class="flex flex-col gap-3">
+                @for (opt of pagoTiempoOptions; track opt.value) {
+                  <label
+                    class="ps-radio-card bg-default flex cursor-pointer items-start gap-3 rounded-lg border border-gray-400 p-4"
+                    [class.ps-radio-card--active]="
+                      form.get('tipo_pago_tiempo')?.value === opt.value
+                    "
+                  >
+                    <mat-radio-button [value]="opt.value" class="mt-1 shrink-0"> </mat-radio-button>
+
+                    <div class="ps-radio-card__icon mt-1 shrink-0">
+                      <mat-icon class="icon-size-5">
+                        {{ opt.icon }}
+                      </mat-icon>
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[14px] font-medium text-black dark:text-white">
+                        {{ opt.label }}
+                      </div>
+
+                      <p class="mt-1 text-sm leading-5 text-black dark:text-white">
+                        {{ opt.descripcion }}
+                      </p>
+                    </div>
+                  </label>
+                }
+              </mat-radio-group>
+
+              @if (form.get('tipo_pago_tiempo')?.touched && form.get('tipo_pago_tiempo')?.invalid) {
+                <span class="flex items-center gap-1.5 text-[12.5px] font-medium text-rose-500">
+                  <mat-icon class="shrink-0 !text-[15px]">error_outline</mat-icon>
+                  Selecciona cómo pagarás el tiempo.
+                </span>
+              }
+
+              @if (muestraInfoTiempoPorTiempo) {
+                <div class="ps-info-box min-w-0">
+                  <div
+                    class="flex items-start gap-2.5 rounded-lg border border-primary-500 bg-accent-500/30 p-2 text-black dark:text-white"
+                  >
+                    <mat-icon class="mt-0.5 shrink-0 text-black dark:text-white"> info </mat-icon>
+                    <div class="min-w-0 text-xs leading-relaxed">
+                      <p class="font-semibold">¿Cómo funciona?</p>
+                      <p class="mt-1">
+                        El tiempo que debes se irá pagando automáticamente conforme cheques:
+                      </p>
+                      <ul class="mt-1.5 list-inside list-disc space-y-1">
+                        <li>
+                          <strong class="font-medium">Antes de tu hora de entrada</strong> → esos
+                          minutos pagan deuda
+                        </li>
+                        <li>
+                          <strong class="font-medium">Después de tu hora de salida</strong> → esos
+                          minutos pagan deuda
+                        </li>
+                      </ul>
+                      <p class="mt-1.5">
+                        Si no debes tiempo, ese mismo tiempo se contará como tiempo extra.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              @if (muestraReposicionDia) {
+                <mat-form-field appearance="outline" class="ps-field w-full">
+                  <mat-label>Fecha de reposición</mat-label>
+                  <input matInput type="date" formControlName="fecha_reposicion" #fechaReposicion />
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    type="button"
+                    class="ps-suffix-btn"
+                    (click)="abrirFecha(fechaReposicion)"
+                    tabindex="-1"
+                  >
+                    <mat-icon class="!text-[18px]">calendar_today</mat-icon>
+                  </button>
+                  <mat-hint
+                    >Al aprobar se generará automáticamente tu permiso para venir ese día.</mat-hint
+                  >
+                  @if (
+                    form.get('fecha_reposicion')?.touched && form.get('fecha_reposicion')?.invalid
+                  ) {
+                    <mat-error>Fecha requerida.</mat-error>
+                  }
+                </mat-form-field>
+              }
+
+              @if (muestraJustificacionPago) {
+                <mat-form-field appearance="outline" class="ps-field w-full">
+                  <mat-label>Justificación (opcional)</mat-label>
+                  <textarea
+                    matInput
+                    formControlName="justificacion_pago_tiempo"
+                    rows="2"
+                    maxlength="255"
+                    placeholder="Razón adicional sobre cómo pagarás el tiempo…"
+                  ></textarea>
+                </mat-form-field>
+              }
+            </div>
+          </mat-step>
+        }
+
+        <!-- ═══ PASO 4 · Motivo y revisión ═══ -->
+        <mat-step label="Motivo y revisión" [completed]="!!form.get('motivo')?.valid">
+          <div class="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden">
+            <div class="min-w-0 max-w-lg">
+              <h3 class="text-sm font-semibold text-black md:text-base dark:text-white">
+                Revisa tu solicitud y envíala
+              </h3>
+              <p class="mt-1 text-sm text-black dark:text-white">
+                Cuéntanos brevemente el motivo antes de enviar.
+              </p>
+            </div>
+
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label class="text-black dark:text-white">Motivo del permiso</mat-label>
+              <textarea
+                matInput
+                formControlName="motivo"
+                rows="3"
+                maxlength="255"
+                placeholder="Ej. Cita médica, trámite personal, etc."
+              ></textarea>
+              <mat-hint align="end">{{ form.get('motivo')?.value?.length || 0 }}/255</mat-hint>
+              @if (form.get('motivo')?.touched && form.get('motivo')?.invalid) {
+                <mat-error>Escribe el motivo del permiso.</mat-error>
+              }
+            </mat-form-field>
+
+            <p class="text-sm text-black dark:text-white">Resumen de tu solicitud</p>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-x-6 md:gap-y-4">
+              <div class="ps-summary__row">
+                <mat-icon class="shrink-0 text-black icon-size-5 dark:text-white">
+                  event_note
+                </mat-icon>
+                <span class="min-w-0 text-[13.5px] font-medium text-black dark:text-white">
+                  {{ nombreTipoPermisoSeleccionado }}
+                </span>
+              </div>
+
+              <div class="ps-summary__row">
+                <mat-icon class="shrink-0 text-black icon-size-5 dark:text-white">
+                  calendar_today
+                </mat-icon>
+                <span class="min-w-0 text-[13.5px] font-medium text-black dark:text-white">
+                  {{ form.get('fecha_inicio')?.value }} → {{ form.get('fecha_fin')?.value }}
+                </span>
+              </div>
+
+              <div class="ps-summary__row">
+                <mat-icon class="shrink-0 text-black icon-size-5 dark:text-white">
+                  schedule
+                </mat-icon>
+
+                <span class="min-w-0 text-[13.5px] font-medium text-black dark:text-white">
+                  @if (todoElDia) {
+                    Todo el día
+                  } @else if (noRegresa) {
+                    Sale {{ form.get('hora_inicio')?.value || '—' }} · No regresa
+                  } @else {
+                    {{ form.get('hora_inicio')?.value || '—' }} -
+                    {{ form.get('hora_fin')?.value || '—' }}
+                  }
+                </span>
+              </div>
+
+              @if (requierePagoTiempo && form.get('tipo_pago_tiempo')?.value) {
+                <div class="ps-summary__row">
+                  <mat-icon class="shrink-0 text-black icon-size-5 dark:text-white">
+                    payments
+                  </mat-icon>
+
+                  <span class="min-w-0 text-[13.5px] font-medium text-black dark:text-white">
+                    {{ pagoTiempoOptionLabel() }}
+                  </span>
+                </div>
+
+                @if (muestraReposicionDia && form.get('fecha_reposicion')?.value) {
+                  <div
+                    class="flex items-center gap-2 pl-[26px] text-[12px] text-gray-400 md:col-span-2 dark:text-gray-500"
+                  >
+                    <mat-icon class="!text-[15px]">event_repeat</mat-icon>
+                    <span>Repone el {{ form.get('fecha_reposicion')?.value }}</span>
+                  </div>
+                }
+              }
+            </div>
+
+            <div class="mt-5 flex flex-wrap gap-2">
+              @if (todoElDia) {
+                <span class="ps-chip ps-chip--primary">Ausencia completa</span>
+              }
+
+              @if (noRegresa && !todoElDia) {
+                <span class="ps-chip ps-chip--primary">No regresa</span>
+              }
+
+              @if (requiereReposicionTiempo) {
+                <span class="ps-chip ps-chip--amber"> Requiere pago de tiempo </span>
+              }
+            </div>
+          </div>
+        </mat-step>
+      </mat-stepper>
+
+      <!-- ── Footer fijo único (Atrás / Siguiente / Solicitar) ── -->
+      <div
+        class="ps-footer bg-default flex shrink-0 justify-between gap-3 px-5 py-4 md:px-8 md:py-5"
+      >
+        @if ((stepper.selectedIndex ?? 0) > 0) {
+          <button type="button" class="ps-btn ps-btn--ghost" (click)="stepper.previous()">
+            <mat-icon class="!text-[18px]">arrow_back</mat-icon>
+            Atrás
+          </button>
+        } @else {
+          <span></span>
+        }
+
+        @if (esUltimoPaso(stepper.selectedIndex ?? 0)) {
+          <button
+            type="button"
+            class="ps-btn ps-btn--primary"
+            [disabled]="enviando"
+            (click)="enviarSolicitud()"
+          >
+            <mat-icon class="!text-[18px]" [class.animate-spin]="enviando">{{
+              enviando ? 'sync' : 'save'
+            }}</mat-icon>
+            {{ enviando ? 'Enviando…' : 'Solicitar permiso' }}
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="ps-btn ps-btn--primary"
+            [disabled]="siguienteDeshabilitado(stepper.selectedIndex ?? 0)"
+            (click)="siguiente(stepper)"
+          >
+            Siguiente
+            <mat-icon class="!text-[18px]">arrow_forward</mat-icon>
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,219 +1,219 @@
-<div class="flex h-full min-h-0 w-full flex-col overflow-hidden">
-  <!-- Header -->
-  <div class="flex flex-shrink-0 flex-col gap-3 px-4 pb-3 pt-4 sm:px-6 sm:pt-5">
-    <!-- Fila 1: título + acciones -->
-    <div class="flex items-center justify-between gap-3">
-      <h2 class="text-lg font-semibold sm:text-xl">Escaneos Embarques</h2>
-
-      <div class="flex items-center gap-2">
-        <!-- Chip Zebra -->
-        <div
-          class="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-2.5 py-1 text-xs dark:border-gray-600"
-        >
-          <mat-icon class="!h-3.5 !w-3.5 !text-sm leading-none text-green-500">wifi</mat-icon>
-          <span class="hidden text-gray-400 sm:inline">Zebra:</span>
-          <button
-            class="font-mono font-medium text-gray-700 transition-colors hover:text-primary-500 dark:text-gray-300 dark:hover:text-primary-400"
-            (click)="copiarIP()"
-            matTooltip="Copiar IP"
-          >
-            {{ ipLocal || '192.168.100.59' }}
-          </button>
-          <span class="text-gray-300 dark:text-gray-600">:</span>
-          <button
-            class="font-mono font-medium text-gray-700 transition-colors hover:text-primary-500 dark:text-gray-300 dark:hover:text-primary-400"
-            (click)="copiarPuerto()"
-            matTooltip="Copiar puerto"
-          >
-            {{ tcpPort }}
-          </button>
-        </div>
-
-        <!-- Reload -->
-        <button mat-icon-button (click)="_scanService.cargarScans()" matTooltip="Recargar">
-          <mat-icon>refresh</mat-icon>
-        </button>
-      </div>
-    </div>
-
-    <!-- Fila 2: búsqueda -->
-    <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
-      <mat-icon matPrefix>search</mat-icon>
-      <input
-        matInput
-        #searchInputRef
-        placeholder="Buscar código..."
-        [formControl]="searchControl"
-        (focus)="onSearchFocus()"
-        (blur)="onSearchBlur()"
-      />
-    </mat-form-field>
-
-    <!-- Fila 3: tabs -->
-    <div class="flex gap-1 border-b border-gray-200 dark:border-gray-700">
-      <button
-       *ngFor="let tab of ['pendientes', 'aprobadas', 'inventario']"
-        (click)="cambiarTab(tab)"
-        class="relative px-4 py-2 text-xs font-semibold transition-colors duration-200 sm:text-sm"
-        [class.text-primary-600]="tabActiva === tab"
-        [class.dark:text-primary-400]="tabActiva === tab"
-        [class.text-gray-500]="tabActiva !== tab"
-        [class.dark:text-gray-400]="tabActiva !== tab"
-        [class.hover:text-gray-800]="tabActiva !== tab"
-      >
-        {{ tab | titlecase }}
-        <span
-          *ngIf="tabActiva === tab"
-          class="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary-500"
-        ></span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Tabla con scroll interno -->
-  <div  *ngIf="tabActiva !== 'inventario'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
-    <!-- Contenedor scroll solo del tbody -->
-    <div
-      class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden rounded-lg border border-gray-200 dark:border-gray-700"
-    >
-      <table
-        class="w-full text-sm"
-        style="table-layout: fixed; border-collapse: separate; border-spacing: 0"
-      >
-        <colgroup>
-          <col style="width: 36%" />
-          <col class="hidden sm:table-column" style="width: 26%" />
-          <col style="width: 38%" />
-          <col style="width: 22%" />
-        </colgroup>
-
-        <!-- Thead sticky -->
-        <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800">
-          <tr class="border-b border-gray-200 dark:border-gray-700">
-            <th
-              class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-4 dark:text-gray-400"
-            >
-              Código
-            </th>
-            <th
-              class="hidden px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:table-cell sm:px-4 dark:text-gray-400"
-            >
-              Cód. Ent
-            </th>
-            <th
-              class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-4 dark:text-gray-400"
-            >
-              Fecha y Hora
-            </th>
-            <th
-              class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-4 dark:text-gray-400"
-            >
-              Estado
-            </th>
-          </tr>
-        </thead>
-
-        <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-700/50 dark:bg-gray-900">
-          <tr
-            *ngFor="let scan of scansPaginados"
-            class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/60"
-          >
-            <td
-              class="px-3 py-2.5 font-mono text-xs text-gray-900 sm:px-4 sm:text-sm dark:text-gray-100"
-            >
-              {{ scan.CODIGO }}
-            </td>
-            <td
-              class="hidden px-3 py-2.5 font-mono text-xs text-gray-900 sm:table-cell sm:px-4 sm:text-sm dark:text-gray-100"
-            >
-              {{ scan.CODIGOENT }}
-            </td>
-            <td class="px-3 py-2.5 text-xs text-gray-600 sm:px-4 sm:text-sm dark:text-gray-400">
-              <span class="sm:hidden">{{ scan.FECHAYHORA | date: 'dd/MM HH:mm' }}</span>
-              <span class="hidden sm:inline">{{
-                scan.FECHAYHORA | date: 'dd/MM/yyyy HH:mm:ss'
-              }}</span>
-            </td>
-            <td class="px-3 py-2.5 sm:px-4">
-              <!-- Móvil: dot -->
-              <span
-                class="inline-block h-2 w-2 rounded-full sm:hidden"
-                [class.bg-amber-400]="scan.PROCESADO === 0"
-                [class.bg-green-500]="scan.PROCESADO === 1"
-                [class.bg-red-500]="scan.PROCESADO === 2"
-              ></span>
-              <!-- Desktop: badge -->
-              <span
-                class="hidden whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium sm:inline-flex"
-                [class.bg-amber-50]="scan.PROCESADO === 0"
-                [class.text-amber-700]="scan.PROCESADO === 0"
-                [class.bg-green-50]="scan.PROCESADO === 1"
-                [class.text-green-700]="scan.PROCESADO === 1"
-                [class.bg-red-50]="scan.PROCESADO === 2"
-                [class.text-red-600]="scan.PROCESADO === 2"
-              >
-                {{
-                  scan.PROCESADO === 0
-                    ? 'Pendiente'
-                    : scan.PROCESADO === 1
-                      ? 'Aprobado'
-                      : 'Rechazado'
-                }}
-              </span>
-            </td>
-          </tr>
-
-          <tr *ngIf="scansFiltrados.length === 0">
-            <td colspan="4" class="py-12 text-center">
-              <mat-icon
-                class="mb-2 text-gray-300 dark:text-gray-600"
-                style="font-size: 2rem; width: 2rem; height: 2rem"
-                >inbox</mat-icon
-              >
-              <p class="text-sm text-gray-400">Sin registros</p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Paginador -->
-    <div
-      class="mb-10 flex flex-shrink-0 items-center justify-between pt-3 text-xs text-gray-600 dark:text-gray-400"
-    >
-      <span class="tabular-nums">
-        <ng-container *ngIf="scansFiltrados.length > 0">
-          {{ paginaActual * pageSize + 1 }}–{{
-            min((paginaActual + 1) * pageSize, scansFiltrados.length)
-          }}
-          de {{ scansFiltrados.length }}
-        </ng-container>
-        <ng-container *ngIf="scansFiltrados.length === 0">0 registros</ng-container>
-      </span>
-
-      <div class="flex items-center gap-1">
-        <button
-          mat-icon-button
-          [disabled]="paginaActual === 0"
-          (click)="irPagina(paginaActual - 1)"
-        >
-          <mat-icon class="text-black dark:text-white">chevron_left</mat-icon>
-        </button>
-        <span class="min-w-[4rem] text-center tabular-nums">
-          {{ paginaActual + 1 }} / {{ totalPaginas }}
-        </span>
-        <button
-          mat-icon-button
-          [disabled]="paginaActual >= totalPaginas - 1"
-          (click)="irPagina(paginaActual + 1)"
-        >
-          <mat-icon class="text-black dark:text-white">chevron_right</mat-icon>
-        </button>
-      </div>
-    </div>
-  </div>
-
- 
-
-<inventario-tab *ngIf="tabActiva === 'inventario'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6"></inventario-tab>
-</div>
+<div class="flex h-full min-h-0 w-full flex-col overflow-hidden">
+  <!-- Header -->
+  <div class="flex flex-shrink-0 flex-col gap-3 px-4 pb-3 pt-4 sm:px-6 sm:pt-5">
+    <!-- Fila 1: título + acciones -->
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-lg font-semibold sm:text-xl">Escaneos Embarques</h2>
+
+      <div class="flex items-center gap-2">
+        <!-- Chip Zebra -->
+        <div
+          class="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-2.5 py-1 text-xs dark:border-gray-600"
+        >
+          <mat-icon class="!h-3.5 !w-3.5 !text-sm leading-none text-green-500">wifi</mat-icon>
+          <span class="hidden text-gray-400 sm:inline">Zebra:</span>
+          <button
+            class="font-mono font-medium text-gray-700 transition-colors hover:text-primary-500 dark:text-gray-300 dark:hover:text-primary-400"
+            (click)="copiarIP()"
+            matTooltip="Copiar IP"
+          >
+            {{ ipLocal || '192.168.100.59' }}
+          </button>
+          <span class="text-gray-300 dark:text-gray-600">:</span>
+          <button
+            class="font-mono font-medium text-gray-700 transition-colors hover:text-primary-500 dark:text-gray-300 dark:hover:text-primary-400"
+            (click)="copiarPuerto()"
+            matTooltip="Copiar puerto"
+          >
+            {{ tcpPort }}
+          </button>
+        </div>
+
+        <!-- Reload -->
+        <button mat-icon-button (click)="_scanService.cargarScans()" matTooltip="Recargar">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Fila 2: búsqueda -->
+    <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        #searchInputRef
+        placeholder="Buscar código..."
+        [formControl]="searchControl"
+        (focus)="onSearchFocus()"
+        (blur)="onSearchBlur()"
+      />
+    </mat-form-field>
+
+    <!-- Fila 3: tabs -->
+    <div class="flex gap-1 border-b border-gray-200 dark:border-gray-700">
+      <button
+       *ngFor="let tab of ['pendientes', 'aprobadas', 'inventario']"
+        (click)="cambiarTab(tab)"
+        class="relative px-4 py-2 text-xs font-semibold transition-colors duration-200 sm:text-sm"
+        [class.text-primary-600]="tabActiva === tab"
+        [class.dark:text-primary-400]="tabActiva === tab"
+        [class.text-gray-500]="tabActiva !== tab"
+        [class.dark:text-gray-400]="tabActiva !== tab"
+        [class.hover:text-gray-800]="tabActiva !== tab"
+      >
+        {{ tab | titlecase }}
+        <span
+          *ngIf="tabActiva === tab"
+          class="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary-500"
+        ></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla con scroll interno -->
+  <div  *ngIf="tabActiva !== 'inventario'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
+    <!-- Contenedor scroll solo del tbody -->
+    <div
+      class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden rounded-lg border border-gray-200 dark:border-gray-700"
+    >
+      <table
+        class="w-full text-sm"
+        style="table-layout: fixed; border-collapse: separate; border-spacing: 0"
+      >
+        <colgroup>
+          <col style="width: 36%" />
+          <col class="hidden sm:table-column" style="width: 26%" />
+          <col style="width: 38%" />
+          <col style="width: 22%" />
+        </colgroup>
+
+        <!-- Thead sticky -->
+        <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800">
+          <tr class="border-b border-gray-200 dark:border-gray-700">
+            <th
+              class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-4 dark:text-gray-400"
+            >
+              Código
+            </th>
+            <th
+              class="hidden px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:table-cell sm:px-4 dark:text-gray-400"
+            >
+              Cód. Ent
+            </th>
+            <th
+              class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-4 dark:text-gray-400"
+            >
+              Fecha y Hora
+            </th>
+            <th
+              class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-4 dark:text-gray-400"
+            >
+              Estado
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-700/50 dark:bg-gray-900">
+          <tr
+            *ngFor="let scan of scansPaginados"
+            class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/60"
+          >
+            <td
+              class="px-3 py-2.5 font-mono text-xs text-gray-900 sm:px-4 sm:text-sm dark:text-gray-100"
+            >
+              {{ scan.CODIGO }}
+            </td>
+            <td
+              class="hidden px-3 py-2.5 font-mono text-xs text-gray-900 sm:table-cell sm:px-4 sm:text-sm dark:text-gray-100"
+            >
+              {{ scan.CODIGOENT }}
+            </td>
+            <td class="px-3 py-2.5 text-xs text-gray-600 sm:px-4 sm:text-sm dark:text-gray-400">
+              <span class="sm:hidden">{{ scan.FECHAYHORA | date: 'dd/MM HH:mm' }}</span>
+              <span class="hidden sm:inline">{{
+                scan.FECHAYHORA | date: 'dd/MM/yyyy HH:mm:ss'
+              }}</span>
+            </td>
+            <td class="px-3 py-2.5 sm:px-4">
+              <!-- Móvil: dot -->
+              <span
+                class="inline-block h-2 w-2 rounded-full sm:hidden"
+                [class.bg-amber-400]="scan.PROCESADO === 0"
+                [class.bg-green-500]="scan.PROCESADO === 1"
+                [class.bg-red-500]="scan.PROCESADO === 2"
+              ></span>
+              <!-- Desktop: badge -->
+              <span
+                class="hidden whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium sm:inline-flex"
+                [class.bg-amber-50]="scan.PROCESADO === 0"
+                [class.text-amber-700]="scan.PROCESADO === 0"
+                [class.bg-green-50]="scan.PROCESADO === 1"
+                [class.text-green-700]="scan.PROCESADO === 1"
+                [class.bg-red-50]="scan.PROCESADO === 2"
+                [class.text-red-600]="scan.PROCESADO === 2"
+              >
+                {{
+                  scan.PROCESADO === 0
+                    ? 'Pendiente'
+                    : scan.PROCESADO === 1
+                      ? 'Aprobado'
+                      : 'Rechazado'
+                }}
+              </span>
+            </td>
+          </tr>
+
+          <tr *ngIf="scansFiltrados.length === 0">
+            <td colspan="4" class="py-12 text-center">
+              <mat-icon
+                class="mb-2 text-gray-300 dark:text-gray-600"
+                style="font-size: 2rem; width: 2rem; height: 2rem"
+                >inbox</mat-icon
+              >
+              <p class="text-sm text-gray-400">Sin registros</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginador -->
+    <div
+      class="mb-10 flex flex-shrink-0 items-center justify-between pt-3 text-xs text-gray-600 dark:text-gray-400"
+    >
+      <span class="tabular-nums">
+        <ng-container *ngIf="scansFiltrados.length > 0">
+          {{ paginaActual * pageSize + 1 }}–{{
+            min((paginaActual + 1) * pageSize, scansFiltrados.length)
+          }}
+          de {{ scansFiltrados.length }}
+        </ng-container>
+        <ng-container *ngIf="scansFiltrados.length === 0">0 registros</ng-container>
+      </span>
+
+      <div class="flex items-center gap-1">
+        <button
+          mat-icon-button
+          [disabled]="paginaActual === 0"
+          (click)="irPagina(paginaActual - 1)"
+        >
+          <mat-icon class="text-black dark:text-white">chevron_left</mat-icon>
+        </button>
+        <span class="min-w-[4rem] text-center tabular-nums">
+          {{ paginaActual + 1 }} / {{ totalPaginas }}
+        </span>
+        <button
+          mat-icon-button
+          [disabled]="paginaActual >= totalPaginas - 1"
+          (click)="irPagina(paginaActual + 1)"
+        >
+          <mat-icon class="text-black dark:text-white">chevron_right</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+ 
+
+<inventario-tab *ngIf="tabActiva === 'inventario'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6"></inventario-tab>
+</div>

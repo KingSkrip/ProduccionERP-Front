@@ -1,69 +1,190 @@
-<!-- Backdrop -->
-<div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
->
-    <!-- MODAL -->
-    <div
-        class="animate-fadeIn flex w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900"
-    >
-        <!-- HEADER -->
-        <header
-            class="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900"
-        >
-            <h2 class="text-lg font-semibold">Crear Rol</h2>
-            <button
-                class="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-                (click)="closeModal()"
-                [disabled]="isLoading"
-            >
-                ✕
-            </button>
-        </header>
-
-        <!-- Loading Bar -->
-        <div *ngIf="isLoading">
-            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        </div>
-
-        <!-- Contenido -->
-        <div class="flex-1 overflow-y-auto p-4">
-            <form [formGroup]="newRolForm" class="flex flex-col gap-4">
-                <mat-form-field class="w-full">
-                    <mat-label>Nombre del rol</mat-label>
-                    <input
-                        matInput
-                        formControlName="NOMBRE"
-                        placeholder="Nombre del rol"
-                        maxlength="35"
-                        autocomplete="off"
-                    />
-                    <mat-error *ngIf="newRolForm.get('NOMBRE')?.touched && newRolForm.get('NOMBRE')?.hasError('required')">
-                        El nombre es obligatorio.
-                    </mat-error>
-                </mat-form-field>
-            </form>
-        </div>
-
-        <!-- FOOTER -->
-        <footer
-            class="sticky bottom-0 flex items-center justify-end space-x-3 border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900"
-        >
-            <button
-                class="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
-                (click)="closeModal()"
-                [disabled]="isLoading"
-            >
-                Cancelar
-            </button>
-
-            <button
-                class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                (click)="submitForm()"
-                [disabled]="isLoading"
-            >
-                <span *ngIf="!isLoading">Guardar</span>
-                <span *ngIf="isLoading">Guardando...</span>
-            </button>
-        </footer>
-    </div>
+<!-- ============ MODAL DESKTOP ============ -->
+<div
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm md:flex"
+>
+  <div
+    class="bg-card animate-fadeIn flex w-full max-w-md flex-col overflow-hidden rounded-2xl shadow-xl"
+  >
+    <!-- Header -->
+    <div
+      class="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-500"
+    >
+      <div class="flex items-center gap-2">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500">
+          <mat-icon class="text-base text-white">badge</mat-icon>
+        </div>
+        <h2 class="text-base font-medium text-black dark:text-white">Crear Rol</h2>
+      </div>
+      <button
+        class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-500"
+        (click)="closeModal()"
+        [disabled]="isLoading"
+      >
+        <mat-icon class="text-base text-black dark:text-white">close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Loading Bar -->
+    <div *ngIf="isLoading">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+
+    <!-- Body -->
+    <div class="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-5">
+      <form [formGroup]="newRolForm" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-black dark:text-white">Nombre del rol</label>
+          <div
+            class="flex items-center gap-2 rounded-lg border px-3 py-2.5 dark:bg-gray-700"
+            [ngClass]="
+              newRolForm.get('nombre')?.touched && newRolForm.get('nombre')?.hasError('required')
+                ? 'border-red-400 bg-red-50 dark:border-red-500'
+                : 'border-slate-200 bg-slate-50 dark:border-gray-600'
+            "
+          >
+            <mat-icon class="shrink-0 text-base text-gray-400">badge</mat-icon>
+            <input
+              formControlName="nombre"
+              placeholder="Nombre del rol"
+              maxlength="35"
+              autocomplete="off"
+              class="w-full bg-transparent text-sm text-black outline-none placeholder:text-gray-400 dark:text-white"
+            />
+          </div>
+          <span
+            *ngIf="newRolForm.get('nombre')?.touched && newRolForm.get('nombre')?.hasError('required')"
+            class="text-xs font-medium text-red-500"
+          >
+            El nombre es obligatorio.
+          </span>
+        </div>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="flex shrink-0 justify-end gap-2 border-t border-gray-200 px-4 py-3 dark:border-gray-500"
+    >
+      <button
+        class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-slate-50 dark:text-white"
+        (click)="closeModal()"
+        [disabled]="isLoading"
+      >
+        Cancelar
+      </button>
+      <button
+        class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
+        (click)="submitForm()"
+        [disabled]="isLoading"
+      >
+        {{ isLoading ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL MÓVIL (bottom sheet) ============ -->
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden"
+  (click)="closeModal()"
+>
+  <div
+    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
+    [class.select-none]="isDragging"
+    [style.transform]="dragTransform"
+    [style.transition]="dragTransition"
+    (click)="$event.stopPropagation()"
+    [@slideUp]
+  >
+    <div
+      class="bg-default dark:bg-card"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd($event)"
+    >
+      <!-- Drag Handle -->
+      <div class="flex cursor-grab justify-center pb-2 pt-3 active:cursor-grabbing">
+        <div
+          class="h-1.5 w-11 rounded-full bg-gray-400 transition-colors active:bg-primary-500 dark:bg-white/20"
+        ></div>
+      </div>
+
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-white/10 px-5 pb-4">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary-500/30 bg-primary-500/10"
+          >
+            <mat-icon class="text-2xl text-primary-500">badge</mat-icon>
+          </div>
+          <h2 class="text-lg font-semibold tracking-tight text-black dark:text-white">
+            Crear Rol
+          </h2>
+        </div>
+
+        <button
+          (click)="closeModal()"
+          [disabled]="isLoading"
+          class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Bar -->
+    <div *ngIf="isLoading">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 space-y-6 overflow-auto p-5 pb-28">
+      <form [formGroup]="newRolForm" class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-black dark:text-white">Nombre del rol</label>
+        <div class="relative">
+          <div
+            class="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
+          >
+            <mat-icon class="text-black icon-size-5 dark:text-white">badge</mat-icon>
+          </div>
+          <input
+            formControlName="nombre"
+            placeholder="Ej: Administrador"
+            maxlength="35"
+            autocomplete="off"
+            class="w-full rounded-2xl border border-gray-300 bg-gray-300 py-4 pl-12 pr-4 text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:bg-gray-500 dark:text-white"
+          />
+        </div>
+        <p
+          *ngIf="newRolForm.get('nombre')?.touched && newRolForm.get('nombre')?.hasError('required')"
+          class="mt-1 text-xs text-red-400"
+        >
+          El nombre es obligatorio.
+        </p>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="bg-default absolute bottom-0 left-0 right-0 border-t border-white/10 p-4 dark:bg-card"
+    >
+      <div class="flex gap-3">
+        <button
+          (click)="closeModal()"
+          [disabled]="isLoading"
+          class="flex-1 rounded-2xl border border-gray-400 py-4 font-medium text-black transition-colors active:bg-white/5 dark:border-white/10 dark:text-white"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="submitForm()"
+          [disabled]="isLoading"
+          class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary-600 py-4 font-semibold text-white transition-all hover:bg-primary-500 active:bg-primary-700 disabled:opacity-50"
+        >
+          <mat-icon class="text-white">save</mat-icon>
+          {{ isLoading ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

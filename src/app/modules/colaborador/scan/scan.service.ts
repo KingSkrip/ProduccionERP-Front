@@ -140,7 +140,7 @@ enviarScan(barcode: string): Observable<any> {
   private reproducirSonido(nombre: 'correcto' | 'yaleido' | 'error' | 'ya_inventariado'): void {
     const buffer = this.audioBuffers[nombre];
     if (!this.audioCtx || !buffer) {
-      console.warn(`⚠️ reproducirSonido: ctx=${!!this.audioCtx} buffer=${!!buffer}`);
+      console.warn(`⚠ reproducirSonido: ctx=${!!this.audioCtx} buffer=${!!buffer}`);
       return;
     }
     const source = this.audioCtx.createBufferSource();

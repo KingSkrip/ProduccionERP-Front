@@ -157,7 +157,7 @@ export class AuthService {
 
       /**
      * Obtener el rol principal del usuario
-     * ⚠️ DEPRECATED para lógica de RH/jefe: permissions/sub_permissions
+     * ⚠ DEPRECATED para lógica de RH/jefe: permissions/sub_permissions
      * son genéricos por nivel jerárquico (ej. "Gerente" = 1,3 para
      * CUALQUIER área), no identifican RH ni jefe de área específico.
      * Úsalo solo si de verdad necesitas el rol crudo del catálogo de

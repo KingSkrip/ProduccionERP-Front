@@ -59,14 +59,14 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // 1️⃣ Detectar tamaño de pantalla (esto se queda)
+    // 1⃣ Detectar tamaño de pantalla (esto se queda)
     this._fuseMediaWatcherService.onMediaChange$
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe(({ matchingAliases }) => {
         this.isScreenSmall = !matchingAliases.includes('md');
       });
 
-    // 2️⃣ Obtener rol y subrol del usuario
+    // 2⃣ Obtener rol y subrol del usuario
     this._authService
       .getUserRole()
       .pipe(takeUntil(this._unsubscribeAll))
@@ -112,7 +112,7 @@ export class ReportProdLayoutComponent implements OnInit, OnDestroy {
         }
       });
 
-    // 3️⃣ Escuchar cambios del menú hijo (por si se actualiza)
+    // 3⃣ Escuchar cambios del menú hijo (por si se actualiza)
     this._fuseVerticalNavigationService.onNavigationChanged$
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe(({ key }) => {

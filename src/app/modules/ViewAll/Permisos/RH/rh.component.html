@@ -1,543 +1,543 @@
-<!-- Rh/rh.component.html -->
-<div class="mb-3 flex shrink-0 items-center gap-2">
-  <button
-    type="button"
-    (click)="cambiarTab('aprobaciones')"
-    class="rounded-lg px-4 py-2 text-sm font-medium transition"
-    [ngClass]="
-      vistaRhTab === 'aprobaciones'
-        ? 'bg-primary-500 text-white shadow-sm'
-        : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
-    "
-  >
-    Aprobaciones RH
-    @if (pendientesRh.length) {
-      <span class="ml-1 rounded-full bg-white/25 px-1.5 py-0.5 text-xs font-semibold">{{
-        pendientesRh.length
-      }}</span>
-    }
-  </button>
-  <button
-    type="button"
-    (click)="cambiarTab('asistencia')"
-    class="rounded-lg px-4 py-2 text-sm font-medium transition"
-    [ngClass]="
-      vistaRhTab === 'asistencia'
-        ? 'bg-primary-500 text-white shadow-sm'
-        : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
-    "
-  >
-    Tarjeta de asistencia
-  </button>
-</div>
-
-@if (vistaRhTab === 'aprobaciones') {
-  <div class="flex min-h-0 flex-1 flex-col overflow-y-auto md:bg-card md:rounded-2xl md:p-5">
-    @if (cargandoPendientes) {
-      <div class="h-16 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
-    } @else if (!pendientesRh.length) {
-      <p class="text-sm text-black dark:text-white">No hay solicitudes pendientes de RH.</p>
-    } @else {
-      <div class="flex flex-col gap-2">
-        @for (p of pendientesRh; track p.id) {
-          <div
-            class="flex items-center justify-between rounded-xl border border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/60"
-          >
-            <div>
-              <p class="text-sm font-medium text-black dark:text-white">
-                {{ p.identity?.nombre }} {{ p.identity?.apellido }}
-              </p>
-              <p class="text-xs text-primary-500">
-                {{ p.catalogo?.nombre }} · {{ p.fecha_inicio }}
-              </p>
-              <p class="text-xs italic text-black dark:text-white">"{{ p.motivo }}"</p>
-            </div>
-            <div class="flex gap-2">
-              <button
-                type="button"
-                (click)="resolverComoRh(p, 'rechazado')"
-                class="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white"
-              >
-                Rechazar
-              </button>
-              <button
-                type="button"
-                (click)="resolverComoRh(p, 'aprobado')"
-                class="rounded-lg bg-accent-500 px-3 py-1.5 text-xs font-medium text-black"
-              >
-                Aprobar
-              </button>
-            </div>
-          </div>
-        }
-      </div>
-    }
-  </div>
-}
-
-@if (vistaRhTab === 'asistencia') {
-  <div class="flex min-h-0 flex-1 flex-col overflow-y-auto md:bg-card md:rounded-2xl md:p-5">
-    <!-- FILTROS -->
-    <div class="relative mb-3 flex shrink-0 flex-wrap items-center gap-2">
-      <input
-        type="text"
-        placeholder="Buscar por colaborador, área, departamento…"
-        class="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-        [value]="filtroBusquedaRh"
-        (input)="onBusquedaRhChange($event)"
-      />
-
-      <button
-        type="button"
-        (click)="togglePanelFiltrosRh()"
-        class="relative flex max-w-[45%] shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-black md:max-w-none dark:border-gray-700 dark:text-white"
-        [ngClass]="
-          hayFiltrosActivosRh ? 'border-primary-500 text-primary-600 dark:text-primary-400' : ''
-        "
-      >
-        <mat-icon class="shrink-0 icon-size-4" [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
-        <span class="hidden truncate md:block">{{ filtrosBotonLabelRh }}</span>
-        @if (mostrarIndicadorFiltrosRh) {
-          <span
-            class="absolute -right-1 -top-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary-500 ring-2 ring-white dark:bg-accent-500 dark:ring-gray-900"
-          ></span>
-        }
-      </button>
-
-      <button
-        type="button"
-        (click)="abrirModalExportarTodos()"
-        class="ml-auto rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-medium text-white"
-      >
-        <mat-icon
-          class="block shrink-0 text-white icon-size-4 md:hidden"
-          [svgIcon]="'heroicons_outline:arrow-down-tray'"
-        ></mat-icon>
-        <span class="hidden md:block"> Exportar todos (CSV)</span>
-      </button>
-
-      @if (mostrarPanelFiltrosRh) {
-        <div
-          class="absolute right-0 top-11 z-20 w-80 rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800"
-        >
-          <div class="mb-3">
-            <label class="mb-1 block text-xs font-medium text-black dark:text-white">Empresa</label>
-            <select
-              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              [value]="empresaFiltro"
-              (change)="onEmpresaChange($event)"
-            >
-              <option value="">Todas</option>
-              @for (e of empresas; track e.id) {
-                <option [value]="e.id">{{ e.nombre }}</option>
-              }
-            </select>
-          </div>
-          <!-- Área -->
-          <div class="mb-3">
-            <label class="mb-1 block text-xs font-medium text-black dark:text-white">Área</label>
-            <select
-              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              (change)="onFiltroAreaChange($event)"
-            >
-              <option value="" [selected]="filtroAreaId === null">Todas las áreas</option>
-              @for (a of areas; track a.id) {
-                <option [value]="a.id" [selected]="a.id === filtroAreaId">{{ a.nombre }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- Puesto -->
-          <div class="mb-3">
-            <label class="mb-1 block text-xs font-medium text-black dark:text-white">
-              Puesto
-            </label>
-            <select
-              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              (change)="onFiltroDepartamentoChange($event)"
-            >
-              <option value="" [selected]="filtroDepartamentoId === null">
-                Todos los departamentos
-              </option>
-              @for (d of departamentos; track d.id) {
-                <option [value]="d.id" [selected]="d.id === filtroDepartamentoId">
-                  {{ d.nombre }}
-                </option>
-              }
-            </select>
-          </div>
-
-          <!-- Turno -->
-          <div class="mb-3">
-            <label class="mb-1 block text-xs font-medium text-black dark:text-white">Turno</label>
-            <select
-              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              (change)="onFiltroTurnoChange($event)"
-            >
-              <option value="" [selected]="filtroTurnoId === null">Todos los turnos</option>
-              @for (t of turnos; track t.id) {
-                <option [value]="t.id" [selected]="t.id === filtroTurnoId">{{ t.nombre }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- Tipo de permiso -->
-          <div class="mb-3">
-            <label class="mb-1 block text-xs font-medium text-black dark:text-white">
-              Tipo de permiso
-            </label>
-            <select
-              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              (change)="onFiltroCatalogoRhChange($event)"
-            >
-              <option value="" [selected]="filtroCatalogoId === null">Todos los tipos</option>
-              @for (c of catalogo; track c.id) {
-                <option [value]="c.id" [selected]="c.id === filtroCatalogoId">
-                  {{ c.nombre }}
-                </option>
-              }
-            </select>
-          </div>
-
-          <!-- rango personalizado -->
-          <div class="mb-3">
-            <label class="mb-1 block text-xs font-medium text-black dark:text-white">
-              Rango personalizado
-            </label>
-            <input
-              type="date"
-              [value]="fechaSemana"
-              (change)="onFechaSemanaChange($event)"
-              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              [ngClass]="errorFechaPersonalizada ? 'border-red-500' : ''"
-            />
-            @if (errorFechaPersonalizada) {
-              <p class="mt-1 text-xs text-red-500">{{ errorFechaPersonalizada }}</p>
-            }
-          </div>
-
-          <!-- rangos de fechas -->
-          <div class="mb-3 flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              (click)="filtrarSemanaPasada()"
-              class="rounded-full px-2.5 py-1 text-xs font-medium"
-              [ngClass]="
-                filtroRangoActivo === 'semana_pasada'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-white text-black dark:bg-gray-700 dark:text-white'
-              "
-            >
-              Semana pasada
-            </button>
-            <button
-              type="button"
-              (click)="filtrarSemanaActual()"
-              class="rounded-full px-2.5 py-1 text-xs font-medium"
-              [ngClass]="
-                filtroRangoActivo === 'semana_actual'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-white text-black dark:bg-gray-700 dark:text-white'
-              "
-            >
-              Esta semana
-            </button>
-            <button
-              type="button"
-              (click)="filtrarSemanaSiguiente()"
-              class="rounded-full px-2.5 py-1 text-xs font-medium"
-              [ngClass]="
-                filtroRangoActivo === 'semana_siguiente'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-white text-black dark:bg-gray-700 dark:text-white'
-              "
-            >
-              Semana siguiente
-            </button>
-          </div>
-
-          <!-- accion -->
-          <div class="flex items-center gap-2">
-            <button
-              type="button"
-              (click)="cerrarPanelFiltrosRh()"
-              class="flex-1 rounded-lg bg-primary-500 py-1.5 text-sm font-medium text-white"
-            >
-              Aplicar
-            </button>
-            @if (hayFiltrosActivosRh) {
-              <button
-                type="button"
-                (click)="limpiarFiltrosRh()"
-                class="rounded-lg border border-red-500 px-4 py-1.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-500 hover:text-white"
-              >
-                Limpiar
-              </button>
-            }
-          </div>
-        </div>
-      }
-    </div>
-
-    @if (cargandoTarjetas) {
-      <div class="h-24 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
-    } @else if (!tarjetas.length) {
-      <p class="text-sm text-black dark:text-white">
-        No hay empleados que coincidan con este filtro.
-      </p>
-    } @else {
-      <div class="flex flex-col gap-3">
-        @for (t of tarjetas; track t.identity_id) {
-          <div
-            class="rounded-xl border border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/60"
-          >
-            <!-- Encabezado: se apila en móvil, en fila desde sm -->
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0">
-                <p class="truncate text-sm font-semibold text-black dark:text-white">
-                  {{ t.nombre }}
-                </p>
-                <p
-                  class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-primary-500 dark:text-accent-500"
-                >
-                  <span>Turno: {{ t.turno?.nombre ?? 'Sin turno' }}</span>
-                  <span class="text-gray-300 dark:text-gray-600">·</span>
-                  <span>Empresa {{ t.empresa }}</span>
-                  <span class="text-gray-300 dark:text-gray-600">·</span>
-                  <span class="font-medium"
-                    >Total semana: {{ formatHoras(t.total_horas_semana) }}</span
-                  >
-                </p>
-              </div>
-              <div class="flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  (click)="descargarExcel(t.identity_id)"
-                  class="rounded-lg border border-primary-500 px-3 py-1.5 text-xs font-medium text-primary-600"
-                >
-                  CSV
-                </button>
-                <button
-                  type="button"
-                  (click)="toggleExpandir(t.identity_id)"
-                  class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-black dark:border-gray-600 dark:text-white"
-                >
-                  {{ filaExpandidaId === t.identity_id ? 'Ocultar' : 'Ver detalle' }}
-                </button>
-              </div>
-            </div>
-
-            @if (filaExpandidaId === t.identity_id) {
-              <!-- MÓVIL: mini-tarjetas por día (más legibles que una tabla apretada) -->
-              <div class="bg-card mt-4 flex flex-col gap-2 sm:hidden">
-                @for (d of t.dias; track d.fecha) {
-                  <div
-                    class="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
-                    [ngClass]="
-                      d.es_descanso
-                        ? 'bg-gray-50 dark:bg-gray-900/40'
-                        : 'bg-white dark:bg-gray-800/40'
-                    "
-                  >
-                    <div class="flex items-baseline justify-between">
-                      <p class="text-sm font-medium capitalize text-black dark:text-white">
-                        {{ d.dia_semana }}
-                      </p>
-                      <p class="text-xs text-black dark:text-white">{{ d.fecha }}</p>
-                    </div>
-
-                    <div class="mt-2 grid grid-cols-2 gap-y-1.5 text-xs">
-                      <span class="text-black dark:text-white">Horario esperado</span>
-                      <span class="text-right text-black dark:text-white">
-                        {{ d.horario_esperado }}
-                      </span>
-
-                      <span class="text-black dark:text-white">Entrada</span>
-                      <span class="text-right text-black dark:text-white">
-                        {{ d.hora_entrada_real ?? '—' }}
-                      </span>
-
-                      <span class="text-black dark:text-white">Salida</span>
-                      <span class="text-right text-black dark:text-white">
-                        {{ d.hora_salida_real ?? '—' }}
-                      </span>
-
-                      <span class="text-black dark:text-white">Horas trabajadas</span>
-                      <span class="text-right font-semibold text-black dark:text-white">
-                        {{ formatHoras(d.horas_trabajadas) }}h
-                      </span>
-
-                      <!-- <span class="text-black dark:text-white">Tiempo extra</span>
-                      <span
-                        class="text-right font-semibold"
-                        [ngClass]="
-                          tiempoExtra(d) > 0
-                            ? 'text-accent-600 dark:text-accent-400'
-                            : tiempoExtra(d) < 0
-                              ? 'text-red-500'
-                              : 'text-black dark:text-white'
-                        "
-                      >
-                        {{ formatTiempoExtra(d) }}
-                      </span> -->
-                    </div>
-
-                    @if (d.permisos.length) {
-                      <div class="mt-2 border-t border-gray-200 pt-2 dark:border-gray-700">
-                        <p class="mb-1 text-sm font-medium text-black dark:text-white">Permisos</p>
-                        @for (p of d.permisos; track p.id) {
-                          <p class="text-xs text-black dark:text-white">
-                            {{ p.tipo }}: {{ p.hora_inicio ?? '—' }}–{{
-                              p.hora_fin ?? (p.no_regresa ? 'no regresa' : '—')
-                            }}
-                          </p>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-
-              <!-- TABLET / DESKTOP: tabla futurista con scroll horizontal de respaldo -->
-              <div
-                class="mt-4 hidden overflow-x-auto rounded-2xl border border-primary-500/20 bg-white/60 shadow-sm backdrop-blur-sm sm:block dark:border-accent-500/20 dark:bg-white/[0.03]"
-              >
-                <table class="w-full min-w-[640px] text-xs">
-                  <thead>
-                    <tr
-                      class="border-b border-primary-500/30 bg-primary-500/[0.04] text-left text-sm text-black dark:border-accent-500/30 dark:bg-accent-500/[0.06] dark:text-white"
-                    >
-                      <th class="py-3 pl-4 pr-3 font-semibold">Día</th>
-                      <th class="py-3 pr-3 font-semibold">Horario</th>
-                      <th class="py-3 pr-3 font-semibold">Entrada</th>
-                      <th class="py-3 pr-3 font-semibold">Salida</th>
-                      <th class="py-3 pr-3 font-semibold">Horas</th>
-                      <!-- <th class="py-3 pr-3 font-semibold">Tiempo extra</th> -->
-                      <th class="py-3 pr-4 font-semibold">Permisos</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-primary-500/10 text-sm dark:divide-white/5">
-                    @for (d of t.dias; track d.fecha) {
-                      <tr
-                        [ngClass]="
-                          d.es_descanso
-                            ? 'text-black/30 dark:text-white/25'
-                            : 'text-black dark:text-white'
-                        "
-                        class="group transition-colors duration-150 hover:bg-primary-500/[0.05] dark:hover:bg-accent-500/[0.06]"
-                      >
-                        <td class="py-3 pl-4 pr-3">
-                          <div class="flex items-center gap-2 capitalize">
-                            <span
-                              class="h-1.5 w-1.5 rounded-full"
-                              [ngClass]="
-                                d.es_descanso
-                                  ? 'bg-black/20 dark:bg-white/20'
-                                  : 'bg-primary-500 dark:bg-accent-500'
-                              "
-                            ></span>
-                            {{ d.dia_semana }}
-                          </div>
-                          <span class="pl-3.5 text-[11px] text-black/40 dark:text-white/35">{{
-                            d.fecha
-                          }}</span>
-                        </td>
-
-                        <td
-                          class="whitespace-nowrap py-3 pr-3 font-mono text-[13px] tabular-nums text-black/60 dark:text-white/60"
-                        >
-                          {{ d.horario_esperado }}
-                        </td>
-                        <td class="whitespace-nowrap py-3 pr-3 font-mono text-[13px] tabular-nums">
-                          {{ d.hora_entrada_real ?? '—' }}
-                        </td>
-                        <td class="whitespace-nowrap py-3 pr-3 font-mono text-[13px] tabular-nums">
-                          {{ d.hora_salida_real ?? '—' }}
-                        </td>
-                        <td class="whitespace-nowrap py-3 pr-3">
-                          <span
-                            class="inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[13px] font-semibold tabular-nums"
-                            [ngClass]="
-                              d.es_descanso
-                                ? 'text-black/30 dark:text-white/25'
-                                : 'bg-primary-500/10 text-primary-600 dark:bg-accent-500/15 dark:text-accent-400'
-                            "
-                          >
-                            {{ formatHoras(d.horas_trabajadas) }}
-                          </span>
-                        </td>
-
-                        <!-- <td class="whitespace-nowrap py-3 pr-3">
-                          @if (tiempoExtra(d) === 0) {
-                            <span class="text-black/25 dark:text-white/20">—</span>
-                          } @else {
-                            <span
-                              class="inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[13px] font-semibold tabular-nums"
-                              [ngClass]="
-                                tiempoExtra(d) > 0
-                                  ? 'bg-accent-500/10 text-accent-600 dark:bg-accent-500/15 dark:text-accent-400'
-                                  : 'bg-red-500/10 text-red-600 dark:bg-red-500/15 dark:text-red-400'
-                              "
-                            >
-                              {{ formatTiempoExtra(d) }}
-                            </span>
-                          }
-                        </td> -->
-
-                        <td class="py-3 pr-4">
-                          @if (!d.permisos.length) {
-                            <span class="text-black/25 dark:text-white/20">—</span>
-                          } @else {
-                            <div class="flex flex-col gap-1">
-                              @for (p of d.permisos; track p.id) {
-                                <div
-                                  class="inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border border-primary-500/20 bg-primary-500/[0.06] px-2.5 py-1 text-[11px] font-medium text-primary-700 dark:border-accent-500/25 dark:bg-accent-500/[0.08] dark:text-accent-300"
-                                >
-                                  <span class="h-1 w-1 rounded-full bg-current"></span>
-                                  {{ p.tipo }}
-                                  <span class="font-mono font-normal tabular-nums opacity-70">
-                                    {{ p.hora_inicio ?? '—' }}–{{
-                                      p.hora_fin ?? (p.no_regresa ? 'no regresa' : '—')
-                                    }}
-                                  </span>
-                                </div>
-                              }
-                            </div>
-                          }
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-          </div>
-        }
-      </div>
-
-      @if (totalPaginas > 1) {
-        <div class="mt-4 flex items-center justify-center gap-3">
-          <button
-            type="button"
-            [disabled]="paginaActual === 1"
-            (click)="paginaAnterior()"
-            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
-          >
-            Anterior
-          </button>
-          <span class="text-xs text-black dark:text-white">
-            Página {{ paginaActual }} de {{ totalPaginas }}
-          </span>
-          <button
-            type="button"
-            [disabled]="paginaActual === totalPaginas"
-            (click)="paginaSiguiente()"
-            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
-          >
-            Siguiente
-          </button>
-        </div>
-      }
-    }
-  </div>
-}
+<!-- Rh/rh.component.html -->
+<div class="mb-3 flex shrink-0 items-center gap-2">
+  <button
+    type="button"
+    (click)="cambiarTab('aprobaciones')"
+    class="rounded-lg px-4 py-2 text-sm font-medium transition"
+    [ngClass]="
+      vistaRhTab === 'aprobaciones'
+        ? 'bg-primary-500 text-white shadow-sm'
+        : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
+    "
+  >
+    Aprobaciones RH
+    @if (pendientesRh.length) {
+      <span class="ml-1 rounded-full bg-white/25 px-1.5 py-0.5 text-xs font-semibold">{{
+        pendientesRh.length
+      }}</span>
+    }
+  </button>
+  <button
+    type="button"
+    (click)="cambiarTab('asistencia')"
+    class="rounded-lg px-4 py-2 text-sm font-medium transition"
+    [ngClass]="
+      vistaRhTab === 'asistencia'
+        ? 'bg-primary-500 text-white shadow-sm'
+        : 'text-black hover:bg-white dark:text-white dark:hover:bg-gray-800'
+    "
+  >
+    Tarjeta de asistencia
+  </button>
+</div>
+
+@if (vistaRhTab === 'aprobaciones') {
+  <div class="flex min-h-0 flex-1 flex-col overflow-y-auto md:bg-card md:rounded-2xl md:p-5">
+    @if (cargandoPendientes) {
+      <div class="h-16 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
+    } @else if (!pendientesRh.length) {
+      <p class="text-sm text-black dark:text-white">No hay solicitudes pendientes de RH.</p>
+    } @else {
+      <div class="flex flex-col gap-2">
+        @for (p of pendientesRh; track p.id) {
+          <div
+            class="flex items-center justify-between rounded-xl border border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/60"
+          >
+            <div>
+              <p class="text-sm font-medium text-black dark:text-white">
+                {{ p.identity?.nombre }} {{ p.identity?.apellido }}
+              </p>
+              <p class="text-xs text-primary-500">
+                {{ p.catalogo?.nombre }} · {{ p.fecha_inicio }}
+              </p>
+              <p class="text-xs italic text-black dark:text-white">"{{ p.motivo }}"</p>
+            </div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                (click)="resolverComoRh(p, 'rechazado')"
+                class="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white"
+              >
+                Rechazar
+              </button>
+              <button
+                type="button"
+                (click)="resolverComoRh(p, 'aprobado')"
+                class="rounded-lg bg-accent-500 px-3 py-1.5 text-xs font-medium text-black"
+              >
+                Aprobar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
+
+@if (vistaRhTab === 'asistencia') {
+  <div class="flex min-h-0 flex-1 flex-col overflow-y-auto md:bg-card md:rounded-2xl md:p-5">
+    <!-- FILTROS -->
+    <div class="relative mb-3 flex shrink-0 flex-wrap items-center gap-2">
+      <input
+        type="text"
+        placeholder="Buscar por colaborador, área, departamento…"
+        class="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+        [value]="filtroBusquedaRh"
+        (input)="onBusquedaRhChange($event)"
+      />
+
+      <button
+        type="button"
+        (click)="togglePanelFiltrosRh()"
+        class="relative flex max-w-[45%] shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-black md:max-w-none dark:border-gray-700 dark:text-white"
+        [ngClass]="
+          hayFiltrosActivosRh ? 'border-primary-500 text-primary-600 dark:text-primary-400' : ''
+        "
+      >
+        <mat-icon class="shrink-0 icon-size-4" [svgIcon]="'heroicons_outline:funnel'"></mat-icon>
+        <span class="hidden truncate md:block">{{ filtrosBotonLabelRh }}</span>
+        @if (mostrarIndicadorFiltrosRh) {
+          <span
+            class="absolute -right-1 -top-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary-500 ring-2 ring-white dark:bg-accent-500 dark:ring-gray-900"
+          ></span>
+        }
+      </button>
+
+      <button
+        type="button"
+        (click)="abrirModalExportarTodos()"
+        class="ml-auto rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-medium text-white"
+      >
+        <mat-icon
+          class="block shrink-0 text-white icon-size-4 md:hidden"
+          [svgIcon]="'heroicons_outline:arrow-down-tray'"
+        ></mat-icon>
+        <span class="hidden md:block"> Exportar todos (CSV)</span>
+      </button>
+
+      @if (mostrarPanelFiltrosRh) {
+        <div
+          class="absolute right-0 top-11 z-20 w-80 rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+        >
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white">Empresa</label>
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              [value]="empresaFiltro"
+              (change)="onEmpresaChange($event)"
+            >
+              <option value="">Todas</option>
+              @for (e of empresas; track e.id) {
+                <option [value]="e.id">{{ e.nombre }}</option>
+              }
+            </select>
+          </div>
+          <!-- Área -->
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white">Área</label>
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              (change)="onFiltroAreaChange($event)"
+            >
+              <option value="" [selected]="filtroAreaId === null">Todas las áreas</option>
+              @for (a of areas; track a.id) {
+                <option [value]="a.id" [selected]="a.id === filtroAreaId">{{ a.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Puesto -->
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white">
+              Puesto
+            </label>
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              (change)="onFiltroDepartamentoChange($event)"
+            >
+              <option value="" [selected]="filtroDepartamentoId === null">
+                Todos los departamentos
+              </option>
+              @for (d of departamentos; track d.id) {
+                <option [value]="d.id" [selected]="d.id === filtroDepartamentoId">
+                  {{ d.nombre }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <!-- Turno -->
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white">Turno</label>
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              (change)="onFiltroTurnoChange($event)"
+            >
+              <option value="" [selected]="filtroTurnoId === null">Todos los turnos</option>
+              @for (t of turnos; track t.id) {
+                <option [value]="t.id" [selected]="t.id === filtroTurnoId">{{ t.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Tipo de permiso -->
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white">
+              Tipo de permiso
+            </label>
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              (change)="onFiltroCatalogoRhChange($event)"
+            >
+              <option value="" [selected]="filtroCatalogoId === null">Todos los tipos</option>
+              @for (c of catalogo; track c.id) {
+                <option [value]="c.id" [selected]="c.id === filtroCatalogoId">
+                  {{ c.nombre }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <!-- rango personalizado -->
+          <div class="mb-3">
+            <label class="mb-1 block text-xs font-medium text-black dark:text-white">
+              Rango personalizado
+            </label>
+            <input
+              type="date"
+              [value]="fechaSemana"
+              (change)="onFechaSemanaChange($event)"
+              class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              [ngClass]="errorFechaPersonalizada ? 'border-red-500' : ''"
+            />
+            @if (errorFechaPersonalizada) {
+              <p class="mt-1 text-xs text-red-500">{{ errorFechaPersonalizada }}</p>
+            }
+          </div>
+
+          <!-- rangos de fechas -->
+          <div class="mb-3 flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              (click)="filtrarSemanaPasada()"
+              class="rounded-full px-2.5 py-1 text-xs font-medium"
+              [ngClass]="
+                filtroRangoActivo === 'semana_pasada'
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+              "
+            >
+              Semana pasada
+            </button>
+            <button
+              type="button"
+              (click)="filtrarSemanaActual()"
+              class="rounded-full px-2.5 py-1 text-xs font-medium"
+              [ngClass]="
+                filtroRangoActivo === 'semana_actual'
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+              "
+            >
+              Esta semana
+            </button>
+            <button
+              type="button"
+              (click)="filtrarSemanaSiguiente()"
+              class="rounded-full px-2.5 py-1 text-xs font-medium"
+              [ngClass]="
+                filtroRangoActivo === 'semana_siguiente'
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-white text-black dark:bg-gray-700 dark:text-white'
+              "
+            >
+              Semana siguiente
+            </button>
+          </div>
+
+          <!-- accion -->
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="cerrarPanelFiltrosRh()"
+              class="flex-1 rounded-lg bg-primary-500 py-1.5 text-sm font-medium text-white"
+            >
+              Aplicar
+            </button>
+            @if (hayFiltrosActivosRh) {
+              <button
+                type="button"
+                (click)="limpiarFiltrosRh()"
+                class="rounded-lg border border-red-500 px-4 py-1.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-500 hover:text-white"
+              >
+                Limpiar
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (cargandoTarjetas) {
+      <div class="h-24 w-full animate-pulse rounded-lg bg-white dark:bg-gray-800"></div>
+    } @else if (!tarjetas.length) {
+      <p class="text-sm text-black dark:text-white">
+        No hay empleados que coincidan con este filtro.
+      </p>
+    } @else {
+      <div class="flex flex-col gap-3">
+        @for (t of tarjetas; track t.identity_id) {
+          <div
+            class="rounded-xl border border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/60"
+          >
+            <!-- Encabezado: se apila en móvil, en fila desde sm -->
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="min-w-0">
+                <p class="truncate text-sm font-semibold text-black dark:text-white">
+                  {{ t.nombre }}
+                </p>
+                <p
+                  class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-primary-500 dark:text-accent-500"
+                >
+                  <span>Turno: {{ t.turno?.nombre ?? 'Sin turno' }}</span>
+                  <span class="text-gray-300 dark:text-gray-600">·</span>
+                  <span>Empresa {{ t.empresa }}</span>
+                  <span class="text-gray-300 dark:text-gray-600">·</span>
+                  <span class="font-medium"
+                    >Total semana: {{ formatHoras(t.total_horas_semana) }}</span
+                  >
+                </p>
+              </div>
+              <div class="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  (click)="descargarExcel(t.identity_id)"
+                  class="rounded-lg border border-primary-500 px-3 py-1.5 text-xs font-medium text-primary-600"
+                >
+                  CSV
+                </button>
+                <button
+                  type="button"
+                  (click)="toggleExpandir(t.identity_id)"
+                  class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-black dark:border-gray-600 dark:text-white"
+                >
+                  {{ filaExpandidaId === t.identity_id ? 'Ocultar' : 'Ver detalle' }}
+                </button>
+              </div>
+            </div>
+
+            @if (filaExpandidaId === t.identity_id) {
+              <!-- MÓVIL: mini-tarjetas por día (más legibles que una tabla apretada) -->
+              <div class="bg-card mt-4 flex flex-col gap-2 sm:hidden">
+                @for (d of t.dias; track d.fecha) {
+                  <div
+                    class="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+                    [ngClass]="
+                      d.es_descanso
+                        ? 'bg-gray-50 dark:bg-gray-900/40'
+                        : 'bg-white dark:bg-gray-800/40'
+                    "
+                  >
+                    <div class="flex items-baseline justify-between">
+                      <p class="text-sm font-medium capitalize text-black dark:text-white">
+                        {{ d.dia_semana }}
+                      </p>
+                      <p class="text-xs text-black dark:text-white">{{ d.fecha }}</p>
+                    </div>
+
+                    <div class="mt-2 grid grid-cols-2 gap-y-1.5 text-xs">
+                      <span class="text-black dark:text-white">Horario esperado</span>
+                      <span class="text-right text-black dark:text-white">
+                        {{ d.horario_esperado }}
+                      </span>
+
+                      <span class="text-black dark:text-white">Entrada</span>
+                      <span class="text-right text-black dark:text-white">
+                        {{ d.hora_entrada_real ?? '—' }}
+                      </span>
+
+                      <span class="text-black dark:text-white">Salida</span>
+                      <span class="text-right text-black dark:text-white">
+                        {{ d.hora_salida_real ?? '—' }}
+                      </span>
+
+                      <span class="text-black dark:text-white">Horas trabajadas</span>
+                      <span class="text-right font-semibold text-black dark:text-white">
+                        {{ formatHoras(d.horas_trabajadas) }}h
+                      </span>
+
+                      <!-- <span class="text-black dark:text-white">Tiempo extra</span>
+                      <span
+                        class="text-right font-semibold"
+                        [ngClass]="
+                          tiempoExtra(d) > 0
+                            ? 'text-accent-600 dark:text-accent-400'
+                            : tiempoExtra(d) < 0
+                              ? 'text-red-500'
+                              : 'text-black dark:text-white'
+                        "
+                      >
+                        {{ formatTiempoExtra(d) }}
+                      </span> -->
+                    </div>
+
+                    @if (d.permisos.length) {
+                      <div class="mt-2 border-t border-gray-200 pt-2 dark:border-gray-700">
+                        <p class="mb-1 text-sm font-medium text-black dark:text-white">Permisos</p>
+                        @for (p of d.permisos; track p.id) {
+                          <p class="text-xs text-black dark:text-white">
+                            {{ p.tipo }}: {{ p.hora_inicio ?? '—' }}–{{
+                              p.hora_fin ?? (p.no_regresa ? 'no regresa' : '—')
+                            }}
+                          </p>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- TABLET / DESKTOP: tabla futurista con scroll horizontal de respaldo -->
+              <div
+                class="mt-4 hidden overflow-x-auto rounded-2xl border border-primary-500/20 bg-white/60 shadow-sm backdrop-blur-sm sm:block dark:border-accent-500/20 dark:bg-white/[0.03]"
+              >
+                <table class="w-full min-w-[640px] text-xs">
+                  <thead>
+                    <tr
+                      class="border-b border-primary-500/30 bg-primary-500/[0.04] text-left text-sm text-black dark:border-accent-500/30 dark:bg-accent-500/[0.06] dark:text-white"
+                    >
+                      <th class="py-3 pl-4 pr-3 font-semibold">Día</th>
+                      <th class="py-3 pr-3 font-semibold">Horario</th>
+                      <th class="py-3 pr-3 font-semibold">Entrada</th>
+                      <th class="py-3 pr-3 font-semibold">Salida</th>
+                      <th class="py-3 pr-3 font-semibold">Horas</th>
+                      <!-- <th class="py-3 pr-3 font-semibold">Tiempo extra</th> -->
+                      <th class="py-3 pr-4 font-semibold">Permisos</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-primary-500/10 text-sm dark:divide-white/5">
+                    @for (d of t.dias; track d.fecha) {
+                      <tr
+                        [ngClass]="
+                          d.es_descanso
+                            ? 'text-black/30 dark:text-white/25'
+                            : 'text-black dark:text-white'
+                        "
+                        class="group transition-colors duration-150 hover:bg-primary-500/[0.05] dark:hover:bg-accent-500/[0.06]"
+                      >
+                        <td class="py-3 pl-4 pr-3">
+                          <div class="flex items-center gap-2 capitalize">
+                            <span
+                              class="h-1.5 w-1.5 rounded-full"
+                              [ngClass]="
+                                d.es_descanso
+                                  ? 'bg-black/20 dark:bg-white/20'
+                                  : 'bg-primary-500 dark:bg-accent-500'
+                              "
+                            ></span>
+                            {{ d.dia_semana }}
+                          </div>
+                          <span class="pl-3.5 text-[11px] text-black/40 dark:text-white/35">{{
+                            d.fecha
+                          }}</span>
+                        </td>
+
+                        <td
+                          class="whitespace-nowrap py-3 pr-3 font-mono text-[13px] tabular-nums text-black/60 dark:text-white/60"
+                        >
+                          {{ d.horario_esperado }}
+                        </td>
+                        <td class="whitespace-nowrap py-3 pr-3 font-mono text-[13px] tabular-nums">
+                          {{ d.hora_entrada_real ?? '—' }}
+                        </td>
+                        <td class="whitespace-nowrap py-3 pr-3 font-mono text-[13px] tabular-nums">
+                          {{ d.hora_salida_real ?? '—' }}
+                        </td>
+                        <td class="whitespace-nowrap py-3 pr-3">
+                          <span
+                            class="inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[13px] font-semibold tabular-nums"
+                            [ngClass]="
+                              d.es_descanso
+                                ? 'text-black/30 dark:text-white/25'
+                                : 'bg-primary-500/10 text-primary-600 dark:bg-accent-500/15 dark:text-accent-400'
+                            "
+                          >
+                            {{ formatHoras(d.horas_trabajadas) }}
+                          </span>
+                        </td>
+
+                        <!-- <td class="whitespace-nowrap py-3 pr-3">
+                          @if (tiempoExtra(d) === 0) {
+                            <span class="text-black/25 dark:text-white/20">—</span>
+                          } @else {
+                            <span
+                              class="inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[13px] font-semibold tabular-nums"
+                              [ngClass]="
+                                tiempoExtra(d) > 0
+                                  ? 'bg-accent-500/10 text-accent-600 dark:bg-accent-500/15 dark:text-accent-400'
+                                  : 'bg-red-500/10 text-red-600 dark:bg-red-500/15 dark:text-red-400'
+                              "
+                            >
+                              {{ formatTiempoExtra(d) }}
+                            </span>
+                          }
+                        </td> -->
+
+                        <td class="py-3 pr-4">
+                          @if (!d.permisos.length) {
+                            <span class="text-black/25 dark:text-white/20">—</span>
+                          } @else {
+                            <div class="flex flex-col gap-1">
+                              @for (p of d.permisos; track p.id) {
+                                <div
+                                  class="inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border border-primary-500/20 bg-primary-500/[0.06] px-2.5 py-1 text-[11px] font-medium text-primary-700 dark:border-accent-500/25 dark:bg-accent-500/[0.08] dark:text-accent-300"
+                                >
+                                  <span class="h-1 w-1 rounded-full bg-current"></span>
+                                  {{ p.tipo }}
+                                  <span class="font-mono font-normal tabular-nums opacity-70">
+                                    {{ p.hora_inicio ?? '—' }}–{{
+                                      p.hora_fin ?? (p.no_regresa ? 'no regresa' : '—')
+                                    }}
+                                  </span>
+                                </div>
+                              }
+                            </div>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (totalPaginas > 1) {
+        <div class="mt-4 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            [disabled]="paginaActual === 1"
+            (click)="paginaAnterior()"
+            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
+          >
+            Anterior
+          </button>
+          <span class="text-xs text-black dark:text-white">
+            Página {{ paginaActual }} de {{ totalPaginas }}
+          </span>
+          <button
+            type="button"
+            [disabled]="paginaActual === totalPaginas"
+            (click)="paginaSiguiente()"
+            class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-black disabled:opacity-40 dark:border-gray-700 dark:text-white"
+          >
+            Siguiente
+          </button>
+        </div>
+      }
+    }
+  </div>
+}

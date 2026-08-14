@@ -53,7 +53,7 @@
 //     if (!this.echo) return;
 
 //     if (this.listening) {
-//       console.warn('⚠️ Ya estaba escuchando reportes-produccion');
+//       console.warn('⚠ Ya estaba escuchando reportes-produccion');
 //       return;
 //     }
 //     this.listening = true;

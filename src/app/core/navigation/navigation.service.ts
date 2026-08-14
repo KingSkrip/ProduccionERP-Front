@@ -206,7 +206,7 @@ export class NavigationService {
   getNavigationByRole(roleId: number, subRoleId?: number): FuseNavigationItem[] {
     let navigation: FuseNavigationItem[] = [];
 
-    // 1️⃣ Navegación base por ROL
+    // 1⃣ Navegación base por ROL
     switch (roleId) {
       case RoleEnum.RH:
         navigation = menuRh;
@@ -253,7 +253,7 @@ export class NavigationService {
         break;
     }
 
-    // 2️⃣ Sobrescribir por SUBROL
+    // 2⃣ Sobrescribir por SUBROL
     if (subRoleId) {
       switch (subRoleId) {
         case SubRoleEnum.JEFE:
@@ -299,7 +299,7 @@ export class NavigationService {
       }
     }
 
-    // 3️⃣ Seguridad
+    // 3⃣ Seguridad
     if (!Array.isArray(navigation)) {
       console.error('Navigation inválida', { roleId, subRoleId });
       return [];

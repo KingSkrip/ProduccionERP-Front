@@ -2645,18 +2645,11 @@ export const menuRh: FuseNavigationItem[] = [
 
 export const menuSuAdmin: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -4056,7 +4049,7 @@ export const menuColaborador: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
-  },  
+  },
   {
     id: 'colaboradores.permisos',
     title: 'Permisos',
@@ -4093,18 +4086,11 @@ export const menuColaborador: FuseNavigationItem[] = [
 
 export const menuSuAdmin_Admin: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -4161,22 +4147,46 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
       },
     ],
   },
+  //1234567890
+  {
+    id: 'cruds',
+    title: 'Colaboradores',
+    subtitle: 'Gestión de usuarios',
+    type: 'collapsable',
+    icon: 'heroicons_outline:user-group',
+    children: [
+      {
+        id: 'cruds.colaboradores',
+        title: 'Empresa uno',
+        type: 'basic',
+        icon: 'heroicons_outline:users',
+        link: '/apps/rodarobaloc_noitseG_ONE',
+      },
+      {
+        id: 'cruds.roles',
+        title: 'Roles',
+        type: 'basic',
+        icon: 'heroicons_outline:shield-check',
+        link: '/apps/selor_noitseG',
+      },
+      {
+        id: 'gestion.colaboradores',
+        title: 'Colaboradores',
+        type: 'basic',
+        icon: 'heroicons_outline:users',
+        link: '/apps/rodarobaloc_noitseG',
+      },
+    ],
+  },
 ];
 
 export const menuJacobo: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
 
   {
@@ -4358,18 +4368,11 @@ export const menuReporteProd_Jacobo: FuseNavigationItem[] = [
 
 export const menuClientes: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
 
   {
@@ -4392,18 +4395,11 @@ export const menuClientes: FuseNavigationItem[] = [
 
 export const menuAgentes: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -4433,18 +4429,11 @@ export const menuAgentes: FuseNavigationItem[] = [
 
 export const menuVentas: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -4490,18 +4479,11 @@ export const menuVentas: FuseNavigationItem[] = [
 
 export const menuColaborador_Gerente: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
 
   {
@@ -4546,18 +4528,11 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
 
 export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -4593,18 +4568,11 @@ export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
 
 export const menuColaborador_Contraloria: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -4649,18 +4617,11 @@ export const menuColaborador_Contraloria: FuseNavigationItem[] = [
 
 export const menuColaborador_Coordinador: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -4696,18 +4657,11 @@ export const menuColaborador_Coordinador: FuseNavigationItem[] = [
 
 export const menuJefe: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -4805,18 +4759,11 @@ export const menuJefe: FuseNavigationItem[] = [
 
 export const menuJaime: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
 
   {
@@ -4852,6 +4799,14 @@ export const menuJaime: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:shopping-bag',
     link: '/apps/PedidosCl1',
+  },
+    {
+    id: 'inventarios',
+    title: 'Inventarios',
+    tooltip: 'Inventarios',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-list',
+    link: '/apps/Inventarios',
   },
   {
     id: 'colaboradores.permisos',
@@ -4915,18 +4870,11 @@ export const menuJaime: FuseNavigationItem[] = [
 
 export const menuSabu: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -5023,18 +4971,11 @@ export const menuSabu: FuseNavigationItem[] = [
 
 export const menuProvedores: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -5048,18 +4989,11 @@ export const menuProvedores: FuseNavigationItem[] = [
 
 export const menuAlmacen: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -5073,18 +5007,11 @@ export const menuAlmacen: FuseNavigationItem[] = [
 
 export const menuCompras: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'agenda',
@@ -5098,18 +5025,11 @@ export const menuCompras: FuseNavigationItem[] = [
 
 export const menuAccesos: FuseNavigationItem[] = [
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
   {
     id: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',

@@ -1086,7 +1086,7 @@ export class MailboxService {
     const category = this._category.value;
 
     if (!category) {
-      console.warn('⚠️ No hay carpeta activa para refrescar');
+      console.warn('⚠ No hay carpeta activa para refrescar');
       return;
     }
 

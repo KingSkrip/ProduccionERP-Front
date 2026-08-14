@@ -85,14 +85,14 @@ export class ThinLayoutComponent implements OnInit, OnDestroy {
             'mainNavigation',
           );
 
-        // 🔥 1️⃣ Si es Jacobo, SIEMPRE cerrar
+        // 🔥 1⃣ Si es Jacobo, SIEMPRE cerrar
         if (this.isJacobo && nav?.opened) {
           nav.close();
           this.isNavOpen = false;
           return;
         }
 
-        // 🔥 2️⃣ Si es móvil, cerrar después de navegar
+        // 🔥 2⃣ Si es móvil, cerrar después de navegar
         if (this.isScreenSmall && nav?.opened) {
           nav.close();
           this.isNavOpen = false;

@@ -147,7 +147,8 @@ export const appRoutes: Route[] = [
                     //REGISTRO DE ASISTENCIA
                     { path: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%', loadChildren: () => import('app/modules/Checador/checador.routes') },
 
-
+         //Inventarios
+                    { path: 'Inventarios', loadChildren: () => import('app/modules/admin/Inventarios/inventarios.routes') },
 
                  
 

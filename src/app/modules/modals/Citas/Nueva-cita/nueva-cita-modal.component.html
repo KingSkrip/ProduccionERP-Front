@@ -1,13 +1,13 @@
-<!-- VISTA NORMAL (todos menos proveedores) -->
-<div *ngIf="!isProveedor">
-  <all-users-nueva-cita-modal
-    [data]="data">
-  </all-users-nueva-cita-modal>
-</div>
-
-<!-- VISTA PROVEEDOR -->
-<div *ngIf="isProveedor">
-   <provedores-nueva-cita-modal
-    [data]="data">
-  </provedores-nueva-cita-modal>
+<!-- VISTA NORMAL (todos menos proveedores) -->
+<div *ngIf="!isProveedor">
+  <all-users-nueva-cita-modal
+    [data]="data">
+  </all-users-nueva-cita-modal>
+</div>
+
+<!-- VISTA PROVEEDOR -->
+<div *ngIf="isProveedor">
+   <provedores-nueva-cita-modal
+    [data]="data">
+  </provedores-nueva-cita-modal>
 </div>

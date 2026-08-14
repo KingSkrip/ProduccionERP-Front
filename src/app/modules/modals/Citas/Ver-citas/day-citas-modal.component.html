@@ -1,125 +1,125 @@
-<div
-  class="bg-card flex w-full flex-col overflow-hidden rounded-3xl"
-  (touchstart)="onTouchStart($event)"
-  (touchend)="onTouchEnd($event)"
->
-  <!-- Header -->
-  <div class="bg-card flex items-center justify-between px-6 pb-4 pt-5">
-    <div>
-      <h2 class="mt-1 text-2xl text-black dark:text-white">
-        {{ fechaFormateada.split(' ')[0] }} {{ diaSemanaFormateado }}
-      </h2>
-    </div>
-    <button
-      (click)="cerrar()"
-      class="flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
-    >
-      <mat-icon class="text-base text-black icon-size-5 dark:text-white">close</mat-icon>
-    </button>
-  </div>
-
-  <!-- Lista de citas -->
-  <div
-    class="bg-default m-3 flex flex-1 flex-col gap-3 overflow-y-auto rounded-3xl px-4 py-5 shadow-[4px_0_10px_rgba(0,0,0,0.15)]"
-    [ngClass]="animacionClase"
-    style="scrollbar-width: none"
-  >
-    <div class="flex items-center justify-between">
-      <span>{{ fechaFormateada }}</span>
-
-      <button
-        *ngIf="!esFechaPasada()"
-        (click)="agregarNuevaCita()"
-        class="bg-card flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full shadow-xl transition-transform active:scale-95"
-      >
-        <mat-icon class="text-2xl text-black icon-size-5 dark:text-white">add</mat-icon>
-      </button>
-    </div>
-
-    <!-- Loading -->
-    <div *ngIf="loading" class="flex flex-1 items-center justify-center py-10">
-      <mat-spinner diameter="40" color="accent"></mat-spinner>
-    </div>
-
-    <!-- Citas -->
-    <ng-container *ngIf="!loading && citas.length > 0; else sinCitas">
-      <div
-        *ngFor="let cita of citas"
-        class="flex cursor-pointer items-start gap-3 rounded-2xl p-4 transition-all duration-200 hover:scale-[1.01] hover:bg-white/5"
-       [ngClass]="{
-  'border border-green-500/20 bg-green-500/10': cita.estado === 'confirmada',
-  'border border-yellow-500/20 bg-yellow-500/10': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
-  'border border-purple-500/20 bg-purple-500/10': cita.estado === 'pendiente' && cita.cita_type_id === 2,
-  'border border-red-500/20 bg-red-500/10': cita.estado === 'cancelada',
-}"
-        (click)="!esFechaPasada() && editarCita(cita)"
-      >
-<!-- Avatar -->
-<div
-  class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold"
- [ngClass]="{
-  'bg-green-500/20 text-black dark:text-green-300': cita.estado === 'confirmada',
-  'bg-yellow-500/20 text-black dark:text-yellow-300': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
-  'bg-purple-500/20 text-black dark:text-purple-300': cita.estado === 'pendiente' && cita.cita_type_id === 2,
-  'bg-red-500/20 text-black dark:text-red-300': cita.estado === 'cancelada',
-}"
->
-  {{ cita.paciente?.charAt(0)?.toUpperCase() }}
-</div>  
-
-        <!-- Info -->
-        <div class="min-w-0 flex-1">
-          <p class="truncate text-sm text-black dark:text-white">
-            {{ cita.paciente }}
-          </p>
-          <p class="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">
-            {{ cita.horaInicio }} - {{ cita.horaFin }} • {{ cita.motivo }}
-          </p>
-        </div>
-
-        <!-- Badge -->
-        <span
-          class="flex-shrink-0 rounded-full px-2 py-1 text-[10px] capitalize"
-         [ngClass]="{
-  'bg-green-500/20 text-black dark:text-green-300': cita.estado === 'confirmada',
-  'bg-yellow-500/20 text-black dark:text-yellow-300': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
-  'bg-purple-500/20 text-black dark:text-purple-300': cita.estado === 'pendiente' && cita.cita_type_id === 2,
-  'bg-red-500/20 text-black dark:text-red-300': cita.estado === 'cancelada',
-}"
-        >
-          {{ cita.estado }}
-        </span>
-
-        <!-- Badge externa -->
-<div
-  *ngIf="cita.cita_type_id === 2"
-  class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white"
->
-  J
-</div>
-<div
-  *ngIf="cita.cita_type_id !== 2 && cita.esExterna"
-  class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white"
->
-  E
-</div>
-      </div>
-    </ng-container>
-
-    <!-- Sin citas -->
-    <ng-template #sinCitas>
-      <div
-        *ngIf="!loading"
-        class="bg-default flex flex-1 flex-col items-center justify-center rounded-2xl py-10 text-center"
-      >
-        <div class="bg-card mb-4 flex h-16 w-16 items-center justify-center rounded-2xl">
-          <mat-icon class="text-4xl text-white" style="font-size: 36px; width: 36px; height: 36px">
-            calendar_today
-          </mat-icon>
-        </div>
-        <p class="font-medium text-white">No hay citas programadas</p>
-        <p class="mt-1 text-sm text-white">para este día</p>
-      </div>
-    </ng-template>
-  </div>
-</div>
+<div
+  class="bg-card flex w-full flex-col overflow-hidden rounded-3xl"
+  (touchstart)="onTouchStart($event)"
+  (touchend)="onTouchEnd($event)"
+>
+  <!-- Header -->
+  <div class="bg-card flex items-center justify-between px-6 pb-4 pt-5">
+    <div>
+      <h2 class="mt-1 text-2xl text-black dark:text-white">
+        {{ fechaFormateada.split(' ')[0] }} {{ diaSemanaFormateado }}
+      </h2>
+    </div>
+    <button
+      (click)="cerrar()"
+      class="flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+    >
+      <mat-icon class="text-base text-black icon-size-5 dark:text-white">close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Lista de citas -->
+  <div
+    class="bg-default m-3 flex flex-1 flex-col gap-3 overflow-y-auto rounded-3xl px-4 py-5 shadow-[4px_0_10px_rgba(0,0,0,0.15)]"
+    [ngClass]="animacionClase"
+    style="scrollbar-width: none"
+  >
+    <div class="flex items-center justify-between">
+      <span>{{ fechaFormateada }}</span>
+
+      <button
+        *ngIf="!esFechaPasada()"
+        (click)="agregarNuevaCita()"
+        class="bg-card flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full shadow-xl transition-transform active:scale-95"
+      >
+        <mat-icon class="text-2xl text-black icon-size-5 dark:text-white">add</mat-icon>
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex flex-1 items-center justify-center py-10">
+      <mat-spinner diameter="40" color="accent"></mat-spinner>
+    </div>
+
+    <!-- Citas -->
+    <ng-container *ngIf="!loading && citas.length > 0; else sinCitas">
+      <div
+        *ngFor="let cita of citas"
+        class="flex cursor-pointer items-start gap-3 rounded-2xl p-4 transition-all duration-200 hover:scale-[1.01] hover:bg-white/5"
+       [ngClass]="{
+  'border border-green-500/20 bg-green-500/10': cita.estado === 'confirmada',
+  'border border-yellow-500/20 bg-yellow-500/10': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+  'border border-purple-500/20 bg-purple-500/10': cita.estado === 'pendiente' && cita.cita_type_id === 2,
+  'border border-red-500/20 bg-red-500/10': cita.estado === 'cancelada',
+}"
+        (click)="!esFechaPasada() && editarCita(cita)"
+      >
+<!-- Avatar -->
+<div
+  class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold"
+ [ngClass]="{
+  'bg-green-500/20 text-black dark:text-green-300': cita.estado === 'confirmada',
+  'bg-yellow-500/20 text-black dark:text-yellow-300': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+  'bg-purple-500/20 text-black dark:text-purple-300': cita.estado === 'pendiente' && cita.cita_type_id === 2,
+  'bg-red-500/20 text-black dark:text-red-300': cita.estado === 'cancelada',
+}"
+>
+  {{ cita.paciente?.charAt(0)?.toUpperCase() }}
+</div>  
+
+        <!-- Info -->
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm text-black dark:text-white">
+            {{ cita.paciente }}
+          </p>
+          <p class="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">
+            {{ cita.horaInicio }} - {{ cita.horaFin }} • {{ cita.motivo }}
+          </p>
+        </div>
+
+        <!-- Badge -->
+        <span
+          class="flex-shrink-0 rounded-full px-2 py-1 text-[10px] capitalize"
+         [ngClass]="{
+  'bg-green-500/20 text-black dark:text-green-300': cita.estado === 'confirmada',
+  'bg-yellow-500/20 text-black dark:text-yellow-300': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+  'bg-purple-500/20 text-black dark:text-purple-300': cita.estado === 'pendiente' && cita.cita_type_id === 2,
+  'bg-red-500/20 text-black dark:text-red-300': cita.estado === 'cancelada',
+}"
+        >
+          {{ cita.estado }}
+        </span>
+
+        <!-- Badge externa -->
+<div
+  *ngIf="cita.cita_type_id === 2"
+  class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white"
+>
+  J
+</div>
+<div
+  *ngIf="cita.cita_type_id !== 2 && cita.esExterna"
+  class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white"
+>
+  E
+</div>
+      </div>
+    </ng-container>
+
+    <!-- Sin citas -->
+    <ng-template #sinCitas>
+      <div
+        *ngIf="!loading"
+        class="bg-default flex flex-1 flex-col items-center justify-center rounded-2xl py-10 text-center"
+      >
+        <div class="bg-card mb-4 flex h-16 w-16 items-center justify-center rounded-2xl">
+          <mat-icon class="text-4xl text-white" style="font-size: 36px; width: 36px; height: 36px">
+            calendar_today
+          </mat-icon>
+        </div>
+        <p class="font-medium text-white">No hay citas programadas</p>
+        <p class="mt-1 text-sm text-white">para este día</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

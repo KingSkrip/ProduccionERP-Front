@@ -1,0 +1,115 @@
+<!-- Versión desktop -->
+<div class="bg-card hidden max-h-[80vh] w-full flex-col md:flex">
+  <div class="flex shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-500">
+    <div>
+      <h2 class="text-lg font-semibold text-black dark:text-white">{{ data.cve_art }}</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ data.descripcion }}</p>
+    </div>
+    <button
+      class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-500"
+      (click)="dialogRef.close()"
+    >
+      <mat-icon class="text-base text-black icon-size-5 dark:text-white">close</mat-icon>
+    </button>
+  </div>
+
+  <div class="flex items-center justify-between px-4 py-3">
+    <span class="text-sm text-gray-500 dark:text-gray-400">Existencia total</span>
+    <span class="text-base font-semibold text-black dark:text-white">
+      {{ data.existencia_total }} {{ data.u_m }}
+    </span>
+  </div>
+
+  <div class="flex-1 overflow-y-auto px-4 pb-4">
+    <table mat-table [dataSource]="data.almacenes" class="w-full">
+      <ng-container matColumnDef="almacen">
+        <th mat-header-cell *matHeaderCellDef>Almacén</th>
+        <td mat-cell *matCellDef="let a">{{ a.mostrar || a.almacen }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="existencia">
+        <th mat-header-cell *matHeaderCellDef class="text-right">Existencia</th>
+        <td mat-cell *matCellDef="let a" class="text-right">{{ a.existencia }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="costo_prom">
+        <th mat-header-cell *matHeaderCellDef class="text-right">Costo Prom.</th>
+        <td mat-cell *matCellDef="let a" class="text-right">
+          {{ a.costo_prom | currency: 'USD' }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnasAlmacenes"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnasAlmacenes"></tr>
+    </table>
+
+    <p *ngIf="!data.almacenes.length" class="py-8 text-center text-sm text-gray-400">
+      Sin existencias registradas en ningún almacén.
+    </p>
+  </div>
+</div>
+
+<!-- Versión móvil: bottom sheet con drag-to-dismiss -->
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden"
+  (click)="cerrarModal()"
+>
+  <div
+    class="bg-card flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
+    [class.select-none]="isDragging"
+    [style.transform]="dragTransform"
+    [style.transition]="dragTransition"
+    (click)="$event.stopPropagation()"
+    [@slideUp]
+  >
+    <div
+      class="bg-default dark:bg-card"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd()"
+    >
+      <div class="flex cursor-grab justify-center pb-2 pt-3 active:cursor-grabbing">
+        <div class="h-1.5 w-11 rounded-full bg-gray-400 transition-colors active:bg-primary-500 dark:bg-white/20"></div>
+      </div>
+
+      <div class="flex items-center justify-between border-b border-white/10 px-5 pb-4">
+        <div>
+          <h2 class="text-lg font-semibold tracking-tight text-black dark:text-white">
+            {{ data.cve_art }}
+          </h2>
+          <p class="text-sm text-primary-400">{{ data.descripcion }}</p>
+        </div>
+        <button
+          (click)="cerrarModal()"
+          class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-5">
+      <div class="mb-4 flex items-center justify-between rounded-2xl bg-gray-100 px-4 py-3 dark:bg-gray-700">
+        <span class="text-sm text-black dark:text-white">Existencia total</span>
+        <span class="text-base font-semibold text-black dark:text-white">
+          {{ data.existencia_total }} {{ data.u_m }}
+        </span>
+      </div>
+
+      <div
+        *ngFor="let a of data.almacenes"
+        class="mb-2 flex items-center justify-between rounded-2xl border border-gray-200 px-4 py-3 dark:border-gray-600"
+      >
+        <div class="flex flex-col">
+          <span class="text-sm font-medium text-black dark:text-white">{{ a.mostrar || a.almacen }}</span>
+          <span class="text-xs text-gray-400">{{ a.costo_prom | currency: 'USD' }} c/u</span>
+        </div>
+        <span class="text-base font-semibold text-black dark:text-white">{{ a.existencia }}</span>
+      </div>
+
+      <p *ngIf="!data.almacenes.length" class="py-8 text-center text-sm text-gray-400">
+        Sin existencias registradas en ningún almacén.
+      </p>
+    </div>
+  </div>
+</div>

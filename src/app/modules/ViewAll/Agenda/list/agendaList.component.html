@@ -1,761 +1,761 @@
-<!-- ══════════════════════════════════════════════
-     CITAS
-══════════════════════════════════════════════ -->
-<div class="bg-default absolute inset-0 flex min-w-0 flex-col overflow-hidden p-4">
-  <!-- ── HEADER ── -->
-  <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
-    <div class="flex items-center gap-4">
-      <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-accent-500 shadow-md">
-        <mat-icon class="text-2xl text-black">calendar_month</mat-icon>
-      </div>
-      <div>
-        <h1 class="text-2xl font-bold leading-tight text-black dark:text-white">Agenda</h1>
-        <p class="text-sm text-black dark:text-white">Administra tu disponibilidad y eventos</p>
-      </div>
-    </div>
-    <div class="flex items-center gap-3">
-      <!-- Botón "Hoy" — stroked -->
-      <button
-        class="inline-flex items-center gap-1 rounded-lg bg-accent-500 px-4 py-2 text-sm font-medium transition-colors hover:bg-accent-800"
-        (click)="irAHoy()"
-      >
-        <mat-icon class="text-black icon-size-5" [svgIcon]="'heroicons_outline:center'"></mat-icon>
-        <span class="text-black">Hoy</span>
-      </button>
-      <!-- Botón "Nuevo evento" — primary flat -->
-      <button
-        class="inline-flex items-center gap-1 rounded-lg bg-primary-500 px-4 py-2 text-sm text-white shadow-sm transition-colors hover:bg-primary-800"
-        (click)="abrirModalNuevaCita()"
-      >
-        <mat-icon class="text-base leading-none text-white">add</mat-icon>
-        <span class="text-white"> Nuevo evento</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- ── LAYOUT PRINCIPAL ── -->
-  <div
-    class="grid min-h-0 flex-1 grid-cols-1 gap-5 overflow-y-auto lg:grid-cols-[260px_1fr] lg:overflow-y-visible"
-  >
-    <!-- ════ SIDEBAR ════ -->
-    <aside class="hidden h-full flex-col gap-4 lg:flex">
-      <!-- Mini Calendario -->
-      <div
-        class="border-card bg-card hidden flex-1 flex-col rounded-xl border p-4 shadow-sm lg:flex"
-      >
-        <!-- Cabecera mes -->
-        <div class="mb-3 flex items-center justify-between">
-          <button
-            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
-            (click)="mesAnterior()"
-          >
-            <mat-icon class="text-base text-black icon-size-5 dark:text-white">
-              chevron_left
-            </mat-icon>
-          </button>
-          <span class="font-base text-sm text-black dark:text-white">{{ mesActualLabel }}</span>
-          <button
-            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
-            (click)="mesSiguiente()"
-          >
-            <mat-icon class="text-base text-black icon-size-5 dark:text-white">
-              chevron_right
-            </mat-icon>
-          </button>
-        </div>
-
-        <!-- Días de semana -->
-        <div class="mb-1 grid grid-cols-7">
-          <span
-            *ngFor="let d of diasSemana"
-            class="font-base py-1 text-center text-[12px] text-black dark:text-white"
-          >
-            {{ d }}
-          </span>
-        </div>
-
-        <!-- Días del mes -->
-        <div class="grid grid-cols-7 gap-[2px]">
-          <ng-container *ngFor="let dia of diasDelMes">
-            <button
-              *ngIf="dia !== null; else emptyCell"
-              class="relative flex aspect-square cursor-pointer flex-col items-center justify-center rounded-full border-0 text-xs font-medium leading-none transition-all"
-              [ngClass]="{
-                'bg-primary-500 text-white shadow':
-                  dia === diaHoy && mesVistaActual === mesHoy && anioVistaActual === anioHoy,
-                'bg-accent-400 text-black dark:bg-accent-700':
-                  dia === diaSeleccionado &&
-                  !(dia === diaHoy && mesVistaActual === mesHoy && anioVistaActual === anioHoy),
-                'text-black hover:bg-primary-400 hover:text-white dark:text-white':
-                  dia !== diaHoy || mesVistaActual !== mesHoy || anioVistaActual !== anioHoy,
-                'bg-primary-100 dark:bg-primary-900/40':
-                  diasDeSemanaActual.has(fechaDelMiniCal(dia)) &&
-                  dia !== diaSeleccionado &&
-                  !(dia === diaHoy && mesVistaActual === mesHoy && anioVistaActual === anioHoy),
-              }"
-              (click)="seleccionarDia(dia)"
-            >
-              {{ dia }}
-              <span
-                *ngIf="tieneCitas(dia)"
-                class="absolute bottom-[3px] h-1 w-1 rounded-full"
-                [ngClass]="{
-                  'bg-accent-500': tieneCitasExternas(dia),
-                  'bg-primary-500': !tieneCitasExternas(dia),
-                }"
-              ></span>
-            </button>
-            <ng-template #emptyCell><span></span></ng-template>
-          </ng-container>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 lg:grid-cols-1">
-        <!-- Resumen del día -->
-        <div class="border-card bg-card flex-1 rounded-xl border p-4 shadow-sm">
-          <p class="mb-3 text-center text-[12px] text-black dark:text-white">
-            Resumen — {{ diaSeleccionado }} {{ mesActualLabel }}
-          </p>
-          <div class="flex flex-col gap-1">
-            <div class="flex items-center gap-3 border-b border-gray-200 py-2">
-              <span
-                class="flex h-7 min-w-[28px] items-center justify-center rounded-lg bg-gray-200 text-xs font-bold text-blue-500 dark:bg-white"
-              >
-                {{ eventosHoy.length }}
-              </span>
-              <span class="text-sm text-black dark:text-white">Eventos programados</span>
-            </div>
-            <div class="flex items-center gap-3 border-b border-gray-200 py-2">
-              <span
-                class="flex h-7 min-w-[28px] items-center justify-center rounded-lg bg-gray-200 text-xs font-bold text-orange-500 dark:bg-white"
-              >
-                {{ eventosPendientes }}
-              </span>
-              <span class="text-sm text-black dark:text-white">Pendientes</span>
-            </div>
-            <div class="flex items-center gap-3 py-2">
-              <span
-                class="flex h-7 min-w-[28px] items-center justify-center rounded-lg bg-gray-200 text-xs font-bold text-green-500 dark:bg-white"
-              >
-                {{ eventosConfirmados }}
-              </span>
-              <span class="text-sm text-black dark:text-white">Confirmados</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Cambio de vista -->
-        <div class="border-card bg-card flex-1 rounded-xl border p-4 shadow-sm">
-          <p class="m-0 mb-3 text-center text-[12px] text-black dark:text-white">Vista</p>
-          <div class="flex flex-col gap-1">
-            <button
-              *ngFor="let v of tiposVista"
-              class="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-all"
-              [ngClass]="
-                vistaActual === v.value
-                  ? 'bg-primary-500 text-white'
-                  : 'text-black hover:bg-gray-200 dark:text-white dark:hover:bg-primary-400'
-              "
-              (click)="cambiarVista(v.value)"
-            >
-              <mat-icon
-                class="h-[18px] w-[18px] text-[18px]"
-                [ngClass]="vistaActual === v.value ? 'text-white' : 'text-black dark:text-white'"
-              >
-                {{ v.icon }}
-              </mat-icon>
-
-              {{ v.label }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <!-- ════ ÁREA PRINCIPAL ════ -->
-    <main
-      class="bg-card relative flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm"
-    >
-      <!-- ══ BARRA SUPERIOR MÓVIL ══ -->
-      <div class="flex flex-col border-b border-slate-200 lg:hidden">
-        <div class="flex items-center justify-between px-3 py-2">
-          <button
-            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-200"
-            (click)="navegarAnterior()"
-          >
-            <mat-icon class="text-base text-black dark:text-white">arrow_back_ios</mat-icon>
-          </button>
-
-          <h2 class="text-sm font-bold text-slate-800 dark:text-white">
-            <ng-container *ngIf="vistaActual === 'semana'">
-              {{ mesActualLabel }}
-            </ng-container>
-
-            <ng-container *ngIf="vistaActual === 'dia'">
-              {{ diaSeleccionado }} {{ mesActualLabel }}
-            </ng-container>
-
-            <ng-container *ngIf="vistaActual === 'lista'">
-              {{ rangoSemanaLabel }}
-            </ng-container>
-          </h2>
-
-          <button
-            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-200"
-            (click)="navegarSiguiente()"
-          >
-            <mat-icon class="text-base text-black dark:text-white">arrow_forward_ios</mat-icon>
-          </button>
-        </div>
-      </div>
-
-      <!-- ══ BARRA SUPERIOR DESKTOP ══ -->
-      <div
-        class="hidden flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-3 lg:flex"
-      >
-        <div class="flex items-center gap-1">
-          <button
-            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-300 dark:hover:bg-gray-500"
-            (click)="navegarAnterior()"
-          >
-            <mat-icon class="text-base text-black icon-size-5 dark:text-white"
-              >arrow_back_ios</mat-icon
-            >
-          </button>
-          <h2 class="m-0 mx-2 text-base font-bold text-slate-800 dark:text-white">
-            <ng-container *ngIf="['semana', 'lista'].includes(vistaActual)">
-              {{ rangoSemanaLabel }}
-            </ng-container>
-            <ng-container *ngIf="vistaActual === 'dia'">
-              {{ diaSeleccionado }} {{ mesActualLabel }}
-            </ng-container>
-          </h2>
-          <button
-            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-300 dark:hover:bg-gray-500"
-            (click)="navegarSiguiente()"
-          >
-            <mat-icon class="text-base text-black icon-size-5 dark:text-white"
-              >arrow_forward_ios</mat-icon
-            >
-          </button>
-        </div>
-        <div class="relative" *ngIf="vistaActual !== 'semana'">
-          <select
-            [(ngModel)]="filtroEstado"
-            class="appearance-none cursor-pointer rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-8 text-sm text-black focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="todos">Todos</option>
-            <option value="confirmada">Confirmada</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="cancelada">Cancelada</option>
-          </select>
-          <mat-icon
-            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-black icon-size-6"
-            >expand_more</mat-icon
-          >
-        </div>
-      </div>
-
-      <!-- ══ CONTENIDO ══ -->
-
-      <!-- ═══ VISTA SEMANA ═══ -->
-      <div *ngIf="vistaActual === 'semana'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <!-- MÓVIL: vista mes -->
-        <div class="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
-          <div class="min-h-0 flex-1 overflow-auto pb-14" style="scrollbar-width: none">
-            <!-- Cabeceras días semana -->
-            <div class="grid grid-cols-7 border-b border-gray-200 bg-primary-500">
-              <span
-                *ngFor="let d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
-                class="py-2 text-center text-[11px] font-semibold text-white"
-              >
-                {{ d }}
-              </span>
-            </div>
-
-            <!-- Contenedor de semanas: flex-col que llena el alto restante -->
-            <div class="flex flex-col" style="height: calc(100% - 33px)">
-              <div
-                *ngFor="let semana of diasDelMesConSemanas"
-                class="grid flex-1 grid-cols-7 border-b border-gray-100 dark:border-gray-700"
-              >
-                <div
-                  *ngFor="let dia of semana"
-                  class="relative cursor-pointer border-r border-gray-100 p-1 dark:border-gray-700"
-                  [ngClass]="{
-                    'opacity-30': dia.esOtroMes,
-                    'bg-blue-50 dark:bg-blue-900/20': esHoy(dia.fecha),
-                    'bg-accent-500/10': !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
-                  }"
-                  (click)="seleccionarDiaYAccion(dia.fecha)"
-                >
-                  <!-- Número del día -->
-                  <span
-                    class="mb-[2px] flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium"
-                    [ngClass]="{
-                      'bg-primary-500 text-white': esHoy(dia.fecha),
-                      'bg-accent-400 text-black':
-                        !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
-                      'text-black dark:text-white':
-                        !esHoy(dia.fecha) && dia.fecha !== fechaDiaSeleccionado,
-                    }"
-                    >{{ dia.dia }}
-                  </span>
-
-                  <!-- Citas (máx 2) -->
-                  <ng-container *ngFor="let cita of getCitasDelDia(dia.fecha); let i = index">
-                    <div
-                      *ngIf="i < 2"
-                      class="mb-[2px] flex items-center gap-[3px] rounded-[4px] px-1 py-[1px] text-[9px] font-medium leading-tight"
-                      [ngClass]="{
-                        'bg-green-100 text-green-800': cita.estado === 'confirmada',
-                        'bg-yellow-100 text-yellow-800':
-                          cita.estado === 'pendiente' && cita.cita_type_id !== 2,
-                        'bg-purple-100 text-purple-800':
-                          cita.estado === 'pendiente' && cita.cita_type_id === 2,
-                        'bg-red-100 text-red-800': cita.estado === 'cancelada',
-                      }"
-                    >
-                      <!-- Dot: morado = junta, azul = externa, nada = propia -->
-                      <span
-                        *ngIf="cita.cita_type_id === 2"
-                        class="inline-block h-[6px] w-[6px] shrink-0 rounded-full bg-purple-500"
-                      ></span>
-                      <span
-                        *ngIf="cita.cita_type_id !== 2 && cita.esExterna"
-                        class="inline-block h-[6px] w-[6px] shrink-0 rounded-full bg-blue-500"
-                      ></span>
-
-                      <span class="truncate">{{ cita.paciente }}</span>
-                    </div>
-                    <div *ngIf="i === 2" class="text-[9px] text-gray-400">
-                      +{{ getCitasDelDia(dia.fecha).length - 2 }} más
-                    </div>
-                  </ng-container>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- DESKTOP: vista semana con horas -->
-        <div class="hidden min-h-0 flex-1 flex-col overflow-hidden lg:flex">
-          <div class="min-h-0 flex-1 overflow-auto" style="scrollbar-width: none">
-            <div class="min-w-[480px]">
-              <!-- Cabeceras de días -->
-              <div
-                class="bg-card sticky top-0 z-20 grid border-b-2 border-gray-300"
-                style="grid-template-columns: 44px repeat(7, 1fr)"
-              >
-                <div class="bg-card sticky left-0 z-10 h-20 border-r border-gray-300"></div>
-                <div
-                  *ngFor="let dia of semanaActual"
-                  class="flex flex-col items-center border-l border-gray-300 py-3"
-                  [ngClass]="esHoy(dia.fecha) ? 'bg-accent-500' : 'bg-primary-500'"
-                >
-                  <span
-                    class="text-[11px] uppercase tracking-wide"
-                    [ngClass]="esHoy(dia.fecha) ? 'text-black' : 'text-white'"
-                    >{{ dia.nombre }}</span
-                  >
-                  <span
-                    class="mt-1 flex h-8 w-8 items-center justify-center text-base"
-                    [ngClass]="
-                      esHoy(dia.fecha) ? 'rounded-full bg-primary-500 text-white' : 'text-white'
-                    "
-                    >{{ dia.numero }}</span
-                  >
-                </div>
-              </div>
-              <!-- Grid horas -->
-              <div class="grid" style="grid-template-columns: 44px repeat(7, 1fr)">
-                <ng-container *ngFor="let hora of horasDelDia">
-                  <div
-                    class="bg-card sticky left-0 z-10 min-h-[50px] border-t border-gray-300 pr-3 pt-3 text-right text-[11px] font-medium text-black dark:text-white"
-                  >
-                    {{ hora }}:00
-                  </div>
-                  <!-- Grid horas — celda de cada día -->
-                  <div
-                    *ngFor="let dia of semanaActual"
-                    class="group relative min-h-[58px] cursor-pointer border-l border-t border-gray-300 p-1 transition-colors hover:bg-slate-50"
-                    [ngClass]="{
-                      'bg-blue-50/30': esHoy(dia.fecha),
-                      'bg-accent-500/10': !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
-                    }"
-                    (click)="
-                      getCitasEnSlot(dia.fecha, hora).length > 0
-                        ? verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0])
-                        : !esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora)
-                    "
-                  >
-                    <ng-container *ngFor="let cita of getCitasEnSlot(dia.fecha, hora)">
-                      <div
-                        class="pointer-events-none mb-1 flex flex-col gap-[2px] rounded-lg px-2 py-1 text-[11px]"
-                        [ngClass]="{
-                          'border-l-[3px] border-green-500 bg-green-200':
-                            cita.estado === 'confirmada',
-                          'border-l-[3px] border-yellow-400 bg-yellow-200':
-                            cita.estado === 'pendiente' && cita.cita_type_id !== 2,
-                          'border-l-[3px] border-purple-500 bg-purple-100':
-                            cita.estado === 'pendiente' && cita.cita_type_id === 2,
-                          'border-l-[3px] border-red-400 bg-red-50': cita.estado === 'cancelada',
-                        }"
-                        [matTooltip]="cita.paciente + ' — ' + cita.motivo"
-                      >
-                        <div class="flex w-full items-center justify-between">
-                          <span class="text-[10px] text-black"
-                            >{{ cita.horaInicio }} - {{ cita.horaFin }}</span
-                          >
-                          <!-- Dot tipo -->
-                          <span
-                            *ngIf="cita.cita_type_id === 2"
-                            class="inline-flex h-3 w-3 items-center justify-center rounded-full border-2 border-white bg-purple-500 shadow-sm"
-                          ></span>
-                          <span
-                            *ngIf="cita.cita_type_id !== 2 && cita.esExterna"
-                            class="inline-flex h-3 w-3 items-center justify-center rounded-full border-2 border-white bg-blue-500 shadow-sm"
-                          ></span>
-                        </div>
-                        <span class="block font-medium text-black">{{ cita.paciente }}</span>
-                        <span class="block text-black">{{ cita.motivo }}</span>
-                      </div>
-                    </ng-container>
-                    <button
-                      *ngIf="
-                        getCitasEnSlot(dia.fecha, hora).length === 0 &&
-                        !esSlotPasado(dia.fecha, hora)
-                      "
-                      class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-white opacity-0 shadow transition-opacity hover:bg-primary-700 group-hover:opacity-100"
-                      (click)="
-                        !esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora);
-                        $event.stopPropagation()
-                      "
-                    >
-                      <mat-icon class="text-sm text-white">add</mat-icon>
-                    </button>
-                    <button
-                      *ngIf="
-                        getCitasEnSlot(dia.fecha, hora).length > 0 &&
-                        !esSlotPasado(dia.fecha, hora) &&
-                        !getCitasEnSlot(dia.fecha, hora)[0].esExterna
-                      "
-                      class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-accent-500 opacity-0 shadow transition-opacity hover:bg-accent-700 group-hover:opacity-100"
-                      (click)="
-                        !esSlotPasado(dia.fecha, hora) &&
-                          verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0]);
-                        $event.stopPropagation()
-                      "
-                    >
-                      <mat-icon class="text-sm text-black">edit</mat-icon>
-                    </button>
-                  </div>
-                </ng-container>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══ VISTA DÍA ═══ -->
-      <div *ngIf="vistaActual === 'dia'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div class="min-h-0 flex-1 overflow-auto pb-16 lg:pb-0" style="scrollbar-width: none">
-          <div
-            *ngFor="let hora of horasDelDia"
-            class="grid border-t border-gray-400 dark:border-gray-500"
-            style="grid-template-columns: 44px 1fr"
-          >
-            <div
-              class="bg-card min-h-[61px] pr-1 pt-2 text-right text-[10px] text-black lg:pr-3 lg:text-[12px] dark:text-white"
-            >
-              {{ hora }}:00
-            </div>
-            <div
-              class="bg-card min-h-[42px] border-l border-gray-200 p-1 lg:p-2 dark:border-gray-500"
-              [class.cursor-pointer]="!esSlotPasado(fechaDiaSeleccionado, hora)"
-              (click)="
-                !esSlotPasado(fechaDiaSeleccionado, hora) &&
-                  crearCitaEnSlot(diaSeleccionadoObj, hora)
-              "
-            >
-              <ng-container *ngFor="let cita of getCitasEnSlot(fechaDiaSeleccionado, hora)">
-                <div
-                  class="mb-2 flex cursor-pointer items-center gap-2 rounded-xl px-2 py-2 transition-all hover:brightness-95 lg:gap-4 lg:px-4 lg:py-3"
-                  [ngClass]="{
-                    'border-l-4 border-green-500 bg-green-100': cita.estado === 'confirmada',
-                    'border-l-4 border-amber-400 bg-amber-100':
-                      cita.estado === 'pendiente' && cita.cita_type_id !== 2,
-                    'border-l-4 border-purple-500 bg-purple-100':
-                      cita.estado === 'pendiente' && cita.cita_type_id === 2,
-                    'border-l-4 border-red-400 bg-red-100': cita.estado === 'cancelada',
-                  }"
-                  (click)="
-                    $event.stopPropagation();
-                    !esFechaPasada(fechaDiaSeleccionado) && verDetalleCita(cita)
-                  "
-                >
-                  <div class="flex flex-1 flex-col gap-[2px]">
-                    <span class="text-[10px] text-gray-500"
-                      >{{ cita.horaInicio }} - {{ cita.horaFin }}</span
-                    >
-                    <span class="text-sm font-medium text-black lg:text-base">
-                      {{ cita.paciente }}
-                    </span>
-                    <span class="text-xs text-black lg:text-sm">{{ cita.motivo }}</span>
-                  </div>
-
-                  <span
-                    class="whitespace-nowrap rounded-full px-2 py-[3px] text-[10px] font-semibold capitalize lg:px-3 lg:text-[11px]"
-                    [ngClass]="{
-                      'bg-green-200 text-green-700': cita.estado === 'confirmada',
-                      'bg-amber-200 text-amber-700':
-                        cita.estado === 'pendiente' && cita.cita_type_id !== 2,
-                      'bg-purple-200 text-purple-700':
-                        cita.estado === 'pendiente' && cita.cita_type_id === 2,
-                      'bg-red-200 text-red-600': cita.estado === 'cancelada',
-                    }"
-                  >
-                    {{ cita.estado }}
-                  </span>
-                  <!-- Badge tipo — reemplaza el div de cita.esExterna -->
-                  <ng-container
-                    [ngSwitch]="
-                      cita.cita_type_id === 2 ? 'junta' : cita.esExterna ? 'externa' : 'propia'
-                    "
-                  >
-                    <div
-                      *ngSwitchCase="'junta'"
-                      class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white lg:h-auto lg:w-auto lg:rounded-full lg:px-2 lg:py-[3px] lg:text-[10px]"
-                    >
-                      <span class="hidden lg:inline">Junta</span>
-                      <span class="lg:hidden">J</span>
-                    </div>
-                    <div
-                      *ngSwitchCase="'externa'"
-                      class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white lg:h-auto lg:w-auto lg:rounded-full lg:px-2 lg:py-[3px] lg:text-[10px]"
-                    >
-                      <span class="hidden lg:inline">Externa</span>
-                      <span class="lg:hidden">E</span>
-                    </div>
-                  </ng-container>
-                  <div class="relative" (click)="$event.stopPropagation()">
-                    <button
-                      *ngIf="!esFechaPasada(fechaDiaSeleccionado) && !cita.esExterna"
-                      class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
-                      (click)="$event.stopPropagation(); toggleMenuCitaDia(cita)"
-                    >
-                      <mat-icon class="text-base text-black">more_vert</mat-icon>
-                    </button>
-                    <div
-                      *ngIf="
-                        menuAbiertoCitaId === cita.id &&
-                        !esFechaPasada(fechaDiaSeleccionado) &&
-                        !cita.esExterna
-                      "
-                      class="absolute right-0 top-9 z-20 w-44 rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
-                    >
-                      <button
-                        class="flex w-full items-center gap-2 px-4 py-2 text-sm text-black hover:bg-gray-100"
-                        (click)="editarCita(cita); menuAbiertoCita = null"
-                      >
-                        <mat-icon class="text-base text-black icon-size-4">edit</mat-icon> Editar
-                      </button>
-                      <button
-                        class="flex w-full items-center gap-2 px-4 py-2 text-sm text-black hover:bg-gray-100"
-                        (click)="confirmarCita(cita); menuAbiertoCita = null"
-                      >
-                        <mat-icon class="text-base text-black icon-size-4">check_circle</mat-icon>
-                        Confirmar
-                      </button>
-                      <button
-                        class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-100"
-                        (click)="cancelarCita(cita); menuAbiertoCita = null"
-                      >
-                        <mat-icon class="text-base text-red-500 icon-size-4">cancel</mat-icon>
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </ng-container>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══ VISTA LISTA ═══ -->
-      <div
-        *ngIf="vistaActual === 'lista'"
-        class="min-h-0 flex-1 overflow-y-auto p-3 pb-20 lg:p-4 lg:pb-4"
-        style="scrollbar-width: none"
-      >
-        <div
-          *ngIf="citasSemana.length === 0"
-          class="flex flex-col items-center justify-center py-16 text-black dark:text-white"
-        >
-          <mat-icon class="mb-3 h-12 w-12 text-5xl opacity-30">event_busy</mat-icon>
-          <p class="m-0 text-sm">
-            No hay eventos para el {{ diaSeleccionado }} {{ mesActualLabel }}
-          </p>
-        </div>
-        <div
-          *ngFor="let cita of citasSemana"
-          class="mb-3 flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-3 shadow-sm transition-shadow hover:shadow-md lg:gap-4 lg:px-4 dark:bg-gray-700"
-          [ngClass]="{
-            'border-l-4 border-l-green-500': cita.estado === 'confirmada',
-            'border-l-4 border-l-amber-400': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
-            'border-l-4 border-l-purple-500':
-              cita.estado === 'pendiente' && cita.cita_type_id === 2,
-            'border-l-4 border-l-red-400': cita.estado === 'cancelada',
-          }"
-          (click)="cita.esExterna && verDetalleCita(cita)"
-        >
-          <div class="min-w-[36px] text-center">
-            <span class="block text-lg font-bold leading-none dark:text-accent-500">
-              {{ cita.dia }}
-            </span>
-            <span class="block text-[9px] uppercase tracking-wider text-black dark:text-white">
-              {{ cita.mes }}
-            </span>
-          </div>
-          <div class="h-10 w-px shrink-0 bg-gray-200"></div>
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center justify-between gap-2">
-              <p class="m-0 truncate text-sm text-black dark:text-white">
-                {{ cita.paciente }}
-              </p>
-
-              <span
-                class="whitespace-nowrap rounded-full px-2 py-[3px] text-[8px] font-semibold capitalize lg:px-3 lg:text-[11px]"
-                [ngClass]="{
-                  'bg-green-100 text-green-600': cita.estado === 'confirmada',
-                  'bg-amber-100 text-amber-600':
-                    cita.estado === 'pendiente' && cita.cita_type_id !== 2,
-                  'bg-purple-100 text-purple-600':
-                    cita.estado === 'pendiente' && cita.cita_type_id === 2,
-                  'bg-red-100 text-red-600': cita.estado === 'cancelada',
-                }"
-              >
-                {{ cita.estado }}
-              </span>
-            </div>
-            <p class="m-0 truncate text-xs text-black dark:text-white">{{ cita.motivo }}</p>
-            <p class="m-0 mt-1 flex items-center gap-1 text-[10px] text-gray-500 lg:hidden">
-              <mat-icon class="text-[12px]">schedule</mat-icon>
-              {{ cita.horaInicio }} - {{ cita.horaFin }}
-            </p>
-          </div>
-          <div
-            class="hidden items-center gap-1 whitespace-nowrap text-sm text-black lg:flex dark:text-white"
-          >
-            <mat-icon class="h-4 w-4 text-sm icon-size-5">schedule</mat-icon>
-            {{ cita.horaInicio }} - {{ cita.horaFin }}
-          </div>
-
-          <ng-container
-            [ngSwitch]="cita.cita_type_id === 2 ? 'junta' : cita.esExterna ? 'externa' : 'propia'"
-          >
-            <span
-              *ngSwitchCase="'junta'"
-              class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white lg:h-auto lg:w-auto lg:px-2 lg:py-[3px] lg:text-[10px]"
-            >
-              <span class="hidden lg:inline">Junta</span>
-              <span class="lg:hidden">J</span>
-            </span>
-            <span
-              *ngSwitchCase="'externa'"
-              class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white lg:h-auto lg:w-auto lg:px-2 lg:py-[3px] lg:text-[10px]"
-            >
-              <span class="hidden lg:inline">Externa</span>
-              <span class="lg:hidden">E</span>
-            </span>
-          </ng-container>
-
-          <div
-            class="flex shrink-0 flex-col gap-1 lg:flex-row"
-            *ngIf="!esFechaPasada(cita.fecha) && !cita.esExterna"
-          >
-            <button
-              class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-slate-200"
-              (click)="editarCita(cita)"
-            >
-              <mat-icon class="text-base text-black icon-size-5 dark:text-white">edit</mat-icon>
-            </button>
-
-            <button
-              class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-slate-200"
-              (click)="cancelarCita(cita)"
-            >
-              <mat-icon class="text-base text-red-500 icon-size-5">cancel</mat-icon>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ BARRA INFERIOR MÓVIL ══ -->
-      <div
-        class="absolute bottom-0 left-0 right-0 flex items-center justify-around border-t border-slate-200 bg-white px-4 py-2 lg:hidden dark:bg-gray-800"
-      >
-        <!-- mes -->
-        <button (click)="cambiarVista('semana')">
-          <!-- Seleccionado -->
-          <div
-            *ngIf="vistaActual === 'semana'"
-            class="flex h-10 w-10 items-center justify-center rounded-full bg-accent-500 shadow-md"
-          >
-            <mat-icon class="text-[20px] text-black">calendar_month</mat-icon>
-          </div>
-
-          <!-- No seleccionado -->
-          <div
-            *ngIf="vistaActual !== 'semana'"
-            class="flex flex-col items-center text-[10px] text-gray-400"
-          >
-            <mat-icon class="text-[22px]">calendar_month</mat-icon>
-            Mes
-          </div>
-        </button>
-
-        <!-- dia -->
-        <button (click)="cambiarVista('dia')">
-          <!-- Seleccionado -->
-          <div
-            *ngIf="vistaActual === 'dia'"
-            class="flex h-10 w-10 items-center justify-center rounded-full bg-accent-500 shadow-md"
-          >
-            <mat-icon class="text-[20px] text-black">today</mat-icon>
-          </div>
-
-          <!-- No seleccionado -->
-          <div
-            *ngIf="vistaActual !== 'dia'"
-            class="flex flex-col items-center text-[10px] text-gray-400"
-          >
-            <mat-icon class="text-[22px]">today</mat-icon>
-            Día
-          </div>
-        </button>
-
-        <!-- lista -->
-        <button (click)="cambiarVista('lista')">
-          <!-- Seleccionado -->
-          <div
-            *ngIf="vistaActual === 'lista'"
-            class="flex h-10 w-10 items-center justify-center rounded-full bg-accent-500 shadow-md"
-          >
-            <mat-icon class="text-[20px] text-black">view_list</mat-icon>
-          </div>
-
-          <!-- No seleccionado -->
-          <div
-            *ngIf="vistaActual !== 'lista'"
-            class="flex flex-col items-center text-[10px] text-gray-400"
-          >
-            <mat-icon class="text-[22px]">view_list</mat-icon>
-            Lista
-          </div>
-        </button>
-      </div>
-    </main>
-  </div>
-</div>
+<!-- ══════════════════════════════════════════════
+     CITAS
+══════════════════════════════════════════════ -->
+<div class="bg-default absolute inset-0 flex min-w-0 flex-col overflow-hidden p-4">
+  <!-- ── HEADER ── -->
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-accent-500 shadow-md">
+        <mat-icon class="text-2xl text-black">calendar_month</mat-icon>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold leading-tight text-black dark:text-white">Agenda</h1>
+        <p class="text-sm text-black dark:text-white">Administra tu disponibilidad y eventos</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Botón "Hoy" — stroked -->
+      <button
+        class="inline-flex items-center gap-1 rounded-lg bg-accent-500 px-4 py-2 text-sm font-medium transition-colors hover:bg-accent-800"
+        (click)="irAHoy()"
+      >
+        <mat-icon class="text-black icon-size-5" [svgIcon]="'heroicons_outline:center'"></mat-icon>
+        <span class="text-black">Hoy</span>
+      </button>
+      <!-- Botón "Nuevo evento" — primary flat -->
+      <button
+        class="inline-flex items-center gap-1 rounded-lg bg-primary-500 px-4 py-2 text-sm text-white shadow-sm transition-colors hover:bg-primary-800"
+        (click)="abrirModalNuevaCita()"
+      >
+        <mat-icon class="text-base leading-none text-white">add</mat-icon>
+        <span class="text-white"> Nuevo evento</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── LAYOUT PRINCIPAL ── -->
+  <div
+    class="grid min-h-0 flex-1 grid-cols-1 gap-5 overflow-y-auto lg:grid-cols-[260px_1fr] lg:overflow-y-visible"
+  >
+    <!-- ════ SIDEBAR ════ -->
+    <aside class="hidden h-full flex-col gap-4 lg:flex">
+      <!-- Mini Calendario -->
+      <div
+        class="border-card bg-card hidden flex-1 flex-col rounded-xl border p-4 shadow-sm lg:flex"
+      >
+        <!-- Cabecera mes -->
+        <div class="mb-3 flex items-center justify-between">
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
+            (click)="mesAnterior()"
+          >
+            <mat-icon class="text-base text-black icon-size-5 dark:text-white">
+              chevron_left
+            </mat-icon>
+          </button>
+          <span class="font-base text-sm text-black dark:text-white">{{ mesActualLabel }}</span>
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
+            (click)="mesSiguiente()"
+          >
+            <mat-icon class="text-base text-black icon-size-5 dark:text-white">
+              chevron_right
+            </mat-icon>
+          </button>
+        </div>
+
+        <!-- Días de semana -->
+        <div class="mb-1 grid grid-cols-7">
+          <span
+            *ngFor="let d of diasSemana"
+            class="font-base py-1 text-center text-[12px] text-black dark:text-white"
+          >
+            {{ d }}
+          </span>
+        </div>
+
+        <!-- Días del mes -->
+        <div class="grid grid-cols-7 gap-[2px]">
+          <ng-container *ngFor="let dia of diasDelMes">
+            <button
+              *ngIf="dia !== null; else emptyCell"
+              class="relative flex aspect-square cursor-pointer flex-col items-center justify-center rounded-full border-0 text-xs font-medium leading-none transition-all"
+              [ngClass]="{
+                'bg-primary-500 text-white shadow':
+                  dia === diaHoy && mesVistaActual === mesHoy && anioVistaActual === anioHoy,
+                'bg-accent-400 text-black dark:bg-accent-700':
+                  dia === diaSeleccionado &&
+                  !(dia === diaHoy && mesVistaActual === mesHoy && anioVistaActual === anioHoy),
+                'text-black hover:bg-primary-400 hover:text-white dark:text-white':
+                  dia !== diaHoy || mesVistaActual !== mesHoy || anioVistaActual !== anioHoy,
+                'bg-primary-100 dark:bg-primary-900/40':
+                  diasDeSemanaActual.has(fechaDelMiniCal(dia)) &&
+                  dia !== diaSeleccionado &&
+                  !(dia === diaHoy && mesVistaActual === mesHoy && anioVistaActual === anioHoy),
+              }"
+              (click)="seleccionarDia(dia)"
+            >
+              {{ dia }}
+              <span
+                *ngIf="tieneCitas(dia)"
+                class="absolute bottom-[3px] h-1 w-1 rounded-full"
+                [ngClass]="{
+                  'bg-accent-500': tieneCitasExternas(dia),
+                  'bg-primary-500': !tieneCitasExternas(dia),
+                }"
+              ></span>
+            </button>
+            <ng-template #emptyCell><span></span></ng-template>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 lg:grid-cols-1">
+        <!-- Resumen del día -->
+        <div class="border-card bg-card flex-1 rounded-xl border p-4 shadow-sm">
+          <p class="mb-3 text-center text-[12px] text-black dark:text-white">
+            Resumen — {{ diaSeleccionado }} {{ mesActualLabel }}
+          </p>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-3 border-b border-gray-200 py-2">
+              <span
+                class="flex h-7 min-w-[28px] items-center justify-center rounded-lg bg-gray-200 text-xs font-bold text-blue-500 dark:bg-white"
+              >
+                {{ eventosHoy.length }}
+              </span>
+              <span class="text-sm text-black dark:text-white">Eventos programados</span>
+            </div>
+            <div class="flex items-center gap-3 border-b border-gray-200 py-2">
+              <span
+                class="flex h-7 min-w-[28px] items-center justify-center rounded-lg bg-gray-200 text-xs font-bold text-orange-500 dark:bg-white"
+              >
+                {{ eventosPendientes }}
+              </span>
+              <span class="text-sm text-black dark:text-white">Pendientes</span>
+            </div>
+            <div class="flex items-center gap-3 py-2">
+              <span
+                class="flex h-7 min-w-[28px] items-center justify-center rounded-lg bg-gray-200 text-xs font-bold text-green-500 dark:bg-white"
+              >
+                {{ eventosConfirmados }}
+              </span>
+              <span class="text-sm text-black dark:text-white">Confirmados</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cambio de vista -->
+        <div class="border-card bg-card flex-1 rounded-xl border p-4 shadow-sm">
+          <p class="m-0 mb-3 text-center text-[12px] text-black dark:text-white">Vista</p>
+          <div class="flex flex-col gap-1">
+            <button
+              *ngFor="let v of tiposVista"
+              class="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-all"
+              [ngClass]="
+                vistaActual === v.value
+                  ? 'bg-primary-500 text-white'
+                  : 'text-black hover:bg-gray-200 dark:text-white dark:hover:bg-primary-400'
+              "
+              (click)="cambiarVista(v.value)"
+            >
+              <mat-icon
+                class="h-[18px] w-[18px] text-[18px]"
+                [ngClass]="vistaActual === v.value ? 'text-white' : 'text-black dark:text-white'"
+              >
+                {{ v.icon }}
+              </mat-icon>
+
+              {{ v.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ════ ÁREA PRINCIPAL ════ -->
+    <main
+      class="bg-card relative flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm"
+    >
+      <!-- ══ BARRA SUPERIOR MÓVIL ══ -->
+      <div class="flex flex-col border-b border-slate-200 lg:hidden">
+        <div class="flex items-center justify-between px-3 py-2">
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-200"
+            (click)="navegarAnterior()"
+          >
+            <mat-icon class="text-base text-black dark:text-white">arrow_back_ios</mat-icon>
+          </button>
+
+          <h2 class="text-sm font-bold text-slate-800 dark:text-white">
+            <ng-container *ngIf="vistaActual === 'semana'">
+              {{ mesActualLabel }}
+            </ng-container>
+
+            <ng-container *ngIf="vistaActual === 'dia'">
+              {{ diaSeleccionado }} {{ mesActualLabel }}
+            </ng-container>
+
+            <ng-container *ngIf="vistaActual === 'lista'">
+              {{ rangoSemanaLabel }}
+            </ng-container>
+          </h2>
+
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-200"
+            (click)="navegarSiguiente()"
+          >
+            <mat-icon class="text-base text-black dark:text-white">arrow_forward_ios</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ BARRA SUPERIOR DESKTOP ══ -->
+      <div
+        class="hidden flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-3 lg:flex"
+      >
+        <div class="flex items-center gap-1">
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-300 dark:hover:bg-gray-500"
+            (click)="navegarAnterior()"
+          >
+            <mat-icon class="text-base text-black icon-size-5 dark:text-white"
+              >arrow_back_ios</mat-icon
+            >
+          </button>
+          <h2 class="m-0 mx-2 text-base font-bold text-slate-800 dark:text-white">
+            <ng-container *ngIf="['semana', 'lista'].includes(vistaActual)">
+              {{ rangoSemanaLabel }}
+            </ng-container>
+            <ng-container *ngIf="vistaActual === 'dia'">
+              {{ diaSeleccionado }} {{ mesActualLabel }}
+            </ng-container>
+          </h2>
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-300 dark:hover:bg-gray-500"
+            (click)="navegarSiguiente()"
+          >
+            <mat-icon class="text-base text-black icon-size-5 dark:text-white"
+              >arrow_forward_ios</mat-icon
+            >
+          </button>
+        </div>
+        <div class="relative" *ngIf="vistaActual !== 'semana'">
+          <select
+            [(ngModel)]="filtroEstado"
+            class="appearance-none cursor-pointer rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-8 text-sm text-black focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="todos">Todos</option>
+            <option value="confirmada">Confirmada</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+          <mat-icon
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-black icon-size-6"
+            >expand_more</mat-icon
+          >
+        </div>
+      </div>
+
+      <!-- ══ CONTENIDO ══ -->
+
+      <!-- ═══ VISTA SEMANA ═══ -->
+      <div *ngIf="vistaActual === 'semana'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <!-- MÓVIL: vista mes -->
+        <div class="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
+          <div class="min-h-0 flex-1 overflow-auto pb-14" style="scrollbar-width: none">
+            <!-- Cabeceras días semana -->
+            <div class="grid grid-cols-7 border-b border-gray-200 bg-primary-500">
+              <span
+                *ngFor="let d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
+                class="py-2 text-center text-[11px] font-semibold text-white"
+              >
+                {{ d }}
+              </span>
+            </div>
+
+            <!-- Contenedor de semanas: flex-col que llena el alto restante -->
+            <div class="flex flex-col" style="height: calc(100% - 33px)">
+              <div
+                *ngFor="let semana of diasDelMesConSemanas"
+                class="grid flex-1 grid-cols-7 border-b border-gray-100 dark:border-gray-700"
+              >
+                <div
+                  *ngFor="let dia of semana"
+                  class="relative cursor-pointer border-r border-gray-100 p-1 dark:border-gray-700"
+                  [ngClass]="{
+                    'opacity-30': dia.esOtroMes,
+                    'bg-blue-50 dark:bg-blue-900/20': esHoy(dia.fecha),
+                    'bg-accent-500/10': !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
+                  }"
+                  (click)="seleccionarDiaYAccion(dia.fecha)"
+                >
+                  <!-- Número del día -->
+                  <span
+                    class="mb-[2px] flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium"
+                    [ngClass]="{
+                      'bg-primary-500 text-white': esHoy(dia.fecha),
+                      'bg-accent-400 text-black':
+                        !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
+                      'text-black dark:text-white':
+                        !esHoy(dia.fecha) && dia.fecha !== fechaDiaSeleccionado,
+                    }"
+                    >{{ dia.dia }}
+                  </span>
+
+                  <!-- Citas (máx 2) -->
+                  <ng-container *ngFor="let cita of getCitasDelDia(dia.fecha); let i = index">
+                    <div
+                      *ngIf="i < 2"
+                      class="mb-[2px] flex items-center gap-[3px] rounded-[4px] px-1 py-[1px] text-[9px] font-medium leading-tight"
+                      [ngClass]="{
+                        'bg-green-100 text-green-800': cita.estado === 'confirmada',
+                        'bg-yellow-100 text-yellow-800':
+                          cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+                        'bg-purple-100 text-purple-800':
+                          cita.estado === 'pendiente' && cita.cita_type_id === 2,
+                        'bg-red-100 text-red-800': cita.estado === 'cancelada',
+                      }"
+                    >
+                      <!-- Dot: morado = junta, azul = externa, nada = propia -->
+                      <span
+                        *ngIf="cita.cita_type_id === 2"
+                        class="inline-block h-[6px] w-[6px] shrink-0 rounded-full bg-purple-500"
+                      ></span>
+                      <span
+                        *ngIf="cita.cita_type_id !== 2 && cita.esExterna"
+                        class="inline-block h-[6px] w-[6px] shrink-0 rounded-full bg-blue-500"
+                      ></span>
+
+                      <span class="truncate">{{ cita.paciente }}</span>
+                    </div>
+                    <div *ngIf="i === 2" class="text-[9px] text-gray-400">
+                      +{{ getCitasDelDia(dia.fecha).length - 2 }} más
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DESKTOP: vista semana con horas -->
+        <div class="hidden min-h-0 flex-1 flex-col overflow-hidden lg:flex">
+          <div class="min-h-0 flex-1 overflow-auto" style="scrollbar-width: none">
+            <div class="min-w-[480px]">
+              <!-- Cabeceras de días -->
+              <div
+                class="bg-card sticky top-0 z-20 grid border-b-2 border-gray-300"
+                style="grid-template-columns: 44px repeat(7, 1fr)"
+              >
+                <div class="bg-card sticky left-0 z-10 h-20 border-r border-gray-300"></div>
+                <div
+                  *ngFor="let dia of semanaActual"
+                  class="flex flex-col items-center border-l border-gray-300 py-3"
+                  [ngClass]="esHoy(dia.fecha) ? 'bg-accent-500' : 'bg-primary-500'"
+                >
+                  <span
+                    class="text-[11px] uppercase tracking-wide"
+                    [ngClass]="esHoy(dia.fecha) ? 'text-black' : 'text-white'"
+                    >{{ dia.nombre }}</span
+                  >
+                  <span
+                    class="mt-1 flex h-8 w-8 items-center justify-center text-base"
+                    [ngClass]="
+                      esHoy(dia.fecha) ? 'rounded-full bg-primary-500 text-white' : 'text-white'
+                    "
+                    >{{ dia.numero }}</span
+                  >
+                </div>
+              </div>
+              <!-- Grid horas -->
+              <div class="grid" style="grid-template-columns: 44px repeat(7, 1fr)">
+                <ng-container *ngFor="let hora of horasDelDia">
+                  <div
+                    class="bg-card sticky left-0 z-10 min-h-[50px] border-t border-gray-300 pr-3 pt-3 text-right text-[11px] font-medium text-black dark:text-white"
+                  >
+                    {{ hora }}:00
+                  </div>
+                  <!-- Grid horas — celda de cada día -->
+                  <div
+                    *ngFor="let dia of semanaActual"
+                    class="group relative min-h-[58px] cursor-pointer border-l border-t border-gray-300 p-1 transition-colors hover:bg-slate-50"
+                    [ngClass]="{
+                      'bg-blue-50/30': esHoy(dia.fecha),
+                      'bg-accent-500/10': !esHoy(dia.fecha) && dia.fecha === fechaDiaSeleccionado,
+                    }"
+                    (click)="
+                      getCitasEnSlot(dia.fecha, hora).length > 0
+                        ? verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0])
+                        : !esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora)
+                    "
+                  >
+                    <ng-container *ngFor="let cita of getCitasEnSlot(dia.fecha, hora)">
+                      <div
+                        class="pointer-events-none mb-1 flex flex-col gap-[2px] rounded-lg px-2 py-1 text-[11px]"
+                        [ngClass]="{
+                          'border-l-[3px] border-green-500 bg-green-200':
+                            cita.estado === 'confirmada',
+                          'border-l-[3px] border-yellow-400 bg-yellow-200':
+                            cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+                          'border-l-[3px] border-purple-500 bg-purple-100':
+                            cita.estado === 'pendiente' && cita.cita_type_id === 2,
+                          'border-l-[3px] border-red-400 bg-red-50': cita.estado === 'cancelada',
+                        }"
+                        [matTooltip]="cita.paciente + ' — ' + cita.motivo"
+                      >
+                        <div class="flex w-full items-center justify-between">
+                          <span class="text-[10px] text-black"
+                            >{{ cita.horaInicio }} - {{ cita.horaFin }}</span
+                          >
+                          <!-- Dot tipo -->
+                          <span
+                            *ngIf="cita.cita_type_id === 2"
+                            class="inline-flex h-3 w-3 items-center justify-center rounded-full border-2 border-white bg-purple-500 shadow-sm"
+                          ></span>
+                          <span
+                            *ngIf="cita.cita_type_id !== 2 && cita.esExterna"
+                            class="inline-flex h-3 w-3 items-center justify-center rounded-full border-2 border-white bg-blue-500 shadow-sm"
+                          ></span>
+                        </div>
+                        <span class="block font-medium text-black">{{ cita.paciente }}</span>
+                        <span class="block text-black">{{ cita.motivo }}</span>
+                      </div>
+                    </ng-container>
+                    <button
+                      *ngIf="
+                        getCitasEnSlot(dia.fecha, hora).length === 0 &&
+                        !esSlotPasado(dia.fecha, hora)
+                      "
+                      class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-white opacity-0 shadow transition-opacity hover:bg-primary-700 group-hover:opacity-100"
+                      (click)="
+                        !esSlotPasado(dia.fecha, hora) && crearCitaEnSlot(dia, hora);
+                        $event.stopPropagation()
+                      "
+                    >
+                      <mat-icon class="text-sm text-white">add</mat-icon>
+                    </button>
+                    <button
+                      *ngIf="
+                        getCitasEnSlot(dia.fecha, hora).length > 0 &&
+                        !esSlotPasado(dia.fecha, hora) &&
+                        !getCitasEnSlot(dia.fecha, hora)[0].esExterna
+                      "
+                      class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-accent-500 opacity-0 shadow transition-opacity hover:bg-accent-700 group-hover:opacity-100"
+                      (click)="
+                        !esSlotPasado(dia.fecha, hora) &&
+                          verDetalleCita(getCitasEnSlot(dia.fecha, hora)[0]);
+                        $event.stopPropagation()
+                      "
+                    >
+                      <mat-icon class="text-sm text-black">edit</mat-icon>
+                    </button>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ VISTA DÍA ═══ -->
+      <div *ngIf="vistaActual === 'dia'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div class="min-h-0 flex-1 overflow-auto pb-16 lg:pb-0" style="scrollbar-width: none">
+          <div
+            *ngFor="let hora of horasDelDia"
+            class="grid border-t border-gray-400 dark:border-gray-500"
+            style="grid-template-columns: 44px 1fr"
+          >
+            <div
+              class="bg-card min-h-[61px] pr-1 pt-2 text-right text-[10px] text-black lg:pr-3 lg:text-[12px] dark:text-white"
+            >
+              {{ hora }}:00
+            </div>
+            <div
+              class="bg-card min-h-[42px] border-l border-gray-200 p-1 lg:p-2 dark:border-gray-500"
+              [class.cursor-pointer]="!esSlotPasado(fechaDiaSeleccionado, hora)"
+              (click)="
+                !esSlotPasado(fechaDiaSeleccionado, hora) &&
+                  crearCitaEnSlot(diaSeleccionadoObj, hora)
+              "
+            >
+              <ng-container *ngFor="let cita of getCitasEnSlot(fechaDiaSeleccionado, hora)">
+                <div
+                  class="mb-2 flex cursor-pointer items-center gap-2 rounded-xl px-2 py-2 transition-all hover:brightness-95 lg:gap-4 lg:px-4 lg:py-3"
+                  [ngClass]="{
+                    'border-l-4 border-green-500 bg-green-100': cita.estado === 'confirmada',
+                    'border-l-4 border-amber-400 bg-amber-100':
+                      cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+                    'border-l-4 border-purple-500 bg-purple-100':
+                      cita.estado === 'pendiente' && cita.cita_type_id === 2,
+                    'border-l-4 border-red-400 bg-red-100': cita.estado === 'cancelada',
+                  }"
+                  (click)="
+                    $event.stopPropagation();
+                    !esFechaPasada(fechaDiaSeleccionado) && verDetalleCita(cita)
+                  "
+                >
+                  <div class="flex flex-1 flex-col gap-[2px]">
+                    <span class="text-[10px] text-gray-500"
+                      >{{ cita.horaInicio }} - {{ cita.horaFin }}</span
+                    >
+                    <span class="text-sm font-medium text-black lg:text-base">
+                      {{ cita.paciente }}
+                    </span>
+                    <span class="text-xs text-black lg:text-sm">{{ cita.motivo }}</span>
+                  </div>
+
+                  <span
+                    class="whitespace-nowrap rounded-full px-2 py-[3px] text-[10px] font-semibold capitalize lg:px-3 lg:text-[11px]"
+                    [ngClass]="{
+                      'bg-green-200 text-green-700': cita.estado === 'confirmada',
+                      'bg-amber-200 text-amber-700':
+                        cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+                      'bg-purple-200 text-purple-700':
+                        cita.estado === 'pendiente' && cita.cita_type_id === 2,
+                      'bg-red-200 text-red-600': cita.estado === 'cancelada',
+                    }"
+                  >
+                    {{ cita.estado }}
+                  </span>
+                  <!-- Badge tipo — reemplaza el div de cita.esExterna -->
+                  <ng-container
+                    [ngSwitch]="
+                      cita.cita_type_id === 2 ? 'junta' : cita.esExterna ? 'externa' : 'propia'
+                    "
+                  >
+                    <div
+                      *ngSwitchCase="'junta'"
+                      class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white lg:h-auto lg:w-auto lg:rounded-full lg:px-2 lg:py-[3px] lg:text-[10px]"
+                    >
+                      <span class="hidden lg:inline">Junta</span>
+                      <span class="lg:hidden">J</span>
+                    </div>
+                    <div
+                      *ngSwitchCase="'externa'"
+                      class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white lg:h-auto lg:w-auto lg:rounded-full lg:px-2 lg:py-[3px] lg:text-[10px]"
+                    >
+                      <span class="hidden lg:inline">Externa</span>
+                      <span class="lg:hidden">E</span>
+                    </div>
+                  </ng-container>
+                  <div class="relative" (click)="$event.stopPropagation()">
+                    <button
+                      *ngIf="!esFechaPasada(fechaDiaSeleccionado) && !cita.esExterna"
+                      class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
+                      (click)="$event.stopPropagation(); toggleMenuCitaDia(cita)"
+                    >
+                      <mat-icon class="text-base text-black">more_vert</mat-icon>
+                    </button>
+                    <div
+                      *ngIf="
+                        menuAbiertoCitaId === cita.id &&
+                        !esFechaPasada(fechaDiaSeleccionado) &&
+                        !cita.esExterna
+                      "
+                      class="absolute right-0 top-9 z-20 w-44 rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
+                    >
+                      <button
+                        class="flex w-full items-center gap-2 px-4 py-2 text-sm text-black hover:bg-gray-100"
+                        (click)="editarCita(cita); menuAbiertoCita = null"
+                      >
+                        <mat-icon class="text-base text-black icon-size-4">edit</mat-icon> Editar
+                      </button>
+                      <button
+                        class="flex w-full items-center gap-2 px-4 py-2 text-sm text-black hover:bg-gray-100"
+                        (click)="confirmarCita(cita); menuAbiertoCita = null"
+                      >
+                        <mat-icon class="text-base text-black icon-size-4">check_circle</mat-icon>
+                        Confirmar
+                      </button>
+                      <button
+                        class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-100"
+                        (click)="cancelarCita(cita); menuAbiertoCita = null"
+                      >
+                        <mat-icon class="text-base text-red-500 icon-size-4">cancel</mat-icon>
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ VISTA LISTA ═══ -->
+      <div
+        *ngIf="vistaActual === 'lista'"
+        class="min-h-0 flex-1 overflow-y-auto p-3 pb-20 lg:p-4 lg:pb-4"
+        style="scrollbar-width: none"
+      >
+        <div
+          *ngIf="citasSemana.length === 0"
+          class="flex flex-col items-center justify-center py-16 text-black dark:text-white"
+        >
+          <mat-icon class="mb-3 h-12 w-12 text-5xl opacity-30">event_busy</mat-icon>
+          <p class="m-0 text-sm">
+            No hay eventos para el {{ diaSeleccionado }} {{ mesActualLabel }}
+          </p>
+        </div>
+        <div
+          *ngFor="let cita of citasSemana"
+          class="mb-3 flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-3 shadow-sm transition-shadow hover:shadow-md lg:gap-4 lg:px-4 dark:bg-gray-700"
+          [ngClass]="{
+            'border-l-4 border-l-green-500': cita.estado === 'confirmada',
+            'border-l-4 border-l-amber-400': cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+            'border-l-4 border-l-purple-500':
+              cita.estado === 'pendiente' && cita.cita_type_id === 2,
+            'border-l-4 border-l-red-400': cita.estado === 'cancelada',
+          }"
+          (click)="cita.esExterna && verDetalleCita(cita)"
+        >
+          <div class="min-w-[36px] text-center">
+            <span class="block text-lg font-bold leading-none dark:text-accent-500">
+              {{ cita.dia }}
+            </span>
+            <span class="block text-[9px] uppercase tracking-wider text-black dark:text-white">
+              {{ cita.mes }}
+            </span>
+          </div>
+          <div class="h-10 w-px shrink-0 bg-gray-200"></div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <p class="m-0 truncate text-sm text-black dark:text-white">
+                {{ cita.paciente }}
+              </p>
+
+              <span
+                class="whitespace-nowrap rounded-full px-2 py-[3px] text-[8px] font-semibold capitalize lg:px-3 lg:text-[11px]"
+                [ngClass]="{
+                  'bg-green-100 text-green-600': cita.estado === 'confirmada',
+                  'bg-amber-100 text-amber-600':
+                    cita.estado === 'pendiente' && cita.cita_type_id !== 2,
+                  'bg-purple-100 text-purple-600':
+                    cita.estado === 'pendiente' && cita.cita_type_id === 2,
+                  'bg-red-100 text-red-600': cita.estado === 'cancelada',
+                }"
+              >
+                {{ cita.estado }}
+              </span>
+            </div>
+            <p class="m-0 truncate text-xs text-black dark:text-white">{{ cita.motivo }}</p>
+            <p class="m-0 mt-1 flex items-center gap-1 text-[10px] text-gray-500 lg:hidden">
+              <mat-icon class="text-[12px]">schedule</mat-icon>
+              {{ cita.horaInicio }} - {{ cita.horaFin }}
+            </p>
+          </div>
+          <div
+            class="hidden items-center gap-1 whitespace-nowrap text-sm text-black lg:flex dark:text-white"
+          >
+            <mat-icon class="h-4 w-4 text-sm icon-size-5">schedule</mat-icon>
+            {{ cita.horaInicio }} - {{ cita.horaFin }}
+          </div>
+
+          <ng-container
+            [ngSwitch]="cita.cita_type_id === 2 ? 'junta' : cita.esExterna ? 'externa' : 'propia'"
+          >
+            <span
+              *ngSwitchCase="'junta'"
+              class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white lg:h-auto lg:w-auto lg:px-2 lg:py-[3px] lg:text-[10px]"
+            >
+              <span class="hidden lg:inline">Junta</span>
+              <span class="lg:hidden">J</span>
+            </span>
+            <span
+              *ngSwitchCase="'externa'"
+              class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white lg:h-auto lg:w-auto lg:px-2 lg:py-[3px] lg:text-[10px]"
+            >
+              <span class="hidden lg:inline">Externa</span>
+              <span class="lg:hidden">E</span>
+            </span>
+          </ng-container>
+
+          <div
+            class="flex shrink-0 flex-col gap-1 lg:flex-row"
+            *ngIf="!esFechaPasada(cita.fecha) && !cita.esExterna"
+          >
+            <button
+              class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-slate-200"
+              (click)="editarCita(cita)"
+            >
+              <mat-icon class="text-base text-black icon-size-5 dark:text-white">edit</mat-icon>
+            </button>
+
+            <button
+              class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-slate-200"
+              (click)="cancelarCita(cita)"
+            >
+              <mat-icon class="text-base text-red-500 icon-size-5">cancel</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ BARRA INFERIOR MÓVIL ══ -->
+      <div
+        class="absolute bottom-0 left-0 right-0 flex items-center justify-around border-t border-slate-200 bg-white px-4 py-2 lg:hidden dark:bg-gray-800"
+      >
+        <!-- mes -->
+        <button (click)="cambiarVista('semana')">
+          <!-- Seleccionado -->
+          <div
+            *ngIf="vistaActual === 'semana'"
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-accent-500 shadow-md"
+          >
+            <mat-icon class="text-[20px] text-black">calendar_month</mat-icon>
+          </div>
+
+          <!-- No seleccionado -->
+          <div
+            *ngIf="vistaActual !== 'semana'"
+            class="flex flex-col items-center text-[10px] text-gray-400"
+          >
+            <mat-icon class="text-[22px]">calendar_month</mat-icon>
+            Mes
+          </div>
+        </button>
+
+        <!-- dia -->
+        <button (click)="cambiarVista('dia')">
+          <!-- Seleccionado -->
+          <div
+            *ngIf="vistaActual === 'dia'"
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-accent-500 shadow-md"
+          >
+            <mat-icon class="text-[20px] text-black">today</mat-icon>
+          </div>
+
+          <!-- No seleccionado -->
+          <div
+            *ngIf="vistaActual !== 'dia'"
+            class="flex flex-col items-center text-[10px] text-gray-400"
+          >
+            <mat-icon class="text-[22px]">today</mat-icon>
+            Día
+          </div>
+        </button>
+
+        <!-- lista -->
+        <button (click)="cambiarVista('lista')">
+          <!-- Seleccionado -->
+          <div
+            *ngIf="vistaActual === 'lista'"
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-accent-500 shadow-md"
+          >
+            <mat-icon class="text-[20px] text-black">view_list</mat-icon>
+          </div>
+
+          <!-- No seleccionado -->
+          <div
+            *ngIf="vistaActual !== 'lista'"
+            class="flex flex-col items-center text-[10px] text-gray-400"
+          >
+            <mat-icon class="text-[22px]">view_list</mat-icon>
+            Lista
+          </div>
+        </button>
+      </div>
+    </main>
+  </div>
+</div>
