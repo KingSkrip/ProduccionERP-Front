@@ -14,6 +14,7 @@ import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } fro
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { ChecadorRegistroResultado, ChecadorService } from './checador.service';
 
+
 type EstadoChecador =
   | 'iniciando'
   | 'escaneando'
