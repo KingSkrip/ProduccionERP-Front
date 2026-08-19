@@ -24,6 +24,7 @@ import { BarcodeFormat } from '@zxing/library';
 
 
 import { LectorQrComponent } from 'app/shared/components/lector-qr/lector-qr.component';
+import { slideUp } from 'app/shared/animations/mobile/slide-up.animation';
 
 
 type Seccion = 'general' | 'rollos';
@@ -80,6 +81,7 @@ export interface PedidoGrupo {
         LectorQrComponent,
     ],
     templateUrl: './inventarios.component.html',
+    animations: [slideUp],
 })
 export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatPaginator) paginator?: MatPaginator;
@@ -156,7 +158,7 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     opSeleccionada: OpGrupo | null = null;
     mostrarModalOp = false;
 
-
+   private readonly DISMISS_THRESHOLD = 140;
 
     // ============================================================
     // 🆕 ESCÁNER QR
@@ -176,6 +178,24 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     rolloEscaneado: InventarioItem | null = null;
     mostrarModalRollo = false;
 
+
+
+        // ============================================================
+    // 🆕 DRAG TO CLOSE — modal escáner QR (móvil)
+    // ============================================================
+    isDraggingEscaner = false;
+    dragTransformEscaner = 'translateY(0)';
+    dragTransitionEscaner = 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)';
+    private touchStartYEscaner = 0;
+    private dragYEscaner = 0;
+
+
+
+      isDraggingRollo = false;
+    dragTransformRollo = 'translateY(0)';
+    dragTransitionRollo = 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)';
+    private touchStartYRollo = 0;
+    private dragYRollo = 0;
 
     constructor(
         private inventariosService: InventariosService,
@@ -676,4 +696,79 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         if (val === null || val === undefined || val === '') return '—';
         return String(val);
     }
+
+
+      onTouchStartEscaner(event: TouchEvent): void {
+        this.touchStartYEscaner = event.touches[0].clientY;
+        this.dragYEscaner = 0;
+        this.isDraggingEscaner = true;
+        this.dragTransitionEscaner = 'none';
+    }
+
+    onTouchMoveEscaner(event: TouchEvent): void {
+        if (!this.isDraggingEscaner) return;
+        const deltaY = event.touches[0].clientY - this.touchStartYEscaner;
+        if (deltaY <= 0) {
+            this.dragTransformEscaner = 'translateY(0)';
+            return;
+        }
+        this.dragYEscaner = deltaY;
+        const resistance =
+            deltaY > this.DISMISS_THRESHOLD
+                ? this.DISMISS_THRESHOLD + (deltaY - this.DISMISS_THRESHOLD) * 0.35
+                : deltaY;
+        this.dragTransformEscaner = `translateY(${resistance}px)`;
+    }
+
+    onTouchEndEscaner(): void {
+        this.isDraggingEscaner = false;
+        this.dragTransitionEscaner = 'transform 0.42s cubic-bezier(0.32, 0.72, 0, 1)';
+        if (this.dragYEscaner >= this.DISMISS_THRESHOLD) {
+            this.dragTransformEscaner = 'translateY(120%) scale(0.95)';
+            setTimeout(() => {
+                this.cerrarEscaner();
+                this.dragTransformEscaner = 'translateY(0)';
+            }, 260);
+        } else {
+            this.dragTransformEscaner = 'translateY(0)';
+        }
+    }
+
+
+      onTouchStartRollo(event: TouchEvent): void {
+        this.touchStartYRollo = event.touches[0].clientY;
+        this.dragYRollo = 0;
+        this.isDraggingRollo = true;
+        this.dragTransitionRollo = 'none';
+    }
+
+    onTouchMoveRollo(event: TouchEvent): void {
+        if (!this.isDraggingRollo) return;
+        const deltaY = event.touches[0].clientY - this.touchStartYRollo;
+        if (deltaY <= 0) {
+            this.dragTransformRollo = 'translateY(0)';
+            return;
+        }
+        this.dragYRollo = deltaY;
+        const resistance =
+            deltaY > this.DISMISS_THRESHOLD
+                ? this.DISMISS_THRESHOLD + (deltaY - this.DISMISS_THRESHOLD) * 0.35
+                : deltaY;
+        this.dragTransformRollo = `translateY(${resistance}px)`;
+    }
+
+    onTouchEndRollo(): void {
+        this.isDraggingRollo = false;
+        this.dragTransitionRollo = 'transform 0.42s cubic-bezier(0.32, 0.72, 0, 1)';
+        if (this.dragYRollo >= this.DISMISS_THRESHOLD) {
+            this.dragTransformRollo = 'translateY(120%) scale(0.95)';
+            setTimeout(() => {
+                this.cerrarModalRollo();
+                this.dragTransformRollo = 'translateY(0)';
+            }, 260);
+        } else {
+            this.dragTransformRollo = 'translateY(0)';
+        }
+    }
+
 }

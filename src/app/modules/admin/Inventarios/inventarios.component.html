@@ -834,11 +834,12 @@
   class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden"
   (click)="cerrarModalOp()">
   <div
-    class="bg-card flex max-h-[98dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl mb-10"
+    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
     [class.select-none]="isDraggingOp"
     [style.transform]="dragTransformOp"
     [style.transition]="dragTransitionOp"
-    (click)="$event.stopPropagation()">
+    (click)="$event.stopPropagation()"
+    [@slideUp]>
 
     <!-- Zona arrastrable: handle + header -->
     <div
@@ -926,51 +927,89 @@
 
 <!-- ===== MODAL ESCÁNER QR ===== -->
 @if (mostrarEscaner) {
+
+<!-- Desktop: modal centrado, igual que antes -->
 <div
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4 md:flex"
   (click)="cerrarEscaner()">
   <div
     class="bg-card flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl shadow-2xl"
     (click)="$event.stopPropagation()">
 
-    <div
-      class="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-      <h2 class="text-lg font-bold text-black dark:text-white">
-        Escanear rollo
-      </h2>
+    <div class="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+      <h2 class="text-lg font-bold text-black dark:text-white">Escanear rollo</h2>
       <button
         class="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
         (click)="cerrarEscaner()">
-        <mat-icon class="text-black icon-size-5 dark:text-white"
-          svgIcon="heroicons_outline:x-mark"></mat-icon>
+        <mat-icon class="text-black icon-size-5 dark:text-white" svgIcon="heroicons_outline:x-mark"></mat-icon>
       </button>
     </div>
 
     <div class="flex flex-1 flex-col items-center justify-center gap-3 p-5">
-
       <div class="relative w-full overflow-hidden rounded-xl bg-black">
-        <app-lector-qr
-          [bloqueado]="escaneando"
-          (codigoDetectado)="onScanSuccess($event)">
-        </app-lector-qr>
-
+        <app-lector-qr [bloqueado]="escaneando" (codigoDetectado)="onScanSuccess($event)"></app-lector-qr>
         @if (escaneando) {
-        <div
-          class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60">
-          <mat-progress-spinner mode="indeterminate" diameter="36"
-            color="accent"></mat-progress-spinner>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60">
+          <mat-progress-spinner mode="indeterminate" diameter="36" color="accent"></mat-progress-spinner>
           <span class="text-sm font-medium text-white">Buscando rollo…</span>
         </div>
         }
       </div>
-
-      <p class="text-center text-xs text-gray-500 dark:text-gray-400">
-        Apunta la cámara al código QR del rollo
-      </p>
-
+      <p class="text-center text-xs text-gray-500 dark:text-gray-400">Apunta la cámara al código QR del rollo</p>
       @if (errorEscaner) {
-      <div
-        class="w-full rounded-xl bg-red-50 px-4 py-3 text-center text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+      <div class="w-full rounded-xl bg-red-50 px-4 py-3 text-center text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+        {{ errorEscaner }}
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- 🆕 Móvil: bottom sheet con drag-to-close -->
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden"
+  (click)="cerrarEscaner()">
+  <div
+    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
+    [class.select-none]="isDraggingEscaner"
+    [style.transform]="dragTransformEscaner"
+    [style.transition]="dragTransitionEscaner"
+    (click)="$event.stopPropagation()"
+    [@slideUp]>
+
+    <!-- Zona arrastrable: handle + header -->
+    <div
+      (touchstart)="onTouchStartEscaner($event)"
+      (touchmove)="onTouchMoveEscaner($event)"
+      (touchend)="onTouchEndEscaner()">
+
+      <div class="flex cursor-grab justify-center pb-2 pt-3 active:cursor-grabbing">
+        <div class="h-1.5 w-11 rounded-full bg-gray-400 transition-colors active:bg-primary-500 dark:bg-white/20"></div>
+      </div>
+
+      <div class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-4">
+        <h2 class="text-lg font-semibold text-black dark:text-white">Escanear rollo</h2>
+        <button
+          (click)="cerrarEscaner()"
+          class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex flex-1 flex-col items-center justify-center gap-3 p-5 pb-8">
+      <div class="relative w-full overflow-hidden rounded-xl bg-black">
+        <app-lector-qr [bloqueado]="escaneando" (codigoDetectado)="onScanSuccess($event)"></app-lector-qr>
+        @if (escaneando) {
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60">
+          <mat-progress-spinner mode="indeterminate" diameter="36" color="accent"></mat-progress-spinner>
+          <span class="text-sm font-medium text-white">Buscando rollo…</span>
+        </div>
+        }
+      </div>
+      <p class="text-center text-xs text-gray-500 dark:text-gray-400">Apunta la cámara al código QR del rollo</p>
+      @if (errorEscaner) {
+      <div class="w-full rounded-xl bg-red-50 px-4 py-3 text-center text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
         {{ errorEscaner }}
       </div>
       }
@@ -1038,35 +1077,43 @@
   class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden"
   (click)="cerrarModalRollo()">
   <div
-    class="bg-card flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl mb-10"
-    (click)="$event.stopPropagation()">
+    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
+    [class.select-none]="isDraggingRollo"
+    [style.transform]="dragTransformRollo"
+    [style.transition]="dragTransitionRollo"
+    (click)="$event.stopPropagation()"
+    [@slideUp]>
 
-    <div class="flex cursor-grab justify-center pb-2 pt-3">
-      <div class="h-1.5 w-11 rounded-full bg-gray-400 dark:bg-white/20"></div>
-    </div>
-
+    <!-- Zona arrastrable: handle + header -->
     <div
-      class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-4">
-      <div>
-        <h2 class="text-lg font-semibold text-black dark:text-white">
-          Rollo {{ rolloEscaneado['ID_QR'] || rolloEscaneado['ID'] }}
-        </h2>
-        <p class="text-sm text-primary-400">{{ rolloEscaneado['ARTICULO'] }}</p>
+      (touchstart)="onTouchStartRollo($event)"
+      (touchmove)="onTouchMoveRollo($event)"
+      (touchend)="onTouchEndRollo()">
+
+      <div class="flex cursor-grab justify-center pb-2 pt-3 active:cursor-grabbing">
+        <div class="h-1.5 w-11 rounded-full bg-gray-400 transition-colors active:bg-primary-500 dark:bg-white/20"></div>
       </div>
-      <button (click)="cerrarModalRollo()"
-        class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white">
-        <mat-icon svgIcon="heroicons_outline:x-mark"></mat-icon>
-      </button>
+
+      <div class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-4">
+        <div>
+          <h2 class="text-lg font-semibold text-black dark:text-white">
+            Rollo {{ rolloEscaneado['ID_QR'] || rolloEscaneado['ID'] }}
+          </h2>
+          <p class="text-sm text-primary-400">{{ rolloEscaneado['ARTICULO'] }}</p>
+        </div>
+        <button (click)="cerrarModalRollo()"
+          class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white">
+          <mat-icon svgIcon="heroicons_outline:x-mark"></mat-icon>
+        </button>
+      </div>
     </div>
 
     <div class="flex-1 overflow-y-auto px-5 pb-6 pt-2">
       <div class="divide-y divide-gray-100 dark:divide-gray-800">
         @for (campo of camposRollo; track campo.key) {
         <div class="flex items-center justify-between gap-4 py-2.5">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{{ campo.label
-            }}</span>
-          <span
-            class="text-right text-sm font-semibold text-black dark:text-white">
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ campo.label }}</span>
+          <span class="text-right text-sm font-semibold text-black dark:text-white">
             {{ valorCampo(rolloEscaneado, campo.key) }}
           </span>
         </div>
