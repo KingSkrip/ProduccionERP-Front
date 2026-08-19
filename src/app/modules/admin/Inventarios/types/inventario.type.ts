@@ -6,6 +6,7 @@ export interface InventarioItem {
     AGENTE: string;
     PEDIDO: string;
     OP: string;
+    PEDIDOPART: string;         
     'ESTATUS OP': string;
     'COD. COLOR': string;
     COLOR: string;
@@ -19,6 +20,8 @@ export interface InventarioItem {
     'FECHA SAL': string | null;
     'FECHA DEV': string | null;
     PL: string | number | null;
+    PROCESO: string | number | null;  
+    PRODUCTO: 'ROLLO' | 'TELA' | '' | null; 
 }
 
 

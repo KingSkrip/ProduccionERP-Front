@@ -35,4 +35,14 @@ export class InventariosService {
             .get<ApiResponse<InventarioItem[]>>(`${this.baseUrl}`, { params })
             .pipe(map((res) => res.data));
     }
+
+     /**
+     * POST /inventario/escanear
+     * Busca el detalle completo de un rollo a partir del código QR (con ceros a la izquierda).
+     */
+    escanearQr(codigo: string): Observable<InventarioItem> {
+        return this.http
+            .post<ApiResponse<InventarioItem>>(`${this.baseUrl}/escanear`, { codigo })
+            .pipe(map((res) => res.data));
+    }
 }

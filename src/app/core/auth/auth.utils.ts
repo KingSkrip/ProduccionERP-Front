@@ -16,24 +16,40 @@ export class AuthUtils {
      * @param token
      * @param offsetSeconds
      */
+    // static isTokenExpired(token: string, offsetSeconds?: number): boolean {
+    //     // Return if there is no token
+    //     if (!token || token === '') {
+    //         return true;
+    //     }
+
+    //     // Get the expiration date
+    //     const date = this._getTokenExpirationDate(token);
+
+    //     offsetSeconds = offsetSeconds || 0;
+
+    //     if (date === null) {
+    //         return true;
+    //     }
+
+    //     // Check if the token is expired
+    //     return !(date.valueOf() > new Date().valueOf() + offsetSeconds * 1000);
+    // }
+
     static isTokenExpired(token: string, offsetSeconds?: number): boolean {
-        // Return if there is no token
-        if (!token || token === '') {
-            return true;
-        }
-
-        // Get the expiration date
-        const date = this._getTokenExpirationDate(token);
-
-        offsetSeconds = offsetSeconds || 0;
-
-        if (date === null) {
-            return true;
-        }
-
-        // Check if the token is expired
-        return !(date.valueOf() > new Date().valueOf() + offsetSeconds * 1000);
+    if (!token || token === '') {
+        return true;
     }
+
+    const date = this._getTokenExpirationDate(token);
+    offsetSeconds = offsetSeconds || 0;
+
+    // Sin 'exp' en el payload = token sin expiración (ej. usuarios VIP)
+    if (date === null) {
+        return false;   // 👈 antes era true
+    }
+
+    return !(date.valueOf() > new Date().valueOf() + offsetSeconds * 1000);
+}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Private methods
