@@ -22,6 +22,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { BarcodeFormat } from '@zxing/library';
 
+
+import { LectorQrComponent } from 'app/shared/components/lector-qr/lector-qr.component';
+
+
 type Seccion = 'general' | 'rollos';
 
 export interface InventarioGrupo {
@@ -73,6 +77,7 @@ export interface PedidoGrupo {
         MatTooltipModule,
         MatSelectModule,
         ZXingScannerModule,
+        LectorQrComponent,
     ],
     templateUrl: './inventarios.component.html',
 })
@@ -156,17 +161,20 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     // ============================================================
     // 🆕 ESCÁNER QR
     // ============================================================
-    mostrarEscaner = false;
-    escaneando = false;
-    errorEscaner: string | null = null;
+
     formatosPermitidos = [BarcodeFormat.QR_CODE];
     camarasDisponibles: MediaDeviceInfo[] = [];
     private ultimoCodigoEscaneado: string | null = null;
     private bloqueadoHastaTs = 0;
 
+
+
+
+    mostrarEscaner = false;
+    escaneando = false;
+    errorEscaner: string | null = null;
     rolloEscaneado: InventarioItem | null = null;
     mostrarModalRollo = false;
-
 
 
     constructor(
@@ -580,7 +588,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         this.errorEscaner = null;
         this.rolloEscaneado = null;
         this.mostrarModalRollo = false;
-        this.ultimoCodigoEscaneado = null;
         this.mostrarEscaner = true;
     }
 
@@ -604,16 +611,9 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     onScanSuccess(codigo: string): void {
-        const ahora = Date.now();
-        // evita disparos repetidos del mismo QR en frames consecutivos
-        if (codigo === this.ultimoCodigoEscaneado && ahora < this.bloqueadoHastaTs) {
-            return;
-        }
-        this.ultimoCodigoEscaneado = codigo;
-        this.bloqueadoHastaTs = ahora + 2000;
-
         this.buscarRolloPorCodigo(codigo);
     }
+
 
     private buscarRolloPorCodigo(codigo: string): void {
         this.escaneando = true;

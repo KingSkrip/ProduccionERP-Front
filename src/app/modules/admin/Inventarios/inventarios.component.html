@@ -26,13 +26,14 @@
             Inventario
           </button>
 
-<button
-  type="button"
-  (click)="abrirEscaner()"
-  matTooltip="Escanear QR de un rollo"
-  class="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-500 text-white shadow-sm transition-all duration-150 hover:bg-primary-600 active:scale-95 sm:h-11 sm:w-11">
-  <mat-icon class="icon-size-5" svgIcon="heroicons_outline:qr-code"></mat-icon>
-</button>
+          <button
+            type="button"
+            (click)="abrirEscaner()"
+            matTooltip="Escanear QR de un rollo"
+            class="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-500 text-white shadow-sm transition-all duration-150 hover:bg-primary-600 active:scale-95 sm:h-11 sm:w-11">
+            <mat-icon class="icon-size-5"
+              svgIcon="heroicons_outline:qr-code"></mat-icon>
+          </button>
 
           <mat-icon class="icon-size-3 text-black dark:text-white"
             svgIcon="heroicons_outline:chevron-right"></mat-icon>
@@ -60,25 +61,27 @@
         </div>
 
         } @else {
-<div class="flex items-center justify-between gap-3">
-  <div>
-    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
-      Inventario
-    </h2>
-    <p class="mt-2 text-sm text-black dark:text-white">
-      Gestiona el material disponible</p>
-  </div>
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2
+              class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+              Inventario
+            </h2>
+            <p class="mt-2 text-sm text-black dark:text-white">
+              Gestiona el material disponible</p>
+          </div>
 
-  <!-- 🆕 Botón escanear -->
-  <button
-    type="button"
-    (click)="abrirEscaner()"
-    matTooltip="Escanear QR de un rollo"
-    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-500 text-white shadow-sm transition-all duration-150 hover:bg-primary-600 active:scale-95 sm:h-12 sm:w-12">
-    <mat-icon class="icon-size-6" svgIcon="heroicons_outline:qr-code"></mat-icon>
-  </button>
-</div>
-}
+          <!-- 🆕 Botón escanear -->
+          <button
+            type="button"
+            (click)="abrirEscaner()"
+            matTooltip="Escanear QR de un rollo"
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-500 text-white shadow-sm transition-all duration-150 hover:bg-primary-600 active:scale-95 sm:h-12 sm:w-12">
+            <mat-icon class="icon-size-6"
+              svgIcon="heroicons_outline:qr-code"></mat-icon>
+          </button>
+        </div>
+        }
       </div>
     </div>
 
@@ -921,8 +924,6 @@
 </div>
 }
 
-
-
 <!-- ===== MODAL ESCÁNER QR ===== -->
 @if (mostrarEscaner) {
 <div
@@ -948,17 +949,16 @@
     <div class="flex flex-1 flex-col items-center justify-center gap-3 p-5">
 
       <div class="relative w-full overflow-hidden rounded-xl bg-black">
-        <zxing-scanner
-          [formats]="formatosPermitidos"
-          (scanSuccess)="onScanSuccess($event)"
-          (camerasFound)="onCamarasEncontradas($event)"
-          (permissionResponse)="onPermisoCamara($event)">
-        </zxing-scanner>
+        <app-lector-qr
+          [bloqueado]="escaneando"
+          (codigoDetectado)="onScanSuccess($event)">
+        </app-lector-qr>
 
         @if (escaneando) {
         <div
           class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60">
-          <mat-progress-spinner mode="indeterminate" diameter="36" color="accent"></mat-progress-spinner>
+          <mat-progress-spinner mode="indeterminate" diameter="36"
+            color="accent"></mat-progress-spinner>
           <span class="text-sm font-medium text-white">Buscando rollo…</span>
         </div>
         }
@@ -978,7 +978,6 @@
   </div>
 </div>
 }
-
 
 <!-- ===== MODAL DETALLE ROLLO ESCANEADO ===== -->
 @if (mostrarModalRollo && rolloEscaneado) {
@@ -1003,7 +1002,7 @@
           <h2 class="text-lg font-bold text-black dark:text-white">
             Rollo {{ rolloEscaneado['ID_QR'] || rolloEscaneado['ID'] }}
           </h2>
-          
+
           <p class="text-sm text-black dark:text-white">
             {{ rolloEscaneado['ARTICULO'] }}
           </p>
@@ -1021,8 +1020,10 @@
       <div class="divide-y divide-gray-100 dark:divide-gray-800">
         @for (campo of camposRollo; track campo.key) {
         <div class="flex items-center justify-between gap-4 py-2.5">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{{ campo.label }}</span>
-          <span class="text-right text-sm font-semibold text-black dark:text-white">
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ campo.label
+            }}</span>
+          <span
+            class="text-right text-sm font-semibold text-black dark:text-white">
             {{ valorCampo(rolloEscaneado, campo.key) }}
           </span>
         </div>
@@ -1044,7 +1045,8 @@
       <div class="h-1.5 w-11 rounded-full bg-gray-400 dark:bg-white/20"></div>
     </div>
 
-    <div class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-4">
+    <div
+      class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-4">
       <div>
         <h2 class="text-lg font-semibold text-black dark:text-white">
           Rollo {{ rolloEscaneado['ID_QR'] || rolloEscaneado['ID'] }}
@@ -1061,8 +1063,10 @@
       <div class="divide-y divide-gray-100 dark:divide-gray-800">
         @for (campo of camposRollo; track campo.key) {
         <div class="flex items-center justify-between gap-4 py-2.5">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{{ campo.label }}</span>
-          <span class="text-right text-sm font-semibold text-black dark:text-white">
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ campo.label
+            }}</span>
+          <span
+            class="text-right text-sm font-semibold text-black dark:text-white">
             {{ valorCampo(rolloEscaneado, campo.key) }}
           </span>
         </div>
