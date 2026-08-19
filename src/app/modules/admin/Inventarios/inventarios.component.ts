@@ -574,6 +574,7 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
 
     onTouchMoveOp(event: TouchEvent): void {
         if (!this.isDraggingOp) return;
+        event.preventDefault(); 
         this.touchCurrentYOp = event.touches[0].clientY;
         const delta = this.touchCurrentYOp - this.touchStartYOp;
         if (delta > 0) {
@@ -707,6 +708,7 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
 
     onTouchMoveEscaner(event: TouchEvent): void {
         if (!this.isDraggingEscaner) return;
+            event.preventDefault();
         const deltaY = event.touches[0].clientY - this.touchStartYEscaner;
         if (deltaY <= 0) {
             this.dragTransformEscaner = 'translateY(0)';
@@ -744,6 +746,7 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
 
     onTouchMoveRollo(event: TouchEvent): void {
         if (!this.isDraggingRollo) return;
+         event.preventDefault(); 
         const deltaY = event.touches[0].clientY - this.touchStartYRollo;
         if (deltaY <= 0) {
             this.dragTransformRollo = 'translateY(0)';
