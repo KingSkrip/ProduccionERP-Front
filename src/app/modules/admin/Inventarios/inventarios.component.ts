@@ -8,27 +8,21 @@ import {
     ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
-import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, takeUntil } from 'rxjs';
-import { InventariosService } from './inventarios.service';
-import { InventarioFiltros, InventarioItem } from './types/inventario.type';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
-import { ZXingScannerModule } from '@zxing/ngx-scanner';
-import { BarcodeFormat } from '@zxing/library';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { Subject, takeUntil } from 'rxjs';
 
-
-import { LectorQrComponent } from 'app/shared/components/lector-qr/lector-qr.component';
-import { slideUp } from 'app/shared/animations/mobile/slide-up.animation';
 import { ModalDetalleOpComponent } from 'app/modules/modals/inventarios/detalle-op/detalle-op-modal.component';
 import { ModalEscanerQrComponent } from 'app/modules/modals/inventarios/scanner/scanner-rollo-modal.component';
 import { ModalRolloDetalleComponent } from 'app/modules/modals/inventarios/detalles/detalles-rollo-modal.component';
 
+import { InventariosService } from './inventarios.service';
+import { InventarioFiltros, InventarioItem } from './types/inventario.type';
 
 type Seccion = 'general' | 'rollos';
 
@@ -77,18 +71,13 @@ export interface PedidoGrupo {
         MatIconModule,
         MatInputModule,
         MatPaginatorModule,
-        MatProgressSpinnerModule,
         MatTooltipModule,
         MatSelectModule,
-        ZXingScannerModule,
-        LectorQrComponent,
         ModalDetalleOpComponent,
         ModalEscanerQrComponent,
         ModalRolloDetalleComponent,
-
     ],
     templateUrl: './inventarios.component.html',
-    animations: [slideUp],
 })
 export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatPaginator) paginator?: MatPaginator;
@@ -112,12 +101,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Búsqueda / filtros
     busqueda = '';
-    // Drag to close (modal detalle OP - móvil)
-    private touchStartYOp = 0;
-    private touchCurrentYOp = 0;
-    isDraggingOp = false;
-    dragTransformOp = 'translateY(0)';
-    dragTransitionOp = 'transform 0.3s ease';
 
     // Control de qué pedido está expandido (acordeón)
     pedidoExpandidoKey: string | null = null;
@@ -136,8 +119,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     rollosPageSize = 5;
     rollosPageSizeOptions = [5, 10, 25, 50, 100];
 
-
-
     // Búsqueda / filtros (vista rollos)
     busquedaRollos = '';
     filtroTipo: string | null = null;
@@ -151,8 +132,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     agentesDisponibles: string[] = [];
     mostrarFiltrosRollos = false;
 
-
-
     // Vista rollos agrupada por Pedido -> OP
     pedidosFiltrados: PedidoGrupo[] = [];
     pedidosPaginados: PedidoGrupo[] = [];
@@ -165,44 +144,17 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     opSeleccionada: OpGrupo | null = null;
     mostrarModalOp = false;
 
-   private readonly DISMISS_THRESHOLD = 140;
-
     // ============================================================
-    // 🆕 ESCÁNER QR
+    // ESCÁNER QR
     // ============================================================
 
-    formatosPermitidos = [BarcodeFormat.QR_CODE];
     camarasDisponibles: MediaDeviceInfo[] = [];
-    private ultimoCodigoEscaneado: string | null = null;
-    private bloqueadoHastaTs = 0;
-
-
-
 
     mostrarEscaner = false;
     escaneando = false;
     errorEscaner: string | null = null;
     rolloEscaneado: InventarioItem | null = null;
     mostrarModalRollo = false;
-
-
-
-        // ============================================================
-    // 🆕 DRAG TO CLOSE — modal escáner QR (móvil)
-    // ============================================================
-    isDraggingEscaner = false;
-    dragTransformEscaner = 'translateY(0)';
-    dragTransitionEscaner = 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)';
-    private touchStartYEscaner = 0;
-    private dragYEscaner = 0;
-
-
-
-      isDraggingRollo = false;
-    dragTransformRollo = 'translateY(0)';
-    dragTransitionRollo = 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)';
-    private touchStartYRollo = 0;
-    private dragYRollo = 0;
 
     constructor(
         private inventariosService: InventariosService,
@@ -345,7 +297,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         this.pedidoExpandidoKey = null;
         this.mostrarFiltrosRollos = false;
 
-
         // Opciones para los selects, derivadas de los rollos del grupo
         this.tiposDisponibles = Array.from(
             new Set(grupo.items.map((i) => i.TIPO).filter(Boolean))
@@ -402,7 +353,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
             return matchTerm && matchTipo && matchColor && matchAgente;
         });
 
-        // 👇 nuevo: agrupar por pedido/OP
         this.pedidosFiltrados = this.agruparPorPedido(this.rollosFiltrados);
         this.pedidosPageIndex = 0;
         this.actualizarPaginaPedidos();
@@ -455,8 +405,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         return item.ID;
     }
 
-    // === Agregar dentro de la clase InventariosComponent, junto a los demás campos/métodos ===
-
     get totalPiezas(): number {
         return this.gruposFiltrados.reduce((s, g) => s + g.piezasTotal, 0);
     }
@@ -480,7 +428,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     toggleFiltrosRollos(): void {
         this.mostrarFiltrosRollos = !this.mostrarFiltrosRollos;
     }
-
 
     private agruparPorPedido(items: InventarioItem[]): PedidoGrupo[] {
         const mapaPedidos = new Map<string, PedidoGrupo>();
@@ -544,6 +491,7 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         this.pedidoExpandidoKey = null;
         this.actualizarPaginaPedidos();
     }
+
     trackByPedido(_index: number, grupo: PedidoGrupo): string {
         return grupo.pedido;
     }
@@ -562,8 +510,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         this.opSeleccionada = null;
     }
 
-
-
     togglePedido(pedido: PedidoGrupo): void {
         this.pedidoExpandidoKey = this.pedidoExpandidoKey === pedido.pedido ? null : pedido.pedido;
     }
@@ -572,44 +518,8 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         return this.pedidoExpandidoKey === pedido.pedido;
     }
 
-    onTouchStartOp(event: TouchEvent): void {
-        this.touchStartYOp = event.touches[0].clientY;
-        this.touchCurrentYOp = this.touchStartYOp;
-        this.isDraggingOp = true;
-        this.dragTransitionOp = 'none';
-    }
-
-    onTouchMoveOp(event: TouchEvent): void {
-        if (!this.isDraggingOp) return;
-        event.preventDefault(); 
-        this.touchCurrentYOp = event.touches[0].clientY;
-        const delta = this.touchCurrentYOp - this.touchStartYOp;
-        if (delta > 0) {
-            this.dragTransformOp = `translateY(${delta}px)`;
-        }
-    }
-
-    onTouchEndOp(): void {
-        const delta = this.touchCurrentYOp - this.touchStartYOp;
-        this.isDraggingOp = false;
-        this.dragTransitionOp = 'transform 0.3s ease';
-
-        if (delta > 120) {
-            // Se deslizó lo suficiente → cerrar
-            this.dragTransformOp = 'translateY(100%)';
-            setTimeout(() => {
-                this.cerrarModalOp();
-                this.dragTransformOp = 'translateY(0)';
-            }, 200);
-        } else {
-            // No fue suficiente → regresa a su lugar
-            this.dragTransformOp = 'translateY(0)';
-        }
-    }
-
-
     // ============================================================
-    // 🆕 MÉTODOS DEL ESCÁNER
+    // MÉTODOS DEL ESCÁNER
     // ============================================================
 
     abrirEscaner(): void {
@@ -641,7 +551,6 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     onScanSuccess(codigo: string): void {
         this.buscarRolloPorCodigo(codigo);
     }
-
 
     private buscarRolloPorCodigo(codigo: string): void {
         this.escaneando = true;
@@ -698,87 +607,4 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
             { label: 'Orden', key: 'ORDEN' },
         ];
     }
-
-    valorCampo(item: any, key: string): string {
-        const val = item?.[key];
-        if (val === null || val === undefined || val === '') return '—';
-        return String(val);
-    }
-
-
-      onTouchStartEscaner(event: TouchEvent): void {
-        this.touchStartYEscaner = event.touches[0].clientY;
-        this.dragYEscaner = 0;
-        this.isDraggingEscaner = true;
-        this.dragTransitionEscaner = 'none';
-    }
-
-    onTouchMoveEscaner(event: TouchEvent): void {
-        if (!this.isDraggingEscaner) return;
-            event.preventDefault();
-        const deltaY = event.touches[0].clientY - this.touchStartYEscaner;
-        if (deltaY <= 0) {
-            this.dragTransformEscaner = 'translateY(0)';
-            return;
-        }
-        this.dragYEscaner = deltaY;
-        const resistance =
-            deltaY > this.DISMISS_THRESHOLD
-                ? this.DISMISS_THRESHOLD + (deltaY - this.DISMISS_THRESHOLD) * 0.35
-                : deltaY;
-        this.dragTransformEscaner = `translateY(${resistance}px)`;
-    }
-
-    onTouchEndEscaner(): void {
-        this.isDraggingEscaner = false;
-        this.dragTransitionEscaner = 'transform 0.42s cubic-bezier(0.32, 0.72, 0, 1)';
-        if (this.dragYEscaner >= this.DISMISS_THRESHOLD) {
-            this.dragTransformEscaner = 'translateY(120%) scale(0.95)';
-            setTimeout(() => {
-                this.cerrarEscaner();
-                this.dragTransformEscaner = 'translateY(0)';
-            }, 260);
-        } else {
-            this.dragTransformEscaner = 'translateY(0)';
-        }
-    }
-
-
-      onTouchStartRollo(event: TouchEvent): void {
-        this.touchStartYRollo = event.touches[0].clientY;
-        this.dragYRollo = 0;
-        this.isDraggingRollo = true;
-        this.dragTransitionRollo = 'none';
-    }
-
-    onTouchMoveRollo(event: TouchEvent): void {
-        if (!this.isDraggingRollo) return;
-         event.preventDefault(); 
-        const deltaY = event.touches[0].clientY - this.touchStartYRollo;
-        if (deltaY <= 0) {
-            this.dragTransformRollo = 'translateY(0)';
-            return;
-        }
-        this.dragYRollo = deltaY;
-        const resistance =
-            deltaY > this.DISMISS_THRESHOLD
-                ? this.DISMISS_THRESHOLD + (deltaY - this.DISMISS_THRESHOLD) * 0.35
-                : deltaY;
-        this.dragTransformRollo = `translateY(${resistance}px)`;
-    }
-
-    onTouchEndRollo(): void {
-        this.isDraggingRollo = false;
-        this.dragTransitionRollo = 'transform 0.42s cubic-bezier(0.32, 0.72, 0, 1)';
-        if (this.dragYRollo >= this.DISMISS_THRESHOLD) {
-            this.dragTransformRollo = 'translateY(120%) scale(0.95)';
-            setTimeout(() => {
-                this.cerrarModalRollo();
-                this.dragTransformRollo = 'translateY(0)';
-            }, 260);
-        } else {
-            this.dragTransformRollo = 'translateY(0)';
-        }
-    }
-
 }
