@@ -1,0 +1,87 @@
+<!-- Desktop -->
+<div
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4 md:flex"
+  (click)="onOverlayClick()">
+  <div
+    class="bg-card flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl shadow-2xl"
+    (click)="$event.stopPropagation()">
+
+    <div class="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-accent-300/40">
+          <mat-icon class="text-primary-500 icon-size-5" svgIcon="heroicons_outline:qr-code"></mat-icon>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-black dark:text-white">
+            Rollo {{ rollo['ID_QR'] || rollo['ID'] }}
+          </h2>
+          <p class="text-sm text-black dark:text-white">{{ rollo['ARTICULO'] }}</p>
+        </div>
+      </div>
+      <button
+        class="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+        (click)="cerrar.emit()">
+        <mat-icon class="text-black icon-size-5 dark:text-white" svgIcon="heroicons_outline:x-mark"></mat-icon>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-6 py-4">
+      <div class="divide-y divide-gray-100 dark:divide-gray-800">
+        @for (campo of campos; track campo.key) {
+        <div class="flex items-center justify-between gap-4 py-2.5">
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ campo.label }}</span>
+          <span class="text-right text-sm font-semibold text-black dark:text-white">
+            {{ valorCampo(rollo, campo.key) }}
+          </span>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Móvil: bottom sheet -->
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden"
+  (click)="onOverlayClick()">
+  <div
+    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
+    [class.select-none]="isDragging"
+    [style.transform]="dragTransform"
+    [style.transition]="dragTransition"
+    (click)="$event.stopPropagation()"
+    [@slideUp]>
+
+    <div class="touch-none" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" (touchend)="onTouchEnd()">
+      <div class="flex cursor-grab justify-center pb-2 pt-3 active:cursor-grabbing">
+        <div class="h-1.5 w-11 rounded-full bg-gray-400 transition-colors active:bg-primary-500 dark:bg-white/20"></div>
+      </div>
+
+      <div class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-4">
+        <div>
+          <h2 class="text-lg font-semibold text-black dark:text-white">
+            Rollo {{ rollo['ID_QR'] || rollo['ID'] }}
+          </h2>
+          <p class="text-sm text-primary-400">{{ rollo['ARTICULO'] }}</p>
+        </div>
+        <button (click)="cerrar.emit()"
+          class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white">
+          <mat-icon svgIcon="heroicons_outline:x-mark"></mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-5 pb-6 pt-2">
+      <div class="divide-y divide-gray-100 dark:divide-gray-800">
+        @for (campo of campos; track campo.key) {
+        <div class="flex items-center justify-between gap-4 py-2.5">
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ campo.label }}</span>
+          <span class="text-right text-sm font-semibold text-black dark:text-white">
+            {{ valorCampo(rollo, campo.key) }}
+          </span>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

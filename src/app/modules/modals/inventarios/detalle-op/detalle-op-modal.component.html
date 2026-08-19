@@ -1,0 +1,201 @@
+<!-- Desktop -->
+<div
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4 md:flex"
+    (click)="onOverlayClick()">
+    <div
+        class="bg-card flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl shadow-2xl"
+        (click)="$event.stopPropagation()">
+
+        <div
+            class="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+            <div>
+                <h2 class="text-lg font-bold text-black dark:text-white">
+                    Pedido {{ op.pedido }} · OP {{ op.op }}
+                </h2>
+                <p class="text-sm text-black dark:text-white">
+                    Partida {{ op.partida }} · Agente {{ op.agente }}
+                </p>
+            </div>
+            <button
+                class="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                (click)="cerrar.emit()">
+                <mat-icon
+                    class="text-black icon-size-5 dark:text-white">close</mat-icon>
+            </button>
+        </div>
+
+        <div
+            class="grid shrink-0 grid-cols-3 gap-3 border-b border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-800/40">
+            <div class="text-center">
+                <div
+                    class="text-xs text-gray-500 dark:text-gray-400">Rollos</div>
+                <div class="text-lg font-bold text-black dark:text-white">{{
+                    op.rollosCount }}</div>
+            </div>
+            <div class="text-center">
+                <div class="text-xs text-gray-500 dark:text-gray-400">Peso
+                    neto</div>
+                <div
+                    class="text-lg font-bold text-blue-700 dark:text-blue-300">{{
+                    op.pesoNetoTotal | number: '1.2-2' }} kg</div>
+            </div>
+        </div>
+
+        <div class="flex-1 space-y-2 overflow-y-auto px-6 py-4">
+            @for (item of op.items; track item.ID) {
+            <div
+                class="rounded-xl border border-gray-100 p-3 dark:border-gray-800">
+                <div class="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                    <div>
+                        <div
+                            class="text-xs text-gray-500 dark:text-gray-400">Producto</div>
+                        <div
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.PRODUCTO || '—' }}</div>
+                    </div>
+                    <div>
+                        <div
+                            class="text-xs text-gray-500 dark:text-gray-400">Proceso</div>
+                        <div
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.PROCESO || '—' }}</div>
+                    </div>
+                    <div>
+                        <div
+                            class="text-xs text-gray-500 dark:text-gray-400">Tipo</div>
+                        <div
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.TIPO }}</div>
+                    </div>
+                    <div>
+                        <div
+                            class="text-xs text-gray-500 dark:text-gray-400">Color</div>
+                        <div
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.COLOR }}</div>
+                    </div>
+                    <div>
+                        <div
+                            class="text-xs text-gray-500 dark:text-gray-400">Peso
+                            neto</div>
+                        <div
+                            class="text-sm font-semibold text-blue-700 dark:text-blue-300">{{
+                            item['PESO NETO'] | number: '1.2-2' }} kg</div>
+                    </div>
+                    <div>
+                        <div
+                            class="text-xs text-gray-500 dark:text-gray-400">Piezas</div>
+                        <div
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.PIEZA }}</div>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Móvil: bottom sheet -->
+<div
+    class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden"
+    (click)="onOverlayClick()">
+    <div
+        class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
+        [class.select-none]="isDragging"
+        [style.transform]="dragTransform"
+        [style.transition]="dragTransition"
+        (click)="$event.stopPropagation()"
+        [@slideUp]>
+
+        <div class="touch-none" (touchstart)="onTouchStart($event)"
+            (touchmove)="onTouchMove($event)" (touchend)="onTouchEnd()">
+            <div
+                class="flex cursor-grab justify-center pb-2 pt-3 active:cursor-grabbing">
+                <div
+                    class="h-1.5 w-11 rounded-full bg-gray-400 transition-colors active:bg-primary-500 dark:bg-white/20"></div>
+            </div>
+
+            <div
+                class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-4">
+                <div>
+                    <h2
+                        class="text-lg font-semibold text-black dark:text-white">OP
+                        {{ op.op }}</h2>
+                    <p class="text-sm text-primary-400">Pedido {{ op.pedido }} ·
+                        Partida {{ op.partida }}</p>
+                </div>
+                <button (click)="cerrar.emit()"
+                    class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid shrink-0 grid-cols-3 gap-2 px-5 py-3">
+            <div
+                class="rounded-xl bg-gray-100 p-2 text-center dark:bg-gray-800">
+                <div
+                    class="text-xs text-gray-500 dark:text-gray-400">Rollos</div>
+                <div class="font-bold text-black dark:text-white">{{
+                    op.rollosCount }}</div>
+            </div>
+            <div
+                class="rounded-xl bg-gray-100 p-2 text-center dark:bg-gray-800">
+                <div
+                    class="text-xs text-gray-500 dark:text-gray-400">Piezas</div>
+                <div class="font-bold text-black dark:text-white">{{
+                    op.piezasTotal }}</div>
+            </div>
+            <div
+                class="rounded-xl bg-blue-100 p-2 text-center dark:bg-blue-900/30">
+                <div class="text-xs text-blue-600 dark:text-blue-400">Peso
+                    neto</div>
+                <div class="font-bold text-blue-700 dark:text-blue-300">{{
+                    op.pesoNetoTotal | number: '1.2-2' }} kg</div>
+            </div>
+        </div>
+
+        <div class="flex-1 space-y-2 overflow-y-auto px-5 pb-6">
+            @for (item of op.items; track item.ID) {
+            <div
+                class="rounded-2xl border border-gray-200 p-3 dark:border-gray-700">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><span
+                            class="text-xs text-gray-500 dark:text-gray-400">Producto</span><br>
+                        <span
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.PRODUCTO || '—' }}</span></div>
+                    <div><span
+                            class="text-xs text-gray-500 dark:text-gray-400">Proceso</span><br>
+                        <span
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.PROCESO || '—' }}</span></div>
+                    <div><span
+                            class="text-xs text-gray-500 dark:text-gray-400">Tipo</span><br>
+                        <span
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.TIPO }}</span></div>
+                    <div><span
+                            class="text-xs text-gray-500 dark:text-gray-400">Color</span><br>
+                        <span
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.COLOR }}</span></div>
+                    <div><span
+                            class="text-xs text-gray-500 dark:text-gray-400">Peso
+                            neto</span><br>
+                        <span
+                            class="text-sm font-semibold text-blue-700 dark:text-blue-300">{{
+                            item['PESO NETO'] | number: '1.2-2' }}
+                            kg</span></div>
+                    <div><span
+                            class="text-xs text-gray-500 dark:text-gray-400">Piezas</span><br>
+                        <span
+                            class="text-sm font-semibold text-black dark:text-white">{{
+                            item.PIEZA }}</span></div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>

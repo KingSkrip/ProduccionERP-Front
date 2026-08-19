@@ -25,6 +25,9 @@ import { BarcodeFormat } from '@zxing/library';
 
 import { LectorQrComponent } from 'app/shared/components/lector-qr/lector-qr.component';
 import { slideUp } from 'app/shared/animations/mobile/slide-up.animation';
+import { ModalDetalleOpComponent } from 'app/modules/modals/inventarios/detalle-op/detalle-op-modal.component';
+import { ModalEscanerQrComponent } from 'app/modules/modals/inventarios/scanner/scanner-rollo-modal.component';
+import { ModalRolloDetalleComponent } from 'app/modules/modals/inventarios/detalles/detalles-rollo-modal.component';
 
 
 type Seccion = 'general' | 'rollos';
@@ -79,6 +82,10 @@ export interface PedidoGrupo {
         MatSelectModule,
         ZXingScannerModule,
         LectorQrComponent,
+        ModalDetalleOpComponent,
+        ModalEscanerQrComponent,
+        ModalRolloDetalleComponent,
+
     ],
     templateUrl: './inventarios.component.html',
     animations: [slideUp],
