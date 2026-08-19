@@ -98,10 +98,10 @@
 
 <!-- Móvil: bottom sheet -->
 <div
-    class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:hidden"
+    class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-3 md:hidden"
     (click)="onOverlayClick()">
     <div
-        class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-400 shadow-2xl"
+        class="bg-card mb-3 flex max-h-[85dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-gray-400 shadow-2xl"
         [class.select-none]="isDragging"
         [style.transform]="dragTransform"
         [style.transition]="dragTransition"
@@ -113,7 +113,7 @@
             <div
                 class="flex cursor-grab justify-center pb-2 pt-3 active:cursor-grabbing">
                 <div
-                    class="h-1.5 w-11 rounded-full bg-gray-400 transition-colors active:bg-primary-500 dark:bg-white/20"></div>
+                    class="h-1.5 w-11 rounded-full bg-primary-500 transition-colors active:bg-accent-500"></div>
             </div>
 
             <div
