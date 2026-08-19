@@ -42,7 +42,7 @@ export class InventariosService {
      */
     escanearQr(codigo: string): Observable<InventarioItem> {
         return this.http
-            .post<ApiResponse<InventarioItem>>(`${this.baseUrl}/escanear`, { codigo })
+            .post<ApiResponse<InventarioItem>>(`${this.baseUrl}/escanearinventario`, { codigo })
             .pipe(map((res) => res.data));
     }
 }
