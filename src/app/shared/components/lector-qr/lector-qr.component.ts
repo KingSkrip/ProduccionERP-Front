@@ -120,12 +120,12 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
         verbose: false,
       });
 
-      await this.lector.start(
-        camaraElegida,
-        { fps: 10, qrbox: { width: 280, height: 140 } },
-        (texto) => this.emitirLectura(texto),
-        () => { },
-      );
+await this.lector.start(
+  camaraElegida,
+  { fps: 10 },
+  (texto) => this.emitirLectura(texto),
+  () => { },
+);
 
       this.estado = 'escaneando';
     } catch (error) {
