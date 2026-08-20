@@ -94,14 +94,14 @@
           class="absolute inset-0 flex items-center justify-center [&_video]:h-full [&_video]:w-full [&_video]:object-cover"
           [bloqueado]="escaneando"
           (codigoDetectado)="onScanSuccess($event)"></app-lector-qr>
-        @if (escaneando) {
+        <!-- @if (escaneando) {
         <div
           class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60">
           <mat-progress-spinner mode="indeterminate" diameter="36"
             color="accent"></mat-progress-spinner>
           <span class="text-sm font-medium text-white">Buscando rollo…</span>
         </div>
-        }
+        } -->
       </div>
       <p class="text-center text-xs text-black dark:text-white">
         Apunta la cámara al código del rollo
