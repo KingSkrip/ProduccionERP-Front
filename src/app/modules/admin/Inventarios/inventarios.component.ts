@@ -607,4 +607,19 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
             { label: 'Orden', key: 'ORDEN' },
         ];
     }
+
+    get pedidosCountCliente(): number {
+        return this.pedidosFiltrados.length;
+    }
+
+    get rollosCountCliente(): number {
+        return this.rollosFiltrados.length;
+    }
+
+    get pesoNetoClienteTotal(): number {
+        return this.rollosFiltrados.reduce(
+            (s, item) => s + (Number(item['PESO NETO']) || 0),
+            0
+        );
+    }
 }

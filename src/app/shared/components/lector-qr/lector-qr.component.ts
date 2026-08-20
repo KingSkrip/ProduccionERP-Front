@@ -7,6 +7,7 @@ import {
   Input,
   OnDestroy,
   Output,
+  ViewEncapsulation,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode';
@@ -25,6 +26,8 @@ let contadorInstancias = 0;
   standalone: true,
   imports: [CommonModule, MatIconModule],
   templateUrl: './lector-qr.component.html',
+  styleUrls: ['./lector-qr.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class LectorQrComponent implements AfterViewInit, OnDestroy {
   /** Id único por instancia, por si hay más de un lector en la misma vista alguna vez. */
@@ -109,15 +112,19 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
         camaras.find((c) => /back|trasera|rear/i.test(c.label))?.id ?? camaras[0].id;
 
       this.lector = new Html5Qrcode(this.lectorId, {
-        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+        ],
         verbose: false,
       });
 
       await this.lector.start(
         camaraElegida,
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        { fps: 10, qrbox: { width: 280, height: 140 } },
         (texto) => this.emitirLectura(texto),
-        () => {},
+        () => { },
       );
 
       this.estado = 'escaneando';
@@ -166,7 +173,7 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
       if (this.lector?.getState() === Html5QrcodeScannerState.SCANNING) {
         this.lector.pause(true);
       }
-    } catch {}
+    } catch { }
   }
 
   private reanudarCamaraSiPausada(): void {
@@ -174,6 +181,6 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
       if (this.lector?.getState() === Html5QrcodeScannerState.PAUSED) {
         this.lector.resume();
       }
-    } catch {}
+    } catch { }
   }
 }

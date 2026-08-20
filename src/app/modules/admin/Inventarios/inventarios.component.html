@@ -1,65 +1,51 @@
-<div class="absolute inset-0 flex min-w-0 flex-col bg-default">
-
+<div class="bg-default absolute inset-0 flex min-w-0 flex-col">
   <!-- ===== ENCABEZADO ===== -->
   <div
     class="bg-card flex flex-0 flex-col px-4 pt-4 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:pt-4 dark:bg-transparent">
-
     <div class="flex min-w-0 flex-1 items-center gap-3">
-
       @if (seccion === 'rollos') {
       <button
         type="button"
         (click)="volverAGeneral()"
         title="Volver a inventario"
         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 shadow-sm transition-all duration-150 hover:border-primary-300 hover:text-primary-600 hover:shadow active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
-        <mat-icon class="icon-size-5 text-black dark:text-white"
+        <mat-icon
+          class="text-black icon-size-5 dark:text-white"
           svgIcon="heroicons_outline:arrow-left"></mat-icon>
       </button>
       }
 
-      <div class="min-w-0 w-full">
+      <div class="w-full min-w-0">
         @if (seccion === 'rollos') {
         <nav
           class="mb-0.5 flex items-center gap-1.5 text-xs font-medium text-black dark:text-white">
-          <button type="button" (click)="volverAGeneral()"
+          <button
+            type="button"
+            (click)="volverAGeneral()"
             class="hover:text-primary-600 hover:underline dark:hover:text-primary-400">
             Inventario
           </button>
 
-          <button
+          <mat-icon
+            class="text-black icon-size-3 dark:text-white"
+            svgIcon="heroicons_outline:chevron-right"></mat-icon>
+          <span class="truncate">Rollos</span>
+
+          <!-- <button
             type="button"
             (click)="abrirEscaner()"
             matTooltip="Escanear QR de un rollo"
             class="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-500 text-white shadow-sm transition-all duration-150 hover:bg-primary-600 active:scale-95 sm:h-11 sm:w-11">
-            <mat-icon class="icon-size-5"
-              svgIcon="heroicons_outline:qr-code"></mat-icon>
-          </button>
-
-          <mat-icon class="icon-size-3 text-black dark:text-white"
-            svgIcon="heroicons_outline:chevron-right"></mat-icon>
-          <span class="truncate">Rollos</span>
+            <mat-icon
+              svgIcon="heroicons_outline:qr-code"
+              class="!text-white icon-size-6">
+            </mat-icon>
+          </button> -->
         </nav>
         <h2
           class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
           {{ clienteSeleccionado }}
         </h2>
-
-        <div
-          class="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-black dark:text-white">
-          <span>• Detalle rollo por rollo</span>
-          <span class="text-gray-300 dark:text-gray-600">·</span>
-          <span class="inline-flex items-center gap-1">
-            •
-            <mat-icon class="icon-size-4 text-primary-500"
-              svgIcon="heroicons_outline:cube"></mat-icon>
-            Mostrando
-            <span class="font-semibold">{{ rollosFiltrados.length }}</span>
-            de
-            <span class="font-semibold">{{ rollosDelGrupo.length }}</span>
-            rollo{{ rollosDelGrupo.length === 1 ? '' : 's' }} de primera calidad
-          </span>
-        </div>
-
         } @else {
         <div class="flex items-center justify-between gap-3">
           <div>
@@ -67,8 +53,8 @@
               class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
               Inventario
             </h2>
-            <p class="mt-2 text-sm text-black dark:text-white">
-              Gestiona el material disponible</p>
+            <p class="mt-2 text-sm text-black dark:text-white">Gestiona el
+              material disponible</p>
           </div>
 
           <!-- 🆕 Botón escanear -->
@@ -76,9 +62,10 @@
             type="button"
             (click)="abrirEscaner()"
             matTooltip="Escanear QR de un rollo"
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-500 text-white shadow-sm transition-all duration-150 hover:bg-primary-600 active:scale-95 sm:h-12 sm:w-12">
-            <mat-icon class="icon-size-6"
-              svgIcon="heroicons_outline:qr-code"></mat-icon>
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-500 shadow-sm transition-all duration-150 active:scale-95 sm:h-12 sm:w-12">
+            <mat-icon svgIcon="heroicons_outline:qr-code"
+              class="!text-white icon-size-6">
+            </mat-icon>
           </button>
         </div>
         }
@@ -88,8 +75,7 @@
     <!-- Tarjetas resumen -->
     @if (seccion === 'general' && !cargando) {
     <div
-      class="mt-4 grid grid-cols-4 gap-2 sm:ml-6 sm:mt-0 sm:flex sm:flex-shrink-0 sm:gap-4">
-
+      class="mt-4 grid grid-cols-2 gap-2 sm:ml-6 sm:mt-0 sm:flex sm:flex-shrink-0 sm:gap-4">
       <div
         class="hidden min-w-0 rounded-lg bg-gray-100 p-2 sm:p-4 md:block dark:bg-gray-800/50">
         <div
@@ -103,7 +89,9 @@
       <div
         class="min-w-0 rounded-lg bg-amber-200 p-2 sm:p-4 dark:bg-amber-900/20">
         <div
-          class="text-center text-xs text-amber-600 sm:text-left dark:text-amber-400">Rollos</div>
+          class="text-center text-xs text-amber-600 sm:text-left dark:text-amber-400">
+          Rollos
+        </div>
         <div
           class="mt-0.5 truncate text-center text-xs font-bold text-amber-700 sm:text-left sm:text-2xl dark:text-amber-300">
           {{ totalRollos }}
@@ -113,11 +101,52 @@
       <div
         class="min-w-0 rounded-lg bg-blue-200 p-2 sm:p-4 dark:bg-blue-900/20">
         <div
-          class="text-center text-xs text-blue-600 sm:text-left dark:text-blue-400">Kg
-          totales</div>
+          class="text-center text-xs text-blue-600 sm:text-left dark:text-blue-400">
+          Kg totales
+        </div>
         <div
           class="mt-0.5 truncate text-center text-xs font-bold text-blue-700 sm:text-left sm:text-2xl dark:text-blue-300">
           {{ totalPeso | number: '1.0-0' }}
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Tarjetas resumen (vista rollos) -->
+    @if (seccion === 'rollos' && !cargando) {
+    <div
+      class="mt-4 grid grid-cols-3 gap-2 sm:ml-6 sm:mt-0 sm:flex sm:flex-shrink-0 sm:gap-4">
+      <div
+        class="min-w-0 rounded-lg bg-gray-100 p-2 sm:p-4 dark:bg-gray-800/50">
+        <div
+          class="text-center text-xs text-black sm:text-left dark:text-white">Pedidos</div>
+        <div
+          class="mt-0.5 truncate text-center text-xs font-bold text-gray-700 sm:text-left sm:text-2xl dark:text-gray-300">
+          {{ pedidosCountCliente }}
+        </div>
+      </div>
+
+      <div
+        class="min-w-0 rounded-lg bg-amber-200 p-2 sm:p-4 dark:bg-amber-900/20">
+        <div
+          class="text-center text-xs text-amber-600 sm:text-left dark:text-amber-400">
+          Rollos
+        </div>
+        <div
+          class="mt-0.5 truncate text-center text-xs font-bold text-amber-700 sm:text-left sm:text-2xl dark:text-amber-300">
+          {{ rollosCountCliente }}
+        </div>
+      </div>
+
+      <div
+        class="min-w-0 rounded-lg bg-blue-200 p-2 sm:p-4 dark:bg-blue-900/20">
+        <div
+          class="text-center text-xs text-blue-600 sm:text-left dark:text-blue-400">
+          Kg totales
+        </div>
+        <div
+          class="mt-0.5 truncate text-center text-xs font-bold text-blue-700 sm:text-left sm:text-2xl dark:text-blue-300">
+          {{ pesoNetoClienteTotal | number: '1.0-0' }}
         </div>
       </div>
     </div>
@@ -129,10 +158,12 @@
   <div
     class="bg-white px-4 py-3 sm:border-none sm:px-10 sm:pb-0 dark:bg-gray-900">
     <div class="flex items-center gap-2">
-
-      <mat-form-field class="fuse-mat-dense fuse-mat-rounded flex-1"
+      <mat-form-field
+        class="fuse-mat-dense fuse-mat-rounded flex-1"
         [subscriptSizing]="'dynamic'">
-        <mat-icon class="icon-size-5" matPrefix
+        <mat-icon
+          class="icon-size-5"
+          matPrefix
           svgIcon="heroicons_solid:magnifying-glass"></mat-icon>
         <input
           matInput
@@ -147,9 +178,14 @@
         </button>
         }
       </mat-form-field>
-      <button mat-icon-button matTooltip="Recargar" [disabled]="cargando"
+      <button
+        mat-icon-button
+        matTooltip="Recargar"
+        [disabled]="cargando"
         (click)="cargarInventario()">
-        <mat-icon class="icon-size-5" [class.animate-spin]="cargando"
+        <mat-icon
+          class="icon-size-5"
+          [class.animate-spin]="cargando"
           svgIcon="heroicons_outline:arrow-path"></mat-icon>
       </button>
     </div>
@@ -159,13 +195,15 @@
   <!-- ===== BUSCADOR + FILTROS (solo vista rollos) ===== -->
   @if (seccion === 'rollos') {
   <div
-    class="bg-white px-4 py-3 sm:border-none sm:px-10 sm:pb-0 dark:bg-gray-900 md:hidden block">
-
+    class="block bg-white px-4 py-3 sm:border-none sm:px-10 sm:pb-0 md:hidden dark:bg-gray-900">
     <!-- Fila: buscador + botón filtros (móvil) -->
     <div class="flex items-center gap-2">
-      <mat-form-field class="fuse-mat-dense fuse-mat-rounded flex-1"
+      <mat-form-field
+        class="fuse-mat-dense fuse-mat-rounded flex-1"
         [subscriptSizing]="'dynamic'">
-        <mat-icon class="icon-size-5" matPrefix
+        <mat-icon
+          class="icon-size-5"
+          matPrefix
           svgIcon="heroicons_solid:magnifying-glass"></mat-icon>
         <input
           matInput
@@ -195,7 +233,8 @@
         [class.dark:bg-primary-500]="mostrarFiltrosRollos"
         [class.dark:border-gray-700]="!mostrarFiltrosRollos"
         [class.dark:text-gray-300]="!mostrarFiltrosRollos">
-        <mat-icon class="icon-size-5"
+        <mat-icon
+          class="icon-size-5"
           svgIcon="heroicons_outline:adjustments-horizontal"></mat-icon>
         Filtros
         @if (cantidadFiltrosRollosActivos > 0) {
@@ -213,8 +252,8 @@
       [class.hidden]="!mostrarFiltrosRollos"
       [class.flex]="mostrarFiltrosRollos"
       [class.mt-3]="mostrarFiltrosRollos">
-
-      <mat-form-field class="fuse-mat-dense fuse-mat-rounded w-full sm:w-40"
+      <mat-form-field
+        class="fuse-mat-dense fuse-mat-rounded w-full sm:w-40"
         [subscriptSizing]="'dynamic'">
         <mat-select
           [(ngModel)]="filtroTipo"
@@ -227,7 +266,8 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field class="fuse-mat-dense fuse-mat-rounded w-full sm:w-44"
+      <mat-form-field
+        class="fuse-mat-dense fuse-mat-rounded w-full sm:w-44"
         [subscriptSizing]="'dynamic'">
         <mat-select
           [(ngModel)]="filtroColor"
@@ -240,7 +280,8 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field class="fuse-mat-dense fuse-mat-rounded w-full sm:w-44"
+      <mat-form-field
+        class="fuse-mat-dense fuse-mat-rounded w-full sm:w-44"
         [subscriptSizing]="'dynamic'">
         <mat-select
           [(ngModel)]="filtroAgente"
@@ -269,7 +310,6 @@
   <div class="flex flex-auto overflow-hidden">
     <div class="flex flex-auto flex-col overflow-y-auto">
       <div class="p-4 px-5 sm:p-6 md:py-4">
-
         <!-- Loading -->
         @if (cargando) {
         <div class="flex flex-auto flex-col items-center justify-center py-20">
@@ -285,14 +325,17 @@
         <!-- Error -->
         @if (!cargando && error) {
         <div class="flex flex-auto flex-col items-center justify-center py-20">
-          <mat-icon class="text-red-300 icon-size-24 dark:text-red-900"
+          <mat-icon
+            class="text-red-300 icon-size-24 dark:text-red-900"
             svgIcon="heroicons_outline:exclamation-triangle"></mat-icon>
           <div
-            class="mt-6 text-2xl font-semibold tracking-tight text-black dark:text-gray-100">No
-            se pudo cargar</div>
+            class="mt-6 text-2xl font-semibold tracking-tight text-black dark:text-gray-100">
+            No se pudo cargar
+          </div>
           <div
-            class="mt-2 max-w-sm text-center text-sm text-black dark:text-white">{{
-            error }}</div>
+            class="mt-2 max-w-sm text-center text-sm text-black dark:text-white">
+            {{ error }}
+          </div>
           <button mat-stroked-button class="mt-4" (click)="cargarInventario()">
             <mat-icon svgIcon="heroicons_outline:arrow-path"
               class="mr-1 icon-size-4"></mat-icon>
@@ -303,41 +346,41 @@
 
         <!-- ===== VISTA GENERAL ===== -->
         @if (!cargando && !error && seccion === 'general') {
-
         @if (gruposFiltrados.length === 0) {
         <div class="flex flex-auto flex-col items-center justify-center py-20">
-          <mat-icon class="text-gray-300 icon-size-24 dark:text-gray-700"
+          <mat-icon
+            class="text-gray-300 icon-size-24 dark:text-gray-700"
             svgIcon="heroicons_outline:inbox"></mat-icon>
           <div
-            class="mt-6 text-2xl font-semibold tracking-tight text-black dark:text-gray-100">Sin
-            resultados</div>
+            class="mt-6 text-2xl font-semibold tracking-tight text-black dark:text-gray-100">
+            Sin resultados
+          </div>
           <div class="mt-2 text-center text-sm text-black dark:text-white">
             No se encontraron piezas que coincidan con "{{ busqueda }}"
           </div>
           @if (busqueda) {
           <button mat-stroked-button class="mt-4"
             (click)="busqueda = ''; onBuscar()">
-            <mat-icon svgIcon="heroicons_outline:arrow-path"
+            <mat-icon
+              svgIcon="heroicons_outline:arrow-path"
               class="mr-1 icon-size-4"></mat-icon>
             Limpiar búsqueda
           </button>
           }
         </div>
         } @else {
-
         <div class="mb-4 space-y-3">
           @for (grupo of gruposPaginados; track trackByGrupo($index, grupo)) {
           <div
             (click)="verRollos(grupo)"
             class="cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800/50">
-
             <div
               class="md:grid md:grid-cols-[2.5rem_1fr_repeat(2,minmax(90px,1fr))_1.5rem] md:items-center md:gap-6 md:px-8 md:py-5">
-
               <!-- icono desktop -->
               <div
                 class="hidden md:flex md:h-8 md:w-8 md:items-center md:justify-center">
-                <mat-icon class="text-primary-500 icon-size-5"
+                <mat-icon
+                  class="text-primary-500 icon-size-5"
                   svgIcon="heroicons_outline:archive-box"></mat-icon>
               </div>
 
@@ -345,7 +388,8 @@
               <div class="flex items-center gap-3 px-4 py-4 md:contents">
                 <div
                   class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent-300/40 md:hidden">
-                  <mat-icon class="text-primary-500 icon-size-5"
+                  <mat-icon
+                    class="text-primary-500 icon-size-5"
                     svgIcon="heroicons_outline:archive-box"></mat-icon>
                 </div>
 
@@ -357,7 +401,8 @@
                     <span
                       class="inline-flex items-center rounded-full bg-gray-200 px-1.5 py-0.5 font-mono text-[11px] font-medium text-primary-500 dark:bg-gray-700">
                       {{ grupo.articulos.length }} artículo{{
-                      grupo.articulos.length === 1 ? '' : 's' }}
+                      grupo.articulos.length === 1 ? '' : 's'
+                      }}
                     </span>
                   </div>
                 </div>
@@ -448,23 +493,17 @@
 
         <!-- ===== VISTA ROLLOS ===== -->
         @if (!cargando && !error && seccion === 'rollos') {
-
         <!-- ===== BUSCADOR + FILTROS (vista rollos) ===== -->
         <div
-          class="hidden md:block mb-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-
+          class="mb-4 hidden rounded-2xl border border-gray-100 bg-white p-4 shadow-sm md:block dark:border-gray-800 dark:bg-gray-900">
           <!-- Buscador + filtros -->
           <div
             class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-
             <!-- Buscador -->
             <mat-form-field
               class="fuse-mat-dense fuse-mat-rounded w-full sm:flex-1"
               [subscriptSizing]="'dynamic'">
-
-              <mat-icon
-                class="icon-size-5"
-                matPrefix
+              <mat-icon class="icon-size-5" matPrefix
                 svgIcon="heroicons_solid:magnifying-glass">
               </mat-icon>
 
@@ -476,16 +515,10 @@
                 placeholder="Buscar por pedido, OP, color…" />
 
               @if (busquedaRollos) {
-              <button
-                matSuffix
-                mat-icon-button
+              <button matSuffix mat-icon-button
                 (click)="busquedaRollos = ''; onBuscarRollos()">
-
-                <mat-icon
-                  class="icon-size-4"
-                  svgIcon="heroicons_outline:x-mark">
-                </mat-icon>
-
+                <mat-icon class="icon-size-4"
+                  svgIcon="heroicons_outline:x-mark"> </mat-icon>
               </button>
               }
             </mat-form-field>
@@ -494,22 +527,17 @@
             <mat-form-field
               class="fuse-mat-dense fuse-mat-rounded w-full sm:w-40"
               [subscriptSizing]="'dynamic'">
-
               <mat-select
                 [(ngModel)]="filtroTipo"
                 (ngModelChange)="onFiltroRollosChange()"
                 placeholder="Primera / Tipo">
-
-                <mat-option [value]="null">
-                  Todos los tipos
-                </mat-option>
+                <mat-option [value]="null"> Todos los tipos </mat-option>
 
                 @for (tipo of tiposDisponibles; track tipo) {
                 <mat-option [value]="tipo">
                   {{ tipo }}
                 </mat-option>
                 }
-
               </mat-select>
             </mat-form-field>
 
@@ -517,22 +545,17 @@
             <mat-form-field
               class="fuse-mat-dense fuse-mat-rounded w-full sm:w-44"
               [subscriptSizing]="'dynamic'">
-
               <mat-select
                 [(ngModel)]="filtroColor"
                 (ngModelChange)="onFiltroRollosChange()"
                 placeholder="Color">
-
-                <mat-option [value]="null">
-                  Todos los colores
-                </mat-option>
+                <mat-option [value]="null"> Todos los colores </mat-option>
 
                 @for (color of coloresDisponibles; track color) {
                 <mat-option [value]="color">
                   {{ color }}
                 </mat-option>
                 }
-
               </mat-select>
             </mat-form-field>
 
@@ -540,22 +563,17 @@
             <mat-form-field
               class="fuse-mat-dense fuse-mat-rounded w-full sm:w-44"
               [subscriptSizing]="'dynamic'">
-
               <mat-select
                 [(ngModel)]="filtroAgente"
                 (ngModelChange)="onFiltroRollosChange()"
                 placeholder="Agente">
-
-                <mat-option [value]="null">
-                  Todos los agentes
-                </mat-option>
+                <mat-option [value]="null"> Todos los agentes </mat-option>
 
                 @for (agente of agentesDisponibles; track agente) {
                 <mat-option [value]="agente">
                   {{ agente }}
                 </mat-option>
                 }
-
               </mat-select>
             </mat-form-field>
 
@@ -563,24 +581,21 @@
             @if (hayFiltrosRollosActivos) {
             <button
               mat-stroked-button
-              class="w-full sm:w-auto shrink-0"
+              class="w-full shrink-0 sm:w-auto"
               (click)="limpiarFiltrosRollos()">
-
-              <mat-icon
-                svgIcon="heroicons_outline:x-mark"
-                class="mr-1 icon-size-4">
-              </mat-icon>
+              <mat-icon svgIcon="heroicons_outline:x-mark"
+                class="mr-1 icon-size-4"> </mat-icon>
 
               Limpiar
             </button>
             }
-
           </div>
         </div>
 
         @if (pedidosFiltrados.length === 0) {
         <div class="flex flex-auto flex-col items-center justify-center py-20">
-          <mat-icon class="text-gray-300 icon-size-24 dark:text-gray-700"
+          <mat-icon
+            class="text-gray-300 icon-size-24 dark:text-gray-700"
             svgIcon="heroicons_outline:cube"></mat-icon>
           <div
             class="mt-6 text-2xl font-semibold tracking-tight text-black dark:text-gray-100">
@@ -597,80 +612,75 @@
           @if (hayFiltrosRollosActivos) {
           <button mat-stroked-button class="mt-4"
             (click)="limpiarFiltrosRollos()">
-            <mat-icon svgIcon="heroicons_outline:arrow-path"
+            <mat-icon
+              svgIcon="heroicons_outline:arrow-path"
               class="mr-1 icon-size-4"></mat-icon>
             Limpiar filtros
           </button>
           } @else {
           <button mat-stroked-button class="mt-4" (click)="volverAGeneral()">
-            <mat-icon svgIcon="heroicons_outline:arrow-left"
+            <mat-icon
+              svgIcon="heroicons_outline:arrow-left"
               class="mr-1 icon-size-4"></mat-icon>
             Volver a inventario
           </button>
           }
         </div>
         } @else {
-
         <div class="mb-4 space-y-3">
           @for (pedidoGrupo of pedidosPaginados; track trackByPedido($index,
           pedidoGrupo)) {
           <div
             class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-
             <!-- Encabezado del pedido (clicable, controla el acordeón) -->
             <button
               type="button"
               (click)="togglePedido(pedidoGrupo)"
-              class="flex w-full flex-col gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:hover:bg-gray-800/40">
+              class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50 sm:px-6 dark:hover:bg-gray-800/40">
               <div
                 class="flex w-full items-center justify-between gap-4 text-black dark:text-white">
-
-                <!-- Bloque izquierdo: icono + Pedido + Agente -->
-                <div class="flex min-w-0 items-center gap-2.5 ">
+                <div class="flex min-w-0 items-center gap-2.5">
                   <div
                     class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-accent-300/40">
-                    <mat-icon class="text-primary-500 icon-size-5"
+                    <mat-icon
+                      class="text-primary-500 icon-size-5"
                       svgIcon="heroicons_outline:clipboard-document-list"></mat-icon>
                   </div>
                   <div class="min-w-0">
-                    <div class="truncate text-base font-bold">
+                    <div class="break-words text-base font-bold">
                       Pedido {{ pedidoGrupo.pedido }}
                     </div>
-                    <div class="truncate text-xs">
-                      {{ pedidoGrupo.agente }}
-                    </div>
+                    <div class="break-words text-xs">{{ pedidoGrupo.agente
+                      }}</div>
                   </div>
                 </div>
 
-                <!-- Bloque derecho: Órdenes / Rollos / Peso neto + chevron -->
                 <div class="flex flex-shrink-0 items-center gap-4">
                   <div class="flex items-center gap-4 text-sm">
-                    <div class="text-center">
-                      <div class="text-xs ">Órdenes</div>
+                    <div class="hidden text-center sm:block">
+                      <div class="text-xs">Órdenes</div>
                       <div class="font-bold text-black dark:text-white">
                         {{ pedidoGrupo.opsCount }}
                       </div>
                     </div>
                     <div class="text-center">
-                      <div class="text-xs ">Rollos</div>
+                      <div class="text-xs">Rollos</div>
                       <div class="font-bold text-black dark:text-white">
                         {{ pedidoGrupo.rollosCount }}
                       </div>
                     </div>
                     <div class="text-center">
-                      <div class="text-xs ">Peso neto</div>
+                      <div class="text-xs">Peso neto</div>
                       <div class="font-bold text-blue-700 dark:text-blue-300">
                         {{ pedidoGrupo.pesoNetoTotal | number: '1.2-2' }} kg
                       </div>
                     </div>
                   </div>
-
                   <mat-icon
                     class="flex-shrink-0 text-black transition-transform duration-200 icon-size-5 dark:text-white"
                     [class.rotate-90]="isPedidoExpandido(pedidoGrupo)"
                     svgIcon="heroicons_outline:chevron-right"></mat-icon>
                 </div>
-
               </div>
             </button>
 
@@ -683,20 +693,22 @@
                 type="button"
                 (click)="verDetalleOp(op)"
                 class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50 sm:px-6 dark:hover:bg-gray-800/50">
-
                 <div class="flex min-w-0 items-center gap-3">
                   <div
                     class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-accent-300/40">
-                    <mat-icon class="text-primary-500 icon-size-4"
+                    <mat-icon
+                      class="text-primary-500 icon-size-4"
                       svgIcon="heroicons_outline:cube"></mat-icon>
                   </div>
                   <div class="min-w-0">
                     <div
-                      class="text-sm font-semibold text-black dark:text-white">OP
-                      {{ op.op }}</div>
+                      class="text-sm font-semibold text-black dark:text-white">
+                      OP {{ op.op }}
+                    </div>
                     <div
-                      class="truncate text-xs text-gray-500 dark:text-gray-400">Partida
-                      {{ op.partida }}</div>
+                      class="truncate text-xs text-gray-500 dark:text-gray-400">
+                      Partida {{ op.partida }}
+                    </div>
                   </div>
                 </div>
 
@@ -714,7 +726,8 @@
                     {{ op.rollosCount }} rollo{{ op.rollosCount === 1 ? '' : 's'
                     }}
                   </span>
-                  <mat-icon class="text-black icon-size-5 dark:text-white"
+                  <mat-icon
+                    class="text-black icon-size-5 dark:text-white"
                     svgIcon="heroicons_outline:chevron-right"></mat-icon>
                 </div>
               </button>
@@ -736,18 +749,13 @@
         </mat-paginator>
         }
         }
-
       </div>
     </div>
   </div>
 </div>
 
-
-
 @if (mostrarModalOp && opSeleccionada) {
-<app-modal-detalle-op
-  [op]="opSeleccionada"
-  (cerrar)="cerrarModalOp()">
+<app-modal-detalle-op [op]="opSeleccionada" (cerrar)="cerrarModalOp()">
 </app-modal-detalle-op>
 }
 
