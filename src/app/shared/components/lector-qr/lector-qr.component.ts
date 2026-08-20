@@ -96,44 +96,61 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
     this.scannerResetTimeout = setTimeout(() => (this.bufferScanner = ''), 300);
   }
 
-  private async iniciarCamara(): Promise<void> {
-    this.estado = 'iniciando';
-    this.mensajeError = null;
+private async iniciarCamara(): Promise<void> {
+  this.estado = 'iniciando';
+  this.mensajeError = null;
 
-    try {
-      const camaras = await Html5Qrcode.getCameras();
+  try {
+    const camaras = await Html5Qrcode.getCameras();
 
-      if (!camaras?.length) {
-        this.estado = 'sin-camara';
-        return;
-      }
-
-      const camaraElegida =
-        camaras.find((c) => /back|trasera|rear/i.test(c.label))?.id ?? camaras[0].id;
-
-      this.lector = new Html5Qrcode(this.lectorId, {
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.QR_CODE,
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-        ],
-        verbose: false,
-      });
-
-await this.lector.start(
-  camaraElegida,
-  { fps: 10 },
-  (texto) => this.emitirLectura(texto),
-  () => { },
-);
-
-      this.estado = 'escaneando';
-    } catch (error) {
-      this.estado = 'error-camara';
-      this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
-      console.error('💥 ERROR_INICIAR_CAMARA_QR', error);
+    if (!camaras?.length) {
+      this.estado = 'sin-camara';
+      return;
     }
+
+    const camaraElegida =
+      camaras.find((c) => /back|trasera|rear/i.test(c.label))?.id ?? camaras[0].id;
+
+    this.lector = new Html5Qrcode(this.lectorId, {
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+      ],
+      verbose: false,
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true,
+      },
+    });
+
+    await this.lector.start(
+      camaraElegida,
+      {
+        fps: 15,
+        videoConstraints: {
+          deviceId: { exact: camaraElegida },
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          advanced: [{ focusMode: 'continuous' } as any],
+        },
+      },
+      (texto) => this.emitirLectura(texto),
+      () => { },
+    );
+
+    this.estado = 'escaneando';
+  } catch (error) {
+    this.estado = 'error-camara';
+    this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
+    console.error('💥 ERROR_INICIAR_CAMARA_QR', error);
   }
+}
 
   private async detenerCamara(): Promise<void> {
     if (!this.lector) return;
