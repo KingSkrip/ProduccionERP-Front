@@ -13,6 +13,8 @@ import { slideUp } from 'app/shared/animations/mobile/slide-up.animation';
 export class ModalRolloDetalleComponent {
   @Input({ required: true }) rollo!: any;
   @Input({ required: true }) campos!: { label: string; key: string }[];
+  @Input() origenTexto = '';
+  @Input() origenClase = '';
   @Output() cerrar = new EventEmitter<void>();
 
   private readonly DISMISS_THRESHOLD = 140;
@@ -29,7 +31,10 @@ export class ModalRolloDetalleComponent {
 
   valorCampo(item: any, key: string): string {
     const val = item?.[key];
+
     if (val === null || val === undefined || val === '') return '—';
+    if (typeof val === 'boolean') return val ? 'Sí' : 'No';
+
     return String(val);
   }
 

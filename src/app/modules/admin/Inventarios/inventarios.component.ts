@@ -581,31 +581,154 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         this.rolloEscaneado = null;
     }
 
-    /** Campos a mostrar en el modal de detalle del rollo escaneado, en orden. */
+
+    private readonly camposComunes: { label: string; key: string }[] = [
+        { label: 'Clave (QR)', key: 'ID_QR' },
+        { label: 'Artículo', key: 'ARTICULO' },
+        { label: 'Cliente', key: 'CLIENTE' },
+        { label: 'Agente', key: 'AGENTE' },
+        { label: 'Pedido', key: 'PEDIDO' },
+        { label: 'OP', key: 'OP' },
+        { label: 'Pedido/Partida', key: 'PEDIDOPART' },
+        { label: 'Color', key: 'COLOR' },
+        { label: 'Cód. color', key: 'COD. COLOR' },
+        { label: 'Fecha', key: 'FECHA' },
+        { label: 'Orden', key: 'ORDEN' },
+        { label: 'Proceso', key: 'PROCESO' },
+    ];
+
+
+
+    private readonly camposAcabado: { label: string; key: string }[] = [
+        { label: 'Clave (QR)', key: 'ID_QR' },
+        { label: 'Cve. artículo', key: 'CVE ART' },
+        ...this.camposComunes.slice(1),
+        { label: 'Tipo', key: 'TIPO' },
+        { label: 'Peso neto', key: 'PESO NETO' },
+        { label: 'Piezas', key: 'PIEZA' },
+        { label: 'Producto', key: 'PRODUCTO' },
+        { label: 'Fecha ingreso', key: 'FECHA ING' },
+        { label: 'Fecha salida', key: 'FECHA SAL' },
+        { label: 'Fecha devolución', key: 'FECHA DEV' },
+        { label: 'Folio PL', key: 'PL' },
+    ];
+
+    /** PESADO-TEJIDO: shape común + datos propios de la pieza tejida (Paso 1). */
+    private readonly camposPesado: { label: string; key: string }[] = [
+        ...this.camposComunes,
+        { label: 'Cve. artículo', key: 'CVE_ART' },
+        { label: 'Nombre artículo', key: 'NOMBRE' },
+        { label: 'Tejido', key: 'TEJIDO' },
+        { label: 'Hilatura', key: 'HILATURA' },
+        { label: 'Máquina', key: 'MAQUINA' },
+        { label: 'Pieza', key: 'PIEZA' },
+        { label: 'Peso tejido', key: 'PESO_TEJIDO' },
+        { label: 'Fecha pesado', key: 'FECHA_PESADO' },
+        { label: 'Cantidad OT', key: 'CANT' },
+        { label: 'Cantidad entregada', key: 'CANTENT' },
+        { label: 'Estatus pesado', key: 'PESADO_ESTATUS' },
+        { label: '¿Pesado completo?', key: 'PESADO_COMPLETO' },
+    ];
+
+    /** REVISADO — proceso normal (aún no surtido ni vendido). */
+    private readonly camposRevisadoProceso: { label: string; key: string }[] = [
+        ...this.camposComunes,
+        { label: 'Peso revisado', key: 'PESO_REVISADO' },
+        { label: 'Fecha revisado', key: 'FECHA_REVISADO' },
+        { label: 'Orden tejido', key: 'ORDEN_TEJIDO' },
+        { label: 'Clasificación', key: 'CLASIFICACION' },
+        { label: 'Máquina', key: 'MAQUINA' },
+        { label: 'Tejido', key: 'TEJIDO' },
+        { label: 'Composición', key: 'COMPOSICION' },
+        { label: 'Tejedor', key: 'TEJEDOR' },
+        { label: 'Revisador', key: 'REVISADOR' },
+    ];
+
+    /** REVISADO — ya tiene orden de surtido asignada (y no está en ACABADO aún). */
+    private readonly camposRevisadoSurtido: { label: string; key: string }[] = [
+        ...this.camposComunes,
+        { label: 'Orden que surte', key: 'ORDEN_SURTE' },
+        { label: 'Peso revisado', key: 'PESO_REVISADO' },
+        { label: 'Fecha revisado', key: 'FECHA_REVISADO' },
+        { label: 'Orden tejido', key: 'ORDEN_TEJIDO' },
+        { label: 'Clasificación', key: 'CLASIFICACION' },
+        { label: 'Máquina', key: 'MAQUINA' },
+        { label: 'Tejido', key: 'TEJIDO' },
+        { label: 'Composición', key: 'COMPOSICION' },
+        { label: 'Tejedor', key: 'TEJEDOR' },
+        { label: 'Revisador', key: 'REVISADOR' },
+    ];
+
+    /** REVISADO — ya se vendió (venta directa). Shape totalmente distinto. */
+    private readonly camposRevisadoVenta: { label: string; key: string }[] = [
+        { label: 'Clave (QR)', key: 'ID_QR' },
+        { label: 'Cve. artículo', key: 'CVE_ART' },
+        { label: 'Piezas', key: 'PIEZA' },
+        { label: 'Peso tejido', key: 'PESO_TJ' },
+        { label: 'Peso salón', key: 'PESO_SL' },
+        { label: 'Almacén', key: 'ALMACEN' },
+        { label: 'Folio inventario', key: 'FOLIO_INVENTARIO' },
+        { label: 'Folio de venta', key: 'FOLIO_VENTA' },
+        { label: '¿Entregado?', key: 'ENTREGADO' },
+        { label: 'Fecha entrega', key: 'FECHA_ENTREGA' },
+        { label: 'Usuario entrega', key: 'USUARIO_ENTREGA' },
+    ];
+
+    /** Elige la lista de campos según en qué proceso/subtipo se encontró el rollo. */
     get camposRollo(): { label: string; key: string }[] {
-        return [
-            { label: 'Clave (QR)', key: 'ID_QR' },
-            { label: 'Cve. artículo', key: 'CVE ART' },
-            { label: 'Artículo', key: 'ARTICULO' },
-            { label: 'Cliente', key: 'CLIENTE' },
-            { label: 'Agente', key: 'AGENTE' },
-            { label: 'Pedido', key: 'PEDIDO' },
-            { label: 'OP', key: 'OP' },
-            { label: 'Pedido/Partida', key: 'PEDIDOPART' },
-            { label: 'Color', key: 'COLOR' },
-            { label: 'Cód. color', key: 'COD. COLOR' },
-            { label: 'Tipo', key: 'TIPO' },
-            { label: 'Peso neto', key: 'PESO NETO' },
-            { label: 'Piezas', key: 'PIEZA' },
-            { label: 'Producto', key: 'PRODUCTO' },
-            { label: 'Proceso', key: 'PROCESO' },
-            { label: 'Fecha', key: 'FECHA' },
-            { label: 'Fecha ingreso', key: 'FECHA ING' },
-            { label: 'Fecha salida', key: 'FECHA SAL' },
-            { label: 'Fecha devolución', key: 'FECHA DEV' },
-            { label: 'Folio PL', key: 'PL' },
-            { label: 'Orden', key: 'ORDEN' },
-        ];
+        const origen = this.rolloEscaneado?.ORIGEN;
+        const subtipo = this.rolloEscaneado?.SUBTIPO;
+
+        if (origen === 'PESADO') {
+            return this.camposPesado;
+        }
+
+        if (origen === 'REVISADO') {
+            if (subtipo === 'VENTA_DIRECTA') return this.camposRevisadoVenta;
+            if (subtipo === 'SURTIDO') return this.camposRevisadoSurtido;
+            return this.camposRevisadoProceso;
+        }
+
+        // ACABADO por defecto
+        return this.camposAcabado;
+    }
+
+    /** Texto y color del badge de origen, para mostrarlo arriba del modal. */
+    get origenBadge(): { texto: string; clase: string } {
+        const origen = this.rolloEscaneado?.ORIGEN;
+        const subtipo = this.rolloEscaneado?.SUBTIPO;
+
+        if (origen === 'PESADO') {
+            return {
+                texto: 'PESADO-TEJIDO',
+                clase: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+            };
+        }
+
+        if (origen === 'REVISADO') {
+            if (subtipo === 'VENTA_DIRECTA') {
+                return {
+                    texto: 'VENDIDO',
+                    clase: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+                };
+            }
+            if (subtipo === 'SURTIDO') {
+                return {
+                    texto: 'CRUDO · SURTIDO',
+                    clase: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                };
+            }
+            return {
+                texto: 'CRUDO',
+                clase: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
+            };
+        }
+
+        // ACABADO por defecto
+        return {
+            texto: 'ACABADO',
+            clase: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+        };
     }
 
     get pedidosCountCliente(): number {

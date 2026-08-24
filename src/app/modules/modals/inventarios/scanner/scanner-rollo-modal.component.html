@@ -29,9 +29,9 @@
           (codigoDetectado)="onScanSuccess($event)">
         </app-lector-qr>
 
-        @if (escaneando) {
+       @if (escaneando) {
         <div
-          class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-red-500">
+          class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black">
           <mat-progress-spinner mode="indeterminate" diameter="36"
             color="accent"></mat-progress-spinner>
           <span class="text-sm font-medium text-white">Buscando rollo…</span>

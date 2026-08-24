@@ -14,7 +14,7 @@ import { ApiResponse } from '../pedidos/pedidos.service';
 export class InventariosService {
     private readonly baseUrl = `${APP_CONFIG.apiUrl}inventario`;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     /**
      * GET /inventario
@@ -36,10 +36,10 @@ export class InventariosService {
             .pipe(map((res) => res.data));
     }
 
-     /**
-     * POST /inventario/escanear
-     * Busca el detalle completo de un rollo a partir del código QR (con ceros a la izquierda).
-     */
+    /**
+    * POST /inventario/escanear
+    * Busca el detalle completo de un rollo a partir del código QR (con ceros a la izquierda).
+    */
     escanearQr(codigo: string): Observable<InventarioItem> {
         return this.http
             .post<ApiResponse<InventarioItem>>(`${this.baseUrl}/escanearinventario`, { codigo })

@@ -12,6 +12,13 @@
           <mat-icon class="text-primary-500 icon-size-5" svgIcon="heroicons_outline:qr-code"></mat-icon>
         </div>
         <div>
+          <div class="mb-1">
+            <span
+              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+              [ngClass]="origenClase">
+              {{ origenTexto }}
+            </span>
+          </div>
           <h2 class="text-lg font-bold text-black dark:text-white">
             Rollo {{ rollo['ID_QR'] || rollo['ID'] }}
           </h2>
@@ -59,6 +66,13 @@
 
       <div class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-4">
         <div>
+          <div class="mb-1">
+            <span
+              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+              [ngClass]="origenClase">
+              {{ origenTexto }}
+            </span>
+          </div>
           <h2 class="text-lg font-semibold text-black dark:text-white">
             Rollo {{ rollo['ID_QR'] || rollo['ID'] }}
           </h2>
