@@ -615,16 +615,18 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /** PESADO-TEJIDO: shape común + datos propios de la pieza tejida (Paso 1). */
     private readonly camposPesado: { label: string; key: string }[] = [
-        ...this.camposComunes,
+        ...this.camposComunes.map((c) =>
+            c.key === 'FECHA' ? { ...c, label: 'Fecha de Orden' } : c
+        ),
         { label: 'Cve. artículo', key: 'CVE_ART' },
         { label: 'Nombre artículo', key: 'NOMBRE' },
         { label: 'Tejido', key: 'TEJIDO' },
         { label: 'Hilatura', key: 'HILATURA' },
         { label: 'Máquina', key: 'MAQUINA' },
-        { label: 'Pieza', key: 'PIEZA' },
+        { label: 'No. de Pieza', key: 'PIEZA' },
         { label: 'Peso tejido', key: 'PESO_TEJIDO' },
         { label: 'Fecha pesado', key: 'FECHA_PESADO' },
-        { label: 'Cantidad OT', key: 'CANT' },
+        { label: 'Cantidad de Solicitud', key: 'CANT' },
         { label: 'Cantidad entregada', key: 'CANTENT' },
         { label: 'Estatus pesado', key: 'PESADO_ESTATUS' },
         { label: '¿Pesado completo?', key: 'PESADO_COMPLETO' },
@@ -645,6 +647,7 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     ];
 
     /** REVISADO — ya tiene orden de surtido asignada (y no está en ACABADO aún). */
+    /** REVISADO — ya tiene orden de surtido asignada (y no está en ACABADO aún). */
     private readonly camposRevisadoSurtido: { label: string; key: string }[] = [
         ...this.camposComunes,
         { label: 'Orden que surte', key: 'ORDEN_SURTE' },
@@ -659,8 +662,23 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         { label: 'Revisador', key: 'REVISADOR' },
     ];
 
-    /** REVISADO — ya se vendió (venta directa). Shape totalmente distinto. */
-    private readonly camposRevisadoVenta: { label: string; key: string }[] = [
+    /** REVISADO — la orden que surte está en Control de Calidad (ORDENESEST = 4). */
+    private readonly camposRevisadoControlCalidad: { label: string; key: string }[] = [
+        ...this.camposComunes,
+        { label: 'Orden que surte', key: 'ORDEN_SURTE' },
+        { label: 'Peso revisado', key: 'PESO_REVISADO' },
+        { label: 'Fecha revisado', key: 'FECHA_REVISADO' },
+        { label: 'Orden tejido', key: 'ORDEN_TEJIDO' },
+        { label: 'Clasificación', key: 'CLASIFICACION' },
+        { label: 'Máquina', key: 'MAQUINA' },
+        { label: 'Tejido', key: 'TEJIDO' },
+        { label: 'Composición', key: 'COMPOSICION' },
+        { label: 'Tejedor', key: 'TEJEDOR' },
+        { label: 'Revisador', key: 'REVISADOR' },
+    ];
+
+    /** REVISADO — sin orden asociada y sin venta directa. */
+    private readonly camposRevisadoSinOrden: { label: string; key: string }[] = [
         { label: 'Clave (QR)', key: 'ID_QR' },
         { label: 'Cve. artículo', key: 'CVE_ART' },
         { label: 'Piezas', key: 'PIEZA' },
@@ -668,10 +686,36 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         { label: 'Peso salón', key: 'PESO_SL' },
         { label: 'Almacén', key: 'ALMACEN' },
         { label: 'Folio inventario', key: 'FOLIO_INVENTARIO' },
+        { label: 'Peso revisado', key: 'PESO_REVISADO' },
+        { label: 'Fecha revisado', key: 'FECHA_REVISADO' },
+        { label: 'Orden tejido', key: 'ORDEN_TEJIDO' },
+        { label: 'Clasificación', key: 'CLASIFICACION' },
+        { label: 'Máquina', key: 'MAQUINA' },
+        { label: 'Artículo', key: 'ARTICULO' },
+        { label: 'Tejido', key: 'TEJIDO' },
+        { label: 'Composición', key: 'COMPOSICION' },
+        { label: 'Tejedor', key: 'TEJEDOR' },
+        { label: 'Revisador', key: 'REVISADOR' },
+    ];
+
+    /** REVISADO — ya se vendió (venta directa). Shape totalmente distinto. */
+    private readonly camposRevisadoVenta: { label: string; key: string }[] = [
+        { label: 'Clave (QR)', key: 'ID_QR' },
+        { label: 'Cve. artículo', key: 'CVE_ART' },
+        { label: 'Piezas', key: 'PIEZA' },
+        { label: 'Peso tejido', key: 'PESO_TJ' },
+        { label: 'Peso salón', key: 'PESO_SL' },
+        { label: 'Peso revisado', key: 'PESO_REVISADO' },
+        { label: 'Orden tejido', key: 'CVE_ORDEN' },
+        { label: 'Orden que surte', key: 'ORDEN_SURTE' },
+        { label: 'Almacén', key: 'ALMACEN' },
+        { label: 'Folio inventario', key: 'FOLIO_INVENTARIO' },
         { label: 'Folio de venta', key: 'FOLIO_VENTA' },
         { label: '¿Entregado?', key: 'ENTREGADO' },
         { label: 'Fecha entrega', key: 'FECHA_ENTREGA' },
         { label: 'Usuario entrega', key: 'USUARIO_ENTREGA' },
+        { label: 'Fecha entrega (venta)', key: 'FECHA_ENTREGA_CDO' },
+        { label: 'Usuario laboratorio', key: 'USELAB' },
     ];
 
     /** Elige la lista de campos según en qué proceso/subtipo se encontró el rollo. */
@@ -686,6 +730,8 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         if (origen === 'REVISADO') {
             if (subtipo === 'VENTA_DIRECTA') return this.camposRevisadoVenta;
             if (subtipo === 'SURTIDO') return this.camposRevisadoSurtido;
+            if (subtipo === 'CONTROL_CALIDAD') return this.camposRevisadoControlCalidad;
+            if (subtipo === 'SIN_ORDEN') return this.camposRevisadoSinOrden;
             return this.camposRevisadoProceso;
         }
 
@@ -718,9 +764,28 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
                     clase: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
                 };
             }
+            if (subtipo === 'CONTROL_CALIDAD') {
+                return {
+                    texto: 'CRUDO · CONTROL DE CALIDAD',
+                    clase: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                };
+            }
+            if (subtipo === 'SIN_ORDEN') {
+                return {
+                    texto: 'CRUDO · SIN ORDEN',
+                    clase: 'bg-gray-200 text-gray-700 dark:bg-gray-700/40 dark:text-gray-300',
+                };
+            }
             return {
                 texto: 'CRUDO',
                 clase: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
+            };
+        }
+
+        if (origen === 'FACTURACION') {
+            return {
+                texto: 'FACTURACIÓN',
+                clase: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
             };
         }
 

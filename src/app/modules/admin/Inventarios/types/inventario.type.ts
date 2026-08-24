@@ -1,8 +1,8 @@
 export interface InventarioItem {
     ID: string;
     ID_QR?: string;
-    ORIGEN?: 'PESADO' | 'REVISADO' | 'ACABADO';
-    SUBTIPO?: 'PROCESO' | 'SURTIDO' | 'VENTA_DIRECTA';
+    ORIGEN?: 'PESADO' | 'REVISADO' | 'ACABADO' | 'FACTURACION';
+    SUBTIPO?: 'PROCESO' | 'SURTIDO' | 'VENTA_DIRECTA' | 'SIN_ORDEN' | 'CONTROL_CALIDAD';
 
     // Campos que SIEMPRE trae el listado general (/inventario) — obligatorios
     'CVE ART': string;
@@ -29,8 +29,13 @@ export interface InventarioItem {
     ORDEN?: string | number;
     OE_ESTATUS?: string | number;
 
-    // Solo REVISADO / SUBTIPO SURTIDO
+    // Solo REVISADO / SUBTIPO SURTIDO o CONTROL_CALIDAD
     ORDEN_SURTE?: string | number;
+
+    // Solo REVISADO — orden con la que se mandó a tejer (todos los subtipos de REVISADO)
+    ORDEN_TEJIDO?: string | number;
+    PESO_REVISADO?: number;
+    CVE_ORDEN?: string | number;
 
     // Solo REVISADO / SUBTIPO VENTA_DIRECTA (vienen de PSDTABPZASTJ)
     CVE_ART?: string | number;
@@ -42,6 +47,10 @@ export interface InventarioItem {
     ENTREGADO?: boolean;
     FECHA_ENTREGA?: string | null;
     USUARIO_ENTREGA?: string | null;
+
+    // Solo REVISADO / SUBTIPO VENTA_DIRECTA — vienen de PTPLISTCDO
+    FECHA_ENTREGA_CDO?: string | null;
+    USELAB?: string | number | null;
 }
 
 export interface InventarioFiltros {
