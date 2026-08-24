@@ -752,12 +752,20 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         if (origen === 'REVISADO') {
-            if (subtipo === 'VENTA_DIRECTA') {
-                return {
-                    texto: 'VENDIDO',
-                    clase: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-                };
-            }
+           if (subtipo === 'VENTA_DIRECTA') {
+    const ordenSurte = this.rolloEscaneado?.ORDEN_SURTE;
+    const sinOrdenSurte =
+        ordenSurte === null ||
+        ordenSurte === undefined ||
+        ordenSurte === 0 ||
+        ordenSurte === '0' ||
+        ordenSurte === '';
+
+    return {
+        texto: sinOrdenSurte ? 'VENTA DIRECTA' : 'VENDIDO',
+        clase: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    };
+}
             if (subtipo === 'SURTIDO') {
                 return {
                     texto: 'CRUDO · SURTIDO',
