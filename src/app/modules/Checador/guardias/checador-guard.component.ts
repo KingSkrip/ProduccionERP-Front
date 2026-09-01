@@ -14,7 +14,7 @@ import {
   GuardiaPermisoHoy,
   GuardiaPuntualidad,
   GuardiaRestriccionEntrada,
-  GuardiaRestriccionSalida, // 👈 importar del service, ya no redeclarar aquí
+  GuardiaRestriccionSalida,
 } from '../checador.service';
 
 type EstadoGuard =
