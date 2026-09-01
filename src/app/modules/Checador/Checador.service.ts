@@ -10,6 +10,64 @@ import { SolicitarPermisoPayload } from './types/Solicitarpermiso.types';
 // ============================================================
 // Tipos
 // ============================================================
+export interface GuardiaPuntualidad {
+  hora_programada: string | null;
+  diferencia_minutos: number;
+  estado: 'sin_turno' | 'retardo' | 'anticipado' | 'a_tiempo';
+  mensaje: string;
+}
+
+export interface GuardiaRestriccionEntrada {
+  bloqueada: boolean;
+  motivo: string;
+}
+
+export interface GuardiaPermisoDisponible {
+  id: number;
+  tipo: string;
+  fecha_inicio?: string | null;
+  fecha_fin?: string | null;
+  estado?: string;
+}
+
+export interface GuardiaPermisoHoy {
+  id: number;
+  tipo: string;
+  estado: 'solicitado' | 'pendiente' | 'aprobado' | 'rechazado' | string;
+  hora_inicio: string | null;
+  hora_fin: string | null;
+}
+
+export interface GuardiaRestriccionSalida {
+  bloqueada: boolean;
+  motivo: string;
+  hora_salida_programada: string | null;
+  minutos_para_poder_salir: number;
+}
+
+export interface GuardiaEstadoActual {
+  ultimo_tipo: string | null;
+  ultima_hora: string | null;
+  siguiente_movimiento_sugerido: string;
+  permiso_disponible: GuardiaPermisoDisponible | null;
+  area?: string | null;
+  jefe?: string | null;
+  jefe_aux?: string | null;
+  puntualidad?: GuardiaPuntualidad | null;
+  flags_extraordinarios?: string[];
+  permisos_hoy?: GuardiaPermisoHoy[];
+  restriccion_salida?: GuardiaRestriccionSalida | null;
+  restriccion_entrada?: GuardiaRestriccionEntrada | null;
+}
+
+export interface GuardiaBusquedaResultado {
+  identity_id: number;
+  nombre: string;
+  foto?: string | null;
+  firebird_empresa: string;
+  numero_credencial: string;
+  estado_actual: GuardiaEstadoActual;
+}
 
 export interface ChecadorUsuarioInfo {
   nombre: string;
@@ -250,5 +308,44 @@ export class ChecadorService {
   /** Limpia el último resultado guardado (ej. al cerrar el overlay de resultado). */
   limpiarUltimoRegistro(): void {
     this.ultimoRegistro$.next(null);
+  }
+
+  userPhoto(photo?: string | null): string {
+    const p = (photo || '').trim();
+    if (!p) return 'assets/images/avatars/default-avatar.png';
+    if (p.startsWith('http://') || p.startsWith('https://')) return p;
+
+    const base = APP_CONFIG.apiBase.replace(/\/$/, '');
+    const path = p.startsWith('/') ? p : `/${p}`;
+    return `${base}${path}`;
+  }
+
+  // ============================================================
+  // Guardia
+  // ============================================================
+
+  buscarGuardias(q: string): Observable<GuardiaBusquedaResultado[]> {
+    const params = new HttpParams().set('q', q);
+
+    return this.http.get<GuardiaBusquedaResultado[]>(`${this.baseUrl}/guardia/buscar`, { params });
+  }
+
+  registrarGuardia(
+    identityId: number,
+    motivoManual: string,
+  ): Observable<ChecadorRegistroResultado> {
+    return this.http
+      .post<{ data: ChecadorRegistroResultado }>(`${this.baseUrl}/guardia/registrar`, {
+        user_firebird_identity_id: identityId,
+        motivo_manual: motivoManual,
+      })
+      .pipe(
+        map((res) => res.data),
+        tap((resultado) => this.ultimoRegistro$.next(resultado)),
+      );
+  }
+
+  estadoGuardia(identityId: number): Observable<GuardiaEstadoActual> {
+    return this.http.get<GuardiaEstadoActual>(`${this.baseUrl}/guardia/estado/${identityId}`);
   }
 }

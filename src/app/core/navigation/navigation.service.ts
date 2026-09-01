@@ -20,6 +20,7 @@ import {
   menuReporteProd_Jefe,
   menuRh,
   menuSabu,
+  menuSecurity,
   menuSuAdmin,
   menuSuAdmin_Admin,
   menuSuAdmin_Direccion,
@@ -246,6 +247,10 @@ export class NavigationService {
 
       case RoleEnum.REGISTRO_ACCESOS:
         navigation = menuAccesos;
+        break;
+
+      case RoleEnum.GUARDIA:
+        navigation = menuSecurity;
         break;
 
       default:

@@ -1,0 +1,532 @@
+<div
+  class="bg-default relative flex w-full flex-col rounded-[20px] p-6 text-black md:h-full dark:text-white"
+>
+  <!-- ============================================================
+     NOTIFICACIONES DE CHECADAS AUTOMÁTICAS (QR). Se apilan en la
+     esquina y no bloquean la pantalla porque pueden llegar dos
+     casi al mismo tiempo (alguien entrando, alguien más saliendo).
+============================================================ -->
+  <div class="pointer-events-none fixed right-4 top-20 z-50 flex w-full max-w-xs flex-col gap-3">
+    <div
+      *ngFor="let n of notificacionesChecada"
+      class="bg-card pointer-events-auto flex animate-[notif-entra_0.3s_ease-out] items-center gap-3 rounded-2xl border px-4 py-3 shadow-lg"
+      [ngClass]="n.color.border + '/40'"
+    >
+      <div class="relative h-12 w-12 shrink-0">
+        <img
+          *ngIf="n.fotoUrl"
+          [src]="n.fotoUrl"
+          [alt]="'Foto de ' + n.nombre"
+          class="h-full w-full rounded-full border-2 object-cover"
+          [ngClass]="n.color.border"
+        />
+        <div
+          *ngIf="!n.fotoUrl"
+          class="bg-default flex h-full w-full items-center justify-center rounded-full border-2 text-sm font-bold"
+          [ngClass]="n.color.border"
+        >
+          {{ n.iniciales }}
+        </div>
+        <div
+          class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-white"
+          [ngClass]="n.color.bg"
+        >
+          <mat-icon class="!h-3 !w-3" [svgIcon]="n.icono"></mat-icon>
+        </div>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold text-black dark:text-white">{{ n.nombre }}</p>
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-bold" [ngClass]="n.color.text">{{ n.etiqueta }}</span>
+          <span class="text-xs text-black/50 dark:text-white/50">· {{ n.hora }}</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        (click)="cerrarNotificacion(n.id)"
+        class="text-black/40 hover:text-black dark:text-white/40 dark:hover:text-white"
+      >
+        <mat-icon class="!h-4 !w-4" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       BUSCADOR
+  ============================================================ -->
+  <div class="bg-card flex items-center gap-3 rounded-2xl px-4 py-3">
+    <mat-icon
+      class="text-primary-500 dark:text-accent-500"
+      [svgIcon]="'heroicons_outline:magnifying-glass'"
+    ></mat-icon>
+    <input
+      type="text"
+      [ngModel]="termino"
+      (ngModelChange)="onTerminoChange($event)"
+      placeholder="Busca por nombre o clave…"
+      class="w-full bg-transparent text-base outline-none placeholder:text-black/40 dark:text-white dark:placeholder:text-white/40"
+      autofocus
+    />
+    <button
+      *ngIf="termino"
+      type="button"
+      (click)="nuevaBusqueda()"
+      class="text-xs text-primary-500 hover:text-slate-300 dark:text-accent-500"
+    >
+      Limpiar
+    </button>
+  </div>
+
+  <!-- Mensajes cortos de ayuda / sin resultados: ya no tapan toda la pantalla -->
+
+  <div
+    *ngIf="estado === 'sin-resultados'"
+    class="mt-4 flex flex-1 flex-col items-center justify-center gap-3 text-center"
+  >
+    <mat-icon
+      class="!h-12 !w-12 text-primary-500 dark:text-accent-500"
+      [svgIcon]="'heroicons_outline:magnifying-glass-circle'"
+    ></mat-icon>
+    <div class="text-base text-black dark:text-white">
+      <p>No se encontró a nadie con "{{ termino }}"</p>
+      <p class="mt-1 text-sm opacity-50">Verifica que ya tenga su identidad dada de alta.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       LISTA DE RESULTADOS
+  ============================================================ -->
+  <div *ngIf="estado === 'resultados'" class="mt-4 flex flex-1 flex-col gap-2">
+    <button
+      *ngFor="let persona of resultados"
+      type="button"
+      (click)="seleccionar(persona)"
+      class="bg-card flex items-center justify-between rounded-2xl px-4 py-3 text-left"
+    >
+      <div>
+        <p class="text-primary dark:text-accent">{{ persona.nombre }}</p>
+        <p class="text-sm text-black dark:text-white">
+          Credencial: {{ persona.numero_credencial || '—' }}
+        </p>
+      </div>
+      <div class="text-right text-xs">
+        <p
+          class="hidden text-black md:block dark:text-white"
+          *ngIf="persona.estado_actual?.ultima_hora"
+        >
+          Último movimiento: {{ persona.estado_actual.ultimo_tipo }} ·
+          {{ persona.estado_actual.ultima_hora }}
+        </p>
+        <p class="text-black dark:text-white" *ngIf="!persona.estado_actual?.ultima_hora">
+          Sin registros hoy
+        </p>
+
+        <p
+          *ngIf="persona.estado_actual?.permiso_disponible"
+          class="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 font-semibold text-amber-500"
+        >
+          <mat-icon class="!h-3.5 !w-3.5" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+          {{ persona.estado_actual.permiso_disponible.tipo }}
+        </p>
+      </div>
+    </button>
+  </div>
+
+  <div
+    *ngIf="
+      estado !== 'resultados' &&
+      estado !== 'sin-resultados' &&
+      estado !== 'procesando' &&
+      estado !== 'error' &&
+      estado !== 'resultado'
+    "
+    class="mt-4 flex flex-1 flex-col gap-4"
+  >
+    <div class="grid flex-1 grid-cols-1 gap-3 lg:grid-cols-[0.6fr_1.5fr] lg:grid-rows-[auto_1fr]">
+      <!-- Tarjeta 1: identidad (col 1 / fila 1) -->
+      <div
+        class="bg-card flex flex-col items-center gap-2 rounded-2xl px-4 py-4 text-center lg:col-start-1 lg:row-start-1"
+      >
+        <ng-container *ngIf="personaSeleccionada as p; else identidadVacia">
+          <div class="relative h-20 w-20 shrink-0">
+            <img
+              *ngIf="fotoPersonaSeleccionada"
+              [src]="fotoPersonaSeleccionada"
+              [alt]="'Foto de ' + p.nombre"
+              class="h-full w-full rounded-full object-cover ring-2 ring-primary-500 dark:ring-accent-500"
+            />
+            <div
+              *ngIf="!fotoPersonaSeleccionada"
+              class="bg-default flex h-full w-full items-center justify-center rounded-full text-xl font-bold ring-2 ring-primary-500"
+            >
+              {{ inicialesSeleccionado }}
+            </div>
+          </div>
+          <h2 class="text-lg font-bold">{{ p.nombre }}</h2>
+          <p class="text-xs text-black/50 dark:text-white/50">
+            Credencial: {{ p.numero_credencial || '—' }}
+          </p>
+
+          <!-- Datos horizontales, se acomodan solos según cuántos haya -->
+          <div
+            class="mt-2 flex w-full flex-wrap items-start justify-center gap-x-6 gap-y-3 text-left"
+          >
+            <div *ngIf="areaSeleccionado" class="flex items-center gap-2">
+              <mat-icon
+                class="!h-4 !w-4 shrink-0 text-primary-500 dark:text-accent-500"
+                [svgIcon]="'heroicons_outline:building-office-2'"
+              ></mat-icon>
+              <div class="min-w-0 text-sm">
+                <p class="font-semibold tracking-wider text-black dark:text-white">Área</p>
+                <p class="truncate">{{ areaSeleccionado }}</p>
+              </div>
+            </div>
+
+            <div *ngIf="jefeSeleccionado" class="flex items-center gap-2">
+              <mat-icon
+                class="!h-4 !w-4 shrink-0 text-primary-500 dark:text-accent-500"
+                [svgIcon]="'heroicons_outline:user'"
+              ></mat-icon>
+              <div class="min-w-0 text-sm">
+                <p class="font-semibold tracking-wider text-black dark:text-white">Jefe</p>
+                <p class="truncate">{{ jefeSeleccionado }}</p>
+              </div>
+            </div>
+
+            <div *ngIf="jefeAuxSeleccionado" class="flex items-center gap-2">
+              <mat-icon
+                class="!h-4 !w-4 shrink-0 text-primary-500 dark:text-accent-500"
+                [svgIcon]="'heroicons_outline:user-plus'"
+              ></mat-icon>
+              <div class="min-w-0 text-sm">
+                <p class="font-semibold tracking-wider text-black dark:text-white">Jefe auxiliar</p>
+                <p class="truncate">{{ jefeAuxSeleccionado }}</p>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #identidadVacia>
+          <div
+            class="bg-default flex h-20 w-20 shrink-0 items-center justify-center rounded-full ring-2 ring-primary-500 dark:ring-accent-500"
+          >
+            <mat-icon
+              class="!h-8 !w-8 text-primary-500 dark:text-accent-500"
+              [svgIcon]="'heroicons_outline:user'"
+            ></mat-icon>
+          </div>
+          <h2 class="text-lg font-bold text-black dark:text-white">Sin persona seleccionada</h2>
+          <p class="text-xs text-black dark:text-white">Busca arriba a quien quieras checar</p>
+        </ng-template>
+      </div>
+
+      <!-- Tarjeta 2: estado de la jornada (col 1 / fila 2) -->
+      <div class="bg-card flex flex-col rounded-2xl px-4 py-4 lg:col-start-1 lg:row-start-2">
+        <div class="flex items-center gap-3 text-base text-black dark:text-white">
+          <div>
+            <p class="font-bold">Estado de la jornada</p>
+            <p class="text-sm">Información actual</p>
+          </div>
+        </div>
+
+        <ng-container *ngIf="personaSeleccionada; else jornadaVacia">
+          <div
+            *ngIf="puntualidadSeleccionado"
+            class="bg-default mt-2 flex items-center gap-4 rounded-xl p-2"
+          >
+            <div class="h-4 w-4 shrink-0 rounded-full" [ngClass]="puntualidadColor.bg"></div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-black dark:text-white">Puntualidad</p>
+              <p class="text-sm">{{ puntualidadSeleccionado.mensaje }}</p>
+            </div>
+            <mat-icon
+              class="!h-5 !w-5"
+              [ngClass]="puntualidadColor.text"
+              [svgIcon]="'heroicons_outline:check-circle'"
+            ></mat-icon>
+          </div>
+
+          <div *ngIf="flagsSeleccionado.length" class="mt-auto pt-5">
+            <p class="text-sm text-black dark:text-white">Acciones permitidas</p>
+            <div class="mt-2 space-y-1">
+              <div
+                *ngFor="let flag of flagsSeleccionado"
+                class="flex items-center gap-2 text-xs text-primary-500 dark:text-accent-500"
+              >
+                <span class="h-1.5 w-1.5 rounded-full bg-primary-500 dark:bg-accent-500"></span>
+                {{ flag }}
+              </div>
+            </div>
+          </div>
+
+          <p
+            *ngIf="sinInfoJornada"
+            class="flex flex-1 items-center justify-center text-sm text-black/40 dark:text-white/40"
+          >
+            Sin información adicional registrada para hoy.
+          </p>
+        </ng-container>
+
+        <ng-template #jornadaVacia>
+          <p class="flex flex-1 items-center justify-center text-sm text-black dark:text-white">
+            Aquí verás su puntualidad y excepciones autorizadas.
+          </p>
+        </ng-template>
+      </div>
+
+      <!-- Tarjeta: acción (col 2 / fila 1) -->
+      <div class="bg-card flex flex-col gap-5 rounded-2xl px-6 py-6 lg:col-start-2 lg:row-start-1">
+        <ng-container *ngIf="personaSeleccionada; else accionVacia">
+          <div
+            class="flex items-center justify-between rounded-xl px-4 py-3"
+            [ngClass]="colorMovimiento.bg + '/10'"
+          >
+            <div class="flex items-center gap-2.5">
+              <mat-icon
+                class="!h-5 !w-5"
+                [ngClass]="colorMovimiento.text"
+                [svgIcon]="iconoMovimiento"
+              ></mat-icon>
+              <span class="text-sm font-medium text-black dark:text-white"
+                >Movimiento a registrar</span
+              >
+            </div>
+            <span class="text-base font-bold" [ngClass]="colorMovimiento.text">
+              {{ etiquetaMovimientoSugerido }}
+            </span>
+          </div>
+
+          <!-- Bloqueo de salida: arriba, antes del motivo, para que se vea de inmediato -->
+          <div
+            *ngIf="restriccionSalida"
+            class="flex items-start gap-3 rounded-xl bg-red-500/10 px-4 py-3"
+          >
+            <mat-icon
+              class="!h-5 !w-5 shrink-0 text-red-500"
+              [svgIcon]="'heroicons_outline:exclamation-triangle'"
+            ></mat-icon>
+            <div class="text-sm">
+              <p class="font-semibold text-red-500">No puede salir todavía</p>
+              <p class="text-black dark:text-white">{{ restriccionSalida.motivo }}</p>
+              <p
+                *ngIf="restriccionSalida.hora_salida_programada"
+                class="mt-0.5 text-xs text-black dark:text-white"
+              >
+                Podrá salir sin permiso a partir de las
+                {{ restriccionSalida.hora_salida_programada }} (o antes, con un permiso autorizado).
+              </p>
+            </div>
+          </div>
+
+          <div
+            *ngIf="restriccionEntrada"
+            class="flex items-start gap-3 rounded-xl bg-red-500/10 px-4 py-3"
+          >
+            <mat-icon
+              class="!h-5 !w-5 shrink-0 text-red-500"
+              [svgIcon]="'heroicons_outline:exclamation-triangle'"
+            ></mat-icon>
+            <div class="text-sm">
+              <p class="font-semibold text-red-500">No puede volver a entrar</p>
+              <p class="text-black dark:text-white">{{ restriccionEntrada.motivo }}</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs uppercase tracking-wider text-black dark:text-white">
+              Motivo del registro manual
+            </label>
+            <select
+              [(ngModel)]="motivoSeleccionado"
+              [disabled]="!!restriccionSalida || !!restriccionEntrada"
+              class="bg-default rounded-xl px-3 py-2 text-sm outline-none disabled:opacity-40"
+            >
+              <option *ngFor="let m of motivos" [value]="m">{{ m }}</option>
+            </select>
+
+            <input
+              *ngIf="motivoSeleccionado === 'Otro'"
+              type="text"
+              [(ngModel)]="motivoOtro"
+              placeholder="Especifica el motivo…"
+              class="bg-default mt-1 rounded-xl px-3 py-2 text-sm outline-none"
+            />
+          </div>
+
+          <p *ngIf="mensajeError" class="text-sm text-red-400">{{ mensajeError }}</p>
+
+          <div class="flex gap-2">
+            <button
+              type="button"
+              (click)="cancelarSeleccion()"
+              class="bg-default flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="registrar()"
+              [disabled]="!!restriccionSalida || !!restriccionEntrada"
+              class="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-40 dark:text-black"
+              [ngClass]="colorMovimiento.bg"
+            >
+              Registrar {{ etiquetaMovimientoSugerido }}
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #accionVacia>
+          <div class="flex flex-col items-center justify-center gap-2 py-8 text-center">
+            <mat-icon
+              class="!h-8 !w-8 text-primary-500 dark:text-accent-500"
+              [svgIcon]="'heroicons_outline:finger-print'"
+            ></mat-icon>
+            <p class="text-sm text-black dark:text-white">
+              Selecciona a alguien para registrar su entrada, salida o permiso.
+            </p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Tarjeta: permisos (col 2 / fila 2) -->
+      <div class="bg-card flex flex-col gap-3 rounded-2xl px-6 py-5 lg:col-start-2 lg:row-start-2">
+        <div class="flex items-center gap-2">
+          <mat-icon
+            class="!h-5 !w-5 text-primary-500 dark:text-accent-500"
+            [svgIcon]="'heroicons_outline:document-check'"
+          ></mat-icon>
+          <p class="font-bold">Permisos</p>
+        </div>
+
+        <ng-container *ngIf="personaSeleccionada; else permisosVacio">
+          <div class="flex flex-col gap-2">
+            <div
+              *ngIf="permisoDisponible"
+              class="flex items-center justify-between rounded-xl bg-amber-500/10 px-4 py-3"
+            >
+              <div class="flex items-center gap-2">
+                <mat-icon
+                  class="!h-4 !w-4 text-amber-500"
+                  [svgIcon]="'heroicons_outline:clock'"
+                ></mat-icon>
+                <p class="text-sm font-semibold text-amber-500">{{ permisoDisponible.tipo }}</p>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-amber-500">
+                Activo ahora
+              </span>
+            </div>
+
+            <div
+              *ngFor="let permiso of permisosHoySeleccionado"
+              class="flex items-center justify-between rounded-xl px-4 py-2.5"
+              [ngClass]="colorPermiso(permiso.estado).bg"
+            >
+              <div>
+                <p class="text-sm" [ngClass]="colorPermiso(permiso.estado).text">
+                  {{ permiso.tipo }}
+                </p>
+                <p *ngIf="permiso.hora_inicio" class="text-xs text-black dark:text-white">
+                  {{ permiso.hora_inicio
+                  }}<ng-container *ngIf="permiso.hora_fin"> – {{ permiso.hora_fin }}</ng-container>
+                </p>
+              </div>
+              <span class="text-xs font-semibold" [ngClass]="colorPermiso(permiso.estado).text">
+                {{ etiquetaEstadoPermiso(permiso.estado) }}
+              </span>
+            </div>
+          </div>
+
+          <p
+            *ngIf="sinPermisosHoy"
+            class="flex flex-1 items-center justify-center text-sm text-black/40 dark:text-white/40"
+          >
+            Sin permisos registrados hoy.
+          </p>
+        </ng-container>
+
+        <ng-template #permisosVacio>
+          <p
+            class="flex flex-1 items-center justify-center text-center text-sm text-black dark:text-white"
+          >
+            Aquí verás los permisos del día de la persona que selecciones.
+          </p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PROCESANDO
+  ============================================================ -->
+  <div
+    *ngIf="estado === 'procesando'"
+    class="flex flex-1 flex-col items-center justify-center gap-3"
+  >
+    <span class="h-6 w-6 animate-spin rounded-full border-2 border-white/25 border-t-white"></span>
+    <p class="text-sm">Registrando…</p>
+  </div>
+
+  <!-- ============================================================
+       ERROR
+  ============================================================ -->
+  <div
+    *ngIf="estado === 'error'"
+    class="flex flex-1 flex-col items-center justify-center gap-3 text-center"
+  >
+    <div
+      class="flex h-12 w-12 items-center justify-center rounded-full bg-red-500 text-2xl font-extrabold text-white"
+    >
+      !
+    </div>
+    <p class="font-semibold">{{ mensajeError }}</p>
+    <button type="button" (click)="nuevaBusqueda()" class="text-xs underline underline-offset-2">
+      Volver a buscar
+    </button>
+  </div>
+
+  <!-- ============================================================
+       OVERLAY DE RESULTADO
+  ============================================================ -->
+<div
+  *ngIf="estado === 'resultado' && resultadoRegistro as r"
+  class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-[2px] z-50"
+>
+    <div
+      class="bg-card flex min-w-[280px] max-w-[90vw] flex-col items-center gap-1.5 rounded-3xl border border-primary-500 px-8 py-9 text-center"
+    >
+      <div class="relative mb-3.5 h-24 w-24">
+        <img
+          *ngIf="usuarioFotoUrl"
+          [src]="usuarioFotoUrl"
+          [alt]="'Foto de ' + nombreEmpleado"
+          class="h-full w-full rounded-full border-[3px] border-primary-500 object-cover"
+        />
+        <div
+          *ngIf="!usuarioFotoUrl"
+          class="bg-default flex h-full w-full items-center justify-center rounded-full border-[3px] border-primary-500 text-2xl font-bold"
+        >
+          {{ iniciales }}
+        </div>
+      </div>
+
+      <span
+        class="rounded-full bg-primary-500 px-3.5 py-1 text-xs uppercase tracking-wider text-white"
+      >
+        Registro manual{{ permisoRegistradoNombre ? ' · ' + permisoRegistradoNombre : '' }}
+      </span>
+
+      <h2 class="mt-2.5 text-xl font-bold">{{ nombreEmpleado }}</h2>
+      <p class="text-sm text-black dark:text-white">{{ r.tipo }} · {{ r.hora }}</p>
+
+      <button
+        type="button"
+        (click)="nuevaBusqueda()"
+        class="mt-4 rounded-xl bg-primary-500 px-5 py-2 text-sm font-semibold text-white"
+      >
+        Registrar a otra persona
+      </button>
+    </div>
+  </div>
+</div>

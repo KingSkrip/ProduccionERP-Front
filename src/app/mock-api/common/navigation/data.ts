@@ -5040,3 +5040,23 @@ export const menuAccesos: FuseNavigationItem[] = [
     link: '/apps/ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
   },
 ];
+
+
+export const menuSecurity: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
+    title: 'Checador',
+    tooltip: 'Checador',
+    type: 'basic',
+    icon: 'heroicons_outline:finger-print',
+    link: '/apps/ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
+  },
+];
+

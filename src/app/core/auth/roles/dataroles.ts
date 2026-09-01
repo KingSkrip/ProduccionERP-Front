@@ -11,6 +11,7 @@ export const Roles = {
   7: 'AGENTE',
   8: 'PROVEDORES',
   9: 'REGISTRO_ACCESOS',
+    10: 'GUARDIA',
 };
 
 export enum RoleEnum {
@@ -23,6 +24,7 @@ export enum RoleEnum {
   AGENTE = 7,
   PROVEDORES = 8,
   REGISTRO_ACCESOS = 9,
+  GUARDIA = 10
 }
 
 // Subroles

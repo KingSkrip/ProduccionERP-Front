@@ -17,6 +17,7 @@ import {
   menuReporteProd_Jefe,
   menuRh,
   menuSabu,
+  menuSecurity,
   menuSuAdmin,
   menuSuAdmin_Admin,
   menuSuAdmin_Direccion,
@@ -220,9 +221,14 @@ export class AppNavigationStoreService {
         navigation = menuAgentes;
         break;
 
-              case RoleEnum.REGISTRO_ACCESOS:
-                navigation = menuAccesos;
-                break;
+      case RoleEnum.REGISTRO_ACCESOS:
+        navigation = menuAccesos;
+        break;
+
+      case RoleEnum.GUARDIA:
+        navigation = menuSecurity;
+        break;
+        
       default:
         navigation = [];
         break;
