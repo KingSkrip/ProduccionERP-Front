@@ -4125,6 +4125,14 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
     icon: 'heroicons_outline:clipboard-document-check',
     link: '/apps/colaborador/Permisos',
   },
+      {
+    id: 'inventarios',
+    title: 'Inventarios',
+    tooltip: 'Inventarios',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-list',
+    link: '/apps/Inventarios',
+  },
   //{
   //   id: 'colaborador.scan',
   //   title: 'Escaner',
@@ -4147,7 +4155,6 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
       },
     ],
   },
-  //1234567890
   {
     id: 'cruds',
     title: 'Colaboradores',
@@ -4800,7 +4807,7 @@ export const menuJaime: FuseNavigationItem[] = [
     icon: 'heroicons_outline:shopping-bag',
     link: '/apps/PedidosCl1',
   },
-    {
+  {
     id: 'inventarios',
     title: 'Inventarios',
     tooltip: 'Inventarios',
@@ -5041,7 +5048,6 @@ export const menuAccesos: FuseNavigationItem[] = [
   },
 ];
 
-
 export const menuSecurity: FuseNavigationItem[] = [
   {
     id: 'dashboards.inicio',
@@ -5059,4 +5065,3 @@ export const menuSecurity: FuseNavigationItem[] = [
     link: '/apps/ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
   },
 ];
-

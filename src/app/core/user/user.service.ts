@@ -77,20 +77,37 @@ export class UserService {
   /**
    * Update user status (online / away / etc)
    */
-  updateUserStatus(status: string): void {
-    this._httpClient.post(`${this.apiUrl}dash/update-status`, { status }).subscribe({
-      next: (resp: any) => {
-        this._user.next(resp.user);
-      },
-      error: (err) => {
-        console.error('[UserService] Error al actualizar status:', err);
-      },
-    });
-  }
+updateUserStatus(status: string): void {
+    this._httpClient
+        .post(`${this.apiUrl}dash/update-status`, { status })
+        .subscribe({
+            next: (resp: any) => {
+                this._user.next(resp.user);
+            },
+            error: (err) => {
+                console.error(
+                    '[UserService] Error al actualizar status:',
+                    err
+                );
+            },
+        });
+}
 
-  openProfileDrawer(): void {
+/**
+ * Refresca el token QR del usuario
+ */
+refreshQr(): Observable<{ token: string }> {
+    return this._httpClient.post<{ token: string }>(
+        `${this.apiUrl}dash/qr/refresh`,
+        {}
+    );
+}
+
+openProfileDrawer(): void {
     this._openProfileDrawer.next();
-  }
+}
+
+
 
   /**
    * Actualiza el usuario haciendo merge con los datos existentes
@@ -150,4 +167,7 @@ export class UserService {
 
     return normalized;
   }
+
+
+  
 }

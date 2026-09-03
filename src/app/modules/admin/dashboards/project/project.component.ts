@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostListener,
   OnDestroy,
   OnInit,
   ViewEncapsulation,
@@ -57,7 +58,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
   incrementoPedidos = 0;
   ordenesPendientes = 0;
   fechaCorte = '';
- showQrModal = false;
+  showQrModal = false;
+  private _qrRefreshInterval: any = null;
+  liveQrToken = '';
+  // 🔒 Solo control de visibilidad, el token sigue siendo el mismo (qr.token del backend)
+  qrVisible = true;
 
   constructor(
     private _userService: UserService,
@@ -78,6 +83,50 @@ export class ProjectComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this._unsubscribeAll.next(null);
     this._unsubscribeAll.complete();
+    this._stopQrRefresh();
+  }
+
+  // -----------------------------------------------------------------------------------------------------
+  // 🔒 Ocultar QR ante posible captura/grabación (pérdida de foco de la app)
+  // -----------------------------------------------------------------------------------------------------
+
+  @HostListener('document:visibilitychange')
+  onVisibilityChange(): void {
+    if (document.hidden) {
+      this._hideQr();
+    } else {
+      setTimeout(() => this._showQr(), 300);
+    }
+  }
+
+  @HostListener('window:blur')
+  onWindowBlur(): void {
+    this._hideQr();
+  }
+
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    setTimeout(() => this._showQr(), 300);
+  }
+
+  // Solo aplica en desktop, en móvil no hay evento de teclado para captura
+  @HostListener('document:keyup', ['$event'])
+  onKeyUp(event: KeyboardEvent): void {
+    if (event.key === 'PrintScreen') {
+      this._hideQr();
+      setTimeout(() => this._showQr(), 1500);
+    }
+  }
+
+  private _hideQr(): void {
+    this.qrVisible = false;
+    this._cdr.markForCheck();
+  }
+
+  private _showQr(): void {
+    if (!this.showQrModal) return;
+    this.qrVisible = true;
+    this._cdr.markForCheck();
   }
 
   get photoUrl(): string {
@@ -90,9 +139,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
     return `${base}${photo}?v=${this._photoVersion}`;
   }
 
-  /**
-   * APARIENCIA POR ROL
-   */
   get isJefeOrSuadmin(): boolean {
     return (
       this.userRole === RoleEnum.SUADMIN &&
@@ -110,16 +156,43 @@ export class ProjectComponent implements OnInit, OnDestroy {
   get isAllUsers(): boolean {
     return !this.isJefeOrSuadmin && !this.isCliente;
   }
-
-
-    // 🔥 Nuevo: abrir/cerrar modal QR
   openQrModal(): void {
     this.showQrModal = true;
+    this.qrVisible = true;
+    this._startQrRefresh();
     this._cdr.markForCheck();
   }
 
   closeQrModal(): void {
     this.showQrModal = false;
+    this._stopQrRefresh();
     this._cdr.markForCheck();
+  }
+
+  private _startQrRefresh(): void {
+    this._stopQrRefresh();
+
+    this._fetchFreshQr();
+
+    this._qrRefreshInterval = setInterval(() => this._fetchFreshQr(), 20000);
+  }
+
+  private _stopQrRefresh(): void {
+    if (this._qrRefreshInterval) {
+      clearInterval(this._qrRefreshInterval);
+      this._qrRefreshInterval = null;
+    }
+  }
+
+  private _fetchFreshQr(): void {
+    this._userService.refreshQr().subscribe({
+      next: (resp) => {
+        this.liveQrToken = resp.token;
+        this._cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('[QR] Error al refrescar:', err);
+      },
+    });
   }
 }
