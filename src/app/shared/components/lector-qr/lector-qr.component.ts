@@ -31,11 +31,17 @@ let wasmConfigurado = false;
 function asegurarWasmConfigurado(): void {
   if (wasmConfigurado) return;
   wasmConfigurado = true;
+  console.log('🧩 [QR] Configurando módulo zxing-wasm...');
   prepareZXingModule({
     overrides: {
-      locateFile: (path: string) => `https://cdn.jsdelivr.net/npm/zxing-wasm@2/dist/reader/${path}`,
+      locateFile: (path: string) => {
+        const url = `https://cdn.jsdelivr.net/npm/zxing-wasm@2/dist/reader/${path}`;
+        console.log('🧩 [QR] zxing-wasm pidiendo archivo:', path, '→', url);
+        return url;
+      },
     },
   });
+  console.log('✅ [QR] prepareZXingModule() configurado (la carga real del wasm ocurre en el primer readBarcodes).');
 }
 
 const READER_OPTIONS: ReaderOptions = {
@@ -223,35 +229,41 @@ private async iniciarCamara(): Promise<void> {
     this.loopHandle = setTimeout(paso, this.INTERVALO_DECODE_MS);
   }
 
-  private async intentarDecodificarFrame(): Promise<void> {
-    const video = this.videoRef.nativeElement;
-    const canvas = this.canvasRef.nativeElement;
+private async intentarDecodificarFrame(): Promise<void> {
+  const video = this.videoRef.nativeElement;
+  const canvas = this.canvasRef.nativeElement;
 
-    if (!video.videoWidth || !video.videoHeight) return;
-
-    // Recortamos al centro (equivalente al "qrbox" de antes) para no gastar
-    // CPU decodificando toda la imagen y enfocar donde el usuario apunta.
-    const tam = Math.min(video.videoWidth, video.videoHeight) * 0.6;
-    const sx = (video.videoWidth - tam) / 2;
-    const sy = (video.videoHeight - tam) / 2;
-
-    canvas.width = tam;
-    canvas.height = tam;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
-
-    ctx.drawImage(video, sx, sy, tam, tam, 0, 0, tam, tam);
-    const imageData = ctx.getImageData(0, 0, tam, tam);
-
-    try {
-      const resultados = await readBarcodes(imageData, READER_OPTIONS);
-      if (resultados.length > 0 && resultados[0].text) {
-        this.emitirLectura(resultados[0].text);
-      }
-    } catch (e) {
-      // Frame sin código legible — normal, no es un error real.
-    }
+  if (!video.videoWidth || !video.videoHeight) {
+    console.log('⏭️ [QR] Frame saltado — video sin dimensiones aún.');
+    return;
   }
+
+  const tam = Math.min(video.videoWidth, video.videoHeight) * 0.6;
+  const sx = (video.videoWidth - tam) / 2;
+  const sy = (video.videoHeight - tam) / 2;
+
+  canvas.width = tam;
+  canvas.height = tam;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) {
+    console.warn('⚠️ [QR] No se pudo obtener contexto 2d del canvas.');
+    return;
+  }
+
+  ctx.drawImage(video, sx, sy, tam, tam, 0, 0, tam, tam);
+  const imageData = ctx.getImageData(0, 0, tam, tam);
+
+  try {
+    const resultados = await readBarcodes(imageData, READER_OPTIONS);
+    console.log('🔍 [QR] Frame decodificado, resultados:', resultados.length, resultados);
+    if (resultados.length > 0 && resultados[0].text) {
+      console.log('🎯 [QR] ¡DETECTADO!', resultados[0].text);
+      this.emitirLectura(resultados[0].text);
+    }
+  } catch (e) {
+    console.error('💥 [QR] ERROR REAL EN readBarcodes (antes se tragaba silenciosamente):', e);
+  }
+}
 
   private detenerCamara(): void {
     if (this.loopHandle) {
