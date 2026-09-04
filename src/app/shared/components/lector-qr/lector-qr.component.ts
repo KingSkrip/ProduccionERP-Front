@@ -129,70 +129,82 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
     this.scannerResetTimeout = setTimeout(() => (this.bufferScanner = ''), 300);
   }
 
-  private async iniciarCamara(): Promise<void> {
-    this.estado = 'iniciando';
-    this.mensajeError = null;
-    this.detenerCamara();
+private async iniciarCamara(): Promise<void> {
+  this.estado = 'iniciando';
+  this.mensajeError = null;
+  this.detenerCamara();
 
-    try {
-      // Pedimos permiso primero con constraints genéricas: en PC no existe
-      // "environment", así que usamos 'ideal' (no 'exact') para que nunca
-      // truene por falta de cámara trasera en laptops/desktops.
-      const stream = await navigator.mediaDevices.getUserMedia({
+  try {
+    console.log('🎥 [QR] Paso 1: pidiendo getUserMedia inicial...');
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+      audio: false,
+    });
+    console.log('✅ [QR] Paso 1 OK — stream inicial obtenido:', stream);
+
+    console.log('🎥 [QR] Paso 2: enumerando dispositivos...');
+    const dispositivos = await navigator.mediaDevices.enumerateDevices();
+    const camaras = dispositivos.filter((d) => d.kind === 'videoinput');
+    console.log('✅ [QR] Paso 2 OK — cámaras encontradas:', camaras);
+
+    const traseraPreferida = camaras.find((c) => /back|trasera|rear|environment/i.test(c.label));
+    console.log('ℹ️ [QR] Trasera preferida (por label):', traseraPreferida);
+
+    const deviceIdActual = stream.getVideoTracks()[0]?.getSettings().deviceId;
+    console.log('ℹ️ [QR] deviceId actual del stream:', deviceIdActual);
+
+    if (traseraPreferida && deviceIdActual !== traseraPreferida.deviceId) {
+      console.log('🎥 [QR] Paso 3: pidiendo getUserMedia específico para cámara trasera...');
+      stream.getTracks().forEach((t) => t.stop());
+      this.stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: { ideal: 'environment' },
+          deviceId: { exact: traseraPreferida.deviceId },
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
         audio: false,
       });
+      console.log('✅ [QR] Paso 3 OK — stream trasera obtenido:', this.stream);
+    } else {
+      this.stream = stream;
+      console.log('ℹ️ [QR] Se usa el stream inicial (ya era la trasera o no había otra).');
+    }
 
-      // Intentamos elegir explícitamente la cámara trasera si hay varias
-      // (multi-lente en celulares), ahora que ya tenemos labels con permiso.
-      const dispositivos = await navigator.mediaDevices.enumerateDevices();
-      const camaras = dispositivos.filter((d) => d.kind === 'videoinput');
+    if (!camaras.length) {
+      console.warn('⚠️ [QR] Sin cámaras listadas.');
+      this.estado = 'sin-camara';
+      return;
+    }
 
-      const traseraPreferida = camaras.find((c) => /back|trasera|rear|environment/i.test(c.label));
+    console.log('🎥 [QR] Paso 4: asignando srcObject al <video>...');
+    const video = this.videoRef.nativeElement;
+    video.srcObject = this.stream;
+    video.setAttribute('playsinline', 'true');
+    video.muted = true;
+    console.log('✅ [QR] Paso 4 OK — srcObject asignado. readyState:', video.readyState);
 
-      if (traseraPreferida && stream.getVideoTracks()[0]?.getSettings().deviceId !== traseraPreferida.deviceId) {
-        stream.getTracks().forEach((t) => t.stop());
-        this.stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            deviceId: { exact: traseraPreferida.deviceId },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-          audio: false,
-        });
-      } else {
-        this.stream = stream;
-      }
+    console.log('🎥 [QR] Paso 5: llamando video.play()...');
+    await video.play();
+    console.log('✅ [QR] Paso 5 OK — video.play() resolvió. videoWidth/Height:', video.videoWidth, video.videoHeight);
 
-      if (!camaras.length) {
-        this.estado = 'sin-camara';
-        return;
-      }
-
-      const video = this.videoRef.nativeElement;
-      video.srcObject = this.stream;
-      video.setAttribute('playsinline', 'true'); // clave en iOS: si no, intenta pantalla completa nativa
-      video.muted = true;
-      await video.play();
-
-      this.estado = 'escaneando';
-      this.pausado = false;
-      this.iniciarLoopDecode();
-} catch (error) {
-  this.estado = 'error-camara';
-  this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
-  console.error('💥 ERROR_INICIAR_CAMARA_QR', {
-    name: (error as any)?.name,
-    message: (error as any)?.message,
-    error,
-  });
-}
+    this.estado = 'escaneando';
+    this.pausado = false;
+    console.log('✅ [QR] Estado -> escaneando. Arrancando loop de decode...');
+    this.iniciarLoopDecode();
+  } catch (error) {
+    this.estado = 'error-camara';
+    this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
+    console.error('💥 ERROR_INICIAR_CAMARA_QR', {
+      name: (error as any)?.name,
+      message: (error as any)?.message,
+      error,
+    });
   }
-
+}
   private iniciarLoopDecode(): void {
     const paso = async () => {
       if (this.destruido) return;
