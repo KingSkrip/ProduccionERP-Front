@@ -56,7 +56,6 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     void this.iniciarCamara();
-     setTimeout(() => void this.iniciarCamara(), 350);
   }
 
   ngOnDestroy(): void {
@@ -97,60 +96,61 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
     this.scannerResetTimeout = setTimeout(() => (this.bufferScanner = ''), 300);
   }
 
-private async iniciarCamara(): Promise<void> {
-  this.estado = 'iniciando';
-  this.mensajeError = null;
+  private async iniciarCamara(): Promise<void> {
+    this.estado = 'iniciando';
+    this.mensajeError = null;
 
-  try {
-    const camaras = await Html5Qrcode.getCameras();
+    try {
+      const camaras = await Html5Qrcode.getCameras();
 
-    if (!camaras?.length) {
-      this.estado = 'sin-camara';
-      return;
-    }
+      if (!camaras?.length) {
+        this.estado = 'sin-camara';
+        return;
+      }
 
-    const camaraElegida =
-      camaras.find((c) => /back|trasera|rear/i.test(c.label))?.id ?? camaras[0].id;
+      const camaraElegida =
+        camaras.find((c) => /back|trasera|rear/i.test(c.label))?.id ?? camaras[0].id;
 
-    this.lector = new Html5Qrcode(this.lectorId, {
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.QR_CODE,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.ITF,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E,
-      ],
-      verbose: false,
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true,
-      },
-    });
-
-    await this.lector.start(
-      camaraElegida,
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 }, // 👈 obligatorio, no opcional
-        videoConstraints: {
-          deviceId: { exact: camaraElegida },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+      this.lector = new Html5Qrcode(this.lectorId, {
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.ITF,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+        ],
+        verbose: false,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: this.usarDetectorNativo(),
         },
-      },
-      (texto) => this.emitirLectura(texto),
-      () => {},
-    );
+      });
 
-    this.estado = 'escaneando';
-  } catch (error) {
-    this.estado = 'error-camara';
-    this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
-    console.error('💥 ERROR_INICIAR_CAMARA_QR', error);
+      await this.lector.start(
+        camaraElegida,
+        {
+          fps: 15,
+          videoConstraints: {
+            deviceId: { exact: camaraElegida },
+            facingMode: 'environment',
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            advanced: [{ focusMode: 'continuous' } as any],
+          },
+        },
+        (texto) => this.emitirLectura(texto),
+        () => {},
+      );
+
+      this.estado = 'escaneando';
+    } catch (error) {
+      this.estado = 'error-camara';
+      this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
+      console.error('💥 ERROR_INICIAR_CAMARA_QR', error);
+    }
   }
-}
 
   private async detenerCamara(): Promise<void> {
     if (!this.lector) return;
@@ -190,7 +190,7 @@ private async iniciarCamara(): Promise<void> {
       if (this.lector?.getState() === Html5QrcodeScannerState.SCANNING) {
         this.lector.pause(true);
       }
-    } catch { }
+    } catch {}
   }
 
   private reanudarCamaraSiPausada(): void {
@@ -198,6 +198,19 @@ private async iniciarCamara(): Promise<void> {
       if (this.lector?.getState() === Html5QrcodeScannerState.PAUSED) {
         this.lector.resume();
       }
-    } catch { }
+    } catch {}
+  }
+
+  usarDetectorNativo(): boolean {
+    const ua = navigator.userAgent;
+    const esIOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+    // Safari en Mac también cae aquí (regex clásica que excluye Chrome/Android)
+    const esSafari = /^((?!chrome|android).)*safari/i.test(ua);
+
+    // En iOS/Safari el BarcodeDetector "existe" pero no es confiable para QR,
+    // así que forzamos el fallback JS (jsQR/ZXing), que ahí sí decodifica bien.
+    if (esIOS || esSafari) return false;
+
+    return true;
   }
 }
