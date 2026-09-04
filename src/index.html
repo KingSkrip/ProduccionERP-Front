@@ -1,16 +1,22 @@
 <!doctype html>
 <html lang="es">
-
-<head>
+  <head>
     <title>Fibrasan</title>
     <meta charset="utf-8" />
-    <meta name="description"
-        content="Sistema integral para la gestión de telas y operaciones comerciales de Comercializadora Fibrasan. Especialistas en telas de tejido de punto de alta calidad, fabricadas en México." />
-    <meta name="keywords"
-        content="Comercializadora Fibrasan, gestión de telas, telas de tejido de punto, sistema de gestión textil, operaciones comerciales, inventario textil, fabricación de telas, telas fabricadas en México, industria textil" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="description"
+      content="Sistema integral para la gestión de telas y operaciones comerciales de Comercializadora Fibrasan. Especialistas en telas de tejido de punto de alta calidad, fabricadas en México."
+    />
+    <meta
+      name="keywords"
+      content="Comercializadora Fibrasan, gestión de telas, telas de tejido de punto, sistema de gestión textil, operaciones comerciales, inventario textil, fabricación de telas, telas fabricadas en México, industria textil"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
 
-    <base href="/"/>
+    <base href="/" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon-16x16.png" />
@@ -18,38 +24,46 @@
 
     <!-- Fonts -->
     <link href="https://fonts.gstatic.com" rel="preconnect" />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap"
-        rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Icon fonts -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-</head>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  </head>
 
-<body class="mat-typography">
+  <body class="mat-typography">
     <!-- Splash screen -->
     <fuse-splash-screen>
-        <img src="images/logo/logo.svg" alt="Fuse logo" />
-        <div class="spinner">
-            <div class="bounce1"></div>
-            <div class="bounce2"></div>
-            <div class="bounce3"></div>
-        </div>
+      <img src="images/logo/logo.svg" alt="Fuse logo" />
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
     </fuse-splash-screen>
 
     <!-- App root -->
     <app-root></app-root>
-</body>
 
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+      eruda.init();
+    </script>
+  </body>
 </html>
 
-
 <script>
-    // Detectar preferencia de tema del sistema
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.body.classList.add('dark');
-    } else {
-        document.body.classList.add('light');
-    }
+  // Detectar preferencia de tema del sistema
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.body.classList.add('dark');
+  } else {
+    document.body.classList.add('light');
+  }
 </script>
