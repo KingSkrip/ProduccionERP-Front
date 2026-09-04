@@ -128,21 +128,37 @@ private async iniciarCamara(): Promise<void> {
       },
     });
 
+    // await this.lector.start(
+    //   camaraElegida,
+    //   {
+    //     fps: 15,
+    //     videoConstraints: {
+    //       deviceId: { exact: camaraElegida },
+    //       facingMode: 'environment',
+    //       width: { ideal: 1920 },
+    //       height: { ideal: 1080 },
+    //       advanced: [{ focusMode: 'continuous' } as any],
+    //     },
+    //   },
+    //   (texto) => this.emitirLectura(texto),
+    //   () => { },
+    // );
+
+
     await this.lector.start(
-      camaraElegida,
-      {
-        fps: 15,
-        videoConstraints: {
-          deviceId: { exact: camaraElegida },
-          facingMode: 'environment',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          advanced: [{ focusMode: 'continuous' } as any],
-        },
-      },
-      (texto) => this.emitirLectura(texto),
-      () => { },
-    );
+  camaraElegida,
+  {
+    fps: 10, // baja un poco, 15fps en iOS a veces satura el hilo principal de Safari
+    videoConstraints: {
+      deviceId: { exact: camaraElegida },
+      width: { ideal: 1280 }, // 1920x1080 puede ser pesado para el decoder en iPhones más viejos
+      height: { ideal: 720 },
+      // quita facingMode de aquí, ya está implícito en deviceId
+    },
+  },
+  (texto) => this.emitirLectura(texto),
+  () => {},
+);
 
     this.estado = 'escaneando';
   } catch (error) {
