@@ -30,10 +30,8 @@ let contadorInstancias = 0;
   encapsulation: ViewEncapsulation.None,
 })
 export class LectorQrComponent implements AfterViewInit, OnDestroy {
-  /** Id único por instancia, por si hay más de un lector en la misma vista alguna vez. */
   readonly lectorId = `qr-reader-${++contadorInstancias}`;
 
-  /** Mientras esté en true (ej. petición al backend en curso), ignora nuevas lecturas. */
   @Input() bloqueado = false;
 
   @Output() codigoDetectado = new EventEmitter<string>();
@@ -44,26 +42,31 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
   private lector: Html5Qrcode | null = null;
   private ultimoToken: string | null = null;
   private ultimaLecturaTs = 0;
-  /** Evita procesar el mismo QR dos veces si sigue en cuadro. */
   private readonly COOLDOWN_MISMO_TOKEN_MS = 2000;
 
-  // --- Lector USB tipo pistola ---
   private bufferScanner = '';
   private scannerResetTimeout: ReturnType<typeof setTimeout> | null = null;
   private ultimaTeclaTs = 0;
   private readonly SCANNER_INTERVALO_MAX_MS = 50;
   private readonly SCANNER_TOKEN_MIN_LARGO = 6;
 
+  // --- Debug ---
+  private frameErrorCount = 0;
+  private ultimoLogFrameErrorTs = 0;
+
   ngAfterViewInit(): void {
+    console.log('🟢 [QR] ngAfterViewInit — UA:', navigator.userAgent);
     void this.iniciarCamara();
   }
 
   ngOnDestroy(): void {
+    console.log('🔴 [QR] ngOnDestroy');
     if (this.scannerResetTimeout) clearTimeout(this.scannerResetTimeout);
     void this.detenerCamara();
   }
 
   reintentarCamara(): void {
+    console.log('🔁 [QR] reintentarCamara()');
     void this.iniciarCamara();
   }
 
@@ -80,6 +83,7 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
       const token = this.bufferScanner;
       this.bufferScanner = '';
       if (token.length >= this.SCANNER_TOKEN_MIN_LARGO) {
+        console.log('⌨️ [QR] Lectura por pistola USB:', token);
         this.emitirLectura(token);
       }
       return;
@@ -99,17 +103,29 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
   private async iniciarCamara(): Promise<void> {
     this.estado = 'iniciando';
     this.mensajeError = null;
+    console.log('🎥 [QR] iniciarCamara() — solicitando lista de cámaras...');
 
     try {
       const camaras = await Html5Qrcode.getCameras();
+      console.log('📷 [QR] Cámaras encontradas:', camaras);
 
       if (!camaras?.length) {
+        console.warn('⚠️ [QR] No se encontraron cámaras.');
         this.estado = 'sin-camara';
         return;
       }
 
       const camaraElegida =
         camaras.find((c) => /back|trasera|rear/i.test(c.label))?.id ?? camaras[0].id;
+      console.log('✅ [QR] Cámara elegida:', camaraElegida);
+
+      const usaNativo = this.usarDetectorNativo();
+      console.log(
+        '🧠 [QR] ¿BarcodeDetector nativo disponible?',
+        typeof (window as any).BarcodeDetector !== 'undefined',
+        '| ¿Vamos a usarlo?',
+        usaNativo,
+      );
 
       this.lector = new Html5Qrcode(this.lectorId, {
         formatsToSupport: [
@@ -124,27 +140,64 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
         ],
         verbose: false,
         experimentalFeatures: {
-          useBarCodeDetectorIfSupported: this.usarDetectorNativo(),
+          useBarCodeDetectorIfSupported: usaNativo,
         },
       });
 
       await this.lector.start(
         camaraElegida,
         {
-          fps: 15,
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
           videoConstraints: {
             deviceId: { exact: camaraElegida },
             facingMode: 'environment',
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
             advanced: [{ focusMode: 'continuous' } as any],
           },
         },
-        (texto) => this.emitirLectura(texto),
-        () => {},
+        (texto, resultado) => {
+          console.log('🎯 [QR] ¡DECODIFICADO!', texto, resultado);
+          this.emitirLectura(texto);
+        },
+        (mensajeError) => {
+          // Esto se dispara MUCHAS veces por segundo cuando no hay código
+          // en cuadro — es normal. Lo logueamos agrupado cada 2s para no
+          // inundar la consola pero sí confirmar que el loop de escaneo
+          // sigue vivo y qué error interno está devolviendo cada intento.
+          this.frameErrorCount++;
+          const ahora = Date.now();
+          if (ahora - this.ultimoLogFrameErrorTs > 2000) {
+            console.log(
+              `🔍 [QR] Loop de escaneo activo — ${this.frameErrorCount} intentos sin código en los últimos ~2s. Último error:`,
+              mensajeError,
+            );
+            this.frameErrorCount = 0;
+            this.ultimoLogFrameErrorTs = ahora;
+          }
+        },
       );
 
+      // Inspeccionar el <video> real que quedó montado, para confirmar
+      // dimensiones reales negociadas vs lo que pedimos.
+      const video = document.querySelector(`#${this.lectorId} video`) as HTMLVideoElement | null;
+      if (video) {
+        console.log('📐 [QR] <video> montado:', {
+          videoWidth: video.videoWidth,
+          videoHeight: video.videoHeight,
+          readyState: video.readyState,
+          paused: video.paused,
+          srcObjectTracks: (video.srcObject as MediaStream | null)
+            ?.getVideoTracks()
+            .map((t) => ({ label: t.label, settings: t.getSettings() })),
+        });
+      } else {
+        console.warn('⚠️ [QR] No se encontró el elemento <video> tras iniciar la cámara.');
+      }
+
       this.estado = 'escaneando';
+      console.log('✅ [QR] Estado -> escaneando');
     } catch (error) {
       this.estado = 'error-camara';
       this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
@@ -157,8 +210,9 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
     try {
       await this.lector.stop();
       this.lector.clear();
-    } catch {
-      // ya estaba detenida, sin problema
+      console.log('🛑 [QR] Cámara detenida y limpiada.');
+    } catch (e) {
+      console.log('ℹ️ [QR] detenerCamara(): ya estaba detenida.', e);
     } finally {
       this.lector = null;
     }
@@ -167,11 +221,16 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
   private emitirLectura(token: string): void {
     const ahora = Date.now();
 
-    if (this.bloqueado) return;
+    if (this.bloqueado) {
+      console.log('⛔ [QR] Lectura ignorada — componente bloqueado. Token:', token);
+      return;
+    }
     if (token === this.ultimoToken && ahora - this.ultimaLecturaTs < this.COOLDOWN_MISMO_TOKEN_MS) {
+      console.log('🧊 [QR] Lectura ignorada — mismo token en cooldown. Token:', token);
       return;
     }
 
+    console.log('📤 [QR] Emitiendo lectura al padre:', token);
     this.ultimoToken = token;
     this.ultimaLecturaTs = ahora;
 
@@ -179,8 +238,8 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
     this.codigoDetectado.emit(token);
   }
 
-  /** Llamar desde el padre cuando ya terminó de procesar (éxito o error) para reanudar. */
   reanudar(): void {
+    console.log('▶️ [QR] reanudar()');
     this.ultimoToken = null;
     this.reanudarCamaraSiPausada();
   }
@@ -189,26 +248,29 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
     try {
       if (this.lector?.getState() === Html5QrcodeScannerState.SCANNING) {
         this.lector.pause(true);
+        console.log('⏸️ [QR] Cámara pausada.');
       }
-    } catch {}
+    } catch (e) {
+      console.log('⚠️ [QR] pausarCamaraSiActiva() falló', e);
+    }
   }
 
   private reanudarCamaraSiPausada(): void {
     try {
       if (this.lector?.getState() === Html5QrcodeScannerState.PAUSED) {
         this.lector.resume();
+        console.log('▶️ [QR] Cámara reanudada.');
       }
-    } catch {}
+    } catch (e) {
+      console.log('⚠️ [QR] reanudarCamaraSiPausada() falló', e);
+    }
   }
 
   usarDetectorNativo(): boolean {
     const ua = navigator.userAgent;
     const esIOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
-    // Safari en Mac también cae aquí (regex clásica que excluye Chrome/Android)
     const esSafari = /^((?!chrome|android).)*safari/i.test(ua);
 
-    // En iOS/Safari el BarcodeDetector "existe" pero no es confiable para QR,
-    // así que forzamos el fallback JS (jsQR/ZXing), que ahí sí decodifica bien.
     if (esIOS || esSafari) return false;
 
     return true;
