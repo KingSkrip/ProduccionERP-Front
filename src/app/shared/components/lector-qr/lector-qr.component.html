@@ -2,7 +2,10 @@
 <div
   *ngIf="estado !== 'sin-camara' && estado !== 'error-camara'"
   class="lector-video-host relative aspect-square w-full max-w-[320px] overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
-  <div [id]="lectorId" class="h-full w-full [&_video]:h-full [&_video]:w-full [&_video]:object-cover"></div>
+<div [id]="lectorId" class="h-full w-full [&_video]:h-full [&_video]:w-full [&_video]:object-cover">
+  <video #video autoplay playsinline muted></video>
+  <canvas #canvas class="hidden"></canvas>
+</div>
 
     <!-- esquinas tipo "visor" -->
     <div class="pointer-events-none absolute inset-[14px]">
