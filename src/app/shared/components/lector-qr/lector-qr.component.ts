@@ -182,11 +182,15 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
       this.estado = 'escaneando';
       this.pausado = false;
       this.iniciarLoopDecode();
-    } catch (error) {
-      this.estado = 'error-camara';
-      this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
-      console.error('💥 ERROR_INICIAR_CAMARA_QR', error);
-    }
+} catch (error) {
+  this.estado = 'error-camara';
+  this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
+  console.error('💥 ERROR_INICIAR_CAMARA_QR', {
+    name: (error as any)?.name,
+    message: (error as any)?.message,
+    error,
+  });
+}
   }
 
   private iniciarLoopDecode(): void {
