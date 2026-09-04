@@ -35,7 +35,7 @@ function asegurarWasmConfigurado(): void {
   prepareZXingModule({
     overrides: {
       locateFile: (path: string) => {
-        const url = `https://cdn.jsdelivr.net/npm/zxing-wasm@2/dist/reader/${path}`;
+        const url = `https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.3/dist/reader/${path}`;
         console.log('🧩 [QR] zxing-wasm pidiendo archivo:', path, '→', url);
         return url;
       },
