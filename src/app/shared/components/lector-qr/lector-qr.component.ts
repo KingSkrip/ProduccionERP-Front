@@ -124,7 +124,7 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
         ],
         verbose: false,
         experimentalFeatures: {
-          useBarCodeDetectorIfSupported: false,
+          useBarCodeDetectorIfSupported: true,
         },
       });
 
