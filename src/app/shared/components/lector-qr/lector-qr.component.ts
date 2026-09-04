@@ -125,7 +125,7 @@ private async iniciarCamara(): Promise<void> {
       ],
       verbose: false,
       experimentalFeatures: {
-        useBarCodeDetectorIfSupported: false,
+        useBarCodeDetectorIfSupported: true,
       },
     });
 
