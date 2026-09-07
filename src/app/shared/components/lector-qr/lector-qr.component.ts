@@ -73,7 +73,9 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
   private decodificando = false;
   private pausadoZxing = false;
   private destruido = false;
-  private readonly INTERVALO_DECODE_MS = 125;
+  // Antes 125ms. Se baja para que el ritmo de intentos de decode en iOS
+  // sea comparable al fps:15 (~66ms/frame) que usa la rama Android.
+  private readonly INTERVALO_DECODE_MS = 60;
 
   // --- Estado interno rama Android (html5-qrcode) ---
   private lector: Html5Qrcode | null = null;
@@ -82,6 +84,12 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
   private ultimoToken: string | null = null;
   private ultimaLecturaTs = 0;
   private readonly COOLDOWN_MISMO_TOKEN_MS = 2000;
+
+  // Watchdog de seguridad: si tras detectar un código nadie llama a
+  // reanudar() (p.ej. el padre marca el QR como inválido pero no reanuda),
+  // el propio componente se destraba solo pasado este tiempo.
+  private watchdogPausa: ReturnType<typeof setTimeout> | null = null;
+  private readonly AUTO_REANUDAR_FALLBACK_MS = 4000;
 
   // --- Lector USB tipo pistola (sin cambios, no toca cámara) ---
   private bufferScanner = '';
@@ -101,6 +109,7 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
     this.destruido = true;
     if (this.scannerResetTimeout) clearTimeout(this.scannerResetTimeout);
     if (this.loopHandle) clearTimeout(this.loopHandle);
+    if (this.watchdogPausa) clearTimeout(this.watchdogPausa);
     void this.detenerCamara();
   }
 
@@ -395,18 +404,36 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
 
     if (this.esPlataformaIOS) {
       this.pausadoZxing = true;
+      // Congelamos el frame del <video> para que se vea "bloqueado"
+      // igual que el freeze que hace html5-qrcode con pause(true) en Android.
+      this.videoRef?.nativeElement?.pause();
     } else {
       this.pausarCamaraAndroidSiActiva();
     }
 
     this.codigoDetectado.emit(token);
+
+    // Red de seguridad: si nadie llama a reanudar() (p.ej. el padre solo
+    // muestra "QR inválido" y no reanuda), destrabamos el lector solos
+    // pasado este tiempo para poder escanear el siguiente código.
+    if (this.watchdogPausa) clearTimeout(this.watchdogPausa);
+    this.watchdogPausa = setTimeout(() => this.reanudar(), this.AUTO_REANUDAR_FALLBACK_MS);
   }
 
   /** Llamar desde el padre cuando ya terminó de procesar (éxito o error) para reanudar. */
   reanudar(): void {
+    if (this.watchdogPausa) {
+      clearTimeout(this.watchdogPausa);
+      this.watchdogPausa = null;
+    }
+
     this.ultimoToken = null;
     if (this.esPlataformaIOS) {
       this.pausadoZxing = false;
+      const video = this.videoRef?.nativeElement;
+      if (video?.paused) {
+        video.play().catch(() => {});
+      }
     } else {
       this.reanudarCamaraAndroidSiPausada();
     }
