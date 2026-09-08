@@ -4,64 +4,94 @@ import {
     HttpHandlerFn,
     HttpRequest,
 } from '@angular/common/http';
+
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+
 import { AuthService } from 'app/core/auth/auth.service';
 import { AuthUtils } from 'app/core/auth/auth.utils';
-import { Observable, catchError, throwError } from 'rxjs';
 
-/**
- * Intercept
- *
- * @param req
- * @param next
- */
+import {
+    EMPTY,
+    Observable,
+    catchError,
+    throwError,
+} from 'rxjs';
+
 export const authInterceptor = (
     req: HttpRequest<unknown>,
-    next: HttpHandlerFn
+    next: HttpHandlerFn,
 ): Observable<HttpEvent<unknown>> => {
-    const authService = inject(AuthService);
 
-    // Clone the request object
+    const authService = inject(AuthService);
+    const router = inject(Router);
+
+    // 🔥 VALIDACIÓN PROACTIVA ANTES DEL REQUEST
+    if (
+        authService.encrypt &&
+        AuthUtils.isTokenExpired(authService.encrypt)
+    ) {
+
+        authService.signOut();
+
+        router.navigateByUrl('sign-in');
+
+        // No dejamos que salga el request
+        return EMPTY;
+
+    }
+
     let newReq = req.clone();
 
-    // Request
-    //
-    // If the access token didn't expire, add the Authorization header.
-    // We won't add the Authorization header if the access token expired.
-    // This will force the server to return a "401 Unauthorized" response
-    // for the protected API routes which our response interceptor will
-    // catch and delete the access token from the local storage while logging
-    // the user out from the app.
+    // Agregar Authorization
     if (
         authService.encrypt &&
         !AuthUtils.isTokenExpired(authService.encrypt)
     ) {
+
         newReq = req.clone({
+
             headers: req.headers.set(
                 'Authorization',
-                'Bearer ' + authService.encrypt
+                'Bearer ' + authService.encrypt,
             ),
+
         });
+
     }
 
-    // Response
     return next(newReq).pipe(
-        catchError((error) => {
-            // Catch "401 Unauthorized" responses
-            if (error instanceof HttpErrorResponse && error.status === 401) {
 
-                // 🔥 SOLUCIÓN: NO hacer reload/logout si es el endpoint de sign-in
-                const isSignInRequest = req.url.includes('/auth/sign-in');
+        catchError((error) => {
+
+            if (
+                error instanceof HttpErrorResponse &&
+                error.status === 401
+            ) {
+
+                // No cerrar sesión si el 401 viene del login
+                const isSignInRequest =
+                    req.url.includes('/auth/sign-in');
 
                 if (isSignInRequest) {
+
                     return throwError(() => error);
+
                 }
 
                 authService.signOut();
-                location.reload();
+
+                router.navigateByUrl('sign-in');
+
+                // Puedes regresar el error o detenerlo
+                return EMPTY;
+
             }
 
             return throwError(() => error);
-        })
+
+        }),
+
     );
+
 };
