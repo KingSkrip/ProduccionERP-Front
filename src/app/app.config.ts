@@ -1,6 +1,5 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import {
-  APP_INITIALIZER,
   ApplicationConfig,
   inject,
   isDevMode,
@@ -12,19 +11,18 @@ import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/materia
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideFuse } from '@fuse';
-import { TranslocoService, provideTransloco } from '@jsverse/transloco';
+import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { appRoutes } from 'app/app.routes';
 import { provideAuth } from 'app/core/auth/auth.provider';
 import { provideIcons } from 'app/core/icons/icons.provider';
 import { MockApiService } from 'app/mock-api';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from './core/auth/auth.service';
 import { decryptInterceptor } from './core/interceptors/decrypt.interceptor';
 import { fuseLoadingSilentInterceptor } from './core/interceptors/fuse-loading-silent.interceptor';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
-import { UserService } from './core/user/user.service';
 
 export const appConfig: ApplicationConfig = {
-  
   providers: [
     provideAnimations(),
     provideHttpClient(
@@ -34,7 +32,7 @@ export const appConfig: ApplicationConfig = {
       ]),
     ),
     provideRouter(appRoutes, withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })),
-{ provide: MAT_DATE_LOCALE, useValue: 'es-MX' },
+    { provide: MAT_DATE_LOCALE, useValue: 'es-MX' },
     { provide: LOCALE_ID, useValue: 'es-MX' },
     // Date adapter
     { provide: DateAdapter, useClass: LuxonDateAdapter },
@@ -75,12 +73,10 @@ export const appConfig: ApplicationConfig = {
     }),
 
     // 🔥 AQUÍ AGREGAS TU APP_INITIALIZER
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (userService: UserService) => () => firstValueFrom(userService.init()),
-      deps: [UserService],
-      multi: true,
-    },
+    provideAppInitializer(() => {
+      const authService = inject(AuthService);
+      return firstValueFrom(authService.check());
+    }),
 
     // Fuse
     provideAuth(),

@@ -1,7 +1,17 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { User } from 'app/core/user/user.types';
-import { map, Observable, ReplaySubject, Subject, take, tap } from 'rxjs';
+import {
+  finalize,
+  map,
+  Observable,
+  of,
+  ReplaySubject,
+  shareReplay,
+  Subject,
+  take,
+  tap,
+} from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
 
 @Injectable({ providedIn: 'root' })
@@ -9,6 +19,7 @@ export class UserService {
   private _httpClient = inject(HttpClient);
   private _user: ReplaySubject<User> = new ReplaySubject<User>(1);
   private apiUrl = APP_CONFIG.apiUrl;
+  private _meInFlight$: Observable<any> | null = null;
   private _openProfileDrawer = new Subject<void>();
   openProfileDrawer$ = this._openProfileDrawer.asObservable();
 
@@ -41,26 +52,7 @@ export class UserService {
   // -----------------------------------------------------------------------------------------------------
 
   init(): Observable<void> {
-    const token = localStorage.getItem('encrypt');
-
-    if (!token) {
-      this._user.next(null);
-      return new Observable<void>((observer) => {
-        observer.next();
-        observer.complete();
-      });
-    }
-
-    return this._httpClient
-      .get(`${this.apiUrl}dash/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .pipe(
-        tap((resp: any) => {
-          this._user.next(resp.user);
-        }),
-        map(() => void 0),
-      );
+    return this.fetchMe().pipe(map(() => void 0));
   }
 
   /**
@@ -77,37 +69,27 @@ export class UserService {
   /**
    * Update user status (online / away / etc)
    */
-updateUserStatus(status: string): void {
-    this._httpClient
-        .post(`${this.apiUrl}dash/update-status`, { status })
-        .subscribe({
-            next: (resp: any) => {
-                this._user.next(resp.user);
-            },
-            error: (err) => {
-                console.error(
-                    '[UserService] Error al actualizar status:',
-                    err
-                );
-            },
-        });
-}
+  updateUserStatus(status: string): void {
+    this._httpClient.post(`${this.apiUrl}dash/update-status`, { status }).subscribe({
+      next: (resp: any) => {
+        this._user.next(resp.user);
+      },
+      error: (err) => {
+        console.error('[UserService] Error al actualizar status:', err);
+      },
+    });
+  }
 
-/**
- * Refresca el token QR del usuario
- */
-refreshQr(): Observable<{ token: string }> {
-    return this._httpClient.post<{ token: string }>(
-        `${this.apiUrl}dash/qr/refresh`,
-        {}
-    );
-}
+  /**
+   * Refresca el token QR del usuario
+   */
+  refreshQr(): Observable<{ token: string }> {
+    return this._httpClient.post<{ token: string }>(`${this.apiUrl}dash/qr/refresh`, {});
+  }
 
-openProfileDrawer(): void {
+  openProfileDrawer(): void {
     this._openProfileDrawer.next();
-}
-
-
+  }
 
   /**
    * Actualiza el usuario haciendo merge con los datos existentes
@@ -168,6 +150,28 @@ openProfileDrawer(): void {
     return normalized;
   }
 
+  fetchMe(): Observable<any> {
+    const token = localStorage.getItem('encrypt');
 
-  
+    if (!token) {
+      this._user.next(null);
+      return of(null);
+    }
+
+    if (this._meInFlight$) {
+      return this._meInFlight$;
+    }
+
+    this._meInFlight$ = this._httpClient
+      .get(`${this.apiUrl}dash/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .pipe(
+        tap((resp: any) => this._user.next(resp.user)),
+        finalize(() => (this._meInFlight$ = null)),
+        shareReplay(1),
+      );
+
+    return this._meInFlight$;
+  }
 }

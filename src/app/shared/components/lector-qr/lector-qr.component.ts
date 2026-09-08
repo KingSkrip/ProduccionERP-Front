@@ -12,8 +12,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { prepareZXingModule, readBarcodes, type ReaderOptions } from 'zxing-wasm/reader';
 import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { prepareZXingModule, readBarcodes, type ReaderOptions } from 'zxing-wasm/reader';
 
 export type EstadoLectorQr =
   | 'iniciando'

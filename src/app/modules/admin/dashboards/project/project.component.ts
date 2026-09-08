@@ -120,12 +120,14 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   private _hideQr(): void {
     this.qrVisible = false;
+    this._stopQrRefresh();
     this._cdr.markForCheck();
   }
 
   private _showQr(): void {
     if (!this.showQrModal) return;
     this.qrVisible = true;
+    this._startQrRefresh();
     this._cdr.markForCheck();
   }
 
