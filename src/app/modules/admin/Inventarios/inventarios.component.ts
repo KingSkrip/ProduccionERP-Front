@@ -255,7 +255,9 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
             .some((val) => String(val).toLowerCase().includes(term)),
         );
 
-    this.gruposFiltrados = this.agruparPorCliente(itemsFiltrados);
+    this.gruposFiltrados = this.agruparPorCliente(itemsFiltrados).sort(
+      (a, b) => b.pesoNetoTotal - a.pesoNetoTotal,
+    );
 
     this.pageIndex = 0;
     this.actualizarPagina();
@@ -580,7 +582,7 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     { label: 'Cód. color', key: 'COD. COLOR' },
     { label: 'Fecha', key: 'FECHA' },
     { label: 'Orden', key: 'ORDEN' },
-    { label: 'Proceso', key: 'PROCESO' },
+    { label: 'Proceso de solicitud', key: 'PROCESO' },
   ];
 
   private readonly camposAcabado: { label: string; key: string }[] = [
@@ -617,10 +619,11 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   /** REVISADO — proceso normal (aún no surtido ni vendido). */
-  private readonly camposRevisadoProceso: { label: string; key: string }[] = [
+ private readonly camposRevisadoProceso: { label: string; key: string }[] = [
     ...this.camposComunes,
     { label: 'Cantidad solicitada por el cliente', key: 'CANTIDAD SOLICITADA' },
     { label: 'Cantidad en el baño', key: 'CANTIDAD ENTREGADA' },
+    { label: 'Almacén', key: 'ALMACEN' },
     { label: 'Peso revisado', key: 'PESO_REVISADO' },
     { label: 'Fecha revisado', key: 'FECHA_REVISADO' },
     { label: 'Orden tejido', key: 'ORDEN_TEJIDO' },
@@ -638,6 +641,7 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     { label: 'Orden que surte', key: 'ORDEN_SURTE' },
     { label: 'Cantidad solicitada por el cliente', key: 'CANTIDAD SOLICITADA' },
     { label: 'Cantidad en el baño', key: 'CANTIDAD ENTREGADA' },
+    { label: 'Almacén', key: 'ALMACEN' },
     { label: 'Peso revisado', key: 'PESO_REVISADO' },
     { label: 'Fecha revisado', key: 'FECHA_REVISADO' },
     { label: 'Orden tejido', key: 'ORDEN_TEJIDO' },
@@ -648,12 +652,14 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
     { label: 'Tejedor', key: 'TEJEDOR' },
     { label: 'Revisador', key: 'REVISADOR' },
   ];
+  
   /** REVISADO — la orden que surte está en Control de Calidad (ORDENESEST = 4). */
   private readonly camposRevisadoControlCalidad: { label: string; key: string }[] = [
     ...this.camposComunes,
     { label: 'Orden que surte', key: 'ORDEN_SURTE' },
     { label: 'Cantidad solicitada por el cliente', key: 'CANTIDAD SOLICITADA' },
     { label: 'Cantidad en el baño', key: 'CANTIDAD ENTREGADA' },
+    { label: 'Almacén', key: 'ALMACEN' },
     { label: 'Peso revisado', key: 'PESO_REVISADO' },
     { label: 'Fecha revisado', key: 'FECHA_REVISADO' },
     { label: 'Orden tejido', key: 'ORDEN_TEJIDO' },
@@ -756,13 +762,13 @@ export class InventariosComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       if (subtipo === 'SURTIDO') {
         return {
-          texto: 'CRUDO · SURTIDO',
+          texto: 'ROLLO - SURTIDO',
           clase: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
         };
       }
       if (subtipo === 'CONTROL_CALIDAD') {
         return {
-          texto: 'CRUDO · CONTROL DE CALIDAD',
+          texto: 'ROLLO · CONTROL DE CALIDAD',
           clase: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
         };
       }
