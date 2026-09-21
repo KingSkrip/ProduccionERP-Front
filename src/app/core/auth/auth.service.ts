@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
 
+import { DeviceInfoService } from 'app/shared/devicesInfo/device-info.service';
 import {
   catchError,
   finalize,
@@ -15,7 +16,6 @@ import {
   throwError,
 } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config';
-import { DeviceInfoService } from 'app/shared/devicesInfo/device-info.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -25,7 +25,7 @@ export class AuthService {
   constructor(
     private _httpClient: HttpClient,
     private _userService: UserService,
-      private _deviceInfoService: DeviceInfoService,
+    private _deviceInfoService: DeviceInfoService,
   ) {
     if (!this.encrypt || AuthUtils.isTokenExpired(this.encrypt)) {
       this.clearSession();
@@ -38,7 +38,7 @@ export class AuthService {
   private clearSession(): void {
     localStorage.removeItem('encrypt');
     this._authenticated = false;
-    this._userService.user = null; // 👈 ajusta si tu UserService espera otro shape "inactivo"
+    this._userService.user = null;
   }
 
   get authenticated(): boolean {
@@ -77,10 +77,10 @@ export class AuthService {
   /**
    * Sign In
    */
-/**
- * Sign In
- */
-signIn(credentials: { email: string; password: string }): Observable<any> {
+  /**
+   * Sign In
+   */
+  signIn(credentials: { email: string; password: string }): Observable<any> {
     if (this._authenticated) {
       return throwError(() => new Error('User is already logged in.'));
     }
@@ -99,7 +99,7 @@ signIn(credentials: { email: string; password: string }): Observable<any> {
         );
       }),
     );
-}
+  }
 
   /**
    * Sign In Using Token (Refresh)
