@@ -21,7 +21,7 @@ import { ItemInventario } from '../../scan-embarques.types';
 
 @Component({
   selector: 'inventario-tab',
-  templateUrl: './inventarioTab.component.html',
+  templateUrl: './inventariotab.component.html',
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, ReactiveFormsModule],
   encapsulation: ViewEncapsulation.None,
