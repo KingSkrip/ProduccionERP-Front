@@ -25,7 +25,7 @@
   object-fit: cover;
 }
 
-/* Respeta preferencia de reducir movimiento en todo el componente */
+
 @media (prefers-reduced-motion: reduce) {
   :host * {
     animation-duration: 0.01ms !important;

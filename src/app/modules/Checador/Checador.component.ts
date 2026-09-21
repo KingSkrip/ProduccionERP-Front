@@ -6,11 +6,8 @@ import {
     ViewEncapsulation,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-
 import { AuthService } from 'app/core/auth/auth.service';
 import { RoleEnum } from 'app/core/auth/roles/dataroles';
-
-
 import { ChecadorColabComponent } from './colaboradores/checador-colab.component';
 import { ChecadorGuardComponent } from './guardias/checador-guard.component';
 
