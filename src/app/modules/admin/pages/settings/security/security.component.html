@@ -1,131 +1,131 @@
-<div class="w-full max-w-3xl">
-    <!-- Form -->
-    <form [formGroup]="securityForm">
-        <!-- Section -->
-        <div class="w-full">
-            <div class="text-xl">Cambiar tu contraseña</div>
-            <div class="text-secondary">
-                ¡Solo puedes cambiar tu contraseña dos veces dentro de 24 horas!
-            </div>
-        </div>
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- New password -->
-            <div class="sm:col-span-4">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Nueva Contraseña</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_outline:key'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'newPassword'"
-                        [type]="hideNewPassword ? 'password' : 'text'"
-                        maxlength="16"
-                        (paste)="onPaste($event)"
-                        matInput
-                    />
-                    <button
-                        mat-icon-button
-                        matSuffix
-                        type="button"
-                        (click)="hideNewPassword = !hideNewPassword"
-                        [attr.aria-label]="'Hide password'"
-                        [attr.aria-pressed]="hideNewPassword"
-                    >
-                        <mat-icon>{{hideNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </button>
-                    <mat-error *ngIf="securityForm.get('newPassword')?.hasError('required')">
-                        La nueva contraseña es requerida
-                    </mat-error>
-                    <mat-error *ngIf="securityForm.get('newPassword')?.hasError('minlength')">
-                        Mínimo 8 caracteres
-                    </mat-error>
-                </mat-form-field>
-                
-                <!-- Barra de seguridad de contraseña -->
-                <div *ngIf="securityForm.get('newPassword')?.value" class="mt-2">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-sm text-secondary">Seguridad de la contraseña:</span>
-                        <span class="text-sm font-medium" 
-                              [ngClass]="{
-                                'text-warn': passwordStrengthColor === 'warn',
-                                'text-accent': passwordStrengthColor === 'accent',
-                                'text-primary': passwordStrengthColor === 'primary'
-                              }">
-                            {{passwordStrengthText}}
-                        </span>
-                    </div>
-                    <mat-progress-bar 
-                        mode="determinate" 
-                        [value]="passwordStrength"
-                        [color]="passwordStrengthColor">
-                    </mat-progress-bar>
-                </div>
-                
-                <div class="text-hint mt-1 text-md">
-                    Mínimo 8 caracteres. Debe incluir números, letras y caracteres especiales.
-                </div>
-            </div>
-            <!-- Confirm password -->
-            <div class="sm:col-span-4">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Confirmar contraseña</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_outline:key'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'confirmPassword'"
-                        [type]="hideConfirmPassword ? 'password' : 'text'"
-                        maxlength="16"
-                        (paste)="onPaste($event)"
-                        matInput
-                    />
-                    <button
-                        mat-icon-button
-                        matSuffix
-                        type="button"
-                        (click)="hideConfirmPassword = !hideConfirmPassword"
-                        [attr.aria-label]="'Hide password'"
-                        [attr.aria-pressed]="hideConfirmPassword"
-                    >
-                        <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </button>
-                    <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('required')">
-                        Confirmar contraseña es requerido
-                    </mat-error>
-                    <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('passwordMismatch') && 
-                                      securityForm.get('confirmPassword')?.value">
-                        Las contraseñas no coinciden
-                    </mat-error>
-                </mat-form-field>
-            </div>
-        </div>
-
-        <!-- Divider -->
-        <div class="my-10 border-t"></div>
-
-        <!-- Actions -->
-        <div class="flex items-center justify-end">
-            <button 
-                mat-stroked-button 
-                type="button"
-                (click)="cancelar()"
-            >
-                Cancelar
-            </button>
-            <button
-                class="ml-4"
-                mat-flat-button
-                type="button"
-                [color]="'primary'"
-                (click)="guardarPassword()"
-                [disabled]="securityForm.invalid"
-            >
-                Guardar
-            </button>
-        </div>
-    </form>
+<div class="w-full max-w-3xl">
+    <!-- Form -->
+    <form [formGroup]="securityForm">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Cambiar tu contraseña</div>
+            <div class="text-secondary">
+                ¡Solo puedes cambiar tu contraseña dos veces dentro de 24 horas!
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- New password -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Nueva Contraseña</mat-label>
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_outline:key'"
+                        matPrefix
+                    ></mat-icon>
+                    <input
+                        [formControlName]="'newPassword'"
+                        [type]="hideNewPassword ? 'password' : 'text'"
+                        maxlength="16"
+                        (paste)="onPaste($event)"
+                        matInput
+                    />
+                    <button
+                        mat-icon-button
+                        matSuffix
+                        type="button"
+                        (click)="hideNewPassword = !hideNewPassword"
+                        [attr.aria-label]="'Hide password'"
+                        [attr.aria-pressed]="hideNewPassword"
+                    >
+                        <mat-icon>{{hideNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button>
+                    <mat-error *ngIf="securityForm.get('newPassword')?.hasError('required')">
+                        La nueva contraseña es requerida
+                    </mat-error>
+                    <mat-error *ngIf="securityForm.get('newPassword')?.hasError('minlength')">
+                        Mínimo 8 caracteres
+                    </mat-error>
+                </mat-form-field>
+                
+                <!-- Barra de seguridad de contraseña -->
+                <div *ngIf="securityForm.get('newPassword')?.value" class="mt-2">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-secondary">Seguridad de la contraseña:</span>
+                        <span class="text-sm font-medium" 
+                              [ngClass]="{
+                                'text-warn': passwordStrengthColor === 'warn',
+                                'text-accent': passwordStrengthColor === 'accent',
+                                'text-primary': passwordStrengthColor === 'primary'
+                              }">
+                            {{passwordStrengthText}}
+                        </span>
+                    </div>
+                    <mat-progress-bar 
+                        mode="determinate" 
+                        [value]="passwordStrength"
+                        [color]="passwordStrengthColor">
+                    </mat-progress-bar>
+                </div>
+                
+                <div class="text-hint mt-1 text-md">
+                    Mínimo 8 caracteres. Debe incluir números, letras y caracteres especiales.
+                </div>
+            </div>
+            <!-- Confirm password -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Confirmar contraseña</mat-label>
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_outline:key'"
+                        matPrefix
+                    ></mat-icon>
+                    <input
+                        [formControlName]="'confirmPassword'"
+                        [type]="hideConfirmPassword ? 'password' : 'text'"
+                        maxlength="16"
+                        (paste)="onPaste($event)"
+                        matInput
+                    />
+                    <button
+                        mat-icon-button
+                        matSuffix
+                        type="button"
+                        (click)="hideConfirmPassword = !hideConfirmPassword"
+                        [attr.aria-label]="'Hide password'"
+                        [attr.aria-pressed]="hideConfirmPassword"
+                    >
+                        <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </button>
+                    <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('required')">
+                        Confirmar contraseña es requerido
+                    </mat-error>
+                    <mat-error *ngIf="securityForm.get('confirmPassword')?.hasError('passwordMismatch') && 
+                                      securityForm.get('confirmPassword')?.value">
+                        Las contraseñas no coinciden
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button 
+                mat-stroked-button 
+                type="button"
+                (click)="cancelar()"
+            >
+                Cancelar
+            </button>
+            <button
+                class="ml-4"
+                mat-flat-button
+                type="button"
+                [color]="'primary'"
+                (click)="guardarPassword()"
+                [disabled]="securityForm.invalid"
+            >
+                Guardar
+            </button>
+        </div>
+    </form>
 </div>

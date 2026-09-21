@@ -1,0 +1,23 @@
+<div
+  class="bg-default relative h-[92dvh] w-full overflow-y-auto overflow-x-hidden rounded-[20px] text-black md:h-full md:min-h-[482px] md:overflow-hidden dark:text-white"
+>
+  <!-- CHECADOR COLABORADOR -->
+  <app-checador-colab *ngIf="esColaborador"> </app-checador-colab>
+
+  <!-- CHECADOR GUARDIA -->
+  <app-checador-guard *ngIf="esGuardia"> </app-checador-guard>
+
+  <!-- SIN PERMISO -->
+  <div
+    *ngIf="!esColaborador && !esGuardia"
+    class="flex min-h-[400px] items-center justify-center p-6"
+  >
+    <div class="text-center">
+      <mat-icon class="mb-3 text-5xl text-gray-400"> block </mat-icon>
+
+      <h2 class="text-xl font-semibold text-gray-700">Acceso no disponible</h2>
+
+      <p class="mt-2 text-gray-500">Tu usuario no tiene un tipo de checador asignado.</p>
+    </div>
+  </div>
+</div>

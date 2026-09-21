@@ -1,8 +1,7 @@
-
 export interface Rol {
-    CLAVE: number;
-    NOMBRE: string;
-    GUARD_NAME: string;
+    id: number;
+    nombre: string;
+    guard_name: string;
     created_at?: string;
     updated_at?: string;
 }

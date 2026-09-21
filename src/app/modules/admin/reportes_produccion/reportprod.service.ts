@@ -12,6 +12,12 @@ export interface TejidoResumen {
   PIEZAS: number | string;
 }
 
+export interface ToggleOcultarResponse {
+  success: boolean;
+  oculto: boolean;
+  message?: string;
+}
+
 export interface ReporteProduccion {
   depto: number;
   departamento: string;
@@ -55,9 +61,66 @@ export interface FacturadoDetallePartida {
   PNETO: number;
 }
 
+export interface FacturadoLinea {
+  cant: number;
+  cant_kg?: number;
+  cant_lb?: number;
+  cant_kg_eq?: number;
+  importe: number;
+  impuestos: number;
+  total: number;
+}
+
+export interface FacturadoNotasLinea {
+  cant: number;
+  total: number;
+}
+
+export interface FacturadoDevolucionLinea {
+  cant_kg_eq: number;
+  importe: number;
+  total: number;
+}
+
 export interface FacturadoResumenResponse {
-  total: { pneto: number };
-  detalle: FacturadoDetallePartida[] | null;
+  // totales globales (Z100 únicamente)
+  totales?: {
+    facturas: number;
+    cant: number;
+    importe: number;
+    impuestos: number;
+    total: number;
+    
+  };
+  // desglose Z100 por línea: PTPR / HILOS
+  por_linea?: {
+    [linea: string]: FacturadoLinea;
+  };
+  // notas de venta Z200
+  notas_venta?: {
+    registros: number;
+    total: number;
+    unidades: { um: string; cant: number }[];
+    por_linea: {
+      [linea: string]: FacturadoNotasLinea;
+    };
+  };
+  // devoluciones
+  devoluciones?: {
+    registros: number;
+    cant: number;
+    subtotal: number;
+    iva: number;
+    total: number;
+    por_linea: {
+      [linea: string]: FacturadoDevolucionLinea;
+    };
+    detalle: any[];
+  };
+  // detalle de partidas (tabla)
+  detalle: any[];
+  // legacy — mantener para no romper nada
+  total?: { pneto: number };
 }
 
 export interface AcabadoResumen {
@@ -65,6 +128,12 @@ export interface AcabadoResumen {
   proceso: string;
   CANTIDAD: number | string;
   PIEZAS: number | string;
+}
+
+export interface ProduccionPorDia {
+  FECHA: string;
+  CANTIDAD: number;
+  PIEZAS: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -276,14 +345,13 @@ export class ReportProdService {
     }
 
     return this._httpClient
-      .get<{ success: boolean; data: any[] }>(
-        `${this.apiUrl}reportes-produccion/entregado-embarques`, // 🔥 VERIFICA ESTA RUTA
-        { params },
-      )
+      .get<{
+        success: boolean;
+        data: any[];
+      }>(`${this.apiUrl}reportes-produccion/entregado-embarques`, { params })
       .pipe(
         map((resp) => {
-          // console.log('🔧 SERVICE: Respuesta del servidor:', resp);
-          return resp.data || []; // 🔥 ASEGÚRATE DE RETORNAR resp.data
+          return resp.data || [];
         }),
         catchError((err) => {
           console.error('🔧 SERVICE: Error en petición:', err);
@@ -363,28 +431,64 @@ export class ReportProdService {
    * - desglosar=true: trae detalle por partida
    * - desglosar=false: solo total
    */
+  // getFacturado(
+  //   fechaInicio: Date,
+  //   fechaFin: Date,
+  //   desglosar: boolean = true,
+  // ): Observable<FacturadoResumenResponse> {
+  //   let params = new HttpParams();
+
+  //   const toIso = (d: Date): string => {
+  //     const dd = d.getDate().toString().padStart(2, '0');
+  //     const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+  //     const yyyy = d.getFullYear();
+  //     return `${yyyy}-${mm}-${dd}`;
+  //   };
+
+  //   params = params
+  //     .set('fecha_inicio', `${toIso(fechaInicio)} 00:00:00`)
+  //     .set('fecha_fin', `${toIso(fechaFin)} 00:00:00`)
+  //     .set('desglosar', desglosar ? '1' : '0');
+
+  //   return this._httpClient
+  //     .get<{
+  //       success: boolean;
+  //       data: FacturadoResumenResponse;
+  //     }>(`${this.apiUrl}reportes-produccion/facturado`, { params })
+  //     .pipe(
+  //       map((r) => r.data),
+  //       catchError((err) => {
+  //         console.error('Error al obtener facturado', err);
+  //         return throwError(() => new Error(err.message || 'Error desconocido'));
+  //       }),
+  //     );
+  // }
+
   getFacturado(
-    fechaInicio: Date,
-    fechaFin: Date,
+    fechaInicio?: Date | null,
+    fechaFin?: Date | null,
     desglosar: boolean = true,
   ): Observable<FacturadoResumenResponse> {
     let params = new HttpParams();
 
-    const toIso = (d: Date): string => {
-      const dd = d.getDate().toString().padStart(2, '0');
-      const mm = (d.getMonth() + 1).toString().padStart(2, '0');
-      const yyyy = d.getFullYear();
-      return `${yyyy}-${mm}-${dd}`;
+    // ✅ Mismo formato Firebird que todos los demás métodos
+    const formatoFirebird = (fecha: Date, esInicio: boolean): string => {
+      const dia = fecha.getDate().toString().padStart(2, '0');
+      const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+      const anio = fecha.getFullYear();
+      const hora = esInicio ? '00:00:00' : '23:59:59';
+      return `${dia}.${mes}.${anio} ${hora}`;
     };
 
-    // fin exclusivo: +1 día
-    const finExclusivo = new Date(fechaFin);
-    finExclusivo.setDate(finExclusivo.getDate() + 1);
+    if (fechaInicio) {
+      params = params.set('fecha_inicio', formatoFirebird(fechaInicio, true));
+    }
 
-    params = params
-      .set('fecha_inicio', `${toIso(fechaInicio)} 00:00:00`)
-      .set('fecha_fin', `${toIso(finExclusivo)} 00:00:00`)
-      .set('desglosar', desglosar ? '1' : '0');
+    if (fechaFin) {
+      params = params.set('fecha_fin', formatoFirebird(fechaFin, false));
+    }
+
+    params = params.set('desglosar', desglosar ? '1' : '0');
 
     return this._httpClient
       .get<{
@@ -474,7 +578,7 @@ export class ReportProdService {
    * 🚀 NUEVO: Obtener TODOS los reportes en una sola petición
    */
   getAllReports(fechaInicio: Date, fechaFin: Date, silent = false): Observable<any> {
-      const context = new HttpContext().set(SILENT_HTTP, silent);
+    const context = new HttpContext().set(SILENT_HTTP, silent);
     let params = new HttpParams();
 
     const formatoFirebird = (fecha: Date, esInicio: boolean): string => {
@@ -490,12 +594,165 @@ export class ReportProdService {
       .set('fecha_fin', formatoFirebird(fechaFin, false));
 
     return this._httpClient
-      .get<{ success: boolean; data: any }>(`${this.apiUrl}reportes-produccion/all`, { params, context })
+      .get<{
+        success: boolean;
+        data: any;
+      }>(`${this.apiUrl}reportes-produccion/all`, { params, context })
       .pipe(
         map((resp) => resp.data),
         catchError((err) => {
           console.error('Error al obtener todos los reportes', err);
           return throwError(() => new Error(err.message || 'Error desconocido'));
+        }),
+      );
+  }
+
+  // En report-prod.service.ts
+  getFacturadoPorDia(fechaInicio: Date, fechaFin: Date): Observable<any[]> {
+    let params = new HttpParams();
+
+    const toISO = (d: Date): string => {
+      const dd = d.getDate().toString().padStart(2, '0');
+      const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
+    const finExclusivo = new Date(fechaFin);
+    finExclusivo.setDate(finExclusivo.getDate() + 1);
+
+    params = params
+      .set('fecha_inicio', `${toISO(fechaInicio)} 00:00:00`)
+      .set('fecha_fin', `${toISO(finExclusivo)} 00:00:00`);
+
+    return this._httpClient
+      .get<{
+        success: boolean;
+        data: any[];
+      }>(`${this.apiUrl}reportes-produccion/facturado-por-dia`, { params })
+      .pipe(
+        map((r) => r.data),
+        catchError((err) => {
+          console.error('Error al obtener facturado por día', err);
+          return throwError(() => new Error(err.message || 'Error desconocido'));
+        }),
+      );
+  }
+
+  // ─── Tejido por día ───
+  getTejidoPorDia(fechaInicio: Date, fechaFin: Date): Observable<ProduccionPorDia[]> {
+    let params = new HttpParams();
+    const fmt = (f: Date, inicio: boolean) => {
+      const dd = f.getDate().toString().padStart(2, '0');
+      const mm = (f.getMonth() + 1).toString().padStart(2, '0');
+      const yyyy = f.getFullYear();
+      return `${dd}.${mm}.${yyyy} ${inicio ? '00:00:00' : '23:59:59'}`;
+    };
+    params = params
+      .set('fecha_inicio', fmt(fechaInicio, true))
+      .set('fecha_fin', fmt(fechaFin, false));
+    return this._httpClient
+      .get<{
+        success: boolean;
+        data: ProduccionPorDia[];
+      }>(`${this.apiUrl}reportes-produccion/tejido-por-dia`, { params })
+      .pipe(
+        map((r) => r.data),
+        catchError((err) => throwError(() => new Error(err.message))),
+      );
+  }
+
+  // ─── Tintorería por día ───
+  getTintoreriaPorDia(fechaInicio: Date, fechaFin: Date): Observable<ProduccionPorDia[]> {
+    let params = new HttpParams();
+    const fmt = (f: Date, inicio: boolean) => {
+      const dd = f.getDate().toString().padStart(2, '0');
+      const mm = (f.getMonth() + 1).toString().padStart(2, '0');
+      const yyyy = f.getFullYear();
+      return `${dd}.${mm}.${yyyy} ${inicio ? '00:00:00' : '23:59:59'}`;
+    };
+    params = params
+      .set('fecha_inicio', fmt(fechaInicio, true))
+      .set('fecha_fin', fmt(fechaFin, false));
+    return this._httpClient
+      .get<{
+        success: boolean;
+        data: ProduccionPorDia[];
+      }>(`${this.apiUrl}reportes-produccion/tintoreria-por-dia`, { params })
+      .pipe(
+        map((r) => r.data),
+        catchError((err) => throwError(() => new Error(err.message))),
+      );
+  }
+
+  // ─── Estampado por día ───
+  getEstampadoPorDia(fechaInicio: Date, fechaFin: Date): Observable<ProduccionPorDia[]> {
+    let params = new HttpParams();
+    const fmt = (f: Date, inicio: boolean) => {
+      const dd = f.getDate().toString().padStart(2, '0');
+      const mm = (f.getMonth() + 1).toString().padStart(2, '0');
+      const yyyy = f.getFullYear();
+      return `${dd}.${mm}.${yyyy} ${inicio ? '00:00:00' : '23:59:59'}`;
+    };
+    params = params
+      .set('fecha_inicio', fmt(fechaInicio, true))
+      .set('fecha_fin', fmt(fechaFin, false));
+    return this._httpClient
+      .get<{
+        success: boolean;
+        data: ProduccionPorDia[];
+      }>(`${this.apiUrl}reportes-produccion/estampados-por-dia`, { params })
+      .pipe(
+        map((r) => r.data),
+        catchError((err) => throwError(() => new Error(err.message))),
+      );
+  }
+
+  // ─── Acabado por día ───
+  getAcabadoPorDia(fechaInicio: Date, fechaFin: Date): Observable<ProduccionPorDia[]> {
+    let params = new HttpParams();
+    const fmt = (f: Date, inicio: boolean) => {
+      const dd = f.getDate().toString().padStart(2, '0');
+      const mm = (f.getMonth() + 1).toString().padStart(2, '0');
+      const yyyy = f.getFullYear();
+      return `${dd}.${mm}.${yyyy} ${inicio ? '00:00:00' : '23:59:59'}`;
+    };
+    params = params
+      .set('fecha_inicio', fmt(fechaInicio, true))
+      .set('fecha_fin', fmt(fechaFin, false));
+    return this._httpClient
+      .get<{
+        success: boolean;
+        data: ProduccionPorDia[];
+      }>(`${this.apiUrl}reportes-produccion/acabado-por-dia`, { params })
+      .pipe(
+        map((r) => r.data),
+        catchError((err) => throwError(() => new Error(err.message))),
+      );
+  }
+
+  /**
+   * 🔥 POST → Ocultar / Desocultar elemento por z200_id
+   */
+  toggleOcultar(z200Id: string | number): Observable<boolean> {
+    return this._httpClient
+      .post<ToggleOcultarResponse>(`${this.apiUrl}reportes-produccion/ocultar/${z200Id}`, {})
+      .pipe(
+        map((resp) => resp.oculto),
+        catchError((err) => {
+          console.error('Error al ocultar/desocultar elemento', err);
+          return throwError(() => new Error(err.message || 'Error desconocido'));
+        }),
+      );
+  }
+  getEstadoOculto(z200Id: number): Observable<boolean> {
+    return this._httpClient
+      .get<{ oculto: boolean }>(`${this.apiUrl}reportes-produccion/ocultar/${z200Id}`)
+      .pipe(
+        map((resp) => resp.oculto),
+        catchError((err) => {
+          console.error(err);
+          return throwError(() => err);
         }),
       );
   }

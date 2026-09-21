@@ -1,21 +1,20 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ApexOptions } from 'apexcharts';
-// import { ResumenWebsocketService } from 'app/core/services/websockets/resumenwebsocket.service';
-import { FinanceService } from 'app/modules/admin/dashboards/finance/finance.service';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { filter, map, Subject, takeUntil } from 'rxjs';
+import { filter, Subject, takeUntil } from 'rxjs';
 import { SharedDataService } from '../../list/shared-data.service';
 import {
   PorRevisarTejido,
@@ -24,6 +23,14 @@ import {
   RevisadoTejido,
   SaldosTejido,
 } from '../../reportprod.service';
+import { ComposerAcabadoRealComponent } from './Composer/AcabadoReal/composeracabadoreal.component';
+import { ComposerEstampadoComponent } from './Composer/Estampado/composerestampado.component';
+import {
+  ComposerFacturadoComponent,
+  ModoComposer,
+} from './Composer/Facturado/composerfacturado.component';
+import { ComposerTejidoComponent } from './Composer/Tejido/composertejido.component';
+import { ComposerTintoreriaComponent } from './Composer/Tintoreria/composertintoreria.component';
 import { AreaResumen } from './types/areas.types';
 import { ClienteAgrupado, FacturaDetalle } from './types/facturacion.types';
 
@@ -48,41 +55,57 @@ import { ClienteAgrupado, FacturaDetalle } from './types/facturacion.types';
   ],
 })
 export class InicioViewComponent implements OnInit, OnDestroy {
-  ivaTotal = 0;
   totalConIva = 0;
   isMobile = false;
   totalFacturas = 0;
   cantidadTotal = 0;
-  facturasConIva = 0;
-  facturasSinIva = 0;
   impuestosTotal = 0;
+  cantPTPR: number = 0;
+  terminoBusqueda = '';
+  cantHILOS: number = 0;
+  totalPTPR: number = 0;
+  totalHILOS: number = 0;
   importeTotalSinIva = 0;
+  cantKgPTPR: number = 0;
+  cantLbPTPR: number = 0;
+  cantKgHILOS: number = 0;
+  cantLbHILOS: number = 0;
   loadingFacturacion = true;
+  notasVentaPTPR: number = 0;
   loadingSaldosTejido = true;
+  notasVentaHILOS: number = 0;
+  z200Oculto: boolean = false;
+  notasVentaTotal: number = 0;
   loadingRevisadoTejido = true;
+  devolucionesTotal: number = 0;
   loadingEmbarquesTejido = true;
   loadingPorRevisarTejido = true;
   loadingDetallesProcesos = true;
   loadingProduccionTejido = true;
+  cantNotasVentaPTPR: number = 0;
+  cantNotasVentaHILOS: number = 0;
+  devolucionesCantPTPR: number = 0;
   loadingGraficaFacturacion = true;
+  variacionPeriodoAnterior: number;
+  devolucionesCantHILOS: number = 0;
+  devolucionesTotalPTPR: number = 0;
+  devolucionesRegistros: number = 0;
+  devolucionesTotalHILOS: number = 0;
   loadingDistribucionProcesos = true;
   datosEmbarquesCompletos: any[] = [];
-  accountBalanceOptions!: ApexOptions;
   private destroy$ = new Subject<void>();
   datosAgrupados: ClienteAgrupado[] = [];
-  private wsRefresh$ = new Subject<any>();
+  unidadToggle: 'KG' | 'TON' | 'LB' = 'KG';
   datosSaldosCompletos: SaldosTejido[] = [];
   filtros$ = this.sharedData.filtrosGlobales$;
   chartSaldosTejido: ApexOptions | null = null;
   datosRevisadoCompletos: RevisadoTejido[] = [];
   chartRevisadoTejido: ApexOptions | null = null;
-  tipoEmbarqueSeleccionado: string | null = null;
   vistaActual: 'general' | 'detalle' = 'general';
   chartEmbarquesTejido: ApexOptions | null = null;
   articuloSeleccionadoSaldos: string | null = null;
   chartProduccionTejido: ApexOptions | null = null;
   chartPorRevisarTejido: ApexOptions | null = null;
-  @ViewChild('chartEmbarques') chartEmbarques: any;
   datosProduccionCompletos: ProduccionTejido[] = [];
   datosPorRevisarCompletos: PorRevisarTejido[] = [];
   articuloSeleccionadoRevisado: string | null = null;
@@ -91,56 +114,7 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   articuloSeleccionadoProduccion: string | null = null;
   articuloSeleccionadoPorRevisar: string | null = null;
   tipoEmbarqueSeleccionadoGrafica: string | null = null;
-  @ViewChild(MatSort) recentTransactionsTableMatSort!: MatSort;
-
-  data: any = {
-    previousStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
-    currentStatement: { date: '', limit: 0, spent: 0, minimum: 0 },
-    accountBalance: { growRate: 0, ami: 0, series: [] },
-    recentTransactions: [],
-  };
-
-  rangoTexto$ = this.filtros$.pipe(
-    map((f) => {
-      const opts: Intl.DateTimeFormatOptions = {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      };
-      const hoy = new Date();
-
-      switch (f.rangoFecha) {
-        case 'todos':
-          return 'Todos los registros';
-        case 'hoy':
-          return `Hoy - ${hoy.toLocaleDateString('es-MX', opts)}`;
-        case 'ayer': {
-          const ayer = new Date();
-          ayer.setDate(ayer.getDate() - 1);
-          return `Ayer - ${ayer.toLocaleDateString('es-MX', opts)}`;
-        }
-        case 'mes_actual': {
-          const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-          return `${inicioMes.toLocaleDateString('es-MX', opts)} - ${hoy.toLocaleDateString('es-MX', opts)}`;
-        }
-        case 'mes_anterior': {
-          const inicio = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-          const fin = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
-          return `${inicio.toLocaleDateString('es-MX', opts)} - ${fin.toLocaleDateString('es-MX', opts)}`;
-        }
-        case 'fecha_especifica':
-          return f.fechaInicio
-            ? `Fecha: ${f.fechaInicio.toLocaleDateString('es-MX', opts)}`
-            : 'Seleccionar fecha';
-        case 'periodo':
-          return f.fechaInicio && f.fechaFin
-            ? `${f.fechaInicio.toLocaleDateString('es-MX', opts)} - ${f.fechaFin.toLocaleDateString('es-MX', opts)}`
-            : 'Periodo de fechas';
-        default:
-          return 'Mes actual';
-      }
-    }),
-  );
+  notasVentaUnidades: { um: string; cant: number }[] = [];
 
   areasResumen: AreaResumen[] = [
     {
@@ -263,27 +237,10 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     private sharedData: SharedDataService,
     private cdr: ChangeDetectorRef,
     private breakpointObserver: BreakpointObserver,
-    private _financeService: FinanceService,
-    // private resumenwebsocket: ResumenWebsocketService,
+    private _dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
-    // this.resumenwebsocket.listenReportesActualizados((event) => {
-    //   this.wsRefresh$.next(event);
-    // });
-
-    // this.wsRefresh$
-    //   .pipe(
-    //     takeUntil(this.destroy$),
-    //     // 👇 si llegan varios en corto, solo refresca 1 vez
-    //     debounceTime(500),
-    //   )
-    //   .subscribe((event) => {
-    //     console.log('🔔 Reportes actualizados:', event);
-    //     this.cargarTodasLasAreas({ silent: true });
-    //     // this.mostrarNotificacion(event.mensaje);
-    //   });
-
     this.breakpointObserver
       .observe([Breakpoints.Handset])
       .pipe(takeUntil(this.destroy$))
@@ -305,33 +262,29 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       const payload = facturado?.data ?? facturado;
       const detalle = payload?.detalle ?? [];
       if (!detalle.length) {
-        this.data.previousStatement = { date: '', limit: 0, spent: 0, minimum: 0 };
-        this.data.currentStatement = { date: '', limit: 0, spent: 0, minimum: 0 };
-        this.data.accountBalance = { growRate: 0, ami: 0, series: [] };
-        this._prepareChartData();
         this.cdr.markForCheck();
         return;
       }
       const filtros = this.sharedData.obtenerFiltros();
-      const from = filtros.fechaInicio
-        ? new Date(filtros.fechaInicio)
-        : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
       const to = filtros.fechaFin ? new Date(filtros.fechaFin) : new Date();
       const toExclusive = new Date(to);
       toExclusive.setHours(0, 0, 0, 0);
       toExclusive.setDate(toExclusive.getDate() + 1);
-      this.setCardsFacturadoPorFiltro(detalle, from, toExclusive);
-      this.procesarFacturadoParaGrafica(detalle);
-      this._prepareChartData();
       this.cdr.markForCheck();
     });
+
     this.cargarTodasLasAreas();
+    this.verificarZ200Oculto();
+
+    this.sharedData.filtrosGlobales$.pipe(takeUntil(this.destroy$)).subscribe((filtros) => {
+      this.terminoBusqueda = (filtros.busqueda || '').toLowerCase();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    // this.resumenwebsocket.stopListening();
   }
 
   private cargarTodasLasAreas(opts?: { silent?: boolean }): void {
@@ -360,8 +313,9 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (datos) => {
           this.sharedData.setDatosFacturado(datos.facturado);
-          this.procesarFacturado(datos.facturado);
           this.onFacturadoLoaded(datos.facturado);
+          this.procesarFacturado(datos.facturado);
+
           this.procesarProduccion(datos.produccion);
           this.procesarRevisado(datos.revisado);
           this.procesarPorRevisar(datos.porRevisar);
@@ -372,6 +326,11 @@ export class InicioViewComponent implements OnInit, OnDestroy {
           this.procesarEstampados(datos.estampados);
           this.procesarAcabado(datos.acabado);
           this.crearGraficaDistribucionProcesos(datos);
+          this.sharedData.actualizarTejidoPorDia(datos.tejidoPorDia ?? []);
+          this.sharedData.actualizarTintoreriaPorDia(datos.tintoreriaPorDia ?? []);
+          this.sharedData.actualizarEstampadoPorDia(datos.estampadoPorDia ?? []);
+          this.sharedData.actualizarAcabadoPorDia(datos.acabadoPorDia ?? []);
+
           if (!silent) {
             this.loadingFacturacion = false;
             this.loadingGraficaFacturacion = false;
@@ -506,35 +465,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
 
   trackByFn(index: number, item: any): any {
     return item?.id ?? index;
-  }
-
-  private sumarPeriodo(detalle: any[], from: Date, to: Date) {
-    let total = 0;
-    let importe = 0;
-    let impuestos = 0;
-    let facturas = 0;
-
-    for (const item of detalle) {
-      const f = this.getFechaFactura(item);
-      if (!f) continue;
-
-      if (f >= from && f < to) {
-        total += this.toNum(item.total);
-        importe += this.toNum(item.importe);
-        impuestos += this.toNum(item.impuestos);
-        facturas += 1;
-      }
-    }
-
-    return { total, importe, impuestos, facturas };
-  }
-
-  private toNum(v: any): number {
-    if (v == null) return 0;
-    if (typeof v === 'number') return v;
-    const s = String(v).replace(/,/g, '').trim();
-    const n = Number(s);
-    return isNaN(n) ? 0 : n;
   }
 
   get detallesAcabado() {
@@ -684,14 +614,11 @@ export class InicioViewComponent implements OnInit, OnDestroy {
   ): void {
     const area = this.areasResumen.find((a) => a.nombre === areaName);
     if (!area) return;
-
     const datosFiltrados = articuloSeleccionado
       ? datos.filter((d) => d.ARTICULO === articuloSeleccionado)
       : datos;
-
     const peso = datosFiltrados.reduce((sum, item) => sum + (Number(item[pesoField]) || 0), 0);
     const piezas = datosFiltrados.reduce((sum, item) => sum + (Number(item.PIEZAS) || 0), 0);
-
     area.metrics[0].value = peso;
     area.metrics[1].value = piezas;
     area.metrics[2].value = datosFiltrados.length;
@@ -731,10 +658,8 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     );
     const topArticulos = datosOrdenados.slice(0, topN);
     const otrosArticulos = datosOrdenados.slice(topN);
-
     const series = topArticulos.map((item) => parseFloat(item[valueField]));
     const labels = topArticulos.map((item) => item.ARTICULO);
-
     if (otrosArticulos.length > 0) {
       const otrosTotal = otrosArticulos.reduce(
         (sum, item) => sum + parseFloat(item[valueField]),
@@ -743,7 +668,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       series.push(otrosTotal);
       labels.push(`Otros (${otrosArticulos.length})`);
     }
-
     this[chartProperty] = {
       series,
       labels,
@@ -902,7 +826,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       area.metrics[0].value = cantidadTotal;
       area.metrics[1].value = piezasTotal;
       area.metrics[2].value = procesos;
-
       area.detalles = data.map((item) => ({
         departamento: item.departamento || 'N/A',
         proceso: item.proceso || 'N/A',
@@ -951,53 +874,41 @@ export class InicioViewComponent implements OnInit, OnDestroy {
    * FACTURADO
    */
 
-  private procesarFacturado1(resp: any): void {
-    const payload = resp?.data ?? resp;
-    if (!payload) return;
-
-    const tot = payload.totales ?? {};
-    const detalle: FacturaDetalle[] = payload.detalle ?? [];
-
-    const subtotal = Number(tot.importe) || 0;
-    const impuestos = Number(tot.impuestos) || 0;
-    const cant = Number(tot.cant) || 0;
-    const total = Number(tot.total) || 0;
-
-    const cantidadTotal =
-      Number(tot.cant) || detalle.reduce((sum, x) => sum + (Number(x.cant) || 0), 0);
-
-    // ✅ Guarda total con IVA para el card "Total"
-    this.totalConIva = total;
-
-    const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
-    if (area) {
-      area.metrics[0].value = subtotal; // Subtotal
-      area.metrics[1].value = impuestos; // IVA
-      area.metrics[2].value = cantidadTotal; // Cantidad total
-      area.metrics[2].value = cant; // Cantidad total
-    }
-  }
-
   private procesarFacturado(resp: any): void {
     const payload = resp?.data ?? resp;
     if (!payload) return;
     const tot = payload.totales ?? {};
-    const detalle: FacturaDetalle[] = payload.detalle ?? [];
-    const cant = Number(tot.cant) || 0;
-    const total = Number(tot.total) || 0;
-
-
     const area = this.areasResumen.find((a) => a.nombre === 'Facturación');
     if (!area || area.metrics.length < 2) return;
-    area.metrics[0].value = cant;
-    area.metrics[1].value = total;
+    area.metrics[0].value = this.resumenPesoFacturacion.totalKG;
+    area.metrics[1].value = Number(tot.total) || 0;
   }
 
+  get resumenPesoFacturacion() {
+    const RATES: { [key: string]: number } = {
+      KG: 1,
+      KGS: 1,
+      LB: 0.453592,
+      LBS: 0.453592,
+      OZ: 0.0283495,
+      G: 0.001,
+      GR: 0.001,
+    };
+
+    const items = Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => {
+      const rate = RATES[um.toUpperCase()] ?? 0;
+      return { um, cant, kgEquivalente: cant * rate, esKG: rate === 1 };
+    });
+
+    const totalKG = items.reduce((sum, i) => sum + i.kgEquivalente, 0);
+
+    return { items, totalKG };
+  }
+
+  //45.3592
+
   get cantidadesPorUnidadArray() {
-    return Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => ({
-      um,
-      cant,
-    }));
+    return Object.entries(this.cantidadesPorUnidad || {}).map(([um, cant]) => ({ um, cant }));
   }
 
   get totalFacturacion(): number {
@@ -1008,194 +919,43 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     return this.getMetric('Facturación', 2);
   }
 
-  private getFechaFactura(item: any): Date | null {
-    const raw = item.fecha || item.FECHA || item.fechaFactura || item.fecha_timbrado;
-    if (!raw) return null;
-    const d = new Date(raw);
-    return isNaN(d.getTime()) ? null : d;
-  }
-
-  private _prepareChartData(): void {
-    const cConIva = '#0ea5e9';
-    const cSinIva = '#f97316';
-
-    this.accountBalanceOptions = {
-      chart: {
-        animations: { speed: 400, animateGradually: { enabled: false } },
-        fontFamily: 'inherit',
-        foreColor: 'inherit',
-        width: '100%',
-        height: 320,
-        type: 'area',
-        sparkline: { enabled: true },
-        toolbar: { show: false },
-        defaultLocale: 'es',
-        locales: [
-          {
-            name: 'es',
-            options: {
-              months: [
-                'enero',
-                'febrero',
-                'marzo',
-                'abril',
-                'mayo',
-                'junio',
-                'julio',
-                'agosto',
-                'septiembre',
-                'octubre',
-                'noviembre',
-                'diciembre',
-              ],
-              shortMonths: [
-                'ene',
-                'feb',
-                'mar',
-                'abr',
-                'may',
-                'jun',
-                'jul',
-                'ago',
-                'sep',
-                'oct',
-                'nov',
-                'dic',
-              ],
-              days: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
-              shortDays: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
-              toolbar: {
-                exportToSVG: 'Descargar SVG',
-                exportToPNG: 'Descargar PNG',
-                exportToCSV: 'Descargar CSV',
-                selection: 'Selección',
-                selectionZoom: 'Zoom selección',
-                zoomIn: 'Acercar',
-                zoomOut: 'Alejar',
-                pan: 'Mover',
-                reset: 'Reset',
-              },
-            },
-          },
-        ],
-      },
-      colors: [cConIva, cSinIva],
-      stroke: {
-        curve: 'smooth',
-        width: 2,
-      },
-
-      series: this.data?.accountBalance?.series ?? [],
-
-      fill: {
-        type: 'gradient',
-        colors: [cConIva, cSinIva],
-        gradient: {
-          shadeIntensity: 0.2,
-          opacityFrom: 0.35,
-          opacityTo: 0.05,
-          stops: [0, 90, 100],
-        },
-      },
-
-      xaxis: { type: 'datetime' },
-
-      legend: {
-        show: true,
-        position: 'top',
-        horizontalAlign: 'left',
-        markers: {
-          size: 8,
-          strokeWidth: 0,
-          fillColors: [cConIva, cSinIva],
-        },
-      },
-
-      tooltip: {
-        shared: true,
-        followCursor: true,
-        theme: 'dark',
-        x: { format: 'dd MMM yyyy' },
-        y: {
-          formatter: (value: number) =>
-            new Intl.NumberFormat('es-MX', {
-              style: 'currency',
-              currency: 'MXN',
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            }).format(value),
-        },
-      },
-    };
-  }
-
-  private procesarFacturadoParaGrafica(detalle: any[]): void {
-    const getFecha = (x: any) => x.fecha || x.FECHA || x.fechaFactura || x.fecha_timbrado;
-    const getFactura = (x: any) => x.factura || x.FACTURA || x.cve_doc || x.CVE_DOC;
-    const porFactura = new Map<string, { ts: number; iva: number; subtotal: number }>();
-    for (const item of detalle) {
-      const folio = String(getFactura(item) ?? '').trim();
-      if (!folio) continue;
-      const raw = getFecha(item);
-      if (!raw) continue;
-      const d = new Date(String(raw).replace(' ', 'T'));
-      if (isNaN(d.getTime())) continue;
-      const dayKey = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-      const subtotal = this.toNum(item.importe);
-      const iva = this.toNum(item.impuestos);
-      if (!porFactura.has(folio)) porFactura.set(folio, { ts: dayKey, iva, subtotal });
-    }
-
-    const porDia = new Map<number, { iva: number; subtotal: number }>();
-    for (const v of porFactura.values()) {
-      const prev = porDia.get(v.ts) ?? { iva: 0, subtotal: 0 };
-      prev.iva += v.iva;
-      prev.subtotal += v.subtotal;
-      porDia.set(v.ts, prev);
-    }
-
-    const days = Array.from(porDia.entries()).sort((a, b) => a[0] - b[0]);
-    this.data.accountBalance = {
-      growRate: 0,
-      ami: days.length ? days.reduce((s, [, v]) => s + v.iva, 0) / days.length : 0,
-      series: [
-        { name: 'IVA', data: days.map(([ts, v]) => [ts, v.iva]) },
-        { name: 'Subtotal', data: days.map(([ts, v]) => [ts, v.subtotal]) },
-      ],
-    };
-  }
-
-  private setCardsFacturadoPorFiltro(detalle: any[], from: Date, to: Date): void {
-    const r = this.sumarPeriodo(detalle, from, to);
-    this.data.previousStatement = {
-      date: to.toISOString(),
-      limit: r.importe,
-      spent: r.facturas,
-      minimum: r.impuestos,
-    };
-
-    this.data.currentStatement = {
-      date: to.toISOString(),
-      limit: r.impuestos,
-      spent: r.facturas,
-      minimum: r.impuestos,
-    };
-  }
-
   private onFacturadoLoaded(resp: any): void {
     const payload = resp?.data ?? resp;
     const tot = payload?.totales ?? {};
     const detalle: FacturaDetalle[] = payload?.detalle ?? [];
+    const porLinea = payload?.por_linea ?? {};
+    const notasPorLinea = payload?.notas_venta?.por_linea ?? {};
+    const devoluciones = payload?.devoluciones ?? {};
+    const devPorLinea = devoluciones?.por_linea ?? {};
 
     this.importeTotalSinIva = Number(tot.importe) || 0;
     this.impuestosTotal = Number(tot.impuestos) || 0;
     this.totalConIva = Number(tot.total) || 0;
-
-    this.ivaTotal = this.impuestosTotal || this.totalConIva - this.importeTotalSinIva;
-
     this.totalFacturas = Number(tot.facturas) || 0;
     this.cantidadTotal = Number(tot.cant) || 0;
+    this.totalPTPR = Number(porLinea['PTPR']?.total) || 0;
+    this.totalHILOS = Number(porLinea['HILOS']?.total) || 0;
+    this.notasVentaPTPR = Number(notasPorLinea['PTPR']?.total) || 0;
+    this.notasVentaHILOS = Number(notasPorLinea['HILOS']?.total) || 0;
+
+    this.cantPTPR = Number(porLinea['PTPR']?.cant_kg_eq) || 0;
+    this.cantHILOS = Number(porLinea['HILOS']?.cant_kg_eq) || 0;
+    this.cantKgPTPR = Number(porLinea['PTPR']?.cant_kg) || 0;
+    this.cantLbPTPR = Number(porLinea['PTPR']?.cant_lb) || 0;
+    this.cantKgHILOS = Number(porLinea['HILOS']?.cant_kg) || 0;
+    this.cantLbHILOS = Number(porLinea['HILOS']?.cant_lb) || 0;
+
+    this.cantNotasVentaPTPR = Number(notasPorLinea['PTPR']?.cant) || 0;
+    this.cantNotasVentaHILOS = Number(notasPorLinea['HILOS']?.cant) || 0;
+
+    this.devolucionesRegistros = Number(devoluciones?.registros) || 0;
+    this.devolucionesTotal = Number(devoluciones?.total) || 0;
+    this.devolucionesCantPTPR = Number(devPorLinea['PTPR']?.cant_kg_eq) || 0;
+    this.devolucionesCantHILOS = Number(devPorLinea['HILOS']?.cant_kg_eq) || 0;
+    this.devolucionesTotalPTPR = Number(devPorLinea['PTPR']?.total) || 0;
+    this.devolucionesTotalHILOS = Number(devPorLinea['HILOS']?.total) || 0;
     this.cantidadesPorUnidad = {};
+
     for (const item of detalle) {
       const unidad = (item.um || 'N/A').trim();
       const cantidad = Number(item.cant) || 0;
@@ -1212,21 +972,9 @@ export class InicioViewComponent implements OnInit, OnDestroy {
       if (imp > 0) conIva++;
       else sinIva++;
     }
-    this.facturasConIva = conIva;
-    this.facturasSinIva = sinIva;
-    if (detalle.length) {
-      const filtros = this.sharedData.obtenerFiltros();
-      const busqueda = (filtros.busqueda ?? '').toLowerCase().trim();
-      const detalleFiltrado = !busqueda
-        ? detalle
-        : detalle.filter(
-            (x) =>
-              (x.cliente ?? '').toLowerCase().includes(busqueda) ||
-              (x.factura ?? '').toLowerCase().includes(busqueda),
-          );
-    } else {
-      this.datosAgrupados = [];
-    }
+    this.notasVentaTotal = Number(payload?.notas_venta?.total) || 0;
+    this.notasVentaTotal = Number(payload?.notas_venta?.total) || 0;
+    this.notasVentaUnidades = payload?.notas_venta?.unidades ?? [];
   }
 
   /**
@@ -1492,7 +1240,6 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     const tipos = tiposUnicos.size;
     const articulos = new Set(datosFiltrados.map((item) => String(item.ARTICULO ?? '').trim()))
       .size;
-
     area.metrics[0].value = totalEmbarcado;
     area.metrics[1].value = tipos;
     area.metrics[2].value = articulos;
@@ -1515,48 +1262,16 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     return area?.metrics[2]?.value || 0;
   }
 
-  seleccionarTipoEmbarque(tipo: string): void {
-    const t = this.norm(tipo);
-    this.tipoEmbarqueSeleccionado = this.tipoEmbarqueSeleccionado === t ? null : t;
-    this.actualizarMetricasEmbarques();
-  }
-
-  private actualizarMetricasEmbarques(): void {
-    const area = this.areasResumen.find((a) => a.nombre === 'Embarques');
-    if (!area) return;
-
-    const datosFiltrados = this.tipoEmbarqueSeleccionado
-      ? this.datosEmbarquesCompletos.filter(
-          (d) => this.norm(d.TIPO) === this.tipoEmbarqueSeleccionado,
-        )
-      : this.datosEmbarquesCompletos;
-
-    const totalEmbarcado = datosFiltrados.reduce(
-      (sum, item) => sum + (Number(item.CANTIDAD) || 0),
-      0,
-    );
-    const TIPOS_FIJOS = ['PRIMERA', 'PREFERIDA', 'SEGUNDA', 'ORILLAS', 'RETAZO', 'MUESTRAS'];
-    const tipos = TIPOS_FIJOS.length;
-    const articulos = new Set(datosFiltrados.map((item) => String(item.ARTICULO ?? '').trim()))
-      .size;
-
-    area.metrics[0].value = totalEmbarcado;
-    area.metrics[1].value = tipos;
-    area.metrics[2].value = articulos;
-
-    this.cdr.markForCheck();
-  }
-
   private procesarEmbarques(data: any[]): void {
     if (!data || !Array.isArray(data)) return;
     this.tipoEmbarqueSeleccionadoGrafica = null;
 
     this.datosEmbarquesCompletos = data;
     this.datosEmbarquesCompletos = data;
-    const norm = (v: any) =>
-      String(v ?? '')
-        .trim()
-        .toUpperCase();
+    // const norm = (v: any) =>
+    //   String(v ?? '')
+    //     .trim()
+    //     .toUpperCase();
     const totalEmbarcado = data.reduce((sum, item) => sum + (Number(item.CANTIDAD) || 0), 0);
     const TIPOS_FIJOS = ['PRIMERA', 'PREFERIDA', 'SEGUNDA', 'ORILLAS', 'RETAZO', 'MUESTRAS'];
     const tipos = TIPOS_FIJOS.length;
@@ -1575,5 +1290,190 @@ export class InicioViewComponent implements OnInit, OnDestroy {
     this.crearGraficaEmbarquesTejido(this.datosEmbarquesCompletos);
     this.actualizarMetricasEmbarquesGrafica();
     this.cdr.markForCheck();
+  }
+
+  abrirComposerFacturado(modo: ModoComposer): void {
+    this._dialog.open(ComposerFacturadoComponent, {
+      data: { modo },
+      width: window.innerWidth < 768 ? '100vw' : '820px',
+      height: window.innerWidth < 768 ? '100dvh' : 'auto',
+      maxWidth: window.innerWidth < 768 ? '100vw' : '95vw',
+      maxHeight: window.innerWidth < 768 ? '100dvh' : '90vh',
+      panelClass:
+        window.innerWidth < 768 ? ['fuse-dialog', 'dialog-fullscreen-mobile'] : ['fuse-dialog'],
+    });
+  }
+
+  private _dialogConfig() {
+    const isMobile = window.innerWidth < 768;
+    return {
+      width: isMobile ? '100vw' : '820px',
+      height: isMobile ? '100dvh' : 'auto',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100dvh' : '90vh',
+      panelClass: isMobile ? ['fuse-dialog', 'dialog-fullscreen-mobile'] : ['fuse-dialog'],
+    };
+  }
+
+  abrirTejido(): void {
+    this._dialog.open(ComposerTejidoComponent, { ...this._dialogConfig(), data: {} });
+  }
+  abrirTintoreria(): void {
+    this._dialog.open(ComposerTintoreriaComponent, { ...this._dialogConfig(), data: {} });
+  }
+  abrirEstampado(): void {
+    this._dialog.open(ComposerEstampadoComponent, { ...this._dialogConfig(), data: {} });
+  }
+  abrirAcabado(): void {
+    this._dialog.open(ComposerAcabadoRealComponent, { ...this._dialogConfig(), data: {} });
+  }
+
+  get datosAgrupadosFiltrados(): ClienteAgrupado[] {
+    if (!this.terminoBusqueda) return this.datosAgrupados;
+    const term = this.terminoBusqueda.toLowerCase();
+    return this.datosAgrupados.filter(
+      (cliente) =>
+        cliente.cliente?.toLowerCase().includes(term) ||
+        cliente.facturas?.some(
+          (f) => f.factura?.toLowerCase().includes(term) || f.um?.toLowerCase().includes(term),
+        ),
+    );
+  }
+
+  get hayResultados(): boolean {
+    return this.datosAgrupadosFiltrados.length > 0;
+  }
+
+  get areasResumenFiltradas(): AreaResumen[] {
+    if (!this.terminoBusqueda) return this.areasResumen;
+    return this.areasResumen.filter(
+      (area) =>
+        area.nombre.toLowerCase().includes(this.terminoBusqueda) ||
+        area.metrics?.some((m) => m.label.toLowerCase().includes(this.terminoBusqueda)),
+    );
+  }
+
+  limpiarBusqueda(): void {
+    this.sharedData.actualizarFiltros({ busqueda: '' });
+  }
+
+  get areasResumenGeneralFiltradas() {
+    if (!this.terminoBusqueda) return null;
+    const term = this.terminoBusqueda.toLowerCase();
+    return this.areasResumen.filter(
+      (a) =>
+        a.nombre.toLowerCase().includes(term) ||
+        a.metrics?.some((m) => m.label.toLowerCase().includes(term)),
+    );
+  }
+
+  get seccionesVisibles(): Set<string> {
+    if (!this.terminoBusqueda) {
+      return new Set([
+        'Facturación',
+        'Distribución de procesos',
+        'Tejido',
+        'Tintorería',
+        'Estampados',
+        'Acabado real',
+        'Producción tejido',
+        'Tejido revisado',
+        'Por revisar',
+        'Saldos',
+        'Embarques',
+      ]);
+    }
+    const term = this.terminoBusqueda.toLowerCase();
+
+    const nombres: { [key: string]: string[] } = {
+      Facturación: ['facturación', 'facturacion', 'total', 'peso', 'factura'],
+      Tejido: ['tejido'],
+      Tintorería: ['tintorería', 'tintoreria', 'teñido', 'tenido', 'tintor'],
+      Estampados: ['estampados', 'estampado'],
+      'Acabado real': ['acabado', 'acabado real', 'control de calidad', 'calidad'],
+      'Producción tejido': ['producción', 'produccion', 'produccion tejido', 'tejido'],
+      'Tejido revisado': ['revisado', 'tejido revisado', 'tejido'],
+      'Por revisar': ['por revisar', 'revisar'],
+      Saldos: ['saldos', 'saldo'],
+      Embarques: ['embarques', 'embarque'],
+    };
+
+    const visible = new Set<string>();
+    for (const [seccion, keywords] of Object.entries(nombres)) {
+      if (keywords.some((k) => k.includes(term) || term.includes(k))) {
+        visible.add(seccion);
+      }
+    }
+    const seccionesProcesos = ['Tejido', 'Tintorería', 'Estampados', 'Acabado real'];
+    if (seccionesProcesos.some((s) => visible.has(s))) {
+      visible.add('Distribución de procesos');
+    }
+
+    return visible;
+  }
+
+  esVisible(seccion: string): boolean {
+    return this.seccionesVisibles.has(seccion);
+  }
+
+  get hayResultadosGeneral(): boolean {
+    return !this.terminoBusqueda || this.seccionesVisibles.size > 0;
+  }
+
+  toggleOcultar(id: number): void {
+    this.reportService.toggleOcultar(id).subscribe({
+      next: (oculto) => {
+        console.log('Nuevo estado:', oculto);
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
+
+  verificarZ200Oculto(): void {
+    const Z200_ID = 200;
+    this.reportService.getEstadoOculto(Z200_ID).subscribe({
+      next: (oculto) => {
+        this.z200Oculto = oculto;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
+  toggleZ200(): void {
+    const Z200_ID = 200;
+    const estadoAnterior = this.z200Oculto;
+    this.z200Oculto = !this.z200Oculto;
+    this.cdr.markForCheck();
+
+    this.reportService.toggleOcultar(Z200_ID).subscribe({
+      next: (oculto) => {
+        this.z200Oculto = oculto;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.z200Oculto = estadoAnterior;
+        this.cdr.markForCheck();
+        console.error('Error al toggle Z200:', err);
+      },
+    });
+  }
+
+  get notasVentaUnidadesKGEq(): number {
+    return (this.cantNotasVentaPTPR || 0) + (this.cantNotasVentaHILOS || 0);
+  }
+
+  get notasVentaUnidadesKG(): number {
+    return (this.cantNotasVentaPTPR || 0) + (this.cantNotasVentaHILOS || 0);
+  }
+
+  get totalKgEqZ100(): number {
+    return (this.cantPTPR || 0) + (this.cantHILOS || 0);
+  }
+
+  get devolucionesCantTotal(): number {
+    return (this.devolucionesCantPTPR || 0) + (this.devolucionesCantHILOS || 0);
   }
 }

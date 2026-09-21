@@ -7,14 +7,15 @@ import {
     UrlMatchResult,
     UrlSegment,
 } from '@angular/router';
-import { MailboxDetailsComponent } from 'app/modules/admin/apps/mailbox/details/details.component';
-import { MailboxEmptyDetailsComponent } from 'app/modules/admin/apps/mailbox/empty-details/empty-details.component';
-import { MailboxListComponent } from 'app/modules/admin/apps/mailbox/list/list.component';
-import { MailboxComponent } from 'app/modules/admin/apps/mailbox/mailbox.component';
-import { MailboxService } from 'app/modules/admin/apps/mailbox/mailbox.service';
-import { MailboxSettingsComponent } from 'app/modules/admin/apps/mailbox/settings/settings.component';
+
 import { isEqual } from 'lodash-es';
 import { catchError, finalize, forkJoin, throwError } from 'rxjs';
+import { MailboxService } from './mailbox.service';
+import { MailboxListComponent } from './list/list.component';
+import { MailboxComponent } from './mailbox.component';
+import { MailboxEmptyDetailsComponent } from './empty-details/empty-details.component';
+import { MailboxDetailsComponent } from './details/details.component';
+import { MailboxSettingsComponent } from './settings/settings.component';
 
 /**
  * Mailbox custom route matcher
@@ -155,14 +156,27 @@ const mailsResolver = (
         );
     }
 
-    // If filter is set on the parameters...
+    // 🔥 CAMBIO CLAVE: Si filter es importantes o destacados, usa getMailsByCustomFilter
     if (route.paramMap.get('filter')) {
-        sources.push(
-            mailboxService.getMailsByFilter(
-                route.paramMap.get('filter'),
-                route.paramMap.get('page')
-            )
-        );
+        const filterSlug = route.paramMap.get('filter');
+        
+        // Filtros personalizados (importantes, destacados)
+        if (filterSlug === 'importantes' || filterSlug === 'destacados') {
+            sources.push(
+                mailboxService.getMailsByCustomFilter(
+                    filterSlug as 'importantes' | 'destacados',
+                    route.paramMap.get('page')
+                )
+            );
+        } else {
+            // Filtros normales (si los tuvieras en el futuro)
+            sources.push(
+                mailboxService.getMailsByFilter(
+                    filterSlug,
+                    route.paramMap.get('page')
+                )
+            );
+        }
     }
 
     // If label is set on the parameters...

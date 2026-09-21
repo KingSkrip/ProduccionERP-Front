@@ -78,38 +78,73 @@ export class RolesListComponent implements OnInit, AfterViewInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
+
         this.selectedRolForm = this._formBuilder.group({
-            CLAVE: [''],
-            NOMBRE: ['', [Validators.required]],
-            GUARD_NAME: ['', [Validators.required]],
+            id: [''],
+            nombre: ['', [Validators.required]],
+            guard_name: ['', [Validators.required]],
         });
-
         this.roles$ = this._rolesService.roles$;
-
         this._rolesService.getRoles()
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe();
-
-        this.searchInputControl.valueChanges
-            .pipe(
-                takeUntil(this._unsubscribeAll),
-                debounceTime(300),
-                switchMap(() => {
-                    this.isLoading = true;
-                    return this.roles$;
-                })
-            )
-            .subscribe();
-
+        // Cargar roles
         this.roles$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(roles => {
                 this.dataSource.data = roles ?? [];
-                this.totalPages = Math.ceil(this.dataSource.data.length / this.pageSize);
-                this.totalPagesArray = Array.from({ length: this.totalPages }, (_, i) => i);
+                this.totalPages = Math.ceil(
+                    this.dataSource.data.length / this.pageSize
+                );
+                this.totalPagesArray = Array.from(
+                    { length: this.totalPages },
+                    (_, i) => i
+                );
                 this.isLoading = false;
                 this._changeDetectorRef.markForCheck();
             });
+
+
+        // BUSCADOR
+        this.searchInputControl.valueChanges
+            .pipe(
+                debounceTime(300),
+                takeUntil(this._unsubscribeAll)
+            )
+            .subscribe(value => {
+
+                const filterValue = value
+                    ? value.trim().toLowerCase()
+                    : '';
+
+                this.dataSource.filter = filterValue;
+
+                this.currentPage = 0;
+
+                this.totalPages = Math.ceil(
+                    this.dataSource.filteredData.length / this.pageSize
+                );
+
+                this.totalPagesArray = Array.from(
+                    { length: this.totalPages },
+                    (_, i) => i
+                );
+
+                this._changeDetectorRef.markForCheck();
+            });
+
+
+        // Cómo buscar
+        this.dataSource.filterPredicate = (data: Rol, filter: string) => {
+
+            const texto = `
+            ${data.nombre}
+            ${data.guard_name}
+        `.toLowerCase();
+
+            return texto.includes(filter);
+
+        };
     }
 
     ngAfterViewInit(): void {
@@ -125,7 +160,7 @@ export class RolesListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     toggleDetails(rol: Rol): void {
-        if (this.selectedRol && this.selectedRol.CLAVE === rol.CLAVE) {
+        if (this.selectedRol && this.selectedRol.id === rol.id) {
             this.closeDetails();
             return;
         }
@@ -141,9 +176,10 @@ export class RolesListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     updateSelectedRol(): void {
         const rolData = this.selectedRolForm.getRawValue();
-        this._rolesService.updateRol(rolData.CLAVE, {
-            NOMBRE: rolData.NOMBRE,
-            GUARD_NAME: rolData.GUARD_NAME
+
+        this._rolesService.updateRol(rolData.id, {
+            nombre: rolData.nombre,
+            guard_name: rolData.guard_name
         }).subscribe({
             next: () => {
                 this.showFlashMessage('success');
@@ -169,7 +205,7 @@ export class RolesListComponent implements OnInit, AfterViewInit, OnDestroy {
 
         confirmation.afterClosed().subscribe(result => {
             if (result === 'confirmed' && this.selectedRol) {
-                this._rolesService.deleteRol(this.selectedRol.CLAVE).subscribe({
+                this._rolesService.deleteRol(this.selectedRol.id).subscribe({
                     next: () => {
                         this.snackBar.open('Rol eliminado correctamente', 'Cerrar', { duration: 3000 });
                         this.closeDetails();
@@ -192,33 +228,50 @@ export class RolesListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     trackByFn(index: number, item: any): any {
-        return item.CLAVE || index;
+        return item.id || index;
     }
 
     get paginatedRoles() {
+        const data = this.dataSource.filteredData;
         const start = this.currentPage * this.pageSize;
-        return this.dataSource.data.slice(start, start + this.pageSize);
+        return data.slice(
+            start,
+            start + this.pageSize
+        );
     }
 
 
 
     AddModal(): void {
+
         const dialogRef = this._dialog.open(AddrolesComponent, {
             width: '600px',
+            maxWidth: '95vw',
+            panelClass: 'modal-rol-panel',
             disableClose: true,
             data: {}
         });
 
-        dialogRef.afterClosed().subscribe((newUser) => {
-            if (newUser) {
-                this.snackBar.open('Superadmin agregado correctamente', 'Cerrar', {
+
+        dialogRef.afterClosed().subscribe((newRol) => {
+
+            if (newRol) {
+
+                this.snackBar.open('Rol agregado correctamente', 'Cerrar', {
                     duration: 3000,
                     horizontalPosition: 'right',
                     verticalPosition: 'top',
                     panelClass: ['success-snackbar']
                 });
+
+                // refrescar lista
+                this._rolesService.getRoles()
+                    .subscribe();
+
             }
+
         });
+
     }
 
 

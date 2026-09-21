@@ -1,0 +1,31 @@
+/**
+ * Lector QR/código de barras — mismo tratamiento visual que el checador:
+ *  1) Keyframe de "barrido" para la línea animada mientras escanea.
+ *  2) Tamaño del <video> que html5-qrcode inyecta dentro del div lector
+ *     (no se le pueden poner clases directamente, lo crea la librería).
+ */
+
+@keyframes barrido {
+  0% {
+    top: 8%;
+  }
+  50% {
+    top: 92%;
+  }
+  100% {
+    top: 8%;
+  }
+}
+
+.lector-video-host video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

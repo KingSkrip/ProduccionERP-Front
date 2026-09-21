@@ -1,0 +1,34 @@
+/**
+ * Checador — solo lo que Tailwind no resuelve con utilidades:
+ *  1) Dos keyframes personalizados (barrido y foto-entra), usados
+ *     en el template vía animate-[nombre_...] de Tailwind JIT.
+ *  2) El tamaño del <video> que html5-qrcode inyecta dentro del div
+ *     lector (no podemos ponerle clases directamente porque lo crea
+ *     la librería, no nuestro template).
+ */
+
+@keyframes barrido {
+  0% { top: 8%; }
+  50% { top: 92%; }
+  100% { top: 8%; }
+}
+
+@keyframes foto-entra {
+  0% { transform: scale(0.15); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.checador-video-host video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+/* Respeta preferencia de reducir movimiento en todo el componente */
+@media (prefers-reduced-motion: reduce) {
+  :host * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

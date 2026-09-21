@@ -10,29 +10,29 @@ import { TejidoRevisadoTabComponent } from '../../list/tabs/revisado/tejido-revi
 import { TejidoTabComponent } from '../../list/tabs/tejido/tejido-tab.component';
 
 @Component({
-    selector: 'tejido-view',
-    templateUrl: './tejidoview.component.html',
-    styleUrls: ['./tejidoview.component.scss'],
-    standalone: true,
-    imports: [
-        CommonModule,
-        MatIconModule,
-        MatTabsModule,
-        TejidoTabComponent,
-        ProduccionTabComponent,
-        TejidoRevisadoTabComponent
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'tejido-view',
+  templateUrl: './tejidoview.component.html',
+  styleUrls: ['./tejidoview.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatTabsModule,
+    TejidoTabComponent,
+    ProduccionTabComponent,
+    TejidoRevisadoTabComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TejidoViewComponent {
-    selectedTabIndex = 0;
+  selectedTabIndex = 0;
 
-    constructor() {
-        // console.log('✅ TejidoViewComponent cargado');
-    }
+  constructor() {
+    // console.log(' TejidoViewComponent cargado');
+  }
 
-    onTabChange(index: number): void {
-        this.selectedTabIndex = index;
-        // console.log('Tab cambiado a:', index);
-    }
+  onTabChange(index: number): void {
+    this.selectedTabIndex = index;
+    // console.log('Tab cambiado a:', index);
+  }
 }

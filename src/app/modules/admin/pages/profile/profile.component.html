@@ -1,129 +1,129 @@
-<div
-    class="flex w-full min-w-0 flex-col bg-gray-50 p-6 sm:absolute sm:inset-0 sm:overflow-hidden dark:bg-gray-900"
->
-    <!-- Header mamalón -->
-    <div class="mb-6 flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                Panel de Configuración
-            </h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                Ajusta la apariencia y diseño del sistema como quieras.
-            </p>
-        </div>
-
-        <!-- Botón rápido para restaurar -->
-        <button
-            class="rounded-lg bg-primary px-4 py-2 text-white shadow transition hover:opacity-90"
-            (click)="resetConfig()"
-        >
-            Reset Default
-        </button>
-    </div>
-
-    <!-- GRID PRINCIPAL -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <!-- Card: Tema -->
-        <div class="rounded-2xl bg-white p-6 shadow dark:bg-gray-800">
-            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                Tema
-            </h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                Elige la paleta de colores de la app
-            </p>
-
-            <div class="mt-4 space-y-2">
-                @for (theme of config.themes; track theme) {
-                    <div
-                        class="flex cursor-pointer items-center rounded-lg p-3 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-                        [class.border-primary]="config.theme === theme.id"
-                        (click)="setTheme(theme.id)"
-                    >
-                        <div
-                            class="mr-3 h-4 w-4 rounded-full border"
-                            [ngClass]="theme.id"
-                        ></div>
-                        <span
-                            class="font-medium"
-                            [class.text-primary]="config.theme === theme.id"
-                        >
-                            {{ theme.name }}
-                        </span>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <!-- Card: Scheme -->
-        <div class="rounded-2xl bg-white p-6 shadow dark:bg-gray-800">
-            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                Scheme
-            </h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                Claro, oscuro o automático
-            </p>
-
-            <div class="mt-4 space-y-2">
-                <div class="flex flex-col space-y-2">
-                    <button
-                        class="flex items-center rounded-lg p-3 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-                        [class.border-primary]="config.scheme === 'auto'"
-                        (click)="setScheme('auto')"
-                    >
-                        <mat-icon [svgIcon]="'heroicons_outline:bolt'"></mat-icon>
-                        <span class="ml-2">Auto</span>
-                    </button>
-
-                    <button
-                        class="flex items-center rounded-lg p-3 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-                        [class.border-primary]="config.scheme === 'light'"
-                        (click)="setScheme('light')"
-                    >
-                        <mat-icon [svgIcon]="'heroicons_outline:sun'"></mat-icon>
-                        <span class="ml-2">Light</span>
-                    </button>
-
-                    <button
-                        class="flex items-center rounded-lg p-3 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-                        [class.border-primary]="config.scheme === 'dark'"
-                        (click)="setScheme('dark')"
-                    >
-                        <mat-icon [svgIcon]="'heroicons_outline:moon'"></mat-icon>
-                        <span class="ml-2">Dark</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card: Layout -->
-        <!-- <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                Layout
-            </h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                Cambia la estructura del panel lateral
-            </p>
-
-            <div class="mt-4 grid grid-cols-2 gap-4">
-                @for (layout of layouts; track layout.value) {
-    <div
-        class="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border transition"
-        [class.border-primary]="config.layout === layout.value"
-        (click)="setLayout(layout.value)"
-    >
-        <div
-            class="h-12 w-full rounded bg-gray-200 dark:bg-gray-700"
-        ></div>
-        <p
-            class="text-center mt-2 text-sm font-medium"
-            [class.text-primary]="config.layout === layout.value"
-        >
-            {{ layout.label }}
-        </p>
-    </div>
-}
-
-            </div>
-        </div> -->
-    </div>
-</div>
+<div
+    class="flex w-full min-w-0 flex-col bg-gray-50 p-6 sm:absolute sm:inset-0 sm:overflow-hidden dark:bg-gray-900"
+>
+    <!-- Header mamalón -->
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+                Panel de Configuración
+            </h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                Ajusta la apariencia y diseño del sistema como quieras.
+            </p>
+        </div>
+
+        <!-- Botón rápido para restaurar -->
+        <button
+            class="rounded-lg bg-primary px-4 py-2 text-white shadow transition hover:opacity-90"
+            (click)="resetConfig()"
+        >
+            Reset Default
+        </button>
+    </div>
+
+    <!-- GRID PRINCIPAL -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Card: Tema -->
+        <div class="rounded-2xl bg-white p-6 shadow dark:bg-gray-800">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                Tema
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                Elige la paleta de colores de la app
+            </p>
+
+            <div class="mt-4 space-y-2">
+                @for (theme of config.themes; track theme) {
+                    <div
+                        class="flex cursor-pointer items-center rounded-lg p-3 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+                        [class.border-primary]="config.theme === theme.id"
+                        (click)="setTheme(theme.id)"
+                    >
+                        <div
+                            class="mr-3 h-4 w-4 rounded-full border"
+                            [ngClass]="theme.id"
+                        ></div>
+                        <span
+                            class="font-medium"
+                            [class.text-primary]="config.theme === theme.id"
+                        >
+                            {{ theme.name }}
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Card: Scheme -->
+        <div class="rounded-2xl bg-white p-6 shadow dark:bg-gray-800">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                Scheme
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                Claro, oscuro o automático
+            </p>
+
+            <div class="mt-4 space-y-2">
+                <div class="flex flex-col space-y-2">
+                    <button
+                        class="flex items-center rounded-lg p-3 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+                        [class.border-primary]="config.scheme === 'auto'"
+                        (click)="setScheme('auto')"
+                    >
+                        <mat-icon [svgIcon]="'heroicons_outline:bolt'"></mat-icon>
+                        <span class="ml-2">Auto</span>
+                    </button>
+
+                    <button
+                        class="flex items-center rounded-lg p-3 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+                        [class.border-primary]="config.scheme === 'light'"
+                        (click)="setScheme('light')"
+                    >
+                        <mat-icon [svgIcon]="'heroicons_outline:sun'"></mat-icon>
+                        <span class="ml-2">Light</span>
+                    </button>
+
+                    <button
+                        class="flex items-center rounded-lg p-3 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+                        [class.border-primary]="config.scheme === 'dark'"
+                        (click)="setScheme('dark')"
+                    >
+                        <mat-icon [svgIcon]="'heroicons_outline:moon'"></mat-icon>
+                        <span class="ml-2">Dark</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card: Layout -->
+        <!-- <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                Layout
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                Cambia la estructura del panel lateral
+            </p>
+
+            <div class="mt-4 grid grid-cols-2 gap-4">
+                @for (layout of layouts; track layout.value) {
+    <div
+        class="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border transition"
+        [class.border-primary]="config.layout === layout.value"
+        (click)="setLayout(layout.value)"
+    >
+        <div
+            class="h-12 w-full rounded bg-gray-200 dark:bg-gray-700"
+        ></div>
+        <p
+            class="text-center mt-2 text-sm font-medium"
+            [class.text-primary]="config.layout === layout.value"
+        >
+            {{ layout.label }}
+        </p>
+    </div>
+}
+
+            </div>
+        </div> -->
+    </div>
+</div>

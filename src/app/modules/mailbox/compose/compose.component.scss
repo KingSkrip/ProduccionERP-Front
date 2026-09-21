@@ -1,0 +1,49 @@
+/* =========================
+   NGX MAT SELECT SEARCH
+========================= */
+
+/* LIGHT */
+ngx-mat-select-search {
+  background: white !important;
+}
+
+ngx-mat-select-search .ngx-mat-select-search-inner {
+  background: white !important;
+}
+
+ngx-mat-select-search input {
+  background: white !important;
+  color: #111827 !important;
+  caret-color: #111827 !important;
+}
+
+ngx-mat-select-search input::placeholder {
+  color: rgba(17, 24, 39, 0.6) !important;
+}
+
+/* DARK */
+.dark ngx-mat-select-search {
+  background: #1E293B !important;
+}
+
+.dark ngx-mat-select-search .ngx-mat-select-search-inner {
+  background: #1E293B !important;
+}
+
+.dark ngx-mat-select-search input {
+  background: #1E293B !important;
+  color: #ffffff !important;
+  caret-color: #ffffff !important;
+}
+
+.dark ngx-mat-select-search input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.dark ngx-mat-select-search .mat-icon {
+  color: white !important;
+}
+
+.dark .search-option {
+  background: #1E293B !important;
+}

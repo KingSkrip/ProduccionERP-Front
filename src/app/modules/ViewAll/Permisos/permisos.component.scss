@@ -1,0 +1,26 @@
+// permisos.component.scss 
+
+// El estilado principal de este componente se maneja con utilidades de
+// Tailwind directamente en el template. Este archivo queda como punto
+// de extensión para overrides puntuales (p.ej. inputs nativos de fecha/hora).
+
+permisos {
+    input[type='date'],
+    input[type='time'] {
+        &::-webkit-calendar-picker-indicator {
+            filter: invert(0.5);
+        }
+    }
+}
+
+
+  @keyframes permisosFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .p-anim {
+    animation: permisosFadeUp .45s cubic-bezier(.16,1,.3,1) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .p-anim { animation: none; }
+  }

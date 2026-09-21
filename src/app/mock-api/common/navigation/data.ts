@@ -1303,23 +1303,55 @@ export const menuRh: FuseNavigationItem[] = [
     icon: 'heroicons_outline:home',
     link: '/dashboards/project',
   },
-
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
   {
     id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
+
   {
-    id: 'to.do',
-    title: 'scrumboard',
-    tooltip: 'scrumboard',
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
     type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuenta',
   },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/Pedidos',
+  },
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
+  //{
+  //id: 'to.do',
+  //title: 'Scrumboard',
+  //tooltip: 'scrumboard',
+  //type: 'basic',
+  //icon: 'heroicons_outline:view-columns',
+  //link: '/apps/scrumboard',
+  //},
 
   {
     id: 'cruds',
@@ -2612,40 +2644,54 @@ export const menuRh: FuseNavigationItem[] = [
 // ];
 
 export const menuSuAdmin: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
-    type: 'group',
-    children: [
-      {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
-      },
-    ],
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
-
-      {
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
     id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
   {
-    id: 'to.do',
-    title: 'scrumboard',
-    tooltip: 'scrumboard',
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
     type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuenta',
   },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/Pedidos',
+  },
+
+  //{
+  //id: 'to.do',
+  //title: 'Scrumboard',
+  //tooltip: 'scrumboard',
+  //type: 'basic',
+  //icon: 'heroicons_outline:view-columns',
+  //link: '/apps/scrumboard',
+  //},
 
   // =======================
   // GESTIÓN
@@ -2692,6 +2738,15 @@ export const menuSuAdmin: FuseNavigationItem[] = [
     ],
   },
 
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
+
   // =======================
   // PRODUCCIÓN
   // =======================
@@ -2734,22 +2789,46 @@ export const menuAdmin: FuseNavigationItem[] = [
         icon: 'heroicons_outline:home',
         link: '/dashboards/project',
       },
-          {
-    id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
-    type: 'basic',
-    icon: 'heroicons_outline:archive-box',
-    link: '/pages/mailbox',
-  },
-  {
-    id: 'to.do',
-    title: 'scrumboard',
-    tooltip: 'scrumboard',
-    type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
-  },
+      {
+        id: 'agenda',
+        title: 'Agenda',
+        tooltip: 'Agenda',
+        type: 'basic',
+        icon: 'heroicons_outline:calendar',
+        link: '/apps/Agenda',
+      },
+      {
+        id: 'bandeja.general',
+        title: 'Bandeja general',
+        tooltip: 'Bandeja general',
+        type: 'basic',
+        icon: 'heroicons_outline:archive-box',
+        link: '/pages/mailbox',
+      },
+      {
+        id: 'estados.cuenta',
+        title: 'Estados de cuenta',
+        tooltip: 'Estados de cuenta',
+        type: 'basic',
+        icon: 'heroicons_outline:banknotes',
+        link: '/pages/mailbox',
+      },
+      {
+        id: 'usuarios.clientes',
+        title: 'Clientes',
+        tooltip: 'Clientes',
+        type: 'basic',
+        icon: 'heroicons_outline:user-group',
+        link: '/pages/mailbox',
+      },
+      // {
+      //   id: 'to.do',
+      //   title: 'scrumboard',
+      //   tooltip: 'scrumboard',
+      //   type: 'basic',
+      //   icon: 'heroicons_outline:view-columns',
+      //   link: '/apps/scrumboard',
+      // },
       // {
       //     id: 'dashboards.analytics',
       //     title: 'Analytics',
@@ -3956,20 +4035,78 @@ export const menuColaborador: FuseNavigationItem[] = [
     link: '/dashboards/project',
   },
   {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
     id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
     type: 'basic',
     icon: 'heroicons_outline:archive-box',
     link: '/pages/mailbox',
   },
   {
-    id: 'to.do',
-    title: 'scrumboard',
-    tooltip: 'scrumboard',
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
     type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
+  //{
+  //id: 'to.do',
+  //title: 'Scrumboard',
+  //tooltip: 'scrumboard',
+  //type: 'basic',
+  //icon: 'heroicons_outline:view-columns',
+  //link: '/apps/scrumboard',
+  //},
+  // {
+  //   id: 'colaborador.scan',
+  //   title: 'Escaner',
+  //   tooltip: 'Escaner',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:barcode',
+  //   link: '/apps/colaborador/Barcode',
+  // },
+  // {
+  //   id: 'agenda',
+  //   title: 'Agenda',
+  //   tooltip: 'Agenda',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:calendar',
+  //   link: '/apps/Agenda',
+  // },
+];
+
+export const menuSuAdmin_Admin: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
   },
   {
     id: 'colaborador.scan',
@@ -3979,44 +4116,94 @@ export const menuColaborador: FuseNavigationItem[] = [
     icon: 'heroicons_outline:barcode',
     link: '/apps/colaborador/Barcode',
   },
-];
 
-export const menuJefe: FuseNavigationItem[] = [
-  // =======================
-  // DASHBOARDS
-  // =======================
   {
-    id: 'group.dashboards',
-    title: 'Dashboards',
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
+      {
+    id: 'inventarios',
+    title: 'Inventarios',
+    tooltip: 'Inventarios',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-list',
+    link: '/apps/Inventarios',
+  },
+  //{
+  //   id: 'colaborador.scan',
+  //   title: 'Escaner',
+  //   tooltip: 'Escaner',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:barcode',
+  //   link: '/apps/colaborador/Barcode',
+  // },
+  {
+    id: 'group.produccion',
+    title: 'Producción',
     type: 'group',
     children: [
       {
-        id: 'dashboards.inicio',
-        title: 'Inicio',
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
         type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/dashboards/project',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
       },
     ],
   },
-
-      {
-    id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
-    type: 'basic',
-    icon: 'heroicons_outline:archive-box',
-    link: '/pages/mailbox',
-  },
   {
-    id: 'to.do',
-    title: 'scrumboard',
-    tooltip: 'scrumboard',
+    id: 'cruds',
+    title: 'Colaboradores',
+    subtitle: 'Gestión de usuarios',
+    type: 'collapsable',
+    icon: 'heroicons_outline:user-group',
+    children: [
+      {
+        id: 'cruds.colaboradores',
+        title: 'Empresa uno',
+        type: 'basic',
+        icon: 'heroicons_outline:users',
+        link: '/apps/rodarobaloc_noitseG_ONE',
+      },
+      {
+        id: 'cruds.roles',
+        title: 'Roles',
+        type: 'basic',
+        icon: 'heroicons_outline:shield-check',
+        link: '/apps/selor_noitseG',
+      },
+      {
+        id: 'gestion.colaboradores',
+        title: 'Colaboradores',
+        type: 'basic',
+        icon: 'heroicons_outline:users',
+        link: '/apps/rodarobaloc_noitseG',
+      },
+    ],
+  },
+];
+
+export const menuJacobo: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
     type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
   },
 
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
   // =======================
   // PRODUCCIÓN
   // =======================
@@ -4026,13 +4213,6 @@ export const menuJefe: FuseNavigationItem[] = [
     type: 'group',
     children: [
       {
-        id: 'produccion.aprobar-pedidos',
-        title: 'Aprobar pedidos',
-        type: 'basic',
-        icon: 'heroicons_outline:check',
-        link: '/apps/AceptPedidos',
-      },
-      {
         id: 'produccion.reportes',
         title: 'Reportes de producción',
         type: 'basic',
@@ -4040,6 +4220,15 @@ export const menuJefe: FuseNavigationItem[] = [
         link: '/apps/ReportProd',
       },
     ],
+  },
+
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
   },
 ];
 
@@ -4051,22 +4240,23 @@ export const menuReporteProd_Jefe: FuseNavigationItem[] = [
     icon: 'heroicons_outline:home',
     link: '/apps/ReportProd/list/inicio',
   },
-  {
-    id: 'bandeja.general',
-    title: 'Bandeja',
-    tooltip: 'Bandeja',
-    type: 'basic',
-    icon: 'heroicons_outline:archive-box',
-    link: '/pages/mailbox',
-  },
-  {
-    id: 'to.do',
-    title: 'scrumboard',
-    tooltip: 'scrumboard',
-    type: 'basic',
-    icon: 'heroicons_outline:view-columns',
-    link: '/apps/scrumboard',
-  },
+
+  // {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja general',
+  //   tooltip: 'Bandeja general',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
 
   {
     id: 'rp-facturado',
@@ -4110,5 +4300,768 @@ export const menuReporteProd_Jefe: FuseNavigationItem[] = [
     type: 'basic',
     icon: 'heroicons_outline:cog',
     link: '/apps/ReportProd/list/procesos',
+  },
+];
+
+export const menuReporteProd_Jacobo: FuseNavigationItem[] = [
+  {
+    id: 'rp-Inicio',
+    title: 'Resumen',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/apps/ReportProd/list/inicio',
+  },
+  // {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja general',
+  //   tooltip: 'Bandeja general',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
+
+  {
+    id: 'rp-facturado',
+    title: 'Facturado',
+    type: 'basic',
+    icon: 'heroicons_outline:document-check',
+    link: '/apps/ReportProd/list/facturado',
+  },
+  {
+    id: 'rp-tejido',
+    title: 'Tejido',
+    type: 'basic',
+    icon: 'heroicons_outline:aguja',
+    link: '/apps/ReportProd/list/tejido',
+  },
+  {
+    id: 'rp-tintoreria',
+    title: 'Tintorería',
+    type: 'basic',
+    icon: 'heroicons_outline:beaker',
+    link: '/apps/ReportProd/list/tintoreria',
+  },
+  {
+    id: 'rp-acabado-real',
+    title: 'Acabado real',
+    type: 'basic',
+    icon: 'heroicons_outline:cog-6-tooth',
+    link: '/apps/ReportProd/list/acabado-real',
+  },
+  {
+    id: 'rp-estampado',
+    title: 'Estampado',
+    type: 'basic',
+    icon: 'heroicons_outline:paint-brush',
+    link: '/apps/ReportProd/list/estampado',
+  },
+
+  {
+    id: 'rp-Procesos',
+    title: 'Procesos',
+    type: 'basic',
+    icon: 'heroicons_outline:cog',
+    link: '/apps/ReportProd/list/procesos',
+  },
+];
+
+export const menuClientes: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+
+  {
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
+    type: 'basic',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuenta',
+  },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/Pedidos',
+  },
+];
+
+export const menuAgentes: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
+    type: 'basic',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuentaCl1',
+  },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/PedidosCl1',
+  },
+];
+
+export const menuVentas: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
+];
+
+export const menuColaborador_Gerente: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuSuAdmin_Direccion: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuColaborador_Contraloria: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'colaborador.scan',
+    title: 'Escaner',
+    tooltip: 'Escaner',
+    type: 'basic',
+    icon: 'heroicons_outline:barcode',
+    link: '/apps/colaborador/Barcode',
+  },
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuColaborador_Coordinador: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuJefe: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
+  // {
+  //   id: 'estados.cuenta',
+  //   title: 'Estados de cuenta',
+  //   tooltip: 'Estados de cuenta',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:banknotes',
+  //   link: '/apps/Edos_cuentaCl1',
+  // },
+  // {
+  //   id: 'usuarios.pedidos',
+  //   title: 'Pedidos',
+  //   tooltip: 'Pedidos',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:shopping-bag',
+  //   link: '/apps/PedidosCl1',
+  // },
+  //{
+  //id: 'to.do',
+  //title: 'Scrumboard',
+  //tooltip: 'scrumboard',
+  //type: 'basic',
+  //icon: 'heroicons_outline:view-columns',
+  //link: '/apps/scrumboard',
+  //},
+
+  //     {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja',
+  //   tooltip: 'Bandeja',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'Scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
+
+  // =======================
+  // PRODUCCIÓN
+  // =======================
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      // {
+      //   id: 'produccion.aprobar-pedidos',
+      //   title: 'Aprobar pedidos',
+      //   type: 'basic',
+      //   icon: 'heroicons_outline:check',
+      //   link: '/apps/AceptPedidos',
+      // },
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuJaime: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+
+  {
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
+    type: 'basic',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuentaCl1',
+  },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/PedidosCl1',
+  },
+  {
+    id: 'inventarios',
+    title: 'Inventarios',
+    tooltip: 'Inventarios',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-list',
+    link: '/apps/Inventarios',
+  },
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
+  //{
+  //id: 'to.do',
+  //title: 'Scrumboard',
+  //tooltip: 'scrumboard',
+  //type: 'basic',
+  //icon: 'heroicons_outline:view-columns',
+  //link: '/apps/scrumboard',
+  //},
+
+  //     {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja',
+  //   tooltip: 'Bandeja',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'Scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
+
+  // =======================
+  // PRODUCCIÓN
+  // =======================
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.aprobar-pedidos',
+        title: 'Aprobar pedidos',
+        type: 'basic',
+        icon: 'heroicons_outline:check',
+        link: '/apps/AceptPedidos',
+      },
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuSabu: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+  {
+    id: 'bandeja.general',
+    title: 'Bandeja general',
+    tooltip: 'Bandeja general',
+    type: 'basic',
+    icon: 'heroicons_outline:archive-box',
+    link: '/pages/mailbox',
+  },
+
+  {
+    id: 'estados.cuenta',
+    title: 'Estados de cuenta',
+    tooltip: 'Estados de cuenta',
+    type: 'basic',
+    icon: 'heroicons_outline:banknotes',
+    link: '/apps/Edos_cuentaCl1',
+  },
+  {
+    id: 'usuarios.pedidos',
+    title: 'Pedidos',
+    tooltip: 'Pedidos',
+    type: 'basic',
+    icon: 'heroicons_outline:shopping-bag',
+    link: '/apps/PedidosCl1',
+  },
+  {
+    id: 'colaboradores.permisos',
+    title: 'Permisos',
+    tooltip: 'Permisos',
+    type: 'basic',
+    icon: 'heroicons_outline:clipboard-document-check',
+    link: '/apps/colaborador/Permisos',
+  },
+  //{
+  //id: 'to.do',
+  //title: 'Scrumboard',
+  //tooltip: 'scrumboard',
+  //type: 'basic',
+  //icon: 'heroicons_outline:view-columns',
+  //link: '/apps/scrumboard',
+  //},
+
+  //     {
+  //   id: 'bandeja.general',
+  //   title: 'Bandeja',
+  //   tooltip: 'Bandeja',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:archive-box',
+  //   link: '/pages/mailbox',
+  // },
+  // {
+  //   id: 'to.do',
+  //   title: 'Scrumboard',
+  //   tooltip: 'scrumboard',
+  //   type: 'basic',
+  //   icon: 'heroicons_outline:view-columns',
+  //   link: '/apps/scrumboard',
+  // },
+
+  // =======================
+  // PRODUCCIÓN
+  // =======================
+  {
+    id: 'group.produccion',
+    title: 'Producción',
+    type: 'group',
+    children: [
+      {
+        id: 'produccion.aprobar-pedidos',
+        title: 'Aprobar pedidos',
+        type: 'basic',
+        icon: 'heroicons_outline:check',
+        link: '/apps/AceptPedidos',
+      },
+      {
+        id: 'produccion.reportes',
+        title: 'Reportes de producción',
+        type: 'basic',
+        icon: 'heroicons_outline:rectangle-stack',
+        link: '/apps/ReportProd',
+      },
+    ],
+  },
+];
+
+export const menuProvedores: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+];
+
+export const menuAlmacen: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+];
+
+export const menuCompras: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'agenda',
+    title: 'Agenda',
+    tooltip: 'Agenda',
+    type: 'basic',
+    icon: 'heroicons_outline:calendar',
+    link: '/apps/Agenda',
+  },
+];
+
+export const menuAccesos: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
+    title: 'Checador',
+    tooltip: 'Checador',
+    type: 'basic',
+    icon: 'heroicons_outline:finger-print',
+    link: '/apps/ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
+  },
+];
+
+export const menuSecurity: FuseNavigationItem[] = [
+  {
+    id: 'dashboards.inicio',
+    title: 'Inicio',
+    type: 'basic',
+    icon: 'heroicons_outline:home',
+    link: '/dashboards/project',
+  },
+  {
+    id: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
+    title: 'Checador',
+    tooltip: 'Checador',
+    type: 'basic',
+    icon: 'heroicons_outline:finger-print',
+    link: '/apps/ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%',
   },
 ];

@@ -19,8 +19,9 @@ import { ConfirmpasswordComponent } from 'app/modules/modals/Colaborador/confirm
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 
-import { Usuarios } from '../../usuarios.types';
+
 import { ColaboradorService } from '../colaborador.service';
+import { Usuarios } from 'app/modules/admin/cruds/usuarios/usuarios.types';
 
 @Component({
     selector: 'colaborador-list',

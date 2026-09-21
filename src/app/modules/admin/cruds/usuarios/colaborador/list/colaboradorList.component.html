@@ -1,544 +1,503 @@
-<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent w-full h-full">
-
-    <!-- Header -->
-    <div
-        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
-        <div *ngIf="isLoading" class="absolute inset-x-0 bottom-0">
-            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        </div>
-
-        <div class="text-4xl font-extrabold tracking-tight">
-            Gestionar colaboradores
-        </div>
-
-        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
-            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
-                <mat-icon class="icon-size-5" matPrefix svgIcon="heroicons_outline:magnifying-glass"></mat-icon>
-                <input matInput [formControl]="searchInputControl" autocomplete="off"
-                    placeholder="Buscar colaboradores" />
-            </mat-form-field>
-
-            <button class="ml-4" mat-flat-button color="primary" (click)="AddModal()">
-                <mat-icon svgIcon="heroicons_outline:plus"></mat-icon>
-                <span class="ml-2 mr-1">Agregar</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Main -->
-    <div class="flex flex-auto overflow-hidden">
-        <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-
-            <ng-container *ngIf="usuarios$ | async as usuarios">
-                <ng-container *ngIf="paginatedUsuarios.length > 0; else noUsuarios">
-
-                    <div class="grid">
-
-                        <!-- Cabecera de tabla -->
-                        <div class="grid grid-cols-[64px_1fr_auto] md:grid-cols-[40px_64px_1fr_1fr_1fr_1fr_1fr_1fr] text-secondary sticky top-0 z-10 gap-4 bg-gray-50 pr-3  py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
-                            matSort matSortDisableClear>
-
-                            <div class="text-center hidden md:block" mat-sort-header="id">#</div>
-                            <div class="flex items-center justify-center">Foto</div>
-                            <div class="pl-2">Nombre</div>
-                            <div class="pl-2 hidden md:block">CURP</div>
-                            <div class="pl-2 hidden md:block">Teléfono</div>
-                            <div class="pl-2 hidden md:block">Correo</div>
-                            <div class="pl-2 hidden md:block">Estado</div>
-                            <div class="text-center">Detalles</div>
-
-                        </div>
-
-
-                        <!-- Filas -->
-                        <div *ngFor="let usuario of paginatedUsuarios; let idx = index; trackBy: trackByFn"
-                            class="grid grid-cols-[64px_1fr_auto] md:grid-cols-[40px_64px_1fr_1fr_1fr_1fr_1fr_1fr] items-center gap-4 border-b pr-3 py-3 md:px-8 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
-
-                            <!-- Index -->
-                            <div class="text-center font-semibold hidden md:block">
-                                {{ (currentPage * itemsPerPage) + idx + 1 }}
-                            </div>
-
-                            <!-- Foto -->
-                            <div class="flex items-center justify-center">
-                                <div class="relative flex h-10 w-10 overflow-hidden rounded-full border bg-gray-100">
-                                    <img [src]="getPhotoUrl(usuario.photo)" class="h-full w-full object-cover"
-                                        alt="Foto" />
-                                </div>
-                            </div>
-
-                            <!-- Nombre (en móvil incluye correo debajo) -->
-                            <div class="pl-2 min-w-0">
-                                <div class="truncate font-medium">
-                                    {{ usuario.nombre || usuario.name || 'Sin nombre' }}
-                                </div>
-                                <div class="truncate text-sm text-gray-500 md:hidden">
-                                    {{ usuario.correo || usuario.email || 'Sin correo' }}
-                                </div>
-                            </div>
-
-                            <!-- CURP -->
-                            <div class="truncate pl-2 hidden md:block">
-                                {{ usuario.curp || 'Sin CURP' }}
-                            </div>
-
-                            <!-- Teléfono -->
-                            <div class="truncate pl-2 hidden md:block">
-                                {{ usuario.telefono || 'Sin teléfono' }}
-                            </div>
-
-                            <!-- Correo -->
-                            <div class="truncate pl-2 hidden md:block">
-                                {{ usuario.correo || usuario.email || 'Sin correo' }}
-                            </div>
-
-                            <!-- Status con switch editable -->
-                            <div class="truncate pl-2 hidden md:block">
-                                <mat-slide-toggle [checked]="usuario.status_id === 1" color="primary"
-                                    (change)="onStatusChange(usuario, $event.checked)">
-                                </mat-slide-toggle>
-                            </div>
-
-                            <!-- Botón detalles -->
-                            <div class="flex justify-center gap-2">
-                                <button mat-icon-button matTooltip="Ver detalles" (click)="toggleDetails(usuario)">
-                                    <mat-icon class="icon-size-5"
-                                        [svgIcon]="selectedUsuario?.id === usuario.id ? 'heroicons_outline:chevron-up' : 'heroicons_outline:chevron-down'">
-                                    </mat-icon>
-                                </button>
-                            </div>
-
-                            <!-- 🔥 DETALLES AQUI MISMO, DENTRO DEL ngFor -->
-                            <div class="col-span-full" *ngIf="selectedUsuario?.id === usuario.id">
-                                <ng-container *ngTemplateOutlet="rowDetailsTemplate; context: {$implicit: usuario}">
-                                </ng-container>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Paginador -->
-                    <div class="flex justify-center items-center space-x-2 p-4 bg-white dark:bg-gray-900 border-t">
-                        <button mat-icon-button (click)="prevPage()" [disabled]="currentPage === 0"
-                            class="transition-all duration-200">
-                            <mat-icon>chevron_left</mat-icon>
-                        </button>
-
-                        <div class="flex items-center space-x-2">
-                            <button *ngFor="let p of totalPagesArray" (click)="goToPage(p)" mat-button
-                                class="min-w-[40px] transition-all duration-200" [ngClass]="{
-                        'bg-primary text-white': p === currentPage,
-                        'hover:bg-gray-100 dark:hover:bg-gray-700': p !== currentPage
-                      }">
-                                {{ p + 1 }}
-                            </button>
-                        </div>
-
-                        <button mat-icon-button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
-                            class="transition-all duration-200">
-                            <mat-icon>chevron_right</mat-icon>
-                        </button>
-                    </div>
-
-                </ng-container>
-
-                <!-- No usuarios -->
-                <ng-template #noUsuarios>
-                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-                        ¡No hay colaboradores registrados!
-                    </div>
-                </ng-template>
-
-            </ng-container>
-        </div>
-    </div>
+<div class="bg-default absolute inset-0 flex min-w-0 flex-col overflow-hidden p-4">
+  
+  <!-- ============ HEADER ============ -->
+  <div class="flex flex-wrap items-center justify-between gap-4 p-4 sm:p-6">
+    <div class="flex items-center gap-4">
+      <div
+        class="flex h-14 w-14 items-center justify-center rounded-xl bg-accent-500 shadow-md">
+        <mat-icon class="text-black"
+          [svgIcon]="'heroicons_outline:shield-check'"></mat-icon>
+      </div>
+      <div>
+        <h1
+          class="text-2xl font-bold leading-tight text-black dark:text-white">Colaboradores</h1>
+        <p class="text-sm text-black dark:text-white">Gestiona y administra los
+          trabajadores</p>
+      </div>
+    </div>
+
+    <div
+      class="mt-6 flex w-full shrink-0 items-center gap-3 sm:ml-4 sm:mt-0 sm:w-auto">
+      <mat-form-field
+        class="fuse-mat-dense fuse-mat-rounded w-full sm:min-w-64"
+        [subscriptSizing]="'dynamic'">
+        <mat-icon
+          class="icon-size-5"
+          matPrefix
+          [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
+
+        <input
+          matInput
+          [formControl]="searchInputControl"
+          [autocomplete]="'off'"
+          placeholder="Buscar colaboradores" />
+      </mat-form-field>
+
+      <button
+        class="!h-12 !w-12 !min-w-12 rounded-full sm:!h-auto sm:!w-auto sm:!min-w-0 sm:px-4"
+        mat-flat-button
+        color="primary"
+        (click)="AddModal()">
+        <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+        <span class="ml-2 hidden sm:inline">Agregar</span>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ============ CONTENIDO ============ -->
+  <div class="relative flex flex-auto overflow-hidden">
+
+    <!-- ---------- LISTA ---------- -->
+    <div
+      class="flex flex-auto flex-col overflow-y-auto px-4 pb-4 sm:px-6 sm:pb-6 transition-all duration-300"
+      [class.lg:mr-[420px]]="selectedUsuario">
+      <ng-container *ngIf="usuarios$ | async as usuarios">
+
+        <!-- Estado vacío -->
+        <div
+          *ngIf="!isLoading && paginatedUsuarios.length === 0"
+          class="flex flex-auto flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-300 py-24 dark:border-gray-700">
+          <mat-icon
+            class="icon-size-12 text-gray-300 dark:text-gray-600"
+            [svgIcon]="'heroicons_outline:users'"></mat-icon>
+          <p class="text-lg font-medium text-secondary">No hay colaboradores que
+            coincidan con tu búsqueda</p>
+          <p class="text-sm text-secondary" *ngIf="!searchInputControl.value">
+            Agrega tu primer colaborador para empezar
+          </p>
+        </div>
+
+        <!-- Tabla (md y arriba) -->
+        <div
+          *ngIf="paginatedUsuarios.length > 0"
+          class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-card shadow-sm md:block">
+          <table class="w-full">
+            <thead>
+              <tr
+                class="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/40">
+                <th
+                  class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-secondary">Colaborador</th>
+                <th
+                  class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-secondary">Correo</th>
+                <th
+                  class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-secondary">Estado</th>
+                <th
+                  class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-secondary">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let usuario of paginatedUsuarios; trackBy: trackByFn"
+                class="cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900/40"
+                [class.bg-primary-50]="selectedUsuario?.id === usuario.id"
+                (click)="toggleDetails(usuario)">
+                <td class="px-5 py-3">
+                  <div class="flex items-center gap-3">
+                    <img
+                      class="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-white dark:ring-gray-800"
+                      [src]="getPhotoUrl(usuario.photo)"
+                      [alt]="usuario.name || usuario.nombre" />
+                    <div class="min-w-0">
+                      <p
+                        class="truncate font-medium text-black dark:text-white">
+                        {{ usuario.nombre || usuario.name }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+
+                <td class="px-5 py-3 text-sm text-secondary">{{ usuario.correo
+                  || usuario.email }}</td>
+                <td class="px-5 py-3" (click)="$event.stopPropagation()">
+                  <mat-slide-toggle
+                    color="primary"
+                    [checked]="usuario.status_id === 1"
+                    (change)="onStatusChange(usuario, $event.checked)"></mat-slide-toggle>
+                </td>
+                <td class="px-5 py-3 text-right">
+                  <button
+                    mat-icon-button
+                    matTooltip="Ver detalle"
+                    (click)="$event.stopPropagation(); toggleDetails(usuario)">
+                    <mat-icon
+                      class="icon-size-5 text-secondary"
+                      [svgIcon]="selectedUsuario?.id === usuario.id ? 'heroicons_outline:chevron-up' : 'heroicons_outline:pencil-square'"></mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tarjetas (mobile) -->
+        <div class="flex flex-col gap-3 md:hidden">
+          <div
+            *ngFor="let usuario of paginatedUsuarios; trackBy: trackByFn"
+            class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-card p-4 shadow-sm dark:border-gray-700"
+            [class.ring-2]="selectedUsuario?.id === usuario.id"
+            [class.ring-primary]="selectedUsuario?.id === usuario.id"
+            (click)="toggleDetails(usuario)">
+            <img
+              class="h-12 w-12 shrink-0 rounded-full object-cover"
+              [src]="getPhotoUrl(usuario.photo)"
+              [alt]="usuario.name || usuario.nombre" />
+            <div class="min-w-0 flex-auto">
+              <p class="truncate font-medium text-black dark:text-white">{{
+                usuario.nombre || usuario.name }}</p>
+              <p class="truncate text-sm text-secondary">{{ usuario.usuario }} ·
+                {{ usuario.correo || usuario.email }}</p>
+            </div>
+            <mat-slide-toggle
+              color="primary"
+              [checked]="usuario.status_id === 1"
+              (click)="$event.stopPropagation()"
+              (change)="onStatusChange(usuario, $event.checked)"></mat-slide-toggle>
+            <mat-icon
+              class="icon-size-5 shrink-0 text-secondary"
+              [svgIcon]="'heroicons_outline:chevron-right'"></mat-icon>
+          </div>
+        </div>
+
+        <!-- Paginación -->
+        <div
+          *ngIf="totalPages > 1"
+          class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
+          <p class="text-sm text-secondary">
+            Página {{ currentPage + 1 }} de {{ totalPages }}
+          </p>
+          <div class="flex items-center gap-1">
+            <button mat-icon-button [disabled]="currentPage === 0"
+              (click)="prevPage()">
+              <mat-icon [svgIcon]="'heroicons_outline:chevron-left'"></mat-icon>
+            </button>
+
+            <!-- Mobile: 3 números + … + últimos 3 -->
+            <ng-container *ngFor="let page of visiblePagesMobile">
+              <button
+                *ngIf="page !== null"
+                mat-icon-button
+                class="!min-w-9 !h-9 !w-9 !text-sm sm:hidden"
+                [color]="currentPage === page ? 'primary' : undefined"
+                [class.font-semibold]="currentPage === page"
+                (click)="goToPage(page)">
+                {{ page + 1 }}
+              </button>
+
+              <span
+                *ngIf="page === null"
+                class="text-secondary flex h-9 w-9 select-none items-center justify-center sm:hidden">
+                …
+              </span>
+            </ng-container>
+
+            <!-- Desktop: 7 números + … + últimos 3 -->
+            <ng-container *ngFor="let page of visiblePages">
+              <button
+                *ngIf="page !== null"
+                mat-icon-button
+                class="!min-w-9 !h-9 !w-9 !text-sm hidden sm:inline-flex"
+                [color]="currentPage === page ? 'primary' : undefined"
+                [class.font-semibold]="currentPage === page"
+                (click)="goToPage(page)">
+                {{ page + 1 }}
+              </button>
+
+              <span
+                *ngIf="page === null"
+                class="text-secondary hidden h-9 w-9 select-none items-center justify-center sm:flex">
+                …
+              </span>
+            </ng-container>
+
+            <button mat-icon-button [disabled]="currentPage === totalPages - 1"
+              (click)="nextPage()">
+              <mat-icon
+                [svgIcon]="'heroicons_outline:chevron-right'"></mat-icon>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- ---------- PANEL DE DETALLE ---------- -->
+    <div
+      *ngIf="selectedUsuario"
+      class="fixed inset-0 z-50 flex justify-end bg-black/30 lg:absolute lg:bg-transparent"
+      (click)="closeDetails()">
+      <div
+        class="flex h-full w-full max-w-[420px] flex-col bg-card shadow-2xl lg:border-l lg:border-gray-200 dark:lg:border-gray-700"
+        (click)="$event.stopPropagation()">
+        <!-- Header del panel -->
+        <div
+          class="flex items-center gap-3 border-b border-gray-200 p-4 dark:border-gray-700">
+          <img
+            class="h-12 w-12 shrink-0 rounded-full object-cover"
+            [src]="selectedPhotoUrl"
+            alt="Foto de perfil" />
+          <div class="min-w-0 flex-auto">
+            <p class="truncate font-semibold text-black dark:text-white">
+              {{ selectedUsuario.nombre || selectedUsuario.name }}
+            </p>
+            <p class="truncate text-xs text-secondary">{{
+              selectedUsuario.usuario }}</p>
+          </div>
+          <button mat-icon-button matTooltip="Cerrar" (click)="closeDetails()">
+            <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+          </button>
+        </div>
+
+        <!-- Stepper -->
+        <div
+          class="flex items-center gap-1 overflow-x-auto border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+          <ng-container *ngFor="let step of steps; let last = last">
+            <button
+              type="button"
+              class="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+              [class.bg-primary]="currentDetailStep === step.id"
+              [class.text-on-primary]="currentDetailStep === step.id"
+              [class.text-secondary]="currentDetailStep !== step.id"
+              [class.hover:bg-gray-100]="currentDetailStep !== step.id"
+              [class.dark:hover:bg-gray-800]="currentDetailStep !== step.id"
+              (click)="goToDetailStep(step.id)">
+              {{ step.id }}. {{ step.label }}
+            </button>
+            <mat-icon
+              *ngIf="!last"
+              class="icon-size-4 shrink-0 text-gray-300 dark:text-gray-600"
+              [svgIcon]="'heroicons_outline:chevron-right'"></mat-icon>
+          </ng-container>
+        </div>
+
+        <!-- Formulario -->
+        <form
+          [formGroup]="selectedUsuarioForm"
+          class="flex flex-auto flex-col overflow-y-auto p-5"
+          (ngSubmit)="updateColaborador()">
+
+          <!-- PASO 1: Personal -->
+          <div *ngIf="currentDetailStep === 1" class="flex flex-col gap-4">
+            <div class="flex items-center gap-4">
+              <img
+                class="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-800"
+                [src]="selectedPhotoUrl"
+                alt="Foto de perfil" />
+              <div>
+                <button type="button" mat-stroked-button
+                  (click)="fileInput.click()">
+                  <mat-icon class="icon-size-4 mr-1"
+                    [svgIcon]="'heroicons_outline:camera'"></mat-icon>
+                  Cambiar foto
+                </button>
+                <input #fileInput type="file" hidden accept="image/*"
+                  (change)="onFileSelected($event)" />
+              </div>
+            </div>
+
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Nombre completo</mat-label>
+              <input matInput formControlName="name" [autocomplete]="'off'" />
+            </mat-form-field>
+
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Correo electrónico</mat-label>
+              <input matInput type="email" formControlName="email"
+                [autocomplete]="'off'" />
+            </mat-form-field>
+          </div>
+
+          <!-- PASO 2: Permisos -->
+          <div *ngIf="currentDetailStep === 2" class="flex flex-col gap-4">
+
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Permiso</mat-label>
+
+              <mat-select formControlName="permission_id">
+
+                <mat-option
+                  *ngFor="let permission of permissions"
+                  [value]="permission.id">
+                  {{ permission.nombre || permission.name }}
+                </mat-option>
+
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Subpermiso</mat-label>
+
+              <mat-select formControlName="sub_permission_id">
+
+                <mat-option [value]="''">
+                  Sin subpermiso
+                </mat-option>
+
+                <mat-option
+                  *ngFor="let subPermission of sub_permissions"
+                  [value]="subPermission.id">
+                  {{ subPermission.nombre || subPermission.name }}
+                </mat-option>
+
+              </mat-select>
+            </mat-form-field>
+
+            <div
+              *ngIf="!permissions.length"
+              class="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-xs text-secondary dark:bg-gray-900/40">
+              <mat-icon
+                class="icon-size-4"
+                [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+
+              No se pudo cargar el catálogo de permisos.
+            </div>
+
+          </div>
+
+          <!-- PASO 3: Puesto -->
+          <div *ngIf="currentDetailStep === 3" class="flex flex-col gap-4">
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Puesto</mat-label>
+              <mat-select formControlName="puesto_id">
+                <mat-option *ngFor="let puesto of puestos"
+                  [value]="puesto.id">{{ puesto.nombre || puesto.name
+                  }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Área</mat-label>
+              <mat-select formControlName="area_id">
+                <mat-option *ngFor="let area of areas" [value]="area.id">{{
+                  area.nombre || area.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Jefe directo</mat-label>
+              <mat-select formControlName="jefe_id">
+                <mat-option [value]="''">Sin asignar</mat-option>
+                <mat-option
+                  *ngFor="let jefe of posiblesJefes"
+                  [value]="jefe.id"
+                  [disabled]="jefe.id === selectedUsuario?.id">
+                  {{ jefe.nombre || jefe.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Jefe auxiliar</mat-label>
+              <mat-select formControlName="jefe_aux_id">
+                <mat-option [value]="''">Sin asignar</mat-option>
+                <mat-option
+                  *ngFor="let jefe of posiblesJefes"
+                  [value]="jefe.id"
+                  [disabled]="jefe.id === selectedUsuario?.id">
+                  {{ jefe.nombre || jefe.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- PASO 4: Turno -->
+          <div *ngIf="currentDetailStep === 4" class="flex flex-col gap-4">
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Turno</mat-label>
+              <mat-select formControlName="turno_id">
+                <mat-option *ngFor="let turno of turnos" [value]="turno.id">{{
+                  turno.nombre || turno.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- PASO 5: Credenciales -->
+          <div *ngIf="currentDetailStep === 5" class="flex flex-col gap-4">
+            <p class="text-xs text-secondary">
+              Deja estos campos vacíos si no quieres cambiar la contraseña.
+            </p>
+
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Nueva contraseña</mat-label>
+              <input
+                matInput
+                formControlName="password"
+                [type]="showPassword ? 'text' : 'password'"
+                (paste)="blockPaste($event)"
+                [autocomplete]="'new-password'" />
+              <button
+                type="button"
+                mat-icon-button
+                matSuffix
+                (click)="togglePasswordVisibility()">
+                <mat-icon
+                  class="icon-size-5"
+                  [svgIcon]="showPassword ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'"></mat-icon>
+              </button>
+            </mat-form-field>
+
+            <mat-form-field [subscriptSizing]="'dynamic'">
+              <mat-label>Confirmar contraseña</mat-label>
+              <input
+                matInput
+                formControlName="password_confirmation"
+                [type]="showPasswordConfirmation ? 'text' : 'password'"
+                (paste)="blockPaste($event)"
+                [autocomplete]="'new-password'" />
+              <button
+                type="button"
+                mat-icon-button
+                matSuffix
+                (click)="togglePasswordConfirmationVisibility()">
+                <mat-icon
+                  class="icon-size-5"
+                  [svgIcon]="showPasswordConfirmation ? 'heroicons_outline:eye-slash' : 'heroicons_outline:eye'"></mat-icon>
+              </button>
+              <mat-error *ngIf="passwordsDontMatch()">Las contraseñas no
+                coinciden</mat-error>
+            </mat-form-field>
+          </div>
+        </form>
+
+        <!-- Footer: navegación + acciones -->
+        <div
+          class="flex items-center justify-between gap-2 border-t border-gray-200 p-4 dark:border-gray-700">
+          <button
+            mat-icon-button
+            matTooltip="Eliminar colaborador"
+            color="warn"
+            (click)="deleteSelectedUsuario()">
+            <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+          </button>
+
+          <div class="flex items-center gap-2">
+            <button
+              mat-stroked-button
+              type="button"
+              [disabled]="currentDetailStep === 1"
+              (click)="previousDetailStep()">
+              Atrás
+            </button>
+
+            <button
+              *ngIf="currentDetailStep < totalSteps"
+              mat-flat-button
+              color="primary"
+              type="button"
+              (click)="nextDetailStep()">
+              Siguiente
+            </button>
+
+            <button
+              *ngIf="currentDetailStep === totalSteps"
+              mat-flat-button
+              color="primary"
+              type="submit"
+              (click)="updateColaborador()">
+              Guardar cambios
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-
-
-
-
-<!-- Plantilla de detalles expandible con pasos -->
-<ng-template #rowDetailsTemplate let-usuario>
-    <div class="overflow-hidden shadow-lg bg-white dark:bg-gray-800 rounded-b-lg">
-
-        <!-- STEPPER PROGRESS -->
-        <div class="border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
-            <div class="flex items-center justify-between">
-                @for (step of steps; track step.id) {
-                <div class="flex flex-1 items-center">
-                    <div class="flex flex-col items-center">
-                        <div class="flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all cursor-pointer"
-                            [ngClass]="{
-                                'border-primary-600 bg-primary-600 text-white': currentDetailStep === step.id,
-                                'border-gray-300 bg-white text-gray-400 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700': currentDetailStep !== step.id
-                            }" (click)="goToDetailStep(step.id)">
-                            {{ step.id }}
-                        </div>
-                        <span class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ step.label }}</span>
-                    </div>
-                    @if ($index < steps.length - 1) { <div class="mx-2 h-0.5 flex-1 bg-gray-300 dark:bg-gray-600">
-                </div>
-                }
-            </div>
-            }
-        </div>
-    </div>
-
-    <form class="w-full" [formGroup]="selectedUsuarioForm">
-        <div class="p-4 sm:p-6 lg:p-8">
-
-            <!-- ============ STEP 1: DATOS PERSONALES ============ -->
-            @if (currentDetailStep === 1) {
-            <div class="animate-fadeIn">
-                <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-
-                    <!-- Foto de perfil -->
-                    <div class="flex justify-center lg:col-span-3 lg:justify-start">
-                        <div class="flex flex-col items-center">
-                            <div class="group relative">
-                                <div *ngIf="isLoadingImage"
-                                    class="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-black bg-opacity-60">
-                                    <mat-spinner [diameter]="36" [color]="'accent'"></mat-spinner>
-                                </div>
-                                <img [src]="selectedPhotoUrl" alt="Foto de perfil"
-                                    class="h-32 w-32 rounded-full border-4 border-gray-200 object-cover shadow-xl transition-all duration-300 group-hover:border-primary group-hover:shadow-2xl"
-                                    [class.opacity-40]="isLoadingImage" />
-                                <div *ngIf="!isLoadingImage"
-                                    class="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black bg-opacity-0 transition-all duration-300 group-hover:bg-opacity-40">
-                                    <div
-                                        class="flex flex-col items-center gap-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                                        <mat-icon class="text-white" [svgIcon]="'heroicons_outline:camera'"></mat-icon>
-                                        <span class="text-xs font-medium text-white">Editar</span>
-                                    </div>
-                                </div>
-                                <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)"
-                                    class="absolute inset-0 cursor-pointer opacity-0" [disabled]="isLoadingImage" />
-                            </div>
-                            <button type="button"
-                                class="mt-6 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 hover:shadow disabled:cursor-not-allowed disabled:opacity-50 md:hidden"
-                                (click)="fileInput.click()" [disabled]="isLoadingImage">
-                                <mat-icon class="text-gray-600 icon-size-5"
-                                    [svgIcon]="'heroicons_outline:camera'"></mat-icon>
-                                {{ isLoadingImage ? 'Cargando imagen...' : 'Cambiar foto' }}
-                            </button>
-                            <p class="mt-3 text-center text-xs text-gray-500">
-                                Formatos: JPG o PNG
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Campos del formulario -->
-                    <div class="lg:col-span-9">
-                        <div class="space-y-4">
-                            <mat-form-field class="w-full">
-                                <mat-label>CURP</mat-label>
-                                <input matInput formControlName="curp" />
-                            </mat-form-field>
-
-                            <mat-form-field class="w-full">
-                                <mat-label>Nombre completo</mat-label>
-                                <input matInput formControlName="name" />
-                            </mat-form-field>
-
-                            <mat-form-field class="w-full">
-                                <mat-label>Correo electrónico</mat-label>
-                                <input matInput type="email" formControlName="email" />
-                            </mat-form-field>
-
-                            <mat-form-field class="w-full">
-                                <mat-label>Teléfono</mat-label>
-                                <input matInput formControlName="telefono" />
-                            </mat-form-field>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            }
-
-            <!-- ============ STEP 2: DIRECCIÓN ============ -->
-            @if (currentDetailStep === 2) {
-            <div class="space-y-4 animate-fadeIn" formGroupName="direccion">
-                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">
-                    Dirección del colaborador
-                </h3>
-
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <mat-form-field class="w-full">
-                        <mat-label>Código Postal</mat-label>
-                        <input matInput formControlName="cp" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Estado</mat-label>
-                        <input matInput formControlName="estado" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Entidad Federativa</mat-label>
-                        <input matInput formControlName="entidad_federativa" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Municipio</mat-label>
-                        <input matInput formControlName="municipio" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Colonia</mat-label>
-                        <input matInput formControlName="colonia" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Calle</mat-label>
-                        <input matInput formControlName="calle" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>No. Exterior</mat-label>
-                        <input matInput formControlName="no_ext" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>No. Interior</mat-label>
-                        <input matInput formControlName="no_int" />
-                    </mat-form-field>
-                </div>
-            </div>
-            }
-
-            <!-- ============ STEP 3: DATOS ADMINISTRATIVOS ============ -->
-            @if (currentDetailStep === 3) {
-            <div class="space-y-4 animate-fadeIn">
-                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información
-                    administrativa
-                </h3>
-
-                <mat-form-field class="w-full">
-                    <mat-label>Departamento</mat-label>
-                    <mat-select formControlName="departamento_id">
-                        <mat-option [value]="null">Sin departamento</mat-option>
-                        <mat-option *ngFor="let dept of departamentos" [value]="dept.id">
-                            {{ dept.nombre }}
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-
-
-                <div class="space-y-4" formGroupName="empleo">
-                    <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400">Datos de empleo</h4>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Puesto</mat-label>
-                        <input matInput formControlName="puesto" />
-                    </mat-form-field>
-
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <mat-form-field class="w-full">
-                            <mat-label>Fecha de inicio</mat-label>
-                            <input matInput formControlName="fecha_inicio" />
-                        </mat-form-field>
-
-                        <mat-form-field class="w-full">
-                            <mat-label>Fecha fin</mat-label>
-                            <input matInput formControlName="fecha_fin" />
-                        </mat-form-field>
-                    </div>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Comentarios</mat-label>
-                        <textarea matInput formControlName="comentarios" rows="3"></textarea>
-                    </mat-form-field>
-                </div>
-            </div>
-            }
-
-            <!-- ============ STEP 4: DATOS FISCALES Y SEGURIDAD SOCIAL ============ -->
-            @if (currentDetailStep === 4) {
-            <div class="space-y-6 animate-fadeIn">
-                <!-- Datos Fiscales -->
-                <div class="space-y-4" formGroupName="fiscal">
-                    <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300">Datos fiscales</h3>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>RFC</mat-label>
-                        <input matInput formControlName="rfc" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Régimen fiscal</mat-label>
-                        <input matInput formControlName="regimen_fiscal" />
-                    </mat-form-field>
-                </div>
-
-                <!-- Seguridad Social -->
-                <div class="space-y-4" formGroupName="seguridad_social">
-                    <h3 class="text-base font-semibold text-gray-700 dark:text-gray-300">Seguridad social
-                    </h3>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Número IMSS</mat-label>
-                        <input matInput formControlName="numero_imss" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Fecha de alta</mat-label>
-                        <input matInput formControlName="fecha_alta" />
-                    </mat-form-field>
-
-                    <mat-form-field class="w-full">
-                        <mat-label>Tipo de seguro</mat-label>
-                        <input matInput formControlName="tipo_seguro" />
-                    </mat-form-field>
-                </div>
-            </div>
-            }
-
-            <!-- ============ STEP 5: NÓMINA ============ -->
-            @if (currentDetailStep === 5) {
-            <div class="space-y-4 animate-fadeIn" formGroupName="nomina">
-                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">Información de
-                    nómina</h3>
-
-                <mat-form-field class="w-full">
-                    <mat-label>Número de tarjeta</mat-label>
-                    <input matInput formControlName="numero_tarjeta" />
-                </mat-form-field>
-
-                <mat-form-field class="w-full">
-                    <mat-label>Banco</mat-label>
-                    <input matInput formControlName="banco" />
-                </mat-form-field>
-
-                <mat-form-field class="w-full">
-                    <mat-label>CLABE interbancaria</mat-label>
-                    <input matInput formControlName="clabe_interbancaria" />
-                </mat-form-field>
-
-                <mat-form-field class="w-full">
-                    <mat-label>Salario base</mat-label>
-                    <input matInput formControlName="salario_base" />
-                </mat-form-field>
-
-                <mat-form-field class="w-full">
-                    <mat-label>Frecuencia de pago</mat-label>
-                    <input matInput formControlName="frecuencia_pago" />
-                </mat-form-field>
-            </div>
-            }
-
-            <!-- ============ STEP 6: CREDENCIALES ============ -->
-            @if (currentDetailStep === 6) {
-            <div class="space-y-6 animate-fadeIn">
-                <h3 class="mb-4 text-base font-semibold text-gray-700 dark:text-gray-300">
-                    Credenciales de acceso
-                </h3>
-
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-
-                    <!-- Usuario (solo lectura) -->
-                    <mat-form-field class="w-full md:col-span-2" appearance="outline">
-                        <mat-label>Nombre de usuario</mat-label>
-                        <input matInput formControlName="usuario" />
-                        <mat-icon matPrefix class="text-gray-400">account_circle</mat-icon>
-                    </mat-form-field>
-
-                    <!-- Nueva contraseña -->
-                    <mat-form-field class="w-full" appearance="outline">
-                        <mat-label>Nueva contraseña</mat-label>
-                        <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password"
-                            placeholder="Dejar vacío para no cambiar" autocomplete="new-password"
-                            (paste)="blockPaste($event)" />
-                        <mat-icon matPrefix class="text-gray-400">lock</mat-icon>
-                        <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()"
-                            [attr.aria-label]="'Mostrar contraseña'">
-                            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-                        </button>
-                        <mat-hint>Deja vacío para mantener la contraseña actual</mat-hint>
-                    </mat-form-field>
-
-                    <!-- Confirmar contraseña -->
-                    <mat-form-field class="w-full" appearance="outline">
-                        <mat-label>Confirmar nueva contraseña</mat-label>
-                        <input matInput [type]="showPasswordConfirmation ? 'text' : 'password'"
-                            formControlName="password_confirmation" placeholder="Repite la contraseña"
-                            autocomplete="new-password" (paste)="blockPaste($event)" />
-                        <mat-icon matPrefix class="text-gray-400">lock_outline</mat-icon>
-                        <button mat-icon-button matSuffix type="button" (click)="togglePasswordConfirmationVisibility()"
-                            [attr.aria-label]="'Mostrar confirmación'">
-                            <mat-icon>{{ showPasswordConfirmation ? 'visibility_off' : 'visibility'
-                                }}</mat-icon>
-                        </button>
-                        <mat-error *ngIf="passwordsDontMatch()">
-                            Las contraseñas no coinciden
-                        </mat-error>
-                    </mat-form-field>
-                </div>
-
-                <!-- Mostrar coincidencia visual (opcional pero queda bonito) -->
-                @if (passwordsMatch() && selectedUsuarioForm.get('password')?.value) {
-                <div class="flex items-center text-green-600 text-sm">
-                    <mat-icon class="icon-size-4 mr-1">check_circle</mat-icon>
-                    Las contraseñas coinciden
-                </div>
-                }
-            </div>
-            }
-        </div>
-
-        <!-- Botones de navegación entre pasos -->
-        <div class="border-t border-gray-200 px-4 py-3 dark:border-gray-700">
-            <div class="flex items-center justify-between">
-                <button mat-button (click)="previousDetailStep()" [disabled]="currentDetailStep === 1">
-                    <mat-icon>chevron_left</mat-icon>
-                    Anterior
-                </button>
-
-                <span class="text-sm text-gray-500">
-                    Paso {{ currentDetailStep }} de {{ totalSteps }}
-                </span>
-
-                <button mat-button (click)="nextDetailStep()" [disabled]="currentDetailStep === totalSteps">
-                    Siguiente
-                    <mat-icon>chevron_right</mat-icon>
-                </button>
-            </div>
-        </div>
-
-        <!-- Botones de acción -->
-        <div
-            class="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-            <button class="order-2 sm:order-1" mat-button [color]="'warn'" (click)="deleteSelectedUsuario()">
-                <mat-icon class="mr-2">delete</mat-icon>
-                Eliminar colaborador
-            </button>
-
-            <div class="order-1 flex flex-col items-center gap-3 sm:order-2 sm:flex-row">
-                <button mat-stroked-button (click)="closeDetails()" class="w-full sm:w-auto">
-                    <mat-icon class="mr-2">close</mat-icon>
-                    Cerrar
-                </button>
-                <button mat-flat-button [color]="'primary'" class="w-full sm:w-auto" (click)="updateColaborador()">
-                    <mat-icon class="mr-2">save</mat-icon>
-                    Aceptar
-                </button>
-            </div>
-        </div>
-    </form>
-    </div>
-</ng-template>
-
-
-
-
-
-<style>
-    .success-snackbar {
-        background: #4caf50 !important;
-        color: white !important;
-    }
-
-    .error-snackbar {
-        background: #f44336 !important;
-        color: white !important;
-    }
-</style>

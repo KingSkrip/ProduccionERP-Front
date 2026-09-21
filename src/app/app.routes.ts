@@ -121,14 +121,37 @@ export const appRoutes: Route[] = [
                     { path: 'Soli_Vac', loadChildren: () => import('app/modules/admin/solicitudes/Vacaciones/vacaciones.routes') },
                     //Autorizar pedidos
                     { path: 'AceptPedidos', loadChildren: () => import('app/modules/admin/autorizarpedidos/autpedidos.routes') },
+
+                    //pedidos
+                    { path: 'Pedidos', loadChildren: () => import('app/modules/admin/pedidos/pedidos.routes') },
+                    { path: 'PedidosCl1', loadChildren: () => import('app/modules/agente/pedidos/pedidos.routes') },
+
+                    //estados_cuenta
+                    { path: 'Edos_cuenta', loadChildren: () => import('app/modules/admin/edos_cuenta/edos_cuenta.routes') },
+                    { path: 'Edos_cuentaCl1', loadChildren: () => import('app/modules/agente/edos_cuenta/edos_cuenta.routes') },
+
                     //Reportes de produccion
                     { path: 'ReportProd', loadChildren: () => import('app/modules/admin/reportes_produccion/reportprod.routes') },
+
+                    //citas
+                    { path: 'Agenda', loadChildren: () => import('app/modules/ViewAll/Agenda/agenda.routes') },
+
                     { path: 'file-manager', loadChildren: () => import('app/modules/admin/apps/file-manager/file-manager.routes') },
                     { path: 'help-center', loadChildren: () => import('app/modules/admin/apps/help-center/help-center.routes') },
-                    { path: 'mailbox', loadChildren: () => import('app/modules/admin/apps/mailbox/mailbox.routes') },
+                    // { path: 'mailbox', loadChildren: () => import('app/modules/admin/apps/mailbox/mailbox.routes') },
                     { path: 'notes', loadChildren: () => import('app/modules/admin/apps/notes/notes.routes') },
                     { path: 'scrumboard', loadChildren: () => import('app/modules/admin/apps/scrumboard/scrumboard.routes') },
                     { path: 'tasks', loadChildren: () => import('app/modules/admin/apps/tasks/tasks.routes') },
+
+
+                    //REGISTRO DE ASISTENCIA
+                    { path: 'ey"ci!z%I9.vDPg!t%yPv-zqvi"GnUrGi_boVkJ"AP%', loadChildren: () => import('app/modules/Checador/checador.routes') },
+
+                    //Inventarios
+                    { path: 'Inventarios', loadChildren: () => import('app/modules/admin/Inventarios/inventarios.routes') },
+
+
+
                 ]
             },
 
@@ -264,6 +287,8 @@ export const appRoutes: Route[] = [
                 path: 'apps/colaborador', children: [
                     // loadChildren: () => import('app/modules/colaborador/dashboards/colaborador/colaborador.routes')
                     { path: 'Barcode', loadChildren: () => import('app/modules/colaborador/scan/scan.routes') },
+                    //Permisos
+                    { path: 'Permisos', loadChildren: () => import('app/modules/ViewAll/Permisos/permisos.routes') },
 
                 ]
             },

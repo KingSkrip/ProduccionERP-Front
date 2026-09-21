@@ -1,3 +1,4 @@
+import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
@@ -7,12 +8,19 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
-import { RHService } from 'app/modules/admin/cruds/usuarios/rh/rh.service';
 import { RolesService } from 'app/modules/admin/cruds/usuarios/roles/roles.service';
-
 import { Subject, takeUntil } from 'rxjs';
+
+export const slideUp = trigger('slideUp', [
+    transition(':enter', [
+        style({ transform: 'translateY(100%)', opacity: 0 }),
+        animate('320ms cubic-bezier(0.32, 0.72, 0, 1)', style({ transform: 'translateY(0)', opacity: 1 })),
+    ]),
+    transition(':leave', [
+        animate('220ms cubic-bezier(0.4, 0, 1, 1)', style({ transform: 'translateY(120%)', opacity: 0 })),
+    ]),
+]);
 
 @Component({
     selector: 'add-roles',
@@ -20,7 +28,7 @@ import { Subject, takeUntil } from 'rxjs';
     styleUrls: ['./add-roles.component.scss'],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    animations: fuseAnimations,
+    animations: [slideUp],
     imports: [
         CommonModule,
         MatProgressBarModule,
@@ -36,8 +44,16 @@ export class AddrolesComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     @Output() onCreated = new EventEmitter<void>();
 
-    newRolForm: UntypedFormGroup;
+    newRolForm!: UntypedFormGroup;
     isLoading: boolean = false;
+
+    // ==== drag to dismiss (móvil) ====
+    isDragging = false;
+    dragTransform = 'translateY(0)';
+    dragTransition = 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)';
+    private _touchStartY = 0;
+    private _dragY = 0;
+    private readonly DISMISS_THRESHOLD = 140;
 
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
@@ -49,13 +65,53 @@ export class AddrolesComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.newRolForm = this._formBuilder.group({
-            NOMBRE: ['', [Validators.required]],
+            nombre: ['', [Validators.required]],
         });
     }
 
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
+    }
+
+    // ==== DRAG HANDLERS ====
+    onTouchStart(event: TouchEvent): void {
+        this._touchStartY = event.touches[0].clientY;
+        this.isDragging = true;
+        this.dragTransition = 'none';
+        this._changeDetectorRef.markForCheck();
+    }
+
+    onTouchMove(event: TouchEvent): void {
+        if (!this.isDragging) return;
+        event.preventDefault();
+        const deltaY = event.touches[0].clientY - this._touchStartY;
+        if (deltaY <= 0) {
+            this.dragTransform = 'translateY(0)';
+            return;
+        }
+        this._dragY = deltaY;
+        const resistance =
+            deltaY > this.DISMISS_THRESHOLD
+                ? this.DISMISS_THRESHOLD + (deltaY - this.DISMISS_THRESHOLD) * 0.35
+                : deltaY;
+        this.dragTransform = `translateY(${resistance}px)`;
+        this._changeDetectorRef.markForCheck();
+    }
+
+    onTouchEnd(event: TouchEvent): void {
+        if (!this.isDragging) return;
+        this.isDragging = false;
+        this.dragTransition = 'transform 0.42s cubic-bezier(0.32, 0.72, 0, 1)';
+        if (this._dragY >= this.DISMISS_THRESHOLD) {
+            this.dragTransform = 'translateY(120%) scale(0.95)';
+            this._changeDetectorRef.markForCheck();
+            setTimeout(() => this.closeModal(), 320);
+        } else {
+            this.dragTransform = 'translateY(0)';
+            this._changeDetectorRef.markForCheck();
+        }
+        this._dragY = 0;
     }
 
     closeModal(): void {
@@ -68,7 +124,7 @@ export class AddrolesComponent implements OnInit, OnDestroy {
             this.newRolForm.markAllAsTouched();
 
             const errors: string[] = [];
-            if (this.newRolForm.get('NOMBRE')?.hasError('required')) {
+            if (this.newRolForm.get('nombre')?.hasError('required')) {
                 errors.push('El nombre del rol es obligatorio.');
             }
 
@@ -87,56 +143,53 @@ export class AddrolesComponent implements OnInit, OnDestroy {
     }
 
     createRol(): void {
-    if (this.newRolForm.invalid) return;
+        if (this.newRolForm.invalid) return;
 
-    this.isLoading = true;
+        this.isLoading = true;
 
-    // Payload según lo que espera tu backend
-    const payload = {
-        NOMBRE: this.newRolForm.get('NOMBRE')?.value,
-        GUARD_NAME: 'web' // valor fijo
-    };
+        const payload = {
+            nombre: this.newRolForm.get('nombre')?.value,
+            guard_name: 'web',
+        };
 
-    this._rolesService.createRol(payload)
-        .pipe(takeUntil(this._unsubscribeAll))
-        .subscribe({
-            next: (res: any) => { // res tiene { ok, msg, data }
-                if (res.ok) {
-                    this._fuseConfirmationService.open({
-                        title: 'Éxito',
-                        message: res.msg || 'Rol creado correctamente',
-                        icon: { show: true, name: 'heroicons_outline:check-circle', color: 'success' },
-                        actions: { confirm: { show: true, label: 'Aceptar', color: 'primary' }, cancel: { show: false } },
-                    });
+        this._rolesService.createRol(payload)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (res: any) => {
+                    if (res.ok) {
+                        this._fuseConfirmationService.open({
+                            title: 'Éxito',
+                            message: res.msg || 'Rol creado correctamente',
+                            icon: { show: true, name: 'heroicons_outline:check-circle', color: 'success' },
+                            actions: { confirm: { show: true, label: 'Aceptar', color: 'primary' }, cancel: { show: false } },
+                        });
 
-                    this._dialogRef.close(res.data);
-                    this.isLoading = false;
-                    this._changeDetectorRef.markForCheck();
-                    this.newRolForm.reset();
-                } else {
+                        this._dialogRef.close(res.data);
+                        this.isLoading = false;
+                        this._changeDetectorRef.markForCheck();
+                        this.newRolForm.reset();
+                    } else {
+                        this._fuseConfirmationService.open({
+                            title: 'Error',
+                            message: res.msg || 'Ocurrió un error al crear el rol',
+                            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+                            actions: { confirm: { show: true, label: 'Aceptar', color: 'warn' }, cancel: { show: false } },
+                        });
+                        this.isLoading = false;
+                        this._changeDetectorRef.markForCheck();
+                    }
+                },
+                error: (err) => {
+                    const errorMessage = err.error?.msg || 'Ocurrió un error al crear el rol';
                     this._fuseConfirmationService.open({
                         title: 'Error',
-                        message: res.msg || 'Ocurrió un error al crear el rol',
+                        message: errorMessage,
                         icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
                         actions: { confirm: { show: true, label: 'Aceptar', color: 'warn' }, cancel: { show: false } },
                     });
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
-                }
-            },
-            error: (err) => {
-                const errorMessage = err.error?.msg || 'Ocurrió un error al crear el rol';
-                this._fuseConfirmationService.open({
-                    title: 'Error',
-                    message: errorMessage,
-                    icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
-                    actions: { confirm: { show: true, label: 'Aceptar', color: 'warn' }, cancel: { show: false } },
-                });
-                this.isLoading = false;
-                this._changeDetectorRef.markForCheck();
-            },
-        });
-}
-
-
+                },
+            });
+    }
 }

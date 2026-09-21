@@ -1,7 +1,10 @@
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
+  ElementRef,
+  NgZone,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -9,25 +12,18 @@ import {
 } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import {
-  MAT_DATE_LOCALE,
-  MatNativeDateModule,
-  MatOptionModule,
-  MatRippleModule,
-} from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSortModule } from '@angular/material/sort';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
+import { APP_CONFIG } from 'app/core/config/app-config';
+import { Subject, takeUntil } from 'rxjs';
+import { ScanEmbarque } from '../scan-embarques.types';
 import { ScanService } from '../scan.service';
+import { ZebraScannerService } from '../zebra-scanner.service';
+import { InventarioTabComponent } from './tabs/inventariotab.component';
 
 @Component({
   selector: 'scan-list',
@@ -40,34 +36,146 @@ import { ScanService } from '../scan.service';
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatSlideToggleModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatCheckboxModule,
-    MatRippleModule,
-    MatNativeDateModule,
     MatFormFieldModule,
     MatInputModule,
     MatTooltipModule,
+    InventarioTabComponent,
   ],
-  providers: [{ provide: MAT_DATE_LOCALE, useValue: 'es-MX' }],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: fuseAnimations,
 })
 export class ScanListComponent implements OnInit, OnDestroy {
-  @ViewChild('searchInput') searchInput: any;
-  tabActiva: 'pendientes' | 'aprobadas' | 'rechazadas' = 'pendientes';
-  searchControl: FormControl = new FormControl('');
+  @ViewChild('scanInput') scanInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchInputRef') searchInputRef!: ElementRef<HTMLInputElement>;
+  private searchFocused = false;
+  tabActiva: 'pendientes' | 'aprobadas' | 'inventario' = 'pendientes';
+  searchControl = new FormControl('');
+  scansFiltrados: ScanEmbarque[] = [];
+  loading = false;
+  ipLocal = '';
+  tcpPort = APP_CONFIG.tcpPort ?? '5000';
+  private audioDesbloqueado = false;
+  private _destroy$ = new Subject<void>();
+  scanControl = new FormControl('');
+  escaneando = false;
+
+  pageSize = 13;
+  paginaActual = 0;
 
   constructor(
-    private _ScanService: ScanService,
-    private _snackBar: MatSnackBar,
+    protected _scanService: ScanService,
+    private _cdr: ChangeDetectorRef,
+    private _zone: NgZone,
+    protected _zebraScanner: ZebraScannerService,
   ) {}
 
-  ngOnInit(): void {}
+  async ngOnInit(): Promise<void> {
+    setTimeout(() => {
+      this._zebraScanner.init(this.scanInput?.nativeElement);
+    }, 100);
 
-  ngOnDestroy(): void {}
+    this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
+      //console.log('📤 Barcode recibido:', codigo);
+      this.scanControl.setValue(codigo);
+      this.escaneando = true;
+      this._cdr.markForCheck();
+
+      this._scanService.enviarScan(codigo).subscribe({
+        next: (res) => {
+          this.scanControl.reset();
+          this.escaneando = false;
+          this._cdr.markForCheck();
+          this._zebraScanner.focusInput(); // el servicio sabe si está pausado o no
+        },
+        error: (e) => {
+          this.escaneando = false;
+          this._cdr.markForCheck();
+          this._zebraScanner.focusInput();
+        },
+      });
+    });
+
+    this._scanService.init();
+
+    this._scanService.scans$.pipe(takeUntil(this._destroy$)).subscribe((scans) => {
+      this.aplicarFiltros(scans);
+      this._cdr.markForCheck();
+    });
+
+    this.searchControl.valueChanges.pipe(takeUntil(this._destroy$)).subscribe(() => {
+      this.aplicarFiltros(this._scanService['_scans$'].getValue());
+      this._cdr.markForCheck();
+    });
+
+    this._scanService.loading$.pipe(takeUntil(this._destroy$)).subscribe((v) => {
+      this.loading = v;
+      this._cdr.markForCheck();
+    });
+
+    setTimeout(() => this.scanInput?.nativeElement.focus(), 300);
+  }
+
+  // getter calculado
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.scansFiltrados.length / this.pageSize));
+  }
+
+  get scansPaginados(): ScanEmbarque[] {
+    const start = this.paginaActual * this.pageSize;
+    return this.scansFiltrados.slice(start, start + this.pageSize);
+  }
+
+  irPagina(n: number): void {
+    this.paginaActual = n;
+    this._cdr.markForCheck();
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  cambiarTab(tab: 'pendientes' | 'aprobadas' | 'inventario'): void {
+    this.tabActiva = tab;
+    if (tab !== 'inventario') {
+      this.aplicarFiltros(this._scanService['_scans$'].getValue());
+    }
+    this._cdr.markForCheck();
+  }
+
+  private aplicarFiltros(scans: ScanEmbarque[]): void {
+    const tabMap = { pendientes: 0, aprobadas: 1 };
+    const busqueda = (this.searchControl.value || '').toLowerCase();
+    this.scansFiltrados = scans
+      .filter((s) => s.PROCESADO === tabMap[this.tabActiva])
+      .filter(
+        (s) =>
+          !busqueda ||
+          s.CODIGO.toLowerCase().includes(busqueda) ||
+          s.CODIGOENT.toString().includes(busqueda),
+      );
+    this.paginaActual = 0;
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+  }
+
+  copiarIP(): void {
+    const texto = `${this.ipLocal}:${this.tcpPort}`;
+    navigator.clipboard.writeText(texto);
+  }
+
+  copiarPuerto(): void {
+    navigator.clipboard.writeText(String(this.tcpPort));
+  }
+
+  onSearchFocus(): void {
+    this._zebraScanner.pause();
+  }
+
+  onSearchBlur(): void {
+    this._zebraScanner.resume();
+  }
 }
