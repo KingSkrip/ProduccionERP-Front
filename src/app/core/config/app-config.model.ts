@@ -4,6 +4,7 @@ export interface AppConfig {
   appName: string;
   zxingWasmBaseUrl: string;
   empresa: string;
+  
   environment: 'dev' | 'prod';
   featureFlagX: boolean;
   tcpPort?: string;
