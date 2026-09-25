@@ -19,12 +19,12 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fuseAnimations } from '@fuse/animations';
 import { APP_CONFIG } from 'app/core/config/app-config';
+import { ModalEscanerEmbarquesComponent, ScanFeedback } from 'app/modules/modals/Embarques/scanner-embarques-modal.component';
 import { Subject, takeUntil } from 'rxjs';
 import { ScanEmbarque } from '../scan-embarques.types';
 import { ScanService } from '../scan.service';
 import { ZebraScannerService } from '../zebra-scanner.service';
 import { InventarioTabComponent } from './tabs/inventariotab.component';
-import { ScanFeedback } from 'app/modules/modals/Embarques/scanner-embarques-modal.component';
 
 @Component({
   selector: 'scan-list',
@@ -41,6 +41,7 @@ import { ScanFeedback } from 'app/modules/modals/Embarques/scanner-embarques-mod
     MatInputModule,
     MatTooltipModule,
     InventarioTabComponent,
+    ModalEscanerEmbarquesComponent,
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -183,11 +184,11 @@ export class ScanListComponent implements OnInit, OnDestroy {
     this._zebraScanner.resume();
   }
 
-
   abrirEscanerCamara(): void {
     this.ultimoFeedbackCamara = null;
     this.totalEscaneadosCamara = 0;
     this.mostrarEscanerCamara = true;
+     this._cdr.markForCheck();
   }
 
   cerrarEscanerCamara(): void {
