@@ -1,0 +1,86 @@
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:items-center md:pb-0"
+  (click)="onOverlayClick()"
+>
+  <div
+    class="bg-card flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-gray-200 shadow-2xl md:max-h-[90vh] md:max-w-xs md:rounded-2xl dark:border-gray-700"
+    [class.select-none]="isDragging"
+    [style.transform]="dragTransform"
+    [style.transition]="dragTransition"
+    (click)="$event.stopPropagation()"
+    [@slideUp]
+  >
+    <!-- handle de swipe (solo relevante en móvil, inofensivo en desktop) -->
+    <div
+      class="touch-none"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd()"
+    >
+      <div class="flex cursor-grab justify-center pb-1 pt-3 active:cursor-grabbing md:hidden">
+        <div class="h-1.5 w-11 rounded-full bg-primary-500"></div>
+      </div>
+
+      <div
+        class="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-3 dark:border-gray-700"
+      >
+        <div>
+          <h2 class="text-lg font-bold text-black dark:text-white">{{ titulo }}</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            {{ totalEscaneados }} escaneado{{ totalEscaneados === 1 ? '' : 's' }} en esta sesión
+          </p>
+        </div>
+        <button
+          class="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+          (click)="cerrarModal()"
+        >
+          <mat-icon
+            class="text-black icon-size-5 dark:text-white"
+            svgIcon="heroicons_outline:x-mark"
+          ></mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex flex-1 flex-col items-center justify-center gap-3 overflow-y-auto p-5">
+      <!-- bloqueado=false siempre: NUNCA se queda congelado esperando al padre -->
+      <app-lector-qr
+        class="w-full max-w-[300px]"
+        [bloqueado]="false"
+        (codigoDetectado)="onScanSuccess($event)"
+      >
+      </app-lector-qr>
+
+      <p class="text-center text-xs text-black dark:text-white">
+        Apunta la cámara al código. Puedes seguir escaneando uno tras otro; cierra el modal cuando
+        termines.
+      </p>
+
+      <!-- feedback del último escaneo -->
+      @if (ultimoFeedback) {
+        <div
+          class="flex w-full max-w-[300px] items-center gap-2 rounded-xl px-4 py-3 text-sm"
+          [class.bg-emerald-50]="ultimoFeedback.ok"
+          [class.text-emerald-700]="ultimoFeedback.ok"
+          [class.dark:bg-emerald-900]="ultimoFeedback.ok"
+          [class.dark:text-emerald-400]="ultimoFeedback.ok"
+          [class.bg-red-50]="!ultimoFeedback.ok"
+          [class.text-red-600]="!ultimoFeedback.ok"
+          [class.dark:bg-red-900]="!ultimoFeedback.ok"
+          [class.dark:text-red-400]="!ultimoFeedback.ok"
+        >
+          <mat-icon
+            class="shrink-0 icon-size-5"
+            [svgIcon]="
+              ultimoFeedback.ok ? 'heroicons_outline:check-circle' : 'heroicons_outline:x-circle'
+            "
+          ></mat-icon>
+          <span class="min-w-0 truncate">
+            <strong class="font-mono">{{ ultimoFeedback.codigo }}</strong>
+            — {{ ultimoFeedback.mensaje || (ultimoFeedback.ok ? 'Registrado' : 'Error') }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+</div>

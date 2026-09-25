@@ -24,6 +24,7 @@ import { ScanEmbarque } from '../scan-embarques.types';
 import { ScanService } from '../scan.service';
 import { ZebraScannerService } from '../zebra-scanner.service';
 import { InventarioTabComponent } from './tabs/inventariotab.component';
+import { ScanFeedback } from 'app/modules/modals/Embarques/scanner-embarques-modal.component';
 
 @Component({
   selector: 'scan-list',
@@ -59,6 +60,9 @@ export class ScanListComponent implements OnInit, OnDestroy {
   private _destroy$ = new Subject<void>();
   scanControl = new FormControl('');
   escaneando = false;
+  mostrarEscanerCamara = false;
+  ultimoFeedbackCamara: ScanFeedback | null = null;
+  totalEscaneadosCamara = 0;
 
   pageSize = 13;
   paginaActual = 0;
@@ -177,5 +181,34 @@ export class ScanListComponent implements OnInit, OnDestroy {
 
   onSearchBlur(): void {
     this._zebraScanner.resume();
+  }
+
+
+  abrirEscanerCamara(): void {
+    this.ultimoFeedbackCamara = null;
+    this.totalEscaneadosCamara = 0;
+    this.mostrarEscanerCamara = true;
+  }
+
+  cerrarEscanerCamara(): void {
+    this.mostrarEscanerCamara = false;
+  }
+
+  onCodigoEscaneadoCamara(codigo: string): void {
+    this._scanService.enviarScan(codigo).subscribe({
+      next: () => {
+        this.totalEscaneadosCamara++;
+        this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Registrado' };
+        this._cdr.markForCheck();
+      },
+      error: (e) => {
+        this.ultimoFeedbackCamara = {
+          codigo,
+          ok: false,
+          mensaje: e?.error?.message ?? 'No se pudo registrar',
+        };
+        this._cdr.markForCheck();
+      },
+    });
   }
 }
