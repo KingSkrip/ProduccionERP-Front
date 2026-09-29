@@ -149,6 +149,8 @@ export const appRoutes: Route[] = [
 
                     //Inventarios
                     { path: 'Inventarios', loadChildren: () => import('app/modules/admin/Inventarios/inventarios.routes') },
+                    { path: 'scan/inventario', loadChildren: () => import('app/modules/admin/Inventarios/Scan/scaninventarios.routes') },
+
 
 
 
