@@ -21,9 +21,9 @@
         <button
           (click)="abrirEscanerCamara()"
           aria-label="Escanear con la cámara"
-          class="flex h-10 w-10 items-center justify-center rounded-full bg-primary-500 text-white shadow transition active:scale-95"
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-primary-500 shadow transition active:scale-95"
         >
-          <mat-icon svgIcon="heroicons_outline:qr-code"></mat-icon>
+          <mat-icon svgIcon="heroicons_outline:qr-code" class="text-white"></mat-icon>
         </button>
       </div>
     </div>
@@ -101,11 +101,7 @@
     </div>
 
     <!-- ===== Búsqueda DESKTOP ===== -->
-    <mat-form-field
-      class="hidden w-full sm:block"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="hidden w-full sm:block" appearance="outline" subscriptSizing="dynamic">
       <mat-icon matPrefix>search</mat-icon>
 
       <input
@@ -119,18 +115,18 @@
     </mat-form-field>
 
     <!-- ===== Tabs MÓVIL: control segmentado a todo el ancho ===== -->
-    <div class="grid grid-cols-3 gap-1 rounded-xl bg-gray-100 p-1 sm:hidden dark:bg-gray-800">
+    <div class="bg-card grid grid-cols-3 gap-1 rounded-xl p-1 sm:hidden">
       <button
         *ngFor="let tab of ['pendientes', 'aprobadas', 'inventario']"
         (click)="cambiarTab(tab)"
-        class="flex h-9 items-center justify-center gap-1 rounded-lg text-xs font-semibold transition-colors"
-        [class.bg-white]="tabActiva === tab"
+        class="flex h-9 items-center justify-center gap-1 rounded-lg text-sm font-medium transition-colors"
+        [class.bg-gray-200]="tabActiva === tab"
         [class.shadow]="tabActiva === tab"
-        [class.text-primary-600]="tabActiva === tab"
+        [class.text-primary-500]="tabActiva === tab"
         [class.dark:bg-gray-700]="tabActiva === tab"
         [class.dark:text-primary-300]="tabActiva === tab"
-        [class.text-gray-500]="tabActiva !== tab"
-        [class.dark:text-gray-400]="tabActiva !== tab"
+        [class.text-black]="tabActiva !== tab"
+        [class.dark:text-white]="tabActiva !== tab"
       >
         {{ tab | titlecase }}
 
@@ -140,11 +136,18 @@
         >
           {{ scansPendientesLocal.length }}
         </span>
+
+        <span
+          *ngIf="tab === 'inventario' && escaneadosComparacion.length > 0"
+          class="rounded-full bg-green-500 px-1.5 text-[10px] font-bold leading-4 text-white"
+        >
+          {{ escaneadosComparacion.length }}
+        </span>
       </button>
     </div>
 
     <!-- ===== Tabs DESKTOP: subrayadas ===== -->
-    <div class="hidden gap-1 border-b border-gray-200 dark:border-gray-700 sm:flex">
+    <div class="hidden gap-1 border-b border-gray-200 sm:flex dark:border-gray-700">
       <button
         *ngFor="let tab of ['pendientes', 'aprobadas', 'inventario']"
         (click)="cambiarTab(tab)"
@@ -167,6 +170,13 @@
           class="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] font-bold text-white"
         >
           {{ scansPendientesLocal.length }}
+        </span>
+
+        <span
+          *ngIf="tab === 'inventario' && escaneadosComparacion.length > 0"
+          class="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-green-500 px-1 text-[10px] font-bold text-white"
+        >
+          {{ escaneadosComparacion.length }}
         </span>
       </button>
     </div>
@@ -194,7 +204,7 @@
          ========================================================== -->
     <div class="-mx-4 flex min-h-0 flex-1 flex-col sm:hidden">
       <!-- Un solo scroll para todo -->
-      <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+      <div class="min-h-[12rem] max-h-[calc(100dvh-19rem)] flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
         <!-- Recién escaneados (sin guardar) -->
         <div *ngIf="tabActiva === 'pendientes' && scansPendientesLocal.length > 0">
           <div
@@ -278,7 +288,10 @@
           </div>
 
           <div class="divide-y divide-gray-100 dark:divide-gray-700/50">
-            <div *ngFor="let scan of scansPaginados" class="flex min-h-[56px] items-center gap-3 px-4 py-2">
+            <div
+              *ngFor="let scan of scansPaginados"
+              class="flex min-h-[56px] items-center gap-3 px-4 py-2"
+            >
               <div class="min-w-0 flex-1">
                 <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ scan.CODIGO }}
@@ -384,7 +397,9 @@
           (click)="guardarSeleccionadosLocales()"
         >
           <mat-icon class="!mr-2">save</mat-icon>
-          {{ guardandoSeleccionados ? 'Guardando…' : 'Guardar (' + totalSeleccionadosLocales + ')' }}
+          {{
+            guardandoSeleccionados ? 'Guardando…' : 'Guardar (' + totalSeleccionadosLocales + ')'
+          }}
         </button>
       </div>
     </div>
@@ -483,7 +498,9 @@
               </tr>
             </thead>
 
-            <tbody class="divide-y divide-blue-100 bg-white dark:divide-blue-900/40 dark:bg-gray-900">
+            <tbody
+              class="divide-y divide-blue-100 bg-white dark:divide-blue-900/40 dark:bg-gray-900"
+            >
               <tr
                 *ngFor="let item of scansPendientesLocal"
                 class="transition-colors hover:bg-blue-50/60 dark:hover:bg-blue-900/20"
@@ -673,10 +690,229 @@
     </div>
   </div>
 
-  <inventario-tab
-    *ngIf="tabActiva === 'inventario'"
-    class="flex min-h-0 flex-1 flex-col px-4 sm:px-6"
-  ></inventario-tab>
+  <!-- ============================================================
+       INVENTARIO: Lista (existente) / Comparar (nuevo)
+       ============================================================ -->
+  <div *ngIf="tabActiva === 'inventario'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
+    <!-- Selector de vista -->
+    <div class="bg-card mb-3 grid flex-shrink-0 grid-cols-2 gap-1 rounded-xl p-1 sm:w-72">
+      <button
+        (click)="cambiarVistaInventario('lista')"
+        class="flex h-9 items-center justify-center rounded-lg text-sm font-medium transition-colors"
+        [class.bg-gray-200]="vistaInventario === 'lista'"
+        [class.shadow]="vistaInventario === 'lista'"
+        [class.text-primary-500]="vistaInventario === 'lista'"
+        [class.dark:text-accent-500]="vistaInventario === 'lista'"
+        [class.dark:bg-gray-700]="vistaInventario === 'lista'"
+        [class.text-black]="vistaInventario !== 'lista'"
+        [class.dark:text-white]="vistaInventario !== 'lista'"
+      >
+        Lista
+      </button>
+
+      <button
+        (click)="cambiarVistaInventario('comparar')"
+        class="flex h-9 items-center justify-center gap-1 rounded-lg text-sm font-medium transition-colors"
+        [class.bg-gray-200]="vistaInventario === 'comparar'"
+        [class.shadow]="vistaInventario === 'comparar'"
+        [class.text-primary-500]="vistaInventario === 'comparar'"
+        [class.dark:text-accent-500]="vistaInventario === 'comparar'"
+        [class.dark:bg-gray-700]="vistaInventario === 'comparar'"
+        [class.text-black]="vistaInventario !== 'comparar'"
+        [class.dark:text-white]="vistaInventario !== 'comparar'"
+      >
+        Comparar
+        <span
+          *ngIf="escaneadosComparacion.length > 0"
+          class="rounded-full bg-blue-500 px-1.5 text-[10px] font-bold leading-4 text-white"
+        >
+          {{ escaneadosComparacion.length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Vista Lista (sin cambios) -->
+    <inventario-tab
+      *ngIf="vistaInventario === 'lista'"
+      class="flex min-h-0 flex-1 flex-col"
+    ></inventario-tab>
+
+    <!-- Vista Comparar -->
+    <div *ngIf="vistaInventario === 'comparar'" class="flex min-h-0 flex-1 flex-col">
+      <!-- Aviso: ya escaneado -->
+      <div
+        *ngIf="avisoDuplicado"
+        class="mb-3 flex flex-shrink-0 items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 sm:text-sm dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+      >
+        <mat-icon class="!h-4 !w-4 flex-shrink-0 !text-base">info</mat-icon>
+        <span class="min-w-0 break-all">
+          Ya lo escaneaste: <span class="font-mono font-semibold">{{ avisoDuplicado }}</span></span
+        >
+      </div>
+
+      <!-- Resumen / filtros -->
+      <div class="mb-3 grid flex-shrink-0 grid-cols-3 gap-2">
+        <button
+          (click)="cambiarFiltroComparacion('coinciden')"
+          class="flex flex-col items-center rounded-xl border px-2 py-2 transition-colors sm:py-3"
+          [class.border-green-500]="filtroComparacion === 'coinciden'"
+          [class.bg-green-50]="filtroComparacion === 'coinciden'"
+          [class.dark:bg-green-900]="filtroComparacion === 'coinciden'"
+          [class.border-gray-200]="filtroComparacion !== 'coinciden'"
+          [class.dark:border-gray-700]="filtroComparacion !== 'coinciden'"
+        >
+          <span class="text-xl font-bold tabular-nums text-green-600 sm:text-2xl">
+            {{ coinciden.length }}
+          </span>
+          <span class="text-sm font-medium text-black dark:text-white"> Coinciden </span>
+        </button>
+
+        <button
+          (click)="cambiarFiltroComparacion('noEncontrados')"
+          class="flex flex-col items-center rounded-xl border px-2 py-2 transition-colors sm:py-3"
+          [class.border-red-500]="filtroComparacion === 'noEncontrados'"
+          [class.bg-red-50]="filtroComparacion === 'noEncontrados'"
+          [class.dark:bg-red-900]="filtroComparacion === 'noEncontrados'"
+          [class.border-gray-200]="filtroComparacion !== 'noEncontrados'"
+          [class.dark:border-gray-700]="filtroComparacion !== 'noEncontrados'"
+        >
+          <span class="text-xl font-bold tabular-nums text-red-600 sm:text-2xl">
+            {{ noEncontrados.length }}
+          </span>
+          <span class="text-sm font-medium text-black dark:text-white"> No aprobados </span>
+        </button>
+
+        <button
+          (click)="cambiarFiltroComparacion('faltantes')"
+          class="flex flex-col items-center rounded-xl border px-2 py-2 transition-colors sm:py-3"
+          [class.border-amber-500]="filtroComparacion === 'faltantes'"
+          [class.bg-amber-50]="filtroComparacion === 'faltantes'"
+          [class.dark:bg-amber-900]="filtroComparacion === 'faltantes'"
+          [class.border-gray-200]="filtroComparacion !== 'faltantes'"
+          [class.dark:border-gray-700]="filtroComparacion !== 'faltantes'"
+        >
+          <span class="text-xl font-bold tabular-nums text-amber-600 sm:text-2xl">
+            {{ faltantes.length }}
+          </span>
+          <span class="text-sm font-medium text-black dark:text-white"> Inventario </span>
+        </button>
+      </div>
+
+      <!-- Lista (un solo scroll; en móvil a todo el ancho) -->
+      <div
+        class="-mx-4 min-h-[12rem] max-h-[calc(100dvh-30rem)] flex-1 overflow-y-auto overflow-x-hidden overscroll-contain sm:mx-0 sm:max-h-[calc(100dvh-34rem)] sm:rounded-lg sm:border sm:border-gray-200 sm:dark:border-gray-700"
+      >
+        <!-- Coinciden -->
+        <div
+          *ngIf="filtroComparacion === 'coinciden'"
+          class="divide-y divide-gray-100 dark:divide-gray-700/50"
+        >
+          <div
+            *ngFor="let item of coinciden"
+            class="flex min-h-[56px] items-center gap-3 px-4 py-2 sm:py-2.5"
+          >
+            <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-green-500"
+              >check_circle</mat-icon
+            >
+            <div class="min-w-0 flex-1">
+              <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
+                {{ item.codigo }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ item.fecha | date: 'HH:mm:ss' }}
+              </p>
+            </div>
+            <span
+              class="flex-shrink-0 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-medium text-green-700 sm:text-xs"
+            >
+              Aprobado
+            </span>
+          </div>
+          <div *ngIf="coinciden.length === 0" class="py-16 text-center text-sm text-gray-400">
+            Aún no hay coincidencias
+          </div>
+        </div>
+
+        <!-- No aprobados -->
+        <div
+          *ngIf="filtroComparacion === 'noEncontrados'"
+          class="divide-y divide-gray-100 dark:divide-gray-700/50"
+        >
+          <div
+            *ngFor="let item of noEncontrados"
+            class="flex min-h-[56px] items-center gap-3 px-4 py-2 sm:py-2.5"
+          >
+            <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-red-500">cancel</mat-icon>
+            <div class="min-w-0 flex-1">
+              <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
+                {{ item.codigo }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ item.fecha | date: 'HH:mm:ss' }}
+              </p>
+            </div>
+            <span
+              class="flex-shrink-0 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600 sm:text-xs"
+            >
+              {{ item.estadoBackend ?? 'No existe' }}
+            </span>
+            <button
+              (click)="quitarDeComparacion(item)"
+              aria-label="Quitar"
+              class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-gray-400 active:bg-gray-200/30"
+            >
+              <mat-icon class="!h-4 !w-4 !text-base">close</mat-icon>
+            </button>
+          </div>
+          <div *ngIf="noEncontrados.length === 0" class="py-16 text-center text-sm text-gray-400">
+            Todo lo escaneado está aprobado
+          </div>
+        </div>
+
+        <!-- Aprobados sin escanear -->
+        <div
+          *ngIf="filtroComparacion === 'faltantes'"
+          class="divide-y divide-gray-100 dark:divide-gray-700/50"
+        >
+          <div
+            *ngFor="let scan of faltantes"
+            class="flex min-h-[56px] items-center gap-3 px-4 py-2 sm:py-2.5"
+          >
+            <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-amber-500"
+              >radio_button_unchecked</mat-icon
+            >
+            <div class="min-w-0 flex-1">
+              <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
+                {{ scan.CODIGO }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ scan.FECHAYHORA | date: 'dd/MM/yyyy HH:mm' }}
+              </p>
+            </div>
+          </div>
+          <div *ngIf="faltantes.length === 0" class="py-16 text-center text-sm text-gray-400">
+            Ya escaneaste todos los aprobados
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div
+        class="flex flex-shrink-0 items-center justify-between gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:mb-10 sm:pb-0"
+      >
+        <span class="text-xs text-gray-500 dark:text-gray-400">
+          Escaneados: <b class="tabular-nums">{{ escaneadosComparacion.length }}</b>
+        </span>
+        <button
+          mat-stroked-button
+          [disabled]="escaneadosComparacion.length === 0"
+          (click)="limpiarComparacion()"
+        >
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- al final del componente, fuera del contenedor principal -->

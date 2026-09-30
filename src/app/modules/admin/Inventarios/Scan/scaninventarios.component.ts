@@ -44,6 +44,20 @@ interface ScanPendienteLocal {
   error?: string | null;
 }
 
+/** Escaneo hecho en la pestaña Inventario, solo para comparar (no se guarda). */
+interface ScanComparado {
+  id: number;
+  codigo: string;
+  fecha: Date;
+}
+
+interface ScanNoEncontrado extends ScanComparado {
+  /** Estado si existe en BD pero no está aprobado (Pendiente/Rechazado) */
+  estadoBackend: string | null;
+}
+
+type FiltroComparacion = 'coinciden' | 'noEncontrados' | 'faltantes';
+
 @Component({
   selector: 'app-scaninventario',
   standalone: true,
@@ -95,6 +109,15 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   avisoDuplicado: string | null = null;
   private _avisoDuplicadoTimeout: ReturnType<typeof setTimeout> | null = null;
 
+  // --- Comparación de inventario (escaneos vs aprobados) ---
+  vistaInventario: 'lista' | 'comparar' = 'lista';
+  filtroComparacion: FiltroComparacion = 'coinciden';
+  escaneadosComparacion: ScanComparado[] = [];
+  coinciden: ScanComparado[] = [];
+  noEncontrados: ScanNoEncontrado[] = [];
+  faltantes: ScanEmbarque[] = [];
+  private _idComparacionCounter = 0;
+
   constructor(
     protected _scanService: ScanService,
     private _cdr: ChangeDetectorRef,
@@ -113,6 +136,13 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
       this.scanControl.setValue(codigo);
       this.scanControl.reset();
       this._zebraScanner.focusInput();
+
+      // En la pestaña Inventario NO se guarda: solo se compara contra aprobados
+      const enInventario = this.tabActiva === 'inventario';
+      this._registrarParaComparacion(codigo, enInventario);
+      if (enInventario) {
+        return;
+      }
 
       // Si el código ya existe en el backend (pendiente, aprobada o rechazada)
       // o ya está en la cola local sin guardar, no se agrega de nuevo.
@@ -151,6 +181,7 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
 
     this._scanService.scans$.pipe(takeUntil(this._destroy$)).subscribe((scans) => {
       this.aplicarFiltros(scans);
+      this.recalcularComparacion();
       this._cdr.markForCheck();
     });
 
@@ -190,6 +221,8 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
     this.tabActiva = tab;
     if (tab !== 'inventario') {
       this.aplicarFiltros(this._scanService['_scans$'].getValue());
+    } else {
+      this.recalcularComparacion();
     }
     this._cdr.markForCheck();
   }
@@ -245,6 +278,24 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   }
 
   onCodigoEscaneadoCamara(codigo: string): void {
+    const enInventario = this.tabActiva === 'inventario';
+    const resultado = this._registrarParaComparacion(codigo, false);
+    if (enInventario) {
+      this.totalEscaneadosCamara = this.escaneadosComparacion.length;
+      this.ultimoFeedbackCamara = {
+        codigo,
+        ok: resultado !== 'noEncontrado',
+        mensaje:
+          resultado === 'coincide'
+            ? 'Coincide con aprobados'
+            : resultado === 'repetido'
+              ? 'Ya escaneado'
+              : 'No está en aprobados',
+      };
+      this._cdr.markForCheck();
+      return;
+    }
+
     this._scanService.enviarScan(codigo).subscribe({
       next: () => {
         this.totalEscaneadosCamara++;
@@ -330,6 +381,76 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   private _finalizarGuardadoSiTermino(): void {
     this.guardandoSeleccionados = this.scansPendientesLocal.some((s) => s.guardando);
     this._cdr.markForCheck();
+  }
+
+  // ------------------------------------------------------------------
+  // Comparación de inventario: escaneado vs aprobados
+  // ------------------------------------------------------------------
+
+  cambiarVistaInventario(vista: 'lista' | 'comparar'): void {
+    this.vistaInventario = vista;
+    this._cdr.markForCheck();
+  }
+
+  cambiarFiltroComparacion(filtro: FiltroComparacion): void {
+    this.filtroComparacion = filtro;
+    this._cdr.markForCheck();
+  }
+
+  limpiarComparacion(): void {
+    this.escaneadosComparacion = [];
+    this.recalcularComparacion();
+    this._cdr.markForCheck();
+  }
+
+  quitarDeComparacion(item: ScanComparado): void {
+    this.escaneadosComparacion = this.escaneadosComparacion.filter((s) => s.id !== item.id);
+    this.recalcularComparacion();
+    this._cdr.markForCheck();
+  }
+
+  private _registrarParaComparacion(
+    codigoRaw: string,
+    avisar = true,
+  ): 'coincide' | 'noEncontrado' | 'repetido' {
+    const codigo = (codigoRaw ?? '').trim();
+
+    if (this.escaneadosComparacion.some((s) => s.codigo === codigo)) {
+      if (avisar) {
+        this._mostrarAvisoDuplicado(codigo);
+      }
+      return 'repetido';
+    }
+
+    this.escaneadosComparacion = [
+      { id: ++this._idComparacionCounter, codigo, fecha: new Date() },
+      ...this.escaneadosComparacion,
+    ];
+    this.recalcularComparacion();
+    this._cdr.markForCheck();
+
+    return this.coinciden.some((c) => c.codigo === codigo) ? 'coincide' : 'noEncontrado';
+  }
+
+  recalcularComparacion(): void {
+    const todos: ScanEmbarque[] = this._scanService['_scans$'].getValue() ?? [];
+    const aprobados = todos.filter((s) => s.PROCESADO === 1);
+    const setAprobados = new Set(aprobados.map((s) => s.CODIGO));
+    const porCodigo = new Map(todos.map((s) => [s.CODIGO, s]));
+    const setEscaneados = new Set(this.escaneadosComparacion.map((s) => s.codigo));
+
+    this.coinciden = this.escaneadosComparacion.filter((e) => setAprobados.has(e.codigo));
+
+    this.noEncontrados = this.escaneadosComparacion
+      .filter((e) => !setAprobados.has(e.codigo))
+      .map((e) => {
+        const existente = porCodigo.get(e.codigo);
+        const estadoBackend =
+          existente === undefined ? null : existente.PROCESADO === 0 ? 'Pendiente' : 'Rechazado';
+        return { ...e, estadoBackend };
+      });
+
+    this.faltantes = aprobados.filter((s) => !setEscaneados.has(s.CODIGO));
   }
 
   /**
