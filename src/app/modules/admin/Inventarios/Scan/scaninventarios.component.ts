@@ -255,39 +255,30 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   onCodigoEscaneadoCamara(codigo: string): void {
     const enInventario = this.tabActiva === 'inventario';
 
-    // Siempre se registra para comparar (sin aviso, el modal ya muestra feedback)
-    const resultadoComparacion = this._registrarParaComparacion(codigo, false);
+    const comparacion = this._registrarParaComparacion(codigo, false);
+    const cola = this._encolarLocal(codigo, false);
 
-    // Siempre va a la cola de Pendientes, sin importar la pestaña
-    const resultado = this._encolarLocal(codigo, false);
-
-    if (enInventario) {
-      const base =
-        resultadoComparacion === 'coincide'
-          ? 'Coincide con aprobados'
-          : resultadoComparacion === 'repetido'
-            ? 'Ya escaneado'
-            : 'No aprobado';
-
-      this.totalEscaneadosCamara = this.escaneadosComparacion.length;
-      this.ultimoFeedbackCamara = {
-        codigo,
-        ok: resultadoComparacion !== 'noEncontrado',
-        mensaje: resultado === 'agregado' ? `${base} · en Pendientes` : base,
-      };
-      this._cdr.markForCheck();
-      return;
-    }
-
-    if (resultado === 'agregado') {
-      this.totalEscaneadosCamara++;
+    if (cola === 'agregado') {
+      // Se agregó a Pendientes: siempre verde, sin importar la pestaña
+      this.totalEscaneadosCamara = enInventario
+        ? this.escaneadosComparacion.length
+        : this.totalEscaneadosCamara + 1;
       this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Agregado (sin guardar)' };
+    } else if (enInventario && comparacion === 'coincide') {
+      // Ya estaba aprobado en backend: coincide
+      this.totalEscaneadosCamara = this.escaneadosComparacion.length;
+      this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Coincide con aprobados' };
+    } else if (enInventario && comparacion === 'noEncontrado') {
+      // Existe en backend (pendiente/rechazado) y se registró en la comparación
+      this.totalEscaneadosCamara = this.escaneadosComparacion.length;
+      this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Registrado en comparación' };
     } else {
+      // No se registró nada: ya estaba escaneado o ya existía
       this.ultimoFeedbackCamara = { codigo, ok: false, mensaje: 'Ya está registrado' };
     }
+
     this._cdr.markForCheck();
   }
-
   // ------------------------------------------------------------------
   // Cola local de escaneos del lector (pendientes de guardar)
   // ------------------------------------------------------------------
