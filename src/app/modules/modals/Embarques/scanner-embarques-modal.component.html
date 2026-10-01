@@ -58,8 +58,8 @@
         @if (ultimoFeedback) {
           <div
             class="pointer-events-none absolute inset-x-2 bottom-2 z-10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm"
-            [class.bg-emerald-600/90]="ultimoFeedback.ok"
-            [class.bg-red-600/90]="!ultimoFeedback.ok"
+            [class.bg-emerald-600]="ultimoFeedback.ok"
+            [class.bg-red-600]="!ultimoFeedback.ok"
             [class.text-white]="true"
           >
             <mat-icon
