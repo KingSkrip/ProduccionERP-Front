@@ -66,3 +66,27 @@ export interface ApiResponse<T> {
   data: T;
   message?: string;
 }
+
+
+
+export interface ResumenPendientes {
+  ok: boolean;
+  total_escaneos: number;
+  total_piezas: number;
+  total_kilos: number;
+  por_tipo: Record<string, { piezas: number; kilos: number }>;
+  detalle: Array<Record<string, any> & { CODIGO: string; 'PESO NETO': number }>;
+  no_encontrados: string[];
+  invalidos: string[];
+}
+
+
+export interface VerificarInventarioResponse {
+  ok: boolean;
+  motivo: 'no_inventariado' | 'ya_pendiente';
+  ya_pendiente: boolean;
+  codigo: string;
+  codigo_ent: number;
+  datos: Record<string, any> | null;
+  peso: number;
+}

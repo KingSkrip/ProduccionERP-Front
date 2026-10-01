@@ -8,9 +8,12 @@
       <h2 class="text-lg font-semibold">Escáner</h2>
 
       <div class="flex items-center gap-1">
-        <!-- Zebra: solo el icono; tocar copia IP:puerto -->
-        <button mat-icon-button (click)="copiarIP()" aria-label="Copiar IP del Zebra">
-          <mat-icon class="text-green-500">wifi</mat-icon>
+        <button
+          mat-icon-button
+          (click)="toggleBusquedaMovil()"
+          [attr.aria-label]="mostrarBusquedaMovil ? 'Cerrar búsqueda' : 'Buscar'"
+        >
+          <mat-icon>{{ mostrarBusquedaMovil ? 'close' : 'search' }}</mat-icon>
         </button>
 
         <button mat-icon-button (click)="_scanService.cargarScans()" aria-label="Recargar">
@@ -27,6 +30,8 @@
         </button>
       </div>
     </div>
+
+    
 
     <!-- ===== TABLET / DESKTOP: fila original ===== -->
     <div class="hidden flex-wrap items-center justify-between gap-3 sm:flex">
@@ -72,11 +77,11 @@
     </div>
 
     <!-- ===== Búsqueda MÓVIL: input compacto (16px para que iOS no haga zoom) ===== -->
-    <div class="relative sm:hidden">
+    <div *ngIf="mostrarBusquedaMovil" class="relative sm:hidden">
       <mat-icon
         class="pointer-events-none absolute left-3 top-1/2 !h-5 !w-5 -translate-y-1/2 text-gray-400"
-        >search</mat-icon
-      >
+        >search
+      </mat-icon>
 
       <input
         #searchInputMobileRef
@@ -86,7 +91,7 @@
         placeholder="Buscar código..."
         [formControl]="searchControl"
         (focus)="onSearchFocus()"
-        (blur)="onSearchBlur()"
+        (blur)="onSearchBlurMovil()"
         class="h-11 w-full rounded-xl border border-gray-300 bg-transparent pl-10 pr-10 text-base outline-none transition-colors focus:border-primary-500 dark:border-gray-600"
       />
 
@@ -114,10 +119,69 @@
       />
     </mat-form-field>
 
+
+<!-- ===== Resumen de escaneos sin guardar ===== -->
+<div
+  *ngIf="totalPendientesLocales > 0"
+  class="flex flex-shrink-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-gray-200 bg-white p-3 sm:flex-nowrap sm:gap-6 sm:px-4 dark:border-gray-700 dark:bg-gray-900"
+>
+  <!-- Escaneos -->
+  <div class="flex min-w-0 flex-1 items-center gap-3 sm:flex-none">
+    <span
+      class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300"
+    >
+      <mat-icon class="!h-5 !w-5 !text-xl">qr_code_scanner</mat-icon>
+    </span>
+
+    <div class="min-w-0 leading-tight">
+      <p class="text-xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
+        {{ totalPendientesLocales }}
+      </p>
+      <p class="truncate text-xs text-gray-500 dark:text-gray-400">
+        {{ totalPendientesLocales === 1 ? 'escaneo sin guardar' : 'escaneos sin guardar' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Divisor (solo desktop) -->
+  <div class="hidden h-10 w-px bg-gray-200 sm:block dark:bg-gray-700"></div>
+
+  <!-- Peso -->
+  <div class="flex min-w-0 flex-1 items-center gap-3 sm:flex-none">
+    <span
+      class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300"
+    >
+      <mat-icon class="!h-5 !w-5 !text-xl">scale</mat-icon>
+    </span>
+
+    <div class="min-w-0 leading-tight">
+      <p class="text-xl font-bold tabular-nums text-gray-900 dark:text-gray-100">
+        {{ kilosPendientesLocales | number: '1.2-2' }}
+        <span class="text-sm font-medium text-gray-500">kg</span>
+      </p>
+      <p class="truncate text-xs text-gray-500 dark:text-gray-400">
+        <span class="font-semibold tabular-nums text-primary-600 dark:text-primary-400">
+          {{ kilosSeleccionadosLocales | number: '1.2-2' }} kg
+        </span>
+        seleccionados
+      </p>
+    </div>
+  </div>
+
+  <!-- Aviso sin peso -->
+  <span
+    *ngIf="sinPesoLocales"
+    class="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 sm:ml-auto sm:w-auto dark:bg-amber-900/20 dark:text-amber-300"
+  >
+    <mat-icon class="!h-4 !w-4 !text-base">warning_amber</mat-icon>
+    {{ sinPesoLocales }} sin peso
+  </span>
+</div>
+
     <!-- ===== Tabs MÓVIL: control segmentado a todo el ancho ===== -->
     <div class="bg-card grid grid-cols-3 gap-1 rounded-xl p-1 sm:hidden">
       <button
-        *ngFor="let tab of ['pendientes', 'aprobadas', 'inventario']"
+        *ngFor="let tab of ['pendientes', 'aprobadas', 'comparación']"
         (click)="cambiarTab(tab)"
         class="flex h-9 items-center justify-center gap-1 rounded-lg text-sm font-medium transition-colors"
         [class.bg-gray-200]="tabActiva === tab"
@@ -149,7 +213,7 @@
     <!-- ===== Tabs DESKTOP: subrayadas ===== -->
     <div class="hidden gap-1 border-b border-gray-200 sm:flex dark:border-gray-700">
       <button
-        *ngFor="let tab of ['pendientes', 'aprobadas', 'inventario']"
+        *ngFor="let tab of ['pendientes', 'aprobadas', 'comparación']"
         (click)="cambiarTab(tab)"
         class="relative px-4 py-2 text-sm font-semibold transition-colors duration-200"
         [class.text-primary-600]="tabActiva === tab"
@@ -185,7 +249,7 @@
   <!-- ============================================================
        CONTENIDO (pendientes / aprobadas)
        ============================================================ -->
-  <div *ngIf="tabActiva !== 'inventario'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
+  <div *ngIf="tabActiva !== 'comparación'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
     <!-- Aviso: código ya registrado -->
     <div
       *ngIf="avisoDuplicado"
@@ -246,15 +310,33 @@
                 (change)="toggleSeleccionLocal(item)"
               />
 
-              <div class="min-w-0 flex-1">
-                <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {{ item.codigo }}
-                </p>
+<div class="min-w-0 flex-1">
+  <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
+    {{ item.codigo }}
+  </p>
 
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ item.fecha | date: 'HH:mm:ss' }}
-                </p>
-              </div>
+  <ng-container *ngIf="item.datos as d; else sinDatosMovil">
+    <p class="truncate text-xs font-medium text-gray-700 dark:text-gray-300">
+      {{ d['ARTICULO'] }}
+    </p>
+    <p class="text-xs text-gray-500 dark:text-gray-400">
+      OP {{ d['OP'] }} · Pza {{ d['PIEZA'] }} · {{ item.fecha | date: 'HH:mm:ss' }}
+    </p>
+  </ng-container>
+
+  <ng-template #sinDatosMovil>
+    <p class="text-xs text-gray-500 dark:text-gray-400">
+      {{ item.fecha | date: 'HH:mm:ss' }}
+    </p>
+  </ng-template>
+</div>
+
+<span
+  *ngIf="item.datos"
+  class="flex-shrink-0 text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100"
+>
+  {{ item.peso | number: '1.2-2' }} kg
+</span>
 
               <span
                 *ngIf="!item.guardando && !item.error"
@@ -454,104 +536,92 @@
             class="w-full text-sm"
             style="table-layout: fixed; border-collapse: separate; border-spacing: 0"
           >
-            <colgroup>
-              <col style="width: 8%" />
-              <col style="width: 28%" />
-              <col style="width: 20%" />
-              <col style="width: 26%" />
-              <col style="width: 18%" />
-            </colgroup>
+<colgroup>
+  <col style="width: 6%" />
+  <col style="width: 16%" />
+  <col style="width: 12%" />
+  <col style="width: 8%" />
+  <col style="width: 26%" />
+  <col style="width: 12%" />
+  <col style="width: 20%" />
+</colgroup>
 
-            <thead class="sticky top-0 z-10 bg-blue-50 dark:bg-blue-900/30">
-              <tr class="border-b border-blue-200 dark:border-blue-800">
-                <th class="px-3 py-2 text-left">
-                  <input
-                    type="checkbox"
-                    class="h-4 w-4 cursor-pointer accent-primary-500"
-                    [checked]="todosLocalesSeleccionados"
-                    (change)="toggleSeleccionarTodosLocales()"
-                    matTooltip="Seleccionar todos"
-                  />
-                </th>
+<thead class="sticky top-0 z-10 bg-blue-50 dark:bg-blue-900/30">
+  <tr class="border-b border-blue-200 dark:border-blue-800">
+    <th class="px-3 py-2 text-left">
+      <input
+        type="checkbox"
+        class="h-4 w-4 cursor-pointer accent-primary-500"
+        [checked]="todosLocalesSeleccionados"
+        (change)="toggleSeleccionarTodosLocales()"
+        matTooltip="Seleccionar todos"
+      />
+    </th>
+    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Código</th>
+    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">OP</th>
+    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Pieza</th>
+    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Artículo</th>
+    <th class="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Peso (kg)</th>
+    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Estado</th>
+  </tr>
+</thead>
 
-                <th
-                  class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300"
-                >
-                  Código
-                </th>
+<tbody class="divide-y divide-blue-100 bg-white dark:divide-blue-900/40 dark:bg-gray-900">
+  <tr
+    *ngFor="let item of scansPendientesLocal"
+    class="transition-colors hover:bg-blue-50/60 dark:hover:bg-blue-900/20"
+  >
+    <td class="px-3 py-2">
+      <input
+        type="checkbox"
+        class="h-4 w-4 cursor-pointer accent-primary-500"
+        [checked]="item.seleccionado"
+        [disabled]="item.guardando"
+        (change)="toggleSeleccionLocal(item)"
+      />
+    </td>
 
-                <th
-                  class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300"
-                >
-                  Cód. Ent
-                </th>
+    <td class="px-3 py-2">
+      <p class="break-all font-mono text-sm text-gray-900 dark:text-gray-100">{{ item.codigo }}</p>
+      <p class="text-[11px] text-gray-500">{{ item.fecha | date: 'HH:mm:ss' }}</p>
+    </td>
 
-                <th
-                  class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300"
-                >
-                  Fecha y Hora
-                </th>
+    <td class="px-3 py-2 font-mono text-sm text-gray-900 dark:text-gray-100">
+      {{ item.datos?.['OP'] ?? '—' }}
+    </td>
 
-                <th
-                  class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300"
-                >
-                  Estado
-                </th>
-              </tr>
-            </thead>
+    <td class="px-3 py-2 font-mono text-sm text-gray-900 dark:text-gray-100">
+      {{ item.datos?.['PIEZA'] ?? '—' }}
+    </td>
 
-            <tbody
-              class="divide-y divide-blue-100 bg-white dark:divide-blue-900/40 dark:bg-gray-900"
-            >
-              <tr
-                *ngFor="let item of scansPendientesLocal"
-                class="transition-colors hover:bg-blue-50/60 dark:hover:bg-blue-900/20"
-              >
-                <td class="px-3 py-2">
-                  <input
-                    type="checkbox"
-                    class="h-4 w-4 cursor-pointer accent-primary-500"
-                    [checked]="item.seleccionado"
-                    [disabled]="item.guardando"
-                    (change)="toggleSeleccionLocal(item)"
-                  />
-                </td>
+    <td class="truncate px-3 py-2 text-sm text-gray-700 dark:text-gray-300"
+        [matTooltip]="item.datos?.['ARTICULO'] ?? ''">
+      {{ item.datos?.['ARTICULO'] ?? '—' }}
+    </td>
 
-                <td class="break-all px-3 py-2 font-mono text-sm text-gray-900 dark:text-gray-100">
-                  {{ item.codigo }}
-                </td>
+    <td class="px-3 py-2 text-right text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100">
+      {{ item.datos ? (item.peso | number: '1.2-2') : '—' }}
+    </td>
 
-                <td class="px-3 py-2 font-mono text-sm text-gray-400">—</td>
+    <td class="px-3 py-2">
+      <span
+        *ngIf="!item.guardando && !item.error"
+        class="inline-flex whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700"
+      >Sin guardar</span>
 
-                <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
-                  {{ item.fecha | date: 'dd/MM/yyyy HH:mm:ss' }}
-                </td>
+      <span
+        *ngIf="item.guardando"
+        class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700"
+      >Guardando…</span>
 
-                <td class="px-3 py-2">
-                  <span
-                    *ngIf="!item.guardando && !item.error"
-                    class="inline-flex whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700"
-                  >
-                    Sin guardar
-                  </span>
-
-                  <span
-                    *ngIf="item.guardando"
-                    class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700"
-                  >
-                    Guardando…
-                  </span>
-
-                  <span
-                    *ngIf="item.error"
-                    class="inline-flex cursor-pointer whitespace-nowrap rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600"
-                    [matTooltip]="item.error"
-                  >
-                    Error
-                  </span>
-                </td>
-              </tr>
-            </tbody>
+      <span
+        *ngIf="item.error"
+        class="inline-flex cursor-pointer whitespace-nowrap rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600"
+        [matTooltip]="item.error"
+      >Error</span>
+    </td>
+  </tr>
+</tbody>
           </table>
         </div>
       </div>
@@ -693,211 +763,137 @@
   </div>
 
   <!-- ============================================================
-       INVENTARIO: Lista (existente) / Comparar (nuevo)
+       INVENTARIO (comparar)
        ============================================================ -->
-  <div *ngIf="tabActiva === 'inventario'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
-    <!-- Selector de vista -->
-    <div class="bg-card mb-3 grid flex-shrink-0 grid-cols-2 gap-1 rounded-xl p-1 sm:w-72">
-      <button
-        (click)="cambiarVistaInventario('lista')"
-        class="flex h-9 items-center justify-center rounded-lg text-sm font-medium transition-colors"
-        [class.bg-gray-200]="vistaInventario === 'lista'"
-        [class.shadow]="vistaInventario === 'lista'"
-        [class.text-primary-500]="vistaInventario === 'lista'"
-        [class.dark:text-accent-500]="vistaInventario === 'lista'"
-        [class.dark:bg-gray-700]="vistaInventario === 'lista'"
-        [class.text-black]="vistaInventario !== 'lista'"
-        [class.dark:text-white]="vistaInventario !== 'lista'"
+  <div *ngIf="tabActiva === 'comparación'" class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
+    <!-- Aviso: ya escaneado -->
+    <div
+      *ngIf="avisoDuplicado"
+      class="mb-3 flex flex-shrink-0 items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 sm:text-sm dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+    >
+      <mat-icon class="!h-4 !w-4 flex-shrink-0 !text-base">info</mat-icon>
+      <span class="min-w-0 break-all">
+        Ya lo escaneaste: <span class="font-mono font-semibold">{{ avisoDuplicado }}</span></span
       >
-        Lista
+    </div>
+
+    <!-- Resumen / filtros -->
+    <div class="mb-3 grid flex-shrink-0 grid-cols-2 gap-2">
+      <button
+        (click)="cambiarFiltroComparacion('repetidos')"
+        class="flex flex-col items-center rounded-xl border px-2 py-2 transition-colors sm:py-3"
+        [class.border-red-500]="filtroComparacion === 'repetidos'"
+        [class.bg-red-50]="filtroComparacion === 'repetidos'"
+        [class.dark:bg-red-900]="filtroComparacion === 'repetidos'"
+        [class.border-gray-200]="filtroComparacion !== 'repetidos'"
+        [class.dark:border-gray-700]="filtroComparacion !== 'repetidos'"
+      >
+        <span class="text-xl font-bold tabular-nums text-red-500 sm:text-2xl">
+          {{ repetidos.length }}
+        </span>
+        <span class="text-sm font-medium text-black dark:text-white"> Repetidos </span>
       </button>
 
       <button
-        (click)="cambiarVistaInventario('comparar')"
-        class="flex h-9 items-center justify-center gap-1 rounded-lg text-sm font-medium transition-colors"
-        [class.bg-gray-200]="vistaInventario === 'comparar'"
-        [class.shadow]="vistaInventario === 'comparar'"
-        [class.text-primary-500]="vistaInventario === 'comparar'"
-        [class.dark:text-accent-500]="vistaInventario === 'comparar'"
-        [class.dark:bg-gray-700]="vistaInventario === 'comparar'"
-        [class.text-black]="vistaInventario !== 'comparar'"
-        [class.dark:text-white]="vistaInventario !== 'comparar'"
+        (click)="cambiarFiltroComparacion('porAprobar')"
+        class="flex flex-col items-center rounded-xl border px-2 py-2 transition-colors sm:py-3"
+        [class.border-yellow-500]="filtroComparacion === 'porAprobar'"
+        [class.bg-yellow-50]="filtroComparacion === 'porAprobar'"
+        [class.dark:bg-yellow-900]="filtroComparacion === 'porAprobar'"
+        [class.border-gray-200]="filtroComparacion !== 'porAprobar'"
+        [class.dark:border-gray-700]="filtroComparacion !== 'porAprobar'"
       >
-        Comparar
-        <span
-          *ngIf="escaneadosComparacion.length > 0"
-          class="rounded-full bg-blue-500 px-1.5 text-[10px] font-bold leading-4 text-white"
-        >
-          {{ escaneadosComparacion.length }}
+        <span class="text-xl font-bold tabular-nums text-yellow-500 sm:text-2xl">
+          {{ porAprobar.length }}
         </span>
+        <span class="text-sm font-medium text-black dark:text-white"> Por aprobar </span>
       </button>
     </div>
 
-    <!-- Vista Lista (sin cambios) -->
-    <inventario-tab
-      *ngIf="vistaInventario === 'lista'"
-      class="flex min-h-0 flex-1 flex-col"
-    ></inventario-tab>
-
-    <!-- Vista Comparar -->
-    <div *ngIf="vistaInventario === 'comparar'" class="flex min-h-0 flex-1 flex-col">
-      <!-- Aviso: ya escaneado -->
+    <!-- Lista (un solo scroll; en móvil a todo el ancho) -->
+    <div
+      class="-mx-4 max-h-[calc(100dvh-27rem)] min-h-[12rem] flex-1 overflow-y-auto overflow-x-hidden overscroll-contain sm:mx-0 sm:max-h-[calc(100dvh-31rem)] sm:rounded-lg sm:border sm:border-gray-200 sm:dark:border-gray-700"
+    >
+      <!-- Repetidos -->
       <div
-        *ngIf="avisoDuplicado"
-        class="mb-3 flex flex-shrink-0 items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 sm:text-sm dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+        *ngIf="filtroComparacion === 'repetidos'"
+        class="divide-y divide-gray-100 dark:divide-gray-700/50"
       >
-        <mat-icon class="!h-4 !w-4 flex-shrink-0 !text-base">info</mat-icon>
-        <span class="min-w-0 break-all">
-          Ya lo escaneaste: <span class="font-mono font-semibold">{{ avisoDuplicado }}</span></span
+        <div
+          *ngFor="let item of repetidos"
+          class="flex min-h-[56px] items-center gap-3 px-4 py-2 sm:py-2.5"
         >
-      </div>
-
-      <!-- Resumen / filtros -->
-      <div class="mb-3 grid flex-shrink-0 grid-cols-2 gap-2">
-        <button
-          (click)="cambiarFiltroComparacion('coinciden')"
-          class="flex flex-col items-center rounded-xl border px-2 py-2 transition-colors sm:py-3"
-          [class.border-green-500]="filtroComparacion === 'coinciden'"
-          [class.bg-green-50]="filtroComparacion === 'coinciden'"
-          [class.dark:bg-green-900]="filtroComparacion === 'coinciden'"
-          [class.border-gray-200]="filtroComparacion !== 'coinciden'"
-          [class.dark:border-gray-700]="filtroComparacion !== 'coinciden'"
-        >
-          <span class="text-xl font-bold tabular-nums text-green-600 sm:text-2xl">
-            {{ coinciden.length }}
+          <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-green-500">check_circle</mat-icon>
+          <div class="min-w-0 flex-1">
+            <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
+              {{ item.codigo }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ item.fecha | date: 'HH:mm:ss' }}
+            </p>
+          </div>
+          <span
+            class="flex-shrink-0 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-medium text-green-700 sm:text-xs"
+          >
+            Aprobado
           </span>
-          <span class="text-sm font-medium text-black dark:text-white"> Coinciden </span>
-        </button>
+        </div>
+        <div *ngIf="repetidos.length === 0" class="py-16 text-center text-sm text-gray-400">
+          Aún no hay repetidos
+        </div>
+      </div>
 
-        <button
-          (click)="cambiarFiltroComparacion('noEncontrados')"
-          class="flex flex-col items-center rounded-xl border px-2 py-2 transition-colors sm:py-3"
-          [class.border-red-500]="filtroComparacion === 'noEncontrados'"
-          [class.bg-red-50]="filtroComparacion === 'noEncontrados'"
-          [class.dark:bg-red-900]="filtroComparacion === 'noEncontrados'"
-          [class.border-gray-200]="filtroComparacion !== 'noEncontrados'"
-          [class.dark:border-gray-700]="filtroComparacion !== 'noEncontrados'"
+      <!-- Por aprobar -->
+      <div
+        *ngIf="filtroComparacion === 'porAprobar'"
+        class="divide-y divide-gray-100 dark:divide-gray-700/50"
+      >
+        <div
+          *ngFor="let item of porAprobar"
+          class="flex min-h-[56px] items-center gap-3 px-4 py-2 sm:py-2.5"
         >
-          <span class="text-xl font-bold tabular-nums text-red-600 sm:text-2xl">
-            {{ noEncontrados.length }}
+          <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-red-500">cancel</mat-icon>
+          <div class="min-w-0 flex-1">
+            <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
+              {{ item.codigo }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ item.fecha | date: 'HH:mm:ss' }}
+            </p>
+          </div>
+          <span
+            class="flex-shrink-0 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600 sm:text-xs"
+          >
+            {{ item.estadoBackend ?? 'No existe' }}
           </span>
-          <span class="text-sm font-medium text-black dark:text-white"> No aprobados </span>
-        </button>
+          <button
+            (click)="quitarDeComparacion(item)"
+            aria-label="Quitar"
+            class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-gray-400 active:bg-gray-200/30"
+          >
+            <mat-icon class="!h-4 !w-4 !text-base">close</mat-icon>
+          </button>
+        </div>
+        <div *ngIf="porAprobar.length === 0" class="py-16 text-center text-sm text-gray-400">
+          No hay nada por aprobar
+        </div>
       </div>
+    </div>
 
-      <!-- Lista (un solo scroll; en móvil a todo el ancho) -->
-      <div
-        class="-mx-4 max-h-[calc(100dvh-30rem)] min-h-[12rem] flex-1 overflow-y-auto overflow-x-hidden overscroll-contain sm:mx-0 sm:max-h-[calc(100dvh-34rem)] sm:rounded-lg sm:border sm:border-gray-200 sm:dark:border-gray-700"
+    <!-- Acciones -->
+    <div
+      class="flex flex-shrink-0 items-center justify-between gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:mb-10 sm:pb-0"
+    >
+      <span class="text-xs text-gray-500 dark:text-gray-400">
+        Escaneados: <b class="tabular-nums">{{ escaneadosComparacion.length }}</b>
+      </span>
+      <button
+        mat-stroked-button
+        [disabled]="escaneadosComparacion.length === 0"
+        (click)="limpiarComparacion()"
       >
-        <!-- Coinciden -->
-        <div
-          *ngIf="filtroComparacion === 'coinciden'"
-          class="divide-y divide-gray-100 dark:divide-gray-700/50"
-        >
-          <div
-            *ngFor="let item of coinciden"
-            class="flex min-h-[56px] items-center gap-3 px-4 py-2 sm:py-2.5"
-          >
-            <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-green-500"
-              >check_circle</mat-icon
-            >
-            <div class="min-w-0 flex-1">
-              <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
-                {{ item.codigo }}
-              </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ item.fecha | date: 'HH:mm:ss' }}
-              </p>
-            </div>
-            <span
-              class="flex-shrink-0 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-medium text-green-700 sm:text-xs"
-            >
-              Aprobado
-            </span>
-          </div>
-          <div *ngIf="coinciden.length === 0" class="py-16 text-center text-sm text-gray-400">
-            Aún no hay coincidencias
-          </div>
-        </div>
-
-        <!-- No aprobados -->
-        <div
-          *ngIf="filtroComparacion === 'noEncontrados'"
-          class="divide-y divide-gray-100 dark:divide-gray-700/50"
-        >
-          <div
-            *ngFor="let item of noEncontrados"
-            class="flex min-h-[56px] items-center gap-3 px-4 py-2 sm:py-2.5"
-          >
-            <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-red-500">cancel</mat-icon>
-            <div class="min-w-0 flex-1">
-              <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
-                {{ item.codigo }}
-              </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ item.fecha | date: 'HH:mm:ss' }}
-              </p>
-            </div>
-            <span
-              class="flex-shrink-0 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600 sm:text-xs"
-            >
-              {{ item.estadoBackend ?? 'No existe' }}
-            </span>
-            <button
-              (click)="quitarDeComparacion(item)"
-              aria-label="Quitar"
-              class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-gray-400 active:bg-gray-200/30"
-            >
-              <mat-icon class="!h-4 !w-4 !text-base">close</mat-icon>
-            </button>
-          </div>
-          <div *ngIf="noEncontrados.length === 0" class="py-16 text-center text-sm text-gray-400">
-            Todo lo escaneado está aprobado
-          </div>
-        </div>
-
-        <!-- Aprobados sin escanear -->
-        <div
-          *ngIf="filtroComparacion === 'faltantes'"
-          class="divide-y divide-gray-100 dark:divide-gray-700/50"
-        >
-          <div
-            *ngFor="let scan of faltantes"
-            class="flex min-h-[56px] items-center gap-3 px-4 py-2 sm:py-2.5"
-          >
-            <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-amber-500"
-              >radio_button_unchecked</mat-icon
-            >
-            <div class="min-w-0 flex-1">
-              <p class="break-all font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
-                {{ scan.CODIGO }}
-              </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ scan.FECHAYHORA | date: 'dd/MM/yyyy HH:mm' }}
-              </p>
-            </div>
-          </div>
-          <div *ngIf="faltantes.length === 0" class="py-16 text-center text-sm text-gray-400">
-            Ya escaneaste todos los aprobados
-          </div>
-        </div>
-      </div>
-
-      <!-- Acciones -->
-      <div
-        class="flex flex-shrink-0 items-center justify-between gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:mb-10 sm:pb-0"
-      >
-        <span class="text-xs text-gray-500 dark:text-gray-400">
-          Escaneados: <b class="tabular-nums">{{ escaneadosComparacion.length }}</b>
-        </span>
-        <button
-          mat-stroked-button
-          [disabled]="escaneadosComparacion.length === 0"
-          (click)="limpiarComparacion()"
-        >
-          Limpiar
-        </button>
-      </div>
+        Limpiar
+      </button>
     </div>
   </div>
 </div>

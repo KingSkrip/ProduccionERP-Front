@@ -27,13 +27,13 @@ import {
   ModalEscanerEmbarquesComponent,
   ScanFeedback,
 } from 'app/modules/modals/Embarques/scanner-embarques-modal.component';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable, of, Subject } from 'rxjs';
+import { catchError, finalize, map, takeUntil } from 'rxjs/operators';
 
 /**
- * Item de la cola local de escaneos hechos con el lector (Zebra) que
- * todavía NO se han guardado en el backend. El usuario decide, con el
- * checkbox, cuáles de estos se guardan al darle "Guardar".
+ * Item de la cola local de escaneos (pistola o cámara) que todavía NO se
+ * han guardado en el backend. El usuario decide, con el checkbox, cuáles
+ * de estos se guardan al darle "Guardar".
  */
 interface ScanPendienteLocal {
   id: number;
@@ -42,6 +42,8 @@ interface ScanPendienteLocal {
   seleccionado: boolean;
   guardando: boolean;
   error?: string | null;
+  peso: number;
+  datos?: Record<string, any> | null;
 }
 
 /** Escaneo hecho en la pestaña Inventario, solo para comparar (no se guarda). */
@@ -51,12 +53,13 @@ interface ScanComparado {
   fecha: Date;
 }
 
-interface ScanNoEncontrado extends ScanComparado {
+interface ScanPorAprobar extends ScanComparado {
   /** Estado si existe en BD pero no está aprobado (Pendiente/Rechazado) */
   estadoBackend: string | null;
 }
 
-type FiltroComparacion = 'coinciden' | 'noEncontrados' | 'faltantes';
+type ResultadoEscaneo = 'agregado' | 'duplicado' | 'ya_inventariado' | 'no_encontrado' | 'error';
+type FiltroComparacion = 'repetidos' | 'porAprobar';
 
 @Component({
   selector: 'app-scaninventario',
@@ -83,7 +86,7 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   @ViewChild('scanInput') scanInput!: ElementRef<HTMLInputElement>;
   @ViewChild('searchInputRef') searchInputRef!: ElementRef<HTMLInputElement>;
   private searchFocused = false;
-  tabActiva: 'pendientes' | 'aprobadas' | 'inventario' = 'pendientes';
+  tabActiva: 'pendientes' | 'aprobadas' | 'comparación' = 'pendientes';
   searchControl = new FormControl('');
   scansFiltrados: ScanEmbarque[] = [];
   loading = false;
@@ -96,11 +99,12 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   mostrarEscanerCamara = false;
   ultimoFeedbackCamara: ScanFeedback | null = null;
   totalEscaneadosCamara = 0;
+  private _enVuelo = new Set<string>(); // códigos con petición en curso
 
   pageSize = 13;
   paginaActual = 0;
 
-  // --- Cola local de escaneos del lector, pendientes de confirmar/guardar ---
+  // --- Cola local de escaneos, pendientes de confirmar/guardar ---
   scansPendientesLocal: ScanPendienteLocal[] = [];
   guardandoSeleccionados = false;
   private _idLocalCounter = 0;
@@ -110,12 +114,12 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   private _avisoDuplicadoTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // --- Comparación de inventario (escaneos vs aprobados) ---
-  vistaInventario: 'lista' | 'comparar' = 'lista';
-  filtroComparacion: FiltroComparacion = 'coinciden';
+  @ViewChild('searchInputMobileRef') searchInputMobileRef?: ElementRef<HTMLInputElement>;
+  mostrarBusquedaMovil = false;
+  filtroComparacion: FiltroComparacion = 'repetidos';
   escaneadosComparacion: ScanComparado[] = [];
-  coinciden: ScanComparado[] = [];
-  noEncontrados: ScanNoEncontrado[] = [];
-  faltantes: ScanEmbarque[] = [];
+  repetidos: ScanComparado[] = [];
+  porAprobar: ScanPorAprobar[] = [];
   private _idComparacionCounter = 0;
 
   constructor(
@@ -135,21 +139,22 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
       this.scanControl.reset();
       this._zebraScanner.focusInput();
 
-      const enInventario = this.tabActiva === 'inventario';
+      const enInventario = this.tabActiva === 'comparación';
 
       // Siempre se registra para comparar
       this._registrarParaComparacion(codigo, enInventario);
 
-      // Siempre va también a la cola de Pendientes (sin guardar).
-      // En Inventario no se avisa de duplicado desde aquí: ese aviso es el de "Ya lo escaneaste".
-      if (this._encolarLocal(codigo, !enInventario) === 'agregado') {
-        this.escaneando = true;
-        this._cdr.markForCheck();
-        setTimeout(() => {
-          this.escaneando = false;
+      // Consulta peso/datos al backend y encola en Pendientes (sin guardar)
+      this._procesarEscaneo(codigo, !enInventario).subscribe((resultado) => {
+        if (resultado === 'agregado') {
+          this.escaneando = true;
           this._cdr.markForCheck();
-        }, 150);
-      }
+          setTimeout(() => {
+            this.escaneando = false;
+            this._cdr.markForCheck();
+          }, 150);
+        }
+      });
     });
 
     this._scanService.init();
@@ -192,9 +197,9 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
     return Math.min(a, b);
   }
 
-  cambiarTab(tab: 'pendientes' | 'aprobadas' | 'inventario'): void {
+  cambiarTab(tab: 'pendientes' | 'aprobadas' | 'comparación'): void {
     this.tabActiva = tab;
-    if (tab !== 'inventario') {
+    if (tab !== 'comparación') {
       this.aplicarFiltros(this._scanService['_scans$'].getValue());
     } else {
       this.recalcularComparacion();
@@ -253,34 +258,45 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   }
 
   onCodigoEscaneadoCamara(codigo: string): void {
-    const enInventario = this.tabActiva === 'inventario';
+    const enInventario = this.tabActiva === 'comparación';
 
     const comparacion = this._registrarParaComparacion(codigo, false);
-    const cola = this._encolarLocal(codigo, false);
 
-    if (cola === 'agregado') {
-      // Se agregó a Pendientes: siempre verde, sin importar la pestaña
-      this.totalEscaneadosCamara = enInventario
-        ? this.escaneadosComparacion.length
-        : this.totalEscaneadosCamara + 1;
-      this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Agregado (sin guardar)' };
-    } else if (enInventario && comparacion === 'coincide') {
-      // Ya estaba aprobado en backend: coincide
-      this.totalEscaneadosCamara = this.escaneadosComparacion.length;
-      this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Coincide con aprobados' };
-    } else if (enInventario && comparacion === 'noEncontrado') {
-      // Existe en backend (pendiente/rechazado) y se registró en la comparación
-      this.totalEscaneadosCamara = this.escaneadosComparacion.length;
-      this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Registrado en comparación' };
-    } else {
-      // No se registró nada: ya estaba escaneado o ya existía
-      this.ultimoFeedbackCamara = { codigo, ok: false, mensaje: 'Ya está registrado' };
-    }
-
-    this._cdr.markForCheck();
+    this._procesarEscaneo(codigo, false).subscribe((resultado) => {
+      switch (resultado) {
+        case 'agregado':
+          this.totalEscaneadosCamara = enInventario
+            ? this.escaneadosComparacion.length
+            : this.totalEscaneadosCamara + 1;
+          this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Agregado (sin guardar)' };
+          break;
+        case 'ya_inventariado':
+          this.totalEscaneadosCamara = enInventario
+            ? this.escaneadosComparacion.length
+            : this.totalEscaneadosCamara;
+          this.ultimoFeedbackCamara = enInventario
+            ? { codigo, ok: true, mensaje: 'Repetido (ya aprobado)' }
+            : { codigo, ok: false, mensaje: 'Ya inventariado' };
+          break;
+        case 'no_encontrado':
+          this.ultimoFeedbackCamara = { codigo, ok: false, mensaje: 'No existe el rollo' };
+          break;
+        case 'error':
+          this.ultimoFeedbackCamara = { codigo, ok: false, mensaje: 'Error al consultar' };
+          break;
+        default:
+          // duplicado: ya estaba en la cola o ya guardado como pendiente
+          this.ultimoFeedbackCamara =
+            enInventario && comparacion === 'porAprobar'
+              ? { codigo, ok: true, mensaje: 'Por aprobar' }
+              : { codigo, ok: false, mensaje: 'Ya está registrado' };
+      }
+      this._cdr.markForCheck();
+    });
   }
+
   // ------------------------------------------------------------------
-  // Cola local de escaneos del lector (pendientes de guardar)
+  // Cola local de escaneos (pendientes de guardar)
   // ------------------------------------------------------------------
 
   toggleSeleccionLocal(item: ScanPendienteLocal): void {
@@ -337,7 +353,13 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
         },
         error: (e) => {
           item.guardando = false;
-          item.error = e?.error?.message ?? 'No se pudo guardar';
+          const motivo = e?.error?.motivo;
+          item.error =
+            motivo === 'ya_inventariado'
+              ? 'Ya inventariado'
+              : motivo === 'duplicado'
+                ? 'Ya está guardado'
+                : (e?.error?.message ?? 'No se pudo guardar');
           this._finalizarGuardadoSiTermino();
         },
       });
@@ -352,11 +374,6 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   // ------------------------------------------------------------------
   // Comparación de inventario: escaneado vs aprobados
   // ------------------------------------------------------------------
-
-  cambiarVistaInventario(vista: 'lista' | 'comparar'): void {
-    this.vistaInventario = vista;
-    this._cdr.markForCheck();
-  }
 
   cambiarFiltroComparacion(filtro: FiltroComparacion): void {
     this.filtroComparacion = filtro;
@@ -378,14 +395,14 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   private _registrarParaComparacion(
     codigoRaw: string,
     avisar = true,
-  ): 'coincide' | 'noEncontrado' | 'repetido' {
+  ): 'repetido' | 'porAprobar' | 'yaEscaneado' {
     const codigo = (codigoRaw ?? '').trim();
 
     if (this.escaneadosComparacion.some((s) => s.codigo === codigo)) {
       if (avisar) {
         this._mostrarAvisoDuplicado(codigo);
       }
-      return 'repetido';
+      return 'yaEscaneado';
     }
 
     this.escaneadosComparacion = [
@@ -395,7 +412,7 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
     this.recalcularComparacion();
     this._cdr.markForCheck();
 
-    return this.coinciden.some((c) => c.codigo === codigo) ? 'coincide' : 'noEncontrado';
+    return this.repetidos.some((c) => c.codigo === codigo) ? 'repetido' : 'porAprobar';
   }
 
   recalcularComparacion(): void {
@@ -403,11 +420,9 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
     const aprobados = todos.filter((s) => s.PROCESADO === 1);
     const setAprobados = new Set(aprobados.map((s) => s.CODIGO));
     const porCodigo = new Map(todos.map((s) => [s.CODIGO, s]));
-    const setEscaneados = new Set(this.escaneadosComparacion.map((s) => s.codigo));
+    this.repetidos = this.escaneadosComparacion.filter((e) => setAprobados.has(e.codigo));
 
-    this.coinciden = this.escaneadosComparacion.filter((e) => setAprobados.has(e.codigo));
-
-    this.noEncontrados = this.escaneadosComparacion
+    this.porAprobar = this.escaneadosComparacion
       .filter((e) => !setAprobados.has(e.codigo))
       .map((e) => {
         const existente = porCodigo.get(e.codigo);
@@ -415,8 +430,6 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
           existente === undefined ? null : existente.PROCESADO === 0 ? 'Pendiente' : 'Rechazado';
         return { ...e, estadoBackend };
       });
-
-    this.faltantes = aprobados.filter((s) => !setEscaneados.has(s.CODIGO));
   }
 
   /**
@@ -450,9 +463,13 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
 
   /**
    * Agrega el código a la cola local (sin guardar) si no existe ya.
-   * Lo usan tanto la Zebra como la cámara.
+   * Entra SIN seleccionar: el usuario elige cuáles guardar.
    */
-  private _encolarLocal(codigoRaw: string, avisar = true): 'agregado' | 'duplicado' {
+  private _encolarLocal(
+    codigoRaw: string,
+    avisar = true,
+    datos: Record<string, any> | null = null,
+  ): 'agregado' | 'duplicado' {
     const codigo = (codigoRaw ?? '').trim();
 
     if (this._codigoYaRegistrado(codigo)) {
@@ -467,13 +484,102 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
         id: ++this._idLocalCounter,
         codigo,
         fecha: new Date(),
-        seleccionado: true,
+        seleccionado: false, // ← ya no entra seleccionado
         guardando: false,
         error: null,
+        datos,
+        peso: Number(datos?.['PESO NETO'] ?? 0),
       },
       ...this.scansPendientesLocal,
     ];
     this._cdr.markForCheck();
     return 'agregado';
+  }
+
+  /**
+   * Flujo único para pistola y cámara:
+   * 1) descarta duplicados locales o en vuelo (sin pegarle al backend)
+   * 2) verificarInventario -> datos/peso desde PSDTABPZAS + chequeo en INVFISVSTEOPT
+   * 3) encola en la cola local con los datos
+   */
+  private _procesarEscaneo(codigoRaw: string, avisar = true): Observable<ResultadoEscaneo> {
+    const codigo = (codigoRaw ?? '').trim();
+
+    if (this._enVuelo.has(codigo) || this._codigoYaRegistrado(codigo)) {
+      if (avisar) {
+        this._mostrarAvisoDuplicado(codigo);
+      }
+      return of<ResultadoEscaneo>('duplicado');
+    }
+
+    this._enVuelo.add(codigo);
+
+    return this._scanService.verificarInventario(codigo).pipe(
+      map((res): ResultadoEscaneo => {
+        // Ya guardado como pendiente en INVFISVSTEOPT: no se vuelve a encolar
+        if (res?.ya_pendiente) {
+          if (avisar) {
+            this._mostrarAvisoDuplicado(codigo);
+          }
+          return 'duplicado';
+        }
+        return this._encolarLocal(codigo, avisar, res?.datos ?? null);
+      }),
+      catchError((e) => {
+        if (e?.status === 409) {
+          if (avisar) {
+            this._mostrarAvisoDuplicado(codigo);
+          }
+          return of<ResultadoEscaneo>('ya_inventariado');
+        }
+        if (e?.status === 404) {
+          return of<ResultadoEscaneo>('no_encontrado');
+        }
+        return of<ResultadoEscaneo>('error');
+      }),
+      finalize(() => {
+        this._enVuelo.delete(codigo);
+        this._cdr.markForCheck();
+      }),
+    );
+  }
+
+  toggleBusquedaMovil(): void {
+    this.mostrarBusquedaMovil = !this.mostrarBusquedaMovil;
+    this._cdr.markForCheck();
+
+    if (this.mostrarBusquedaMovil) {
+      // esperamos a que el input exista en el DOM
+      setTimeout(() => this.searchInputMobileRef?.nativeElement.focus(), 50);
+    } else {
+      this.searchControl.setValue('');
+    }
+  }
+
+  onSearchBlurMovil(): void {
+    this.onSearchBlur();
+    // si lo dejó vacío, se oculta solo para recuperar el espacio
+    if (!this.searchControl.value) {
+      this.mostrarBusquedaMovil = false;
+      this._cdr.markForCheck();
+    }
+  }
+
+  get totalPendientesLocales(): number {
+    return this.scansPendientesLocal.length;
+  }
+
+  get kilosPendientesLocales(): number {
+    return this.scansPendientesLocal.reduce((acc, s) => acc + s.peso, 0);
+  }
+
+  get kilosSeleccionadosLocales(): number {
+    return this.scansPendientesLocal
+      .filter((s) => s.seleccionado)
+      .reduce((acc, s) => acc + s.peso, 0);
+  }
+
+  get sinPesoLocales(): number {
+    return this.scansPendientesLocal.filter((s) => !s.datos).length;
   }
 }

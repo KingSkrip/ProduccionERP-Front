@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { UserService } from 'app/core/user/user.service';
+import { ResumenPendientes } from 'app/modules/admin/Inventarios/types/inventario.type';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
@@ -19,7 +20,7 @@ export class ScanService implements OnDestroy {
   private audioBuffer: AudioBuffer | null = null;
   private audioCtx: AudioContext | null = null;
   private audioBuffers: Record<string, AudioBuffer> = {};
-
+  private readonly baseUrl = `${APP_CONFIG.apiUrl}inventario`;
   constructor(
     private _http: HttpClient,
     private _zone: NgZone,
@@ -52,25 +53,25 @@ export class ScanService implements OnDestroy {
   }
 
   // 👈 Nuevo: Angular manda el escaneo a Laravel
-enviarScan(barcode: string): Observable<any> {
-  return this._http.post<any>(`${this.apiUrl}scanner/embarques`, { barcode }).pipe(
-    tap({
-      next: () => this.reproducirSonido('correcto'),
-      error: (e) => {
-        if (e.status === 409) {
-          const motivo = e.error?.motivo;
-          if (motivo === 'ya_inventariado') {
-            this.reproducirSonido('ya_inventariado');
-          } else {
-            this.reproducirSonido('yaleido');
+  enviarScan(barcode: string): Observable<any> {
+    return this._http.post<any>(`${this.apiUrl}scanner/embarques`, { barcode }).pipe(
+      tap({
+        next: () => this.reproducirSonido('correcto'),
+        error: (e) => {
+          if (e.status === 409) {
+            const motivo = e.error?.motivo;
+            if (motivo === 'ya_inventariado') {
+              this.reproducirSonido('ya_inventariado');
+            } else {
+              this.reproducirSonido('yaleido');
+            }
+          } else if (e.status === 422) {
+            this.reproducirSonido('error');
           }
-        } else if (e.status === 422) {
-          this.reproducirSonido('error');
-        }
-      },
-    }),
-  );
-}
+        },
+      }),
+    );
+  }
 
   private conectarWebSocket(): void {
     if (this.echo) return;
@@ -113,12 +114,12 @@ enviarScan(barcode: string): Observable<any> {
 
     this.audioCtx = new AudioContext();
 
-  const sonidos: Array<'correcto' | 'yaleido' | 'error' | 'ya_inventariado'> = [
-    'correcto',
-    'yaleido',
-    'error',
-    'ya_inventariado',
-  ];
+    const sonidos: Array<'correcto' | 'yaleido' | 'error' | 'ya_inventariado'> = [
+      'correcto',
+      'yaleido',
+      'error',
+      'ya_inventariado',
+    ];
 
     sonidos.forEach((nombre) => {
       fetch(`sounds/${nombre}.mp3`)
@@ -160,11 +161,16 @@ enviarScan(barcode: string): Observable<any> {
       tap({
         next: () => this.reproducirSonido('correcto'),
         error: (e) => {
-          if (e.status === 409)
-            this.reproducirSonido('ya_inventariado');
-          else if (e.status === 422) this.reproducirSonido('error');
+          if (e.status === 409) this.reproducirSonido('ya_inventariado');
+          else if (e.status === 422 || e.status === 404) this.reproducirSonido('error');
         },
       }),
     );
+  }
+
+  resumenPendientes(codigos: string[]) {
+    return this._http.post<ResumenPendientes>(`${this.baseUrl}/embarques/resumen-pendientes`, {
+      codigos,
+    });
   }
 }

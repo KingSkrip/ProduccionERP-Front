@@ -2,7 +2,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { map, Observable } from 'rxjs';
-import { ApiResponse, InventarioFiltros, InventarioItem } from '../types/inventario.type';
+import {
+  ApiResponse,
+  InventarioFiltros,
+  InventarioItem,
+  ResumenPendientes,
+} from '../types/inventario.type';
 
 @Injectable({
   providedIn: 'root',
@@ -40,5 +45,12 @@ export class ScanInventariosService {
     return this.http
       .post<ApiResponse<InventarioItem>>(`${this.baseUrl}/escanearinventario`, { codigo })
       .pipe(map((res) => res.data));
+  }
+
+  resumenPendientes(codigos: string[]) {
+    return this.http.post<ResumenPendientes>(
+      `${this.baseUrl}/scanner/embarques/resumen-pendientes`,
+      { codigos },
+    );
   }
 }
