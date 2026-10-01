@@ -135,15 +135,14 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
       this.scanControl.reset();
       this._zebraScanner.focusInput();
 
-      // En la pestaña Inventario NO se guarda: solo se compara contra aprobados
       const enInventario = this.tabActiva === 'inventario';
-      this._registrarParaComparacion(codigo, enInventario);
-      if (enInventario) {
-        return;
-      }
 
-      // Va a la cola local (sin guardar); valida duplicados internamente
-      if (this._encolarLocal(codigo) === 'agregado') {
+      // Siempre se registra para comparar
+      this._registrarParaComparacion(codigo, enInventario);
+
+      // Siempre va también a la cola de Pendientes (sin guardar).
+      // En Inventario no se avisa de duplicado desde aquí: ese aviso es el de "Ya lo escaneaste".
+      if (this._encolarLocal(codigo, !enInventario) === 'agregado') {
         this.escaneando = true;
         this._cdr.markForCheck();
         setTimeout(() => {
@@ -254,43 +253,37 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   }
 
   onCodigoEscaneadoCamara(codigo: string): void {
-    // Siempre se registra para comparar (igual que la Zebra),
-    // aunque todavía no se haya guardado en el backend.
+    const enInventario = this.tabActiva === 'inventario';
+
+    // Siempre se registra para comparar (sin aviso, el modal ya muestra feedback)
     const resultadoComparacion = this._registrarParaComparacion(codigo, false);
 
-    // Pestaña Inventario: solo compara, no guarda
-    if (this.tabActiva === 'inventario') {
+    // Siempre va a la cola de Pendientes, sin importar la pestaña
+    const resultado = this._encolarLocal(codigo, false);
+
+    if (enInventario) {
+      const base =
+        resultadoComparacion === 'coincide'
+          ? 'Coincide con aprobados'
+          : resultadoComparacion === 'repetido'
+            ? 'Ya escaneado'
+            : 'No aprobado';
+
       this.totalEscaneadosCamara = this.escaneadosComparacion.length;
       this.ultimoFeedbackCamara = {
         codigo,
         ok: resultadoComparacion !== 'noEncontrado',
-        mensaje:
-          resultadoComparacion === 'coincide'
-            ? 'Coincide con aprobados'
-            : resultadoComparacion === 'repetido'
-              ? 'Ya escaneado'
-              : 'No está en aprobados',
+        mensaje: resultado === 'agregado' ? `${base} · en Pendientes` : base,
       };
       this._cdr.markForCheck();
       return;
     }
 
-    // Pendientes / Aprobadas: va a la cola local con checkbox (igual que la Zebra)
-    const resultado = this._encolarLocal(codigo);
-
     if (resultado === 'agregado') {
       this.totalEscaneadosCamara++;
-      this.ultimoFeedbackCamara = {
-        codigo,
-        ok: true,
-        mensaje: 'Agregado (sin guardar)',
-      };
+      this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Agregado (sin guardar)' };
     } else {
-      this.ultimoFeedbackCamara = {
-        codigo,
-        ok: false,
-        mensaje: 'Ya está registrado',
-      };
+      this.ultimoFeedbackCamara = { codigo, ok: false, mensaje: 'Ya está registrado' };
     }
     this._cdr.markForCheck();
   }
@@ -468,11 +461,13 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
    * Agrega el código a la cola local (sin guardar) si no existe ya.
    * Lo usan tanto la Zebra como la cámara.
    */
-  private _encolarLocal(codigoRaw: string): 'agregado' | 'duplicado' {
+  private _encolarLocal(codigoRaw: string, avisar = true): 'agregado' | 'duplicado' {
     const codigo = (codigoRaw ?? '').trim();
 
     if (this._codigoYaRegistrado(codigo)) {
-      this._mostrarAvisoDuplicado(codigo);
+      if (avisar) {
+        this._mostrarAvisoDuplicado(codigo);
+      }
       return 'duplicado';
     }
 
