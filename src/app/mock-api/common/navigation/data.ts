@@ -4202,6 +4202,15 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
       },
     ],
   },
+
+  {
+    id: 'Reprocesos.aut',
+    title: 'Reprocesos',
+    tooltip: 'Reprocesos',
+    type: 'basic',
+    icon: 'heroicons_outline:arrow-path-rounded-square',
+    link: '/apps/Reprocesos',
+  },
 ];
 
 export const menuJacobo: FuseNavigationItem[] = [
@@ -4501,6 +4510,7 @@ export const menuVentas: FuseNavigationItem[] = [
   },
 ];
 
+//menu developer
 export const menuColaborador_Gerente: FuseNavigationItem[] = [
   {
     id: 'dashboards.inicio',
@@ -4547,6 +4557,39 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
         link: '/apps/ReportProd',
       },
     ],
+  },
+  {
+    id: 'almacen',
+    title: 'Inventario',
+    subtitle: 'Gestión de inventario',
+    type: 'collapsable',
+    icon: 'heroicons_outline:archive-box-arrow-down',
+    children: [
+      {
+        id: 'inventarios',
+        title: 'Inventarios',
+        tooltip: 'Inventarios',
+        type: 'basic',
+        icon: 'heroicons_outline:clipboard-document-list',
+        link: '/apps/Inventarios',
+      },
+      {
+        id: 'scan.inventario',
+        title: 'Escaner inventario',
+        tooltip: 'Escaner',
+        type: 'basic',
+        icon: 'heroicons_outline:barcode',
+        link: '/apps/scan/inventario',
+      },
+    ],
+  },
+  {
+    id: 'Reprocesos.aut',
+    title: 'Reprocesos',
+    tooltip: 'Reprocesos',
+    type: 'basic',
+    icon: 'heroicons_outline:arrow-path-rounded-square',
+    link: '/apps/Reprocesos',
   },
 ];
 

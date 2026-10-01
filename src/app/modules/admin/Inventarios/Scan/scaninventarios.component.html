@@ -204,7 +204,9 @@
          ========================================================== -->
     <div class="-mx-4 flex min-h-0 flex-1 flex-col sm:hidden">
       <!-- Un solo scroll para todo -->
-      <div class="min-h-[12rem] max-h-[calc(100dvh-19rem)] flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
+      <div
+        class="max-h-[calc(100dvh-19rem)] min-h-[12rem] flex-1 overflow-y-auto overflow-x-hidden overscroll-contain"
+      >
         <!-- Recién escaneados (sin guardar) -->
         <div *ngIf="tabActiva === 'pendientes' && scansPendientesLocal.length > 0">
           <div
@@ -800,7 +802,7 @@
 
       <!-- Lista (un solo scroll; en móvil a todo el ancho) -->
       <div
-        class="-mx-4 min-h-[12rem] max-h-[calc(100dvh-30rem)] flex-1 overflow-y-auto overflow-x-hidden overscroll-contain sm:mx-0 sm:max-h-[calc(100dvh-34rem)] sm:rounded-lg sm:border sm:border-gray-200 sm:dark:border-gray-700"
+        class="-mx-4 max-h-[calc(100dvh-30rem)] min-h-[12rem] flex-1 overflow-y-auto overflow-x-hidden overscroll-contain sm:mx-0 sm:max-h-[calc(100dvh-34rem)] sm:rounded-lg sm:border sm:border-gray-200 sm:dark:border-gray-700"
       >
         <!-- Coinciden -->
         <div
