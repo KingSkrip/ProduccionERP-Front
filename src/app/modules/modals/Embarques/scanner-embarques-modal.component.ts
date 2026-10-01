@@ -31,8 +31,9 @@ export class ModalEscanerEmbarquesComponent {
   private readonly DISMISS_THRESHOLD = 140;
   // Pausa cortita para que el usuario vea el feedback (ok/error) antes de
   // que la cámara vuelva a quedar lista para el siguiente código.
-  private readonly REANUDAR_DELAY_MS = 900;
-
+  private readonly REANUDAR_DELAY_MS = 2000;
+private readonly REANUDAR_DELAY_OK_MS = 1500;
+private readonly REANUDAR_DELAY_ERROR_MS = 2500;
   private touchStartY = 0;
   private dragY = 0;
   isDragging = false;
@@ -59,14 +60,22 @@ export class ModalEscanerEmbarquesComponent {
    * y, tras una pequeña pausa visual, reanuda el lector él solito para
    * seguir escaneando el siguiente rollo/paquete.
    */
-  onScanSuccess(codigo: string): void {
-    this.codigoEscaneado.emit(codigo);
+onScanSuccess(codigo: string): void {
+  this.codigoEscaneado.emit(codigo);
 
-    if (this.reanudarTimeout) clearTimeout(this.reanudarTimeout);
+  if (this.reanudarTimeout) clearTimeout(this.reanudarTimeout);
+
+  // Esperamos un tick para que el padre alcance a actualizar ultimoFeedback
+  setTimeout(() => {
+    const delay = this.ultimoFeedback?.ok === false
+      ? this.REANUDAR_DELAY_ERROR_MS
+      : this.REANUDAR_DELAY_OK_MS;
+
     this.reanudarTimeout = setTimeout(() => {
       this.lectorQr?.reanudar();
-    }, this.REANUDAR_DELAY_MS);
-  }
+    }, delay);
+  }, 0);
+}
 
   // ---- swipe-down para cerrar (solo gesto, no auto-cierre por scan) ----
 
