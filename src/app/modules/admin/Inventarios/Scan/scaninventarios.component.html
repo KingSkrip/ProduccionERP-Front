@@ -783,21 +783,6 @@
           </span>
           <span class="text-sm font-medium text-black dark:text-white"> No aprobados </span>
         </button>
-
-        <button
-          (click)="cambiarFiltroComparacion('faltantes')"
-          class="flex flex-col items-center rounded-xl border px-2 py-2 transition-colors sm:py-3"
-          [class.border-amber-500]="filtroComparacion === 'faltantes'"
-          [class.bg-amber-50]="filtroComparacion === 'faltantes'"
-          [class.dark:bg-amber-900]="filtroComparacion === 'faltantes'"
-          [class.border-gray-200]="filtroComparacion !== 'faltantes'"
-          [class.dark:border-gray-700]="filtroComparacion !== 'faltantes'"
-        >
-          <span class="text-xl font-bold tabular-nums text-amber-600 sm:text-2xl">
-            {{ faltantes.length }}
-          </span>
-          <span class="text-sm font-medium text-black dark:text-white"> Inventario </span>
-        </button>
       </div>
 
       <!-- Lista (un solo scroll; en móvil a todo el ancho) -->

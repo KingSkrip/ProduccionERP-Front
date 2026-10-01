@@ -125,54 +125,54 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
     protected _zebraScanner: ZebraScannerService,
   ) {}
 
-async ngOnInit(): Promise<void> {
-  setTimeout(() => {
-    this._zebraScanner.init(this.scanInput?.nativeElement);
-  }, 100);
+  async ngOnInit(): Promise<void> {
+    setTimeout(() => {
+      this._zebraScanner.init(this.scanInput?.nativeElement);
+    }, 100);
 
-  this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
-    this.scanControl.setValue(codigo);
-    this.scanControl.reset();
-    this._zebraScanner.focusInput();
+    this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
+      this.scanControl.setValue(codigo);
+      this.scanControl.reset();
+      this._zebraScanner.focusInput();
 
-    // En la pestaña Inventario NO se guarda: solo se compara contra aprobados
-    const enInventario = this.tabActiva === 'inventario';
-    this._registrarParaComparacion(codigo, enInventario);
-    if (enInventario) {
-      return;
-    }
+      // En la pestaña Inventario NO se guarda: solo se compara contra aprobados
+      const enInventario = this.tabActiva === 'inventario';
+      this._registrarParaComparacion(codigo, enInventario);
+      if (enInventario) {
+        return;
+      }
 
-    // Va a la cola local (sin guardar); valida duplicados internamente
-    if (this._encolarLocal(codigo) === 'agregado') {
-      this.escaneando = true;
-      this._cdr.markForCheck();
-      setTimeout(() => {
-        this.escaneando = false;
+      // Va a la cola local (sin guardar); valida duplicados internamente
+      if (this._encolarLocal(codigo) === 'agregado') {
+        this.escaneando = true;
         this._cdr.markForCheck();
-      }, 150);
-    }
-  });
+        setTimeout(() => {
+          this.escaneando = false;
+          this._cdr.markForCheck();
+        }, 150);
+      }
+    });
 
-  this._scanService.init();
+    this._scanService.init();
 
-  this._scanService.scans$.pipe(takeUntil(this._destroy$)).subscribe((scans) => {
-    this.aplicarFiltros(scans);
-    this.recalcularComparacion();
-    this._cdr.markForCheck();
-  });
+    this._scanService.scans$.pipe(takeUntil(this._destroy$)).subscribe((scans) => {
+      this.aplicarFiltros(scans);
+      this.recalcularComparacion();
+      this._cdr.markForCheck();
+    });
 
-  this.searchControl.valueChanges.pipe(takeUntil(this._destroy$)).subscribe(() => {
-    this.aplicarFiltros(this._scanService['_scans$'].getValue());
-    this._cdr.markForCheck();
-  });
+    this.searchControl.valueChanges.pipe(takeUntil(this._destroy$)).subscribe(() => {
+      this.aplicarFiltros(this._scanService['_scans$'].getValue());
+      this._cdr.markForCheck();
+    });
 
-  this._scanService.loading$.pipe(takeUntil(this._destroy$)).subscribe((v) => {
-    this.loading = v;
-    this._cdr.markForCheck();
-  });
+    this._scanService.loading$.pipe(takeUntil(this._destroy$)).subscribe((v) => {
+      this.loading = v;
+      this._cdr.markForCheck();
+    });
 
-  setTimeout(() => this.scanInput?.nativeElement.focus(), 300);
-}
+    setTimeout(() => this.scanInput?.nativeElement.focus(), 300);
+  }
 
   // getter calculado
   get totalPaginas(): number {
@@ -254,17 +254,20 @@ async ngOnInit(): Promise<void> {
   }
 
   onCodigoEscaneadoCamara(codigo: string): void {
+    // Siempre se registra para comparar (igual que la Zebra),
+    // aunque todavía no se haya guardado en el backend.
+    const resultadoComparacion = this._registrarParaComparacion(codigo, false);
+
     // Pestaña Inventario: solo compara, no guarda
     if (this.tabActiva === 'inventario') {
-      const resultado = this._registrarParaComparacion(codigo, false);
       this.totalEscaneadosCamara = this.escaneadosComparacion.length;
       this.ultimoFeedbackCamara = {
         codigo,
-        ok: resultado !== 'noEncontrado',
+        ok: resultadoComparacion !== 'noEncontrado',
         mensaje:
-          resultado === 'coincide'
+          resultadoComparacion === 'coincide'
             ? 'Coincide con aprobados'
-            : resultado === 'repetido'
+            : resultadoComparacion === 'repetido'
               ? 'Ya escaneado'
               : 'No está en aprobados',
       };
