@@ -125,78 +125,54 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
     protected _zebraScanner: ZebraScannerService,
   ) {}
 
-  async ngOnInit(): Promise<void> {
-    setTimeout(() => {
-      this._zebraScanner.init(this.scanInput?.nativeElement);
-    }, 100);
+async ngOnInit(): Promise<void> {
+  setTimeout(() => {
+    this._zebraScanner.init(this.scanInput?.nativeElement);
+  }, 100);
 
-    this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
-      //console.log('📤 Barcode recibido:', codigo);
+  this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
+    this.scanControl.setValue(codigo);
+    this.scanControl.reset();
+    this._zebraScanner.focusInput();
 
-      this.scanControl.setValue(codigo);
-      this.scanControl.reset();
-      this._zebraScanner.focusInput();
+    // En la pestaña Inventario NO se guarda: solo se compara contra aprobados
+    const enInventario = this.tabActiva === 'inventario';
+    this._registrarParaComparacion(codigo, enInventario);
+    if (enInventario) {
+      return;
+    }
 
-      // En la pestaña Inventario NO se guarda: solo se compara contra aprobados
-      const enInventario = this.tabActiva === 'inventario';
-      this._registrarParaComparacion(codigo, enInventario);
-      if (enInventario) {
-        return;
-      }
-
-      // Si el código ya existe en el backend (pendiente, aprobada o rechazada)
-      // o ya está en la cola local sin guardar, no se agrega de nuevo.
-      if (this._codigoYaRegistrado(codigo)) {
-        this._mostrarAvisoDuplicado(codigo);
-        return;
-      }
-
-      // Ya NO se guarda automáticamente en el backend. Se agrega a la
-      // cola local para que el usuario revise/seleccione y confirme.
+    // Va a la cola local (sin guardar); valida duplicados internamente
+    if (this._encolarLocal(codigo) === 'agregado') {
       this.escaneando = true;
       this._cdr.markForCheck();
-
-      this.scansPendientesLocal = [
-        {
-          id: ++this._idLocalCounter,
-          codigo,
-          fecha: new Date(),
-          seleccionado: true,
-          guardando: false,
-          error: null,
-        },
-        ...this.scansPendientesLocal,
-      ];
-
-      // Pequeño feedback visual de "se escaneó", ya no depende de la respuesta del servidor
       setTimeout(() => {
         this.escaneando = false;
         this._cdr.markForCheck();
       }, 150);
+    }
+  });
 
-      this._cdr.markForCheck();
-    });
+  this._scanService.init();
 
-    this._scanService.init();
+  this._scanService.scans$.pipe(takeUntil(this._destroy$)).subscribe((scans) => {
+    this.aplicarFiltros(scans);
+    this.recalcularComparacion();
+    this._cdr.markForCheck();
+  });
 
-    this._scanService.scans$.pipe(takeUntil(this._destroy$)).subscribe((scans) => {
-      this.aplicarFiltros(scans);
-      this.recalcularComparacion();
-      this._cdr.markForCheck();
-    });
+  this.searchControl.valueChanges.pipe(takeUntil(this._destroy$)).subscribe(() => {
+    this.aplicarFiltros(this._scanService['_scans$'].getValue());
+    this._cdr.markForCheck();
+  });
 
-    this.searchControl.valueChanges.pipe(takeUntil(this._destroy$)).subscribe(() => {
-      this.aplicarFiltros(this._scanService['_scans$'].getValue());
-      this._cdr.markForCheck();
-    });
+  this._scanService.loading$.pipe(takeUntil(this._destroy$)).subscribe((v) => {
+    this.loading = v;
+    this._cdr.markForCheck();
+  });
 
-    this._scanService.loading$.pipe(takeUntil(this._destroy$)).subscribe((v) => {
-      this.loading = v;
-      this._cdr.markForCheck();
-    });
-
-    setTimeout(() => this.scanInput?.nativeElement.focus(), 300);
-  }
+  setTimeout(() => this.scanInput?.nativeElement.focus(), 300);
+}
 
   // getter calculado
   get totalPaginas(): number {
@@ -278,9 +254,9 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   }
 
   onCodigoEscaneadoCamara(codigo: string): void {
-    const enInventario = this.tabActiva === 'inventario';
-    const resultado = this._registrarParaComparacion(codigo, false);
-    if (enInventario) {
+    // Pestaña Inventario: solo compara, no guarda
+    if (this.tabActiva === 'inventario') {
+      const resultado = this._registrarParaComparacion(codigo, false);
       this.totalEscaneadosCamara = this.escaneadosComparacion.length;
       this.ultimoFeedbackCamara = {
         codigo,
@@ -296,21 +272,24 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this._scanService.enviarScan(codigo).subscribe({
-      next: () => {
-        this.totalEscaneadosCamara++;
-        this.ultimoFeedbackCamara = { codigo, ok: true, mensaje: 'Registrado' };
-        this._cdr.markForCheck();
-      },
-      error: (e) => {
-        this.ultimoFeedbackCamara = {
-          codigo,
-          ok: false,
-          mensaje: e?.error?.message ?? 'No se pudo registrar',
-        };
-        this._cdr.markForCheck();
-      },
-    });
+    // Pendientes / Aprobadas: va a la cola local con checkbox (igual que la Zebra)
+    const resultado = this._encolarLocal(codigo);
+
+    if (resultado === 'agregado') {
+      this.totalEscaneadosCamara++;
+      this.ultimoFeedbackCamara = {
+        codigo,
+        ok: true,
+        mensaje: 'Agregado (sin guardar)',
+      };
+    } else {
+      this.ultimoFeedbackCamara = {
+        codigo,
+        ok: false,
+        mensaje: 'Ya está registrado',
+      };
+    }
+    this._cdr.markForCheck();
   }
 
   // ------------------------------------------------------------------
@@ -480,5 +459,32 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
       this._avisoDuplicadoTimeout = null;
       this._cdr.markForCheck();
     }, 2500);
+  }
+
+  /**
+   * Agrega el código a la cola local (sin guardar) si no existe ya.
+   * Lo usan tanto la Zebra como la cámara.
+   */
+  private _encolarLocal(codigoRaw: string): 'agregado' | 'duplicado' {
+    const codigo = (codigoRaw ?? '').trim();
+
+    if (this._codigoYaRegistrado(codigo)) {
+      this._mostrarAvisoDuplicado(codigo);
+      return 'duplicado';
+    }
+
+    this.scansPendientesLocal = [
+      {
+        id: ++this._idLocalCounter,
+        codigo,
+        fecha: new Date(),
+        seleccionado: true,
+        guardando: false,
+        error: null,
+      },
+      ...this.scansPendientesLocal,
+    ];
+    this._cdr.markForCheck();
+    return 'agregado';
   }
 }
