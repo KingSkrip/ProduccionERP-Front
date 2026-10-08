@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { APP_CONFIG } from 'app/core/config/app-config';
 import { Observable } from 'rxjs';
-import { Reproceso, ReprocesosFiltros, ReprocesosPaginado } from './types/reproceso.type';
+import { LiberarReprocesoResponse, Reproceso, ReprocesosFiltros, ReprocesosPaginado } from './types/reproceso.type';
 
 @Injectable({
   providedIn: 'root',
@@ -29,4 +29,9 @@ export class ReprocesosService {
   getReproceso(id: number): Observable<Reproceso> {
     return this.http.get<Reproceso>(`${this.baseUrl}/${id}`);
   }
+
+  /** Libera un reproceso por IDREPRRM (y genera la OT de tejido si aplica) */
+liberarReproceso(id: number): Observable<LiberarReprocesoResponse> {
+  return this.http.post<LiberarReprocesoResponse>(`${this.baseUrl}/${id}/liberar`, {});
+}
 }

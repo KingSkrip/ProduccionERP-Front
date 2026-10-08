@@ -37,8 +37,6 @@ export class NavigationService {
   private _httpClient = inject(HttpClient);
   private _navigation: ReplaySubject<Navigation> = new ReplaySubject<Navigation>(1);
   private _navigationStore: Map<string, FuseNavigationItem[]> = new Map<string, any>();
-
-  // NUEVO: Subject para emitir cambios en la navegación
   private _navigationChanged$ = new BehaviorSubject<{
     key: string;
     navigation: FuseNavigationItem[];

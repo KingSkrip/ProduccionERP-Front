@@ -48,3 +48,15 @@ export interface ReprocesosPaginado {
   per_page: number;
   last_page: number;
 }
+
+
+export interface LiberarReprocesoResponse {
+  message: string;
+  orden: string;
+  idreprrm: number;
+  tipo_reporte: string | null;
+  accion: 'TEJE' | 'SURTE' | null;
+  ot: string | null;
+  horalib: string;
+  uslib: number;
+}

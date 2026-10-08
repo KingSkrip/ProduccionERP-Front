@@ -330,7 +330,7 @@ get tituloResultado(): string {
   }
 }
 
-// NUEVO: texto de detalle debajo de la hora — retardo, anticipación o tiempo extra
+// texto de detalle debajo de la hora — retardo, anticipación o tiempo extra
 get detalleResultado(): string | null {
   const p = this.resultado?.puntualidad;
   if (!p) return null;

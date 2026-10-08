@@ -62,7 +62,7 @@ type ResultadoEscaneo = 'agregado' | 'duplicado' | 'ya_inventariado' | 'no_encon
 type FiltroComparacion = 'repetidos' | 'porAprobar';
 
 @Component({
-  selector: 'app-scaninventario',
+  selector: 'app-scaninventario_sincliente',
   standalone: true,
   imports: [
     CommonModule,
@@ -80,9 +80,9 @@ type FiltroComparacion = 'repetidos' | 'porAprobar';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: fuseAnimations,
-  templateUrl: './scaninventarios.component.html',
+  templateUrl: './scaninventarios_sincliente.component.html',
 })
-export class ScanInventariosComponent implements OnInit, OnDestroy {
+export class ScanInventariosSinClienteComponent implements OnInit, OnDestroy {
   @ViewChild('scanInput') scanInput!: ElementRef<HTMLInputElement>;
   @ViewChild('searchInputRef') searchInputRef!: ElementRef<HTMLInputElement>;
   private searchFocused = false;
@@ -99,8 +99,7 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
   mostrarEscanerCamara = false;
   ultimoFeedbackCamara: ScanFeedback | null = null;
   totalEscaneadosCamara = 0;
-  private _enVuelo = new Set<string>(); // códigos con petición en curso
-
+  private _enVuelo = new Set<string>();
   pageSize = 13;
   paginaActual = 0;
 
@@ -337,7 +336,6 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
     }
 
     this.guardandoSeleccionados = true;
-    this._guardadosOk = 0; // 👈 contador
     seleccionados.forEach((item) => {
       item.guardando = true;
       item.error = null;
@@ -347,7 +345,8 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
     seleccionados.forEach((item) => {
       this._scanService.enviarScan(item.codigo).subscribe({
         next: () => {
-          this._guardadosOk++;
+          // Al guardarse, sale de la cola local (el listado "Pendientes" real
+          // se actualizará solo vía scans$)
           this.scansPendientesLocal = this.scansPendientesLocal.filter((s) => s.id !== item.id);
           this._finalizarGuardadoSiTermino();
         },
@@ -366,17 +365,8 @@ export class ScanInventariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  private _guardadosOk = 0;
-
   private _finalizarGuardadoSiTermino(): void {
     this.guardandoSeleccionados = this.scansPendientesLocal.some((s) => s.guardando);
-
-    // Ya terminaron todos: refresca la lista real para que aparezcan en Pendientes
-    if (!this.guardandoSeleccionados && this._guardadosOk > 0) {
-      this._guardadosOk = 0;
-      this._scanService.cargarScans();
-    }
-
     this._cdr.markForCheck();
   }
 
