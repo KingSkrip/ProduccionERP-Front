@@ -4916,6 +4916,14 @@ export const menuJaime: FuseNavigationItem[] = [
       },
     ],
   },
+    {
+    id: 'Reprocesos.aut',
+    title: 'Reprocesos',
+    tooltip: 'Reprocesos',
+    type: 'basic',
+    icon: 'heroicons_outline:arrow-path-rounded-square',
+    link: '/apps/Reprocesos',
+  },
 
   {
     id: 'colaboradores.permisos',
