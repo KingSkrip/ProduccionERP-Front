@@ -35,3 +35,40 @@
     overflow-y: auto !important;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Menú principal: header fijo + solo los items scrollean
+fuse-vertical-navigation.main-nav {
+  .fuse-vertical-navigation-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  // logo: no se encoge ni scrollea
+  .fuse-vertical-navigation-header {
+    flex: 0 0 auto;
+  }
+
+  // items: ocupan el resto y scrollean
+  .fuse-vertical-navigation-content {
+    flex: 1 1 auto;
+    min-height: 0;                 // clave para que flex permita el scroll
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;  // no se mueve la página de atrás
+    -webkit-overflow-scrolling: touch;
+  }
+}
