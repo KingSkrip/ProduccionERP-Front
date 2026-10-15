@@ -21,6 +21,7 @@ import { filter, Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'thin-layout',
   templateUrl: './thin.component.html',
+    styleUrls: ['./thin.compnent.scss'], 
   encapsulation: ViewEncapsulation.None,
   imports: [
     FuseLoadingBarComponent,
@@ -34,10 +35,10 @@ import { filter, Subject, takeUntil } from 'rxjs';
   ],
 })
 export class ThinLayoutComponent implements OnInit, OnDestroy {
-  isScreenSmall: boolean;
+  isScreenSmall!: boolean;
   navigation: FuseNavigationItem[] = [];
   isReportProdRoute: boolean = false;
-  subRoleId: number;
+  subRoleId!: number;
   isJacobo: boolean = false;
   isNavOpen: boolean = false;
   private _unsubscribeAll: Subject<any> = new Subject<any>();

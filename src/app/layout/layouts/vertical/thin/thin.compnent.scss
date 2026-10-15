@@ -47,17 +47,17 @@
 
 
 
-
-// Menú principal: header fijo + solo los items scrollean
 fuse-vertical-navigation.main-nav {
+  // wrapper interno de Fuse: columna con altura fija
   .fuse-vertical-navigation-wrapper {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
-    height: 100%;
+    height: 100dvh;      // dvh = respeta la barra de Chrome en móvil
+    max-height: 100%;
     overflow: hidden;
   }
 
-  // logo: no se encoge ni scrollea
+  // logo fijo
   .fuse-vertical-navigation-header {
     flex: 0 0 auto;
   }
@@ -65,10 +65,11 @@ fuse-vertical-navigation.main-nav {
   // items: ocupan el resto y scrollean
   .fuse-vertical-navigation-content {
     flex: 1 1 auto;
-    min-height: 0;                 // clave para que flex permita el scroll
-    overflow-x: hidden;
+    min-height: 0;                    // sin esto flex no deja scrollear
+    overflow-x: hidden !important;
     overflow-y: auto !important;
-    overscroll-behavior: contain;  // no se mueve la página de atrás
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    padding-bottom: 80px;             // para que el último item no quede tapado por la barra del navegador
   }
 }
