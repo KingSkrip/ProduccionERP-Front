@@ -36,7 +36,9 @@
           title="Actualizar"
           class="relative inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent-500 disabled:opacity-50 dark:bg-primary-500"
         >
-          <mat-icon class="text-black dark:text-white" [class.animate-spin]="loading()">refresh</mat-icon>
+          <mat-icon class="text-black dark:text-white" [class.animate-spin]="loading()"
+            >refresh</mat-icon
+          >
         </button>
       </div>
     </div>
@@ -169,11 +171,13 @@
       </ul>
 
       <!-- ───────── 💻 PC: tabla ───────── -->
-      <div class="hidden px-6 py-4 md:block">
-        <div class="bg-card overflow-x-auto rounded-xl border border-gray-300 dark:border-gray-500 shadow-sm">
-          <table class="min-w-full divide-y dark:divide-gray-500 divide-gray-300 text-sm">
+      <div class="hidden h-full min-h-0 px-6 py-4 md:block">
+        <div
+          class="bg-card h-full overflow-auto rounded-xl border border-gray-300 shadow-sm dark:border-gray-500"
+        >
+          <table class="min-w-full divide-y divide-gray-300 text-sm dark:divide-gray-500">
             <thead
-              class="bg-card sticky top-0 text-left text-sm tracking-wide text-black dark:text-white"
+              class="bg-card sticky top-0 z-10 text-left text-sm tracking-wide text-black dark:text-white"
             >
               <tr>
                 <th class="px-4 py-3">Orden</th>
@@ -247,13 +251,6 @@
                     {{ r.RUTA || '—' }}
                   </td>
 
-                  <td
-                    class="hidden max-w-[12rem] truncate px-4 py-3 text-black xl:table-cell dark:text-white"
-                    [title]="r.RUTA ?? ''"
-                  >
-                    {{ r.RUTA || '—' }}
-                  </td>
-
                   <td class="whitespace-nowrap px-4 py-3 text-right">
                     <button
                       type="button"
@@ -262,7 +259,7 @@
                       class="inline-flex items-center gap-1.5 rounded-lg bg-primary-500 px-3 py-1.5 text-xs text-white transition-colors hover:bg-primary-600 disabled:opacity-50 dark:bg-accent-500 dark:text-black"
                     >
                       <mat-icon
-                        class="!h-4 !w-4 !text-base  text-white dark:text-black"
+                        class="!h-4 !w-4 !text-base text-white dark:text-black"
                         [class.animate-spin]="liberando() === r.IDREPRRM"
                       >
                         {{ liberando() === r.IDREPRRM ? 'sync' : 'check_circle' }}
