@@ -47,13 +47,15 @@ type GrupoDetalle = {
   campos: CampoDetalle[];
 };
 
-@Component({
+ @Component({
   selector: 'aut_reprocesos',
   standalone: true,
   imports: [ReactiveFormsModule, DatePipe, DecimalPipe, MatIconModule],
   templateUrl: './reprocesos.component.html',
   animations: [slideUp],
+  host: { class: 'block h-full min-h-0' }, // 👈 esto
 })
+
 export class ReprocesosComponent implements OnInit {
   private readonly service = inject(ReprocesosService);
   private readonly fb = inject(FormBuilder);
@@ -405,4 +407,5 @@ export class ReprocesosComponent implements OnInit {
     this.aviso.set({ tipo, texto });
     this.avisoTimer = setTimeout(() => this.aviso.set(null), 5000);
   }
+  
 }
