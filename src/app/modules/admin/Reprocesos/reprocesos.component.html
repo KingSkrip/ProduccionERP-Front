@@ -98,7 +98,7 @@
       </div>
     } @else {
       <!-- ───────── 📱 MÓVIL: tarjetas ───────── -->
-      <ul class="max-h-[calc(100dvh-18rem)] space-y-2 overflow-y-auto p-3 md:hidden">
+      <ul class="max-h-[calc(100dvh-12.4rem)] space-y-2 overflow-y-auto p-3 md:hidden">
         @for (r of reprocesos(); track r.IDREPRRM) {
           <li class="bg-card overflow-hidden rounded-xl border shadow-sm">
             <button type="button" (click)="abrirDetalle(r)" class="w-full p-3 text-left">
@@ -173,7 +173,7 @@
       <!-- ───────── 💻 PC: tabla ───────── -->
       <div class="hidden px-6 py-4 md:block">
         <div
-          class="bg-card max-h-[calc(100dvh-24rem)] overflow-auto rounded-xl border border-gray-300 shadow-sm dark:border-gray-500"
+          class="bg-card max-h-[calc(100dvh-22rem)] overflow-auto rounded-xl border border-gray-300 shadow-sm dark:border-gray-500"
         >
           <table class="min-w-full divide-y divide-gray-300 text-sm dark:divide-gray-500">
             <thead
