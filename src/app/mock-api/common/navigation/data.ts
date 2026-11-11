@@ -4156,6 +4156,14 @@ export const menuSuAdmin_Admin: FuseNavigationItem[] = [
         icon: 'heroicons_outline:barcode',
         link: '/apps/scan/inventario/sinclientes',
       },
+      {
+        id: 'scan.correccionacabado',
+        title: 'Corrección acabado',
+        tooltip: 'Escaner acabado',
+        type: 'basic',
+        icon: 'heroicons_outline:corrections',
+        link: '/apps/scan/correccion-acabado',
+      },
     ],
   },
   //{
@@ -4597,6 +4605,14 @@ export const menuColaborador_Gerente: FuseNavigationItem[] = [
         icon: 'heroicons_outline:barcode',
         link: '/apps/scan/inventario/sinclientes',
       },
+      {
+        id: 'scan.correccionacabado',
+        title: 'Corrección acabado',
+        tooltip: 'Escaner acabado',
+        type: 'basic',
+        icon: 'heroicons_outline:corrections',
+        link: '/apps/scan/correccion-acabado',
+      },
     ],
   },
   {
@@ -4914,9 +4930,17 @@ export const menuJaime: FuseNavigationItem[] = [
         icon: 'heroicons_outline:barcode',
         link: '/apps/scan/inventario/sinclientes',
       },
+      {
+        id: 'scan.correccionacabado',
+        title: 'Corrección acabado',
+        tooltip: 'Escaner acabado',
+        type: 'basic',
+        icon: 'heroicons_outline:corrections',
+        link: '/apps/scan/correccion-acabado',
+      },
     ],
   },
-    {
+  {
     id: 'Reprocesos.aut',
     title: 'Reprocesos',
     tooltip: 'Reprocesos',

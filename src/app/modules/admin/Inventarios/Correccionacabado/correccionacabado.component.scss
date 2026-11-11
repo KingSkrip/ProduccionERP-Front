@@ -1,0 +1,17 @@
+.th-grid {
+  padding: 4px 6px;
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid #9ca3af;
+  background: #f3f4f6;
+  color: #1f2937;
+  white-space: nowrap;
+}
+.td-grid {
+  padding: 3px 6px;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

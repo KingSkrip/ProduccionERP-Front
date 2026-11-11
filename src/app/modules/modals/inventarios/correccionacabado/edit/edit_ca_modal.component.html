@@ -1,0 +1,332 @@
+<!-- ============================================================
+     FORMULARIO (compartido por desktop y móvil)
+     ============================================================ -->
+<ng-template #formulario>
+  <div class="space-y-4 text-black dark:text-white">
+    <!-- Artículo -->
+    <div>
+      <label class="mb-1 block text-xs font-semibold uppercase tracking-wide">Artículo</label>
+      <div
+        class="bg-default truncate rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700"
+      >
+        {{ item.articulo || '—' }}
+      </div>
+    </div>
+
+    <!-- Ancho / Peso / Rendimiento (solo lectura) -->
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <!-- Ancho -->
+      <div>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-wide">Ancho</label>
+        <div class="space-y-1">
+          <div
+            class="bg-default flex items-center justify-between rounded-lg border border-gray-200 px-3 py-1.5 text-sm dark:border-gray-700"
+          >
+            <span class="tabular-nums">{{
+              item.ancho != null ? (item.ancho | number: '1.2-3') : '—'
+            }}</span>
+            <span class="text-xs text-gray-500">mts</span>
+          </div>
+          <div
+            class="bg-default flex items-center justify-between rounded-lg border border-gray-200 px-3 py-1.5 text-sm dark:border-gray-700"
+          >
+            <span class="tabular-nums">{{
+              item.anchoYds != null ? (item.anchoYds | number: '1.2-3') : '—'
+            }}</span>
+            <span class="text-xs text-gray-500">yds</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Peso -->
+      <div>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-wide">Peso</label>
+        <div class="space-y-1">
+          <div
+            class="bg-default flex items-center justify-between rounded-lg border border-gray-200 px-3 py-1.5 text-sm dark:border-gray-700"
+          >
+            <span class="tabular-nums">{{
+              item.gramaje != null ? (item.gramaje | number: '1.2-3') : '—'
+            }}</span>
+            <span class="text-xs text-gray-500">grs/m2</span>
+          </div>
+          <div
+            class="bg-default flex items-center justify-between rounded-lg border border-gray-200 px-3 py-1.5 text-sm dark:border-gray-700"
+          >
+            <span class="tabular-nums">{{
+              item.gramajeOz != null ? (item.gramajeOz | number: '1.2-3') : '—'
+            }}</span>
+            <span class="text-xs text-gray-500">oz/yd2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rendimiento -->
+      <div>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-wide">Rendimiento</label>
+        <div class="space-y-1">
+          <div
+            class="bg-default flex items-center justify-between rounded-lg border border-gray-200 px-3 py-1.5 text-sm dark:border-gray-700"
+          >
+            <span class="tabular-nums">{{
+              item.rendimiento != null ? (item.rendimiento | number: '1.2-3') : '—'
+            }}</span>
+            <span class="text-xs text-gray-500">m/Kg</span>
+          </div>
+          <div
+            class="bg-default flex items-center justify-between rounded-lg border border-gray-200 px-3 py-1.5 text-sm dark:border-gray-700"
+          >
+            <span class="tabular-nums">{{
+              item.rendimientoYdLb != null ? (item.rendimientoYdLb | number: '1.2-3') : '—'
+            }}</span>
+            <span class="text-xs text-gray-500">yd/Lb</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cantidad / U.M. / Precio / Moneda -->
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-wide">Cantidad (*)</label>
+        <input
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="any"
+          name="cantidad"
+          [(ngModel)]="cantidad"
+          (focus)="cerrarSelects()"
+          class="bg-default w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+        />
+      </div>
+
+<!-- U.M. -->
+<div>
+  <label class="mb-1 block text-xs font-semibold uppercase tracking-wide">U.M.</label>
+  <button type="button" (click)="toggleSelect('unidad', $event)" ...>
+    <span>{{ unidad }}</span>
+    <mat-icon class="icon-size-4">expand_more</mat-icon>
+  </button>
+
+  @if (openSelect() === 'unidad') {
+    <div
+      class="fixed inset-0 z-40"
+      (click)="cerrarSelects(); $event.stopPropagation()"
+      (wheel)="cerrarSelects()"
+    ></div>
+    <ul
+      class="bg-card fixed z-50 overflow-hidden rounded-lg border border-gray-300 shadow-xl dark:border-gray-600"
+      [style.top.px]="menuPos().top"
+      [style.left.px]="menuPos().left"
+      [style.width.px]="menuPos().width"
+    >
+      @for (u of unidades; track u) {
+        <li>
+          <button ...>{{ u }}</button>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+      <div>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-wide">Precio</label>
+        <input
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="any"
+          name="precio"
+          [(ngModel)]="precio"
+          (focus)="cerrarSelects()"
+          class="bg-default w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+        />
+      </div>
+
+      <!-- Moneda (dropdown propio) -->
+      <div class="relative" [class.z-30]="openSelect() === 'moneda'">
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-wide">Moneda</label>
+        <button
+          type="button"
+          (click)="toggleSelect('moneda', $event)"
+          class="bg-default flex w-full items-center justify-between rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+        >
+          <span>{{ moneda }}</span>
+          <mat-icon class="icon-size-4">expand_more</mat-icon>
+        </button>
+
+        @if (openSelect() === 'moneda') {
+          <div class="fixed inset-0 z-40" (click)="cerrarSelects(); $event.stopPropagation()"></div>
+          <ul
+            class="bg-card absolute left-0 right-0 z-50 mt-1 overflow-hidden rounded-lg border border-gray-300 shadow-xl dark:border-gray-600"
+          >
+            @for (m of monedas; track m) {
+              <li>
+                <button
+                  type="button"
+                  (click)="elegirMoneda(m, $event)"
+                  class="w-full px-3 py-2 text-left text-sm hover:bg-primary-500 hover:text-white"
+                  [class.bg-primary-500]="m === moneda"
+                  [class.text-white]="m === moneda"
+                >
+                  {{ m }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+
+    <!-- Totales -->
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div
+        class="bg-default rounded-xl border border-gray-200 p-2 text-center dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="text-xs font-semibold">Kilogramos</div>
+        <div class="text-sm font-medium tabular-nums text-blue-700 dark:text-blue-300">
+          {{ kilogramos != null ? (kilogramos | number: '1.2-2') : '—' }}
+        </div>
+      </div>
+      <div
+        class="bg-default rounded-xl border border-gray-200 p-2 text-center dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="text-xs font-semibold">Libras</div>
+        <div class="text-sm font-medium tabular-nums text-blue-700 dark:text-blue-300">
+          {{ libras != null ? (libras | number: '1.2-2') : '—' }}
+        </div>
+      </div>
+      <div
+        class="bg-default rounded-xl border border-gray-200 p-2 text-center dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="text-xs font-semibold">Metros</div>
+        <div class="text-sm font-medium tabular-nums text-blue-700 dark:text-blue-300">
+          {{ metros != null ? (metros | number: '1.2-2') : '—' }}
+        </div>
+      </div>
+      <div
+        class="bg-default rounded-xl border border-gray-200 p-2 text-center dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="text-xs font-semibold">Yardas</div>
+        <div class="text-sm font-medium tabular-nums text-blue-700 dark:text-blue-300">
+          {{ yardas != null ? (yardas | number: '1.2-2') : '—' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- ============================================================
+     Botones (compartidos)
+     ============================================================ -->
+<ng-template #acciones>
+  <div class="flex items-center justify-end gap-2">
+    <button
+      type="button"
+      (click)="cerrar.emit()"
+      class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
+    >
+      Cancelar
+    </button>
+    <button
+      type="button"
+      (click)="onGuardar()"
+      [disabled]="!puedeGuardar"
+      class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white shadow transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      Guardar
+    </button>
+  </div>
+</ng-template>
+
+@if (isDesktop()) {
+  <!-- ============================================================
+       Desktop
+       ============================================================ -->
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    (click)="onOverlayClick($event)"
+  >
+    <div
+      class="bg-card flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl shadow-2xl"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-4 text-black dark:border-gray-700 dark:text-white"
+      >
+        <div>
+          <h2 class="text-lg font-bold">Editar rollo {{ item.rollo }}</h2>
+          <p class="text-sm">OP {{ item.op ?? '—' }} · Pieza {{ item.pieza ?? '—' }}</p>
+        </div>
+        <button
+          class="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+          (click)="cerrar.emit()"
+        >
+          <mat-icon class="icon-size-5 text-black dark:text-white">close</mat-icon>
+        </button>
+      </div>
+
+      <div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+        <ng-container *ngTemplateOutlet="formulario"></ng-container>
+      </div>
+
+      <div class="shrink-0 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
+        <ng-container *ngTemplateOutlet="acciones"></ng-container>
+      </div>
+    </div>
+  </div>
+} @else {
+  <!-- ============================================================
+       Móvil: bottom sheet
+       ============================================================ -->
+  <div
+    class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 pb-3"
+    (click)="onOverlayClick($event)"
+  >
+    <div
+      class="bg-card mb-3 flex max-h-[85dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-gray-400 shadow-2xl"
+      [class.select-none]="isDragging"
+      [style.transform]="dragTransform"
+      [style.transition]="dragTransition"
+      (click)="$event.stopPropagation()"
+      [@slideUp]
+    >
+      <div
+        class="touch-none"
+        (touchstart)="onTouchStart($event)"
+        (touchmove)="onTouchMove($event)"
+        (touchend)="onTouchEnd()"
+      >
+        <div class="flex cursor-grab justify-center pt-3 active:cursor-grabbing">
+          <div
+            class="h-1.5 w-11 rounded-full bg-primary-500 transition-colors active:bg-accent-500"
+          ></div>
+        </div>
+
+        <div class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-2">
+          <div>
+            <h2 class="text-lg font-semibold text-black dark:text-white">Rollo {{ item.rollo }}</h2>
+            <p class="text-sm text-black dark:text-white">
+              OP {{ item.op ?? '—' }} · Pieza {{ item.pieza ?? '—' }}
+            </p>
+          </div>
+          <button
+            (click)="cerrar.emit()"
+            class="flex h-9 w-9 items-center justify-center rounded-full text-primary-400 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-5 py-3">
+        <ng-container *ngTemplateOutlet="formulario"></ng-container>
+      </div>
+
+      <div class="shrink-0 border-t border-gray-200 px-5 py-3 dark:border-gray-700">
+        <ng-container *ngTemplateOutlet="acciones"></ng-container>
+      </div>
+    </div>
+  </div>
+}
