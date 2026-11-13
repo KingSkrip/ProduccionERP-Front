@@ -68,6 +68,7 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   itemEditando: EditCAItem | null = null;
   seleccionadoId: number | null = null;
   guardando = false;
+  eliminando = false;
   // --- Cámara ---
   mostrarEscanerCamara = false;
   ultimoFeedbackCamara: ScanFeedback | null = null;
@@ -186,6 +187,8 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
         return 'Rollo inválido';
       case 'rollo_no_encontrado':
         return 'No existe el rollo';
+      case 'estatus_no_permitido':
+        return `La orden tiene estatus ${err.estatus ?? '—'}; solo se puede modificar con estatus 3`;
       default:
         return err.error ?? 'No se pudo consultar';
     }
@@ -271,7 +274,10 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
       pieza: item.pieza,
       articulo: item.datos?.ARTICULO ?? null,
       peso: item.peso,
+      tara: item.datos?.TARA != null ? Number(item.datos.TARA) : 0,
+      estatus: item.datos?.OE_ESTATUS ?? null,
     };
+
     this._cdr.markForCheck();
     if (!op) return;
 
@@ -292,44 +298,44 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
-guardarEdicion(res: EditCAResultado): void {
-  const h = this.historial.find((x) => x.rollo === res.rollo);
-  const previo = h ? { peso: h.peso, datos: h.datos } : null;
+  guardarEdicion(res: EditCAResultado): void {
+    const h = this.historial.find((x) => x.rollo === res.rollo);
+    const previo = h ? { peso: h.peso, datos: h.datos } : null;
 
-  if (h) {
-    this._actualizar(h.id, {
-      peso: res.kilogramos,
-      datos: h.datos && {
-        ...h.datos,
-        'PESO NETO': res.kilogramos,
-        PESO_BRUTO: res.pbruto,
-        TARA: res.tara,
-        PESO_LIBRAS: res.libras,
-        LONGITUD: res.metros,
-        LONG_YARDAS: res.yardas,
-      },
-    });
+    if (h) {
+      this._actualizar(h.id, {
+        peso: res.kilogramos,
+        datos: h.datos && {
+          ...h.datos,
+          'PESO NETO': res.kilogramos,
+          PESO_BRUTO: res.pbruto,
+          TARA: res.tara,
+          PESO_LIBRAS: res.libras,
+          LONGITUD: res.metros,
+          LONG_YARDAS: res.yardas,
+        },
+      });
+    }
+    this.cerrarEdicion();
+    this._notificar(res.rollo, true, 'Rollo actualizado');
+
+    this._scanService
+      .guardar({
+        rollo: res.rollo,
+        kilogramos: res.kilogramos,
+        libras: res.libras,
+        metros: res.metros,
+        yardas: res.yardas,
+        tara: res.tara,
+        pbruto: res.pbruto,
+      })
+      .subscribe({
+        error: (e: HttpErrorResponse) => {
+          if (h && previo) this._actualizar(h.id, previo);
+          this._notificar(res.rollo, false, this._mensajeError(e));
+        },
+      });
   }
-  this.cerrarEdicion();
-  this._notificar(res.rollo, true, 'Rollo actualizado');
-
-  this._scanService
-    .guardar({
-      rollo: res.rollo,
-      kilogramos: res.kilogramos,
-      libras: res.libras,
-      metros: res.metros,
-      yardas: res.yardas,
-      tara: res.tara,
-      pbruto: res.pbruto,
-    })
-    .subscribe({
-      error: (e: HttpErrorResponse) => {
-        if (h && previo) this._actualizar(h.id, previo);
-        this._notificar(res.rollo, false, this._mensajeError(e));
-      },
-    });
-}
 
   seleccionar(item: CorreccionLocal): void {
     this.seleccionadoId = item.id;
@@ -393,5 +399,38 @@ guardarEdicion(res: EditCAResultado): void {
       this._articulo$.set(op, o);
     }
     return o;
+  }
+
+  onEliminar(rollo: string): void {
+    if (this.eliminando) return;
+
+    this.eliminando = true;
+    this._cdr.markForCheck();
+
+    this._scanService
+      .eliminar(rollo)
+      .pipe(
+        finalize(() => {
+          this.eliminando = false;
+          this._cdr.markForCheck();
+        }),
+        takeUntil(this._destroy$),
+      )
+      .subscribe({
+        next: (res) => {
+          if (!res.ok) {
+            this._notificar(rollo, false, 'No se pudo eliminar');
+            return;
+          }
+
+          // Quita el rollo del historial y cierra el modal
+          this.historial = this.historial.filter((h) => h.rollo !== rollo);
+          this.cerrarEdicion();
+          this._notificar(rollo, true, 'Rollo eliminado');
+        },
+        error: (e: HttpErrorResponse) => {
+          this._notificar(rollo, false, this._mensajeError(e));
+        },
+      });
   }
 }

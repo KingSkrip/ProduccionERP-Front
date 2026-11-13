@@ -3,6 +3,18 @@
      ============================================================ -->
 <ng-template #formulario>
   <div class="space-y-4 text-black dark:text-white">
+
+    @if (bloqueado) {
+  <div
+    class="flex items-start gap-2 rounded-xl border-l-4 border-red-500 bg-red-50 px-3 py-2.5 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-300"
+  >
+    <mat-icon class="flex-shrink-0 icon-size-5">lock</mat-icon>
+    <span>
+      La orden tiene estatus <strong>{{ item.estatus ?? 'desconocido' }}</strong>.
+      No se puede modificar ni eliminar el rollo (solo con estatus 3).
+    </span>
+  </div>
+}
     <!-- Artículo -->
     <div>
       <label class="mb-1 block text-xs md:text-sm">Artículo</label>
@@ -89,17 +101,17 @@
     <div class="grid grid-cols-2 gap-3">
       <div>
         <label class="mb-1 block text-xs md:text-sm">Cantidad</label>
-<input
-  type="number"
-  inputmode="decimal"
-  min="0"
-  step="any"
-  name="cantidad"
-  [ngModel]="cantidad"
-  (ngModelChange)="onCantidadChange($event)"
-  (focus)="cerrarSelects()"
-  class="flex w-full items-center rounded-2xl border border-gray-300 bg-gray-300 px-4 py-3 text-sm text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 md:rounded-lg md:border-slate-300 md:bg-transparent md:px-3 md:py-2.5 md:focus:ring-2 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
-/>
+        <input
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="any"
+          name="cantidad"
+          [ngModel]="cantidad"
+          (ngModelChange)="onCantidadChange($event)"
+          (focus)="cerrarSelects()"
+          class="flex w-full items-center rounded-2xl border border-gray-300 bg-gray-300 px-4 py-3 text-sm text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 md:rounded-lg md:border-slate-300 md:bg-transparent md:px-3 md:py-2.5 md:focus:ring-2 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
+        />
       </div>
 
       <!-- U.M. (sin cambios) -->
@@ -258,23 +270,59 @@
      Botones (compartidos)
      ============================================================ -->
 <ng-template #acciones>
-  <div class="flex items-center justify-end gap-2">
-    <button
-      type="button"
-      (click)="cerrar.emit()"
-      class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
-    >
-      Cancelar
-    </button>
-    <button
-      type="button"
-      (click)="onGuardar()"
-      [disabled]="!puedeGuardar"
-      class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white shadow transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-    >
-      Guardar
-    </button>
-  </div>
+  @if (confirmandoEliminar()) {
+    <div class="flex items-center justify-between gap-2">
+      <span class="text-sm font-medium text-red-600 dark:text-red-400">¿Eliminar este rollo?</span>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="cancelarEliminar()"
+          [disabled]="eliminando"
+          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-100 disabled:opacity-40 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
+        >
+          No
+        </button>
+        <button
+          type="button"
+          (click)="onEliminar()"
+          [disabled]="eliminando"
+          class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {{ eliminando ? 'Eliminando…' : 'Sí, eliminar' }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="flex items-center justify-between gap-2">
+      <button
+        type="button"
+        (click)="pedirEliminar()"
+        [disabled]="bloqueado || guardando || eliminando"
+        class="flex items-center gap-1 rounded-lg border border-red-500 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-950"
+      >
+        <mat-icon class="text-current icon-size-4">delete</mat-icon>
+        Eliminar
+      </button>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="cerrar.emit()"
+          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="onGuardar()"
+          [disabled]="!puedeGuardar"
+          class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white shadow transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+  }
 </ng-template>
 
 @if (isDesktop()) {

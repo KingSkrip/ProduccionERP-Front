@@ -28,8 +28,11 @@ export class ModalEditCAComponent implements OnInit {
   @Input() guardando = false;
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardar = new EventEmitter<EditCAResultado>();
-
+  @Input() eliminando = false;
+  @Output() eliminar = new EventEmitter<string>();
+  readonly confirmandoEliminar = signal(false);
   readonly unidades: UnidadCA[] = ['KGS', 'LBS', 'MTS', 'YDS'];
+  readonly ESTATUS_EDITABLE = 3;
 
   cantidad: number | null = null;
   tara: number | null = null;
@@ -133,7 +136,9 @@ export class ModalEditCAComponent implements OnInit {
 
   get puedeGuardar(): boolean {
     return (
+      !this.bloqueado &&
       !this.guardando &&
+      !this.eliminando &&
       (this.pesoNeto ?? 0) > 0 &&
       (this.tara ?? 0) >= 0 &&
       this.pesoBruto != null &&
@@ -158,6 +163,19 @@ export class ModalEditCAComponent implements OnInit {
       tara: this.r3(this.tara ?? 0),
       pbruto: this.r3(this.pesoBruto as number),
     });
+  }
+
+  pedirEliminar(): void {
+    if (this.bloqueado) return;
+    this.confirmandoEliminar.set(true);
+  }
+  cancelarEliminar(): void {
+    this.confirmandoEliminar.set(false);
+  }
+
+  onEliminar(): void {
+    if (this.eliminando || this.bloqueado) return;
+    this.eliminar.emit(this.item.rollo);
   }
 
   /** Cierra solo si el click fue directamente sobre el fondo. */
@@ -270,5 +288,9 @@ export class ModalEditCAComponent implements OnInit {
       case 'YDS':
         return this.rend2 > 0 ? (kg / KG_POR_LB) * this.rend2 : null;
     }
+  }
+
+  get bloqueado(): boolean {
+    return Number(this.item?.estatus) !== this.ESTATUS_EDITABLE;
   }
 }

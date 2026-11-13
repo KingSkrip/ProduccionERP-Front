@@ -44,9 +44,10 @@ export interface CorreccionAcabadoResponse {
 
 export interface CorreccionAcabadoError {
   ok: false;
-  motivo?: 'rollo_invalido' | 'rollo_no_encontrado';
+  motivo?: 'rollo_invalido' | 'rollo_no_encontrado' | 'estatus_no_permitido';
   error?: string;
   rollo?: string;
+  estatus?: number | null;
 }
 
 export interface ArticuloCAResponse {
@@ -74,6 +75,7 @@ export interface EditCAItem {
   rendimientoYdLb?: number | null; // yd/Lb
   peso?: number | null; // kg
   tara?: number | null;
+  estatus?: number | null;
 }
 
 export interface EditCAResultado {
@@ -105,4 +107,14 @@ export interface GuardarCARequest {
   yardas: number;
   tara: number;
   pbruto: number;
+}
+
+export interface EliminarCARequest {
+  rollo: string;
+}
+
+export interface EliminarCAResponse {
+  ok: boolean;
+  motivo?: string;
+  error?: string;
 }

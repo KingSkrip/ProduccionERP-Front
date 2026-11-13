@@ -6,6 +6,8 @@ import {
   ArticuloCAResponse,
   CorreccionAcabadoRequest,
   CorreccionAcabadoResponse,
+  EliminarCARequest,
+  EliminarCAResponse,
   GuardarCARequest,
   GuardarCAResponse,
 } from '../types/correccion acabado.type';
@@ -33,5 +35,9 @@ export class CorreccionAcabadoService {
 
   guardar(body: GuardarCARequest): Observable<GuardarCAResponse> {
     return this.http.put<GuardarCAResponse>(`${this.baseUrl}/edit`, body);
+  }
+  eliminar(rollo: string): Observable<EliminarCAResponse> {
+    const body: EliminarCARequest = { rollo };
+    return this.http.post<EliminarCAResponse>(`${this.baseUrl}/eliminar`, body);
   }
 }

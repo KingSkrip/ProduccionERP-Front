@@ -439,8 +439,11 @@
 @if (itemEditando) {
   <app-modal-edit-ca
     [item]="itemEditando"
-    (cerrar)="cerrarEdicion()"
-    (guardar)="guardarEdicion($event)"
+    [guardando]="guardando"
+    [eliminando]="eliminando"
+    (cerrar)="cerrarModal()"
+    (guardar)="onGuardar($event)"
+    (eliminar)="onEliminar($event)"
   >
   </app-modal-edit-ca>
 }
