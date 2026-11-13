@@ -18,10 +18,10 @@ import {
   ModalEscanerEmbarquesComponent,
   ScanFeedback,
 } from 'app/modules/modals/Embarques/scanner-embarques-modal.component';
-import { Subject } from 'rxjs';
-import { finalize, takeUntil } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
+import { finalize, map, shareReplay, takeUntil, tap } from 'rxjs/operators';
 
-
+import { ModalEditCAComponent } from 'app/modules/modals/inventarios/correccionacabado/edit/edit_ca_modal.component';
 import {
   CorreccionAcabadoError,
   CorreccionAcabadoResponse,
@@ -30,7 +30,6 @@ import {
   RolloAcabadoDatos,
 } from '../types/correccion acabado.type';
 import { CorreccionAcabadoService } from './correccionacabado.service';
-import { ModalEditCAComponent } from 'app/modules/modals/inventarios/correccionacabado/edit/edit_ca_modal.component';
 
 type EstadoEnvio = 'enviando' | 'ok' | 'error';
 
@@ -68,11 +67,14 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   historial: CorreccionLocal[] = [];
   itemEditando: EditCAItem | null = null;
   seleccionadoId: number | null = null;
+  guardando = false;
   // --- Cámara ---
   mostrarEscanerCamara = false;
   ultimoFeedbackCamara: ScanFeedback | null = null;
   totalEscaneadosCamara = 0;
-
+  private _articulo$ = new Map<string, Observable<Partial<EditCAItem>>>();
+  private _articuloCache = new Map<string, Partial<EditCAItem>>();
+  private _articuloEnVuelo = new Set<string>();
   private _idCounter = 0;
   private _enVuelo = new Set<string>();
   private _feedbackTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -155,6 +157,14 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
             datos: res.datos,
             peso: res.peso,
           });
+
+          // Precarga el artículo para que "Editar" abra instantáneo
+          const op = (res.datos?.ORDEN ?? res.op ?? '').toString().trim();
+          if (op)
+            this._articuloObs(op)
+              .pipe(takeUntil(this._destroy$))
+              .subscribe({ error: () => {} });
+
           if (this.mostrarEscanerCamara) {
             this.totalEscaneadosCamara++;
           }
@@ -252,41 +262,29 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   }
 
   editar(item: CorreccionLocal): void {
-  const op = (item.datos?.ORDEN ?? item.op ?? '').toString().trim();
+    const op = (item.datos?.ORDEN ?? item.op ?? '').toString().trim();
+    const rollo = item.rollo;
 
-    const abrir = (extra: Partial<EditCAItem> = {}) => {
-      this.itemEditando = {
-        rollo: item.rollo,
-        op: item.op,
-        pieza: item.pieza,
-        articulo: item.datos?.ARTICULO ?? null,
-        peso: item.peso,
-        ...extra,
-      };
-      this._cdr.markForCheck();
+    this.itemEditando = {
+      rollo,
+      op: item.op,
+      pieza: item.pieza,
+      articulo: item.datos?.ARTICULO ?? null,
+      peso: item.peso,
     };
+    this._cdr.markForCheck();
+    if (!op) return;
 
-    if (!op) {
-      abrir();
-      return;
-    }
-
-    this._scanService.articulo(op).subscribe({
-    next: (a) =>
-  abrir({
-    articulo: a.articulo,
-    ancho: a.ancho,
-    anchoYds: a.ancho_yds,
-    gramaje: a.gramaje,
-    gramajeOz: a.gramaje_oz,
-    rendimiento: a.rendimiento,
-    rendimientoYdLb: a.rendimiento_yd_lb,
-  }),
-      error: () => {
-        this._notificar(item.rollo, false, 'No se pudo cargar el artículo');
-        abrir();
-      },
-    });
+    this._articuloObs(op)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({
+        next: (extra) => {
+          if (this.itemEditando?.rollo !== rollo) return;
+          this.itemEditando = { ...this.itemEditando, ...extra };
+          this._cdr.markForCheck();
+        },
+        error: () => this._notificar(rollo, false, 'No se pudo cargar el artículo'),
+      });
   }
 
   cerrarEdicion(): void {
@@ -294,14 +292,106 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     this._cdr.markForCheck();
   }
 
-  guardarEdicion(res: EditCAResultado): void {
-    // TODO: mandar `res` al backend
-    console.log('Guardar', res);
-    this.cerrarEdicion();
+guardarEdicion(res: EditCAResultado): void {
+  const h = this.historial.find((x) => x.rollo === res.rollo);
+  const previo = h ? { peso: h.peso, datos: h.datos } : null;
+
+  if (h) {
+    this._actualizar(h.id, {
+      peso: res.kilogramos,
+      datos: h.datos && {
+        ...h.datos,
+        'PESO NETO': res.kilogramos,
+        PESO_BRUTO: res.pbruto,
+        TARA: res.tara,
+        PESO_LIBRAS: res.libras,
+        LONGITUD: res.metros,
+        LONG_YARDAS: res.yardas,
+      },
+    });
   }
+  this.cerrarEdicion();
+  this._notificar(res.rollo, true, 'Rollo actualizado');
+
+  this._scanService
+    .guardar({
+      rollo: res.rollo,
+      kilogramos: res.kilogramos,
+      libras: res.libras,
+      metros: res.metros,
+      yardas: res.yardas,
+      tara: res.tara,
+      pbruto: res.pbruto,
+    })
+    .subscribe({
+      error: (e: HttpErrorResponse) => {
+        if (h && previo) this._actualizar(h.id, previo);
+        this._notificar(res.rollo, false, this._mensajeError(e));
+      },
+    });
+}
 
   seleccionar(item: CorreccionLocal): void {
     this.seleccionadoId = item.id;
     this._cdr.markForCheck();
+  }
+
+  private _cargarArticulo(
+    op: string,
+    alTerminar?: (extra: Partial<EditCAItem> | null) => void,
+  ): void {
+    const cached = this._articuloCache.get(op);
+    if (cached) {
+      alTerminar?.(cached);
+      return;
+    }
+    if (this._articuloEnVuelo.has(op)) {
+      return;
+    }
+
+    this._articuloEnVuelo.add(op);
+    this._scanService
+      .articulo(op)
+      .pipe(
+        finalize(() => this._articuloEnVuelo.delete(op)),
+        takeUntil(this._destroy$),
+      )
+      .subscribe({
+        next: (a) => {
+          const extra: Partial<EditCAItem> = {
+            articulo: a.articulo,
+            ancho: a.ancho,
+            anchoYds: a.ancho_yds,
+            gramaje: a.gramaje,
+            gramajeOz: a.gramaje_oz,
+            rendimiento: a.rendimiento,
+            rendimientoYdLb: a.rendimiento_yd_lb,
+          };
+          this._articuloCache.set(op, extra);
+          alTerminar?.(extra);
+        },
+        error: () => alTerminar?.(null),
+      });
+  }
+
+  private _articuloObs(op: string): Observable<Partial<EditCAItem>> {
+    let o = this._articulo$.get(op);
+    if (!o) {
+      o = this._scanService.articulo(op).pipe(
+        map((a) => ({
+          articulo: a.articulo,
+          ancho: a.ancho,
+          anchoYds: a.ancho_yds,
+          gramaje: a.gramaje,
+          gramajeOz: a.gramaje_oz,
+          rendimiento: a.rendimiento,
+          rendimientoYdLb: a.rendimiento_yd_lb,
+        })),
+        tap({ error: () => this._articulo$.delete(op) }),
+        shareReplay(1),
+      );
+      this._articulo$.set(op, o);
+    }
+    return o;
   }
 }

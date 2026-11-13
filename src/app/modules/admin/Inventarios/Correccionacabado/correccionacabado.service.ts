@@ -6,6 +6,8 @@ import {
   ArticuloCAResponse,
   CorreccionAcabadoRequest,
   CorreccionAcabadoResponse,
+  GuardarCARequest,
+  GuardarCAResponse,
 } from '../types/correccion acabado.type';
 
 @Injectable({
@@ -24,8 +26,12 @@ export class CorreccionAcabadoService {
     return this.http.post<CorreccionAcabadoResponse>(this.baseUrl, body);
   }
 
-articulo(op: string): Observable<ArticuloCAResponse> {
-  const params = new HttpParams().set('op', op);
-  return this.http.get<ArticuloCAResponse>(`${this.baseUrl}/articulo`, { params });
-}
+  articulo(op: string): Observable<ArticuloCAResponse> {
+    const params = new HttpParams().set('op', op);
+    return this.http.get<ArticuloCAResponse>(`${this.baseUrl}/articulo`, { params });
+  }
+
+  guardar(body: GuardarCARequest): Observable<GuardarCAResponse> {
+    return this.http.put<GuardarCAResponse>(`${this.baseUrl}/edit`, body);
+  }
 }

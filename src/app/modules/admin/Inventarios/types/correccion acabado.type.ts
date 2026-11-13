@@ -21,12 +21,14 @@ export interface RolloAcabadoDatos {
   ORDEN: number | string | null;
   OE_ESTATUS: number | null;
   PESO_BRUTO?: number;
-TARA?: number;
-LONGITUD?: number;
-TONO?: string | null;
-FECHA?: string | null;
-MUESTRA?: number | string | null;
-PL?: number | boolean | null;
+  TARA?: number;
+  LONGITUD?: number;
+  PESO_LIBRAS?: number;
+  LONG_YARDAS?: number;
+  TONO?: string | null;
+  FECHA?: string | null;
+  MUESTRA?: number | string | null;
+  PL?: number | boolean | null;
 }
 
 export interface CorreccionAcabadoResponse {
@@ -59,7 +61,6 @@ export interface ArticuloCAResponse {
   rendimiento_yd_lb: number;
 }
 
-
 export interface EditCAItem {
   rollo: string;
   op?: string | null;
@@ -68,26 +69,40 @@ export interface EditCAItem {
   ancho?: number | null; // mts
   anchoYds?: number | null; // yds
   gramaje?: number | null; // grs/m2
-  gramajeOz?: number | null; // oz/yd2
+  gramajeOz?: number | null; // oz/yd2a
   rendimiento?: number | null; // m/Kg
   rendimientoYdLb?: number | null; // yd/Lb
   peso?: number | null; // kg
+  tara?: number | null;
 }
 
 export interface EditCAResultado {
   rollo: string;
   cantidad: number;
   unidad: UnidadCA;
-  precio: number;
-  moneda: MonedaCA;
-  kilogramos: number | null;
-  libras: number | null;
-  metros: number | null;
-  yardas: number | null;
+  kilogramos: number; // peso neto
+  libras: number;
+  metros: number;
+  yardas: number;
+  tara: number;
+  pbruto: number;
 }
 
 export type UnidadCA = 'KGS' | 'LBS' | 'MTS' | 'YDS';
 export type MonedaCA = 'MXN' | 'USD';
 
+export interface GuardarCAResponse {
+  ok: boolean;
+  rollo?: string;
+  motivo?: string;
+}
 
-
+export interface GuardarCARequest {
+  rollo: string;
+  kilogramos: number;
+  libras: number;
+  metros: number;
+  yardas: number;
+  tara: number;
+  pbruto: number;
+}

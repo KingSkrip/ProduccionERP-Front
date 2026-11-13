@@ -66,11 +66,11 @@
     *ngIf="estado === 'sin-camara' || estado === 'error-camara'"
     class="flex flex-col items-center gap-2 text-center"
   >
-    <mat-icon class="text-accent-500 icon-size-8" svgIcon="heroicons_outline:qr-code"></mat-icon>
-    <p class="text-sm text-white">
+    <mat-icon class="text-primary-500 dark:text-accent-500 icon-size-8" svgIcon="heroicons_outline:qr-code"></mat-icon>
+    <p class="text-sm text-black dark:text-white">
       {{ estado === 'error-camara' ? mensajeError : 'También puedes usar el lector USB.' }}
     </p>
-    <button type="button" class="text-xs text-accent-500 underline" (click)="reintentarCamara()">
+    <button type="button" class="text-xs text-primary-500 dark:text-accent-500 underline" (click)="reintentarCamara()">
       Reintentar cámara
     </button>
   </div>
