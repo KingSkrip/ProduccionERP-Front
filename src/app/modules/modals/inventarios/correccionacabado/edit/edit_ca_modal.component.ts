@@ -290,7 +290,11 @@ export class ModalEditCAComponent implements OnInit {
     }
   }
 
+  get eliminado(): boolean {
+    return !!this.item?.eliminado;
+  }
+
   get bloqueado(): boolean {
-    return Number(this.item?.estatus) !== this.ESTATUS_EDITABLE;
+    return this.eliminado || Number(this.item?.estatus) !== this.ESTATUS_EDITABLE;
   }
 }

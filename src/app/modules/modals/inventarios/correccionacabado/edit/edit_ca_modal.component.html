@@ -3,7 +3,17 @@
      ============================================================ -->
 <ng-template #formulario>
   <div class="space-y-4 text-black dark:text-white">
-    @if (bloqueado) {
+    @if (eliminado) {
+      <div
+        class="flex items-start gap-2 rounded-xl border-l-4 border-red-500 bg-red-50 px-3 py-2.5 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-300"
+      >
+        <mat-icon class="flex-shrink-0 icon-size-5">delete_forever</mat-icon>
+        <span
+          >Este rollo <strong>ya fue eliminado</strong>. No se puede modificar ni eliminar de
+          nuevo.</span
+        >
+      </div>
+    } @else if (bloqueado) {
       <div
         class="flex items-start gap-2 rounded-xl border-l-4 border-red-500 bg-red-50 px-3 py-2.5 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-300"
       >
@@ -391,7 +401,7 @@
         <div class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 pb-2">
           <div>
             <h2 class="text-lg font-semibold text-black dark:text-white">Rollo {{ item.rollo }}</h2>
-            <p class="text-sm text-black dark:text-white">
+            <p class="text-base text-black dark:text-white">
               OP {{ item.op ?? '—' }} · Pieza {{ item.pieza ?? '—' }}
             </p>
           </div>
@@ -408,7 +418,7 @@
         <ng-container *ngTemplateOutlet="formulario"></ng-container>
       </div>
 
-      <div class=" border-t border-gray-200 px-5 pb-6 pt-3 dark:border-gray-700">
+      <div class="border-t border-gray-200 px-5 pb-6 pt-3 dark:border-gray-700">
         <ng-container *ngTemplateOutlet="acciones"></ng-container>
       </div>
     </div>

@@ -5,6 +5,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  NgZone,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -80,10 +81,12 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   private _enVuelo = new Set<string>();
   private _feedbackTimeout: ReturnType<typeof setTimeout> | null = null;
   private _destroy$ = new Subject<void>();
+  private _destroyed = false;
 
   constructor(
     protected _scanService: CorreccionAcabadoService,
     private _cdr: ChangeDetectorRef,
+    private _ngZone: NgZone,
     protected _zebraScanner: ZebraScannerService,
   ) {}
 
@@ -93,14 +96,17 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     }, 100);
 
     this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
-      this._zebraScanner.focusInput();
-      this.procesarCodigo(codigo);
+      this._ngZone.run(() => {
+        this._zebraScanner.focusInput();
+        this.procesarCodigo(codigo);
+      });
     });
 
     setTimeout(() => this.scanInput?.nativeElement.focus(), 300);
   }
 
   ngOnDestroy(): void {
+    this._destroyed = true;
     this._destroy$.next();
     this._destroy$.complete();
     if (this._feedbackTimeout) {
@@ -187,6 +193,8 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
         return 'Rollo inválido';
       case 'rollo_no_encontrado':
         return 'No existe el rollo';
+      case 'rollo_eliminado':
+        return 'El rollo ya fue eliminado';
       case 'estatus_no_permitido':
         return `La orden tiene estatus ${err.estatus ?? '—'}; solo se puede modificar con estatus 3`;
       default:
@@ -238,17 +246,17 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   // Historial
   // ------------------------------------------------------------------
 
-quitar(item: CorreccionLocal): void {
-  this.historial = this.historial.filter((h) => h.id !== item.id);
-  this.seleccionMovil.delete(item.id);
-  this._cdr.markForCheck();
-}
+  quitar(item: CorreccionLocal): void {
+    this.historial = this.historial.filter((h) => h.id !== item.id);
+    this.seleccionMovil.delete(item.id);
+    this._cdr.markForCheck();
+  }
 
-limpiarHistorial(): void {
-  this.historial = this.historial.filter((h) => h.estado === 'enviando');
-  this.seleccionMovil = new Set();
-  this._cdr.markForCheck();
-}
+  limpiarHistorial(): void {
+    this.historial = this.historial.filter((h) => h.estado === 'enviando');
+    this.seleccionMovil = new Set();
+    this._cdr.markForCheck();
+  }
 
   trackById(_: number, item: CorreccionLocal): number {
     return item.id;
@@ -269,6 +277,7 @@ limpiarHistorial(): void {
   editar(item: CorreccionLocal): void {
     const op = (item.datos?.ORDEN ?? item.op ?? '').toString().trim();
     const rollo = item.rollo;
+    const psdEstatus = item.datos?.PSD_ESTATUS;
 
     this.itemEditando = {
       rollo,
@@ -278,6 +287,7 @@ limpiarHistorial(): void {
       peso: item.peso,
       tara: item.datos?.TARA != null ? Number(item.datos.TARA) : 0,
       estatus: item.datos?.OE_ESTATUS ?? null,
+      eliminado: psdEstatus != null && Number(psdEstatus) === 0,
     };
 
     this._cdr.markForCheck();
@@ -294,7 +304,6 @@ limpiarHistorial(): void {
         error: () => this._notificar(rollo, false, 'No se pudo cargar el artículo'),
       });
   }
-
   cerrarEdicion(): void {
     this.itemEditando = null;
     this._cdr.markForCheck();
@@ -437,68 +446,84 @@ limpiarHistorial(): void {
   }
 
   seleccionMovil = new Set<number>();
-private _pressTimer: ReturnType<typeof setTimeout> | null = null;
-private _longPressDisparado = false;
+  private _pressTimer: ReturnType<typeof setTimeout> | null = null;
+  private _longPressDisparado = false;
 
-get modoSeleccion(): boolean {
-  return this.seleccionMovil.size > 0;
-}
+  get modoSeleccion(): boolean {
+    return this.seleccionMovil.size > 0;
+  }
 
-// ---- Selección múltiple (móvil) ----
+  // ---- Selección múltiple (móvil) ----
 
-onPressStart(item: CorreccionLocal): void {
-  if (item.estado === 'enviando') return;
-  this._longPressDisparado = false;
-  this._clearPressTimer();
-  this._pressTimer = setTimeout(() => {
-    this._longPressDisparado = true;
-    this._toggleSeleccion(item);
-    navigator.vibrate?.(15);
-  }, 500);
-}
-
-onPressEnd(): void {
-  this._clearPressTimer();
-}
-
-onTapMovil(item: CorreccionLocal): void {
-  // Si fue long press, el "click" que sigue se ignora
-  if (this._longPressDisparado) {
+  onPressStart(item: CorreccionLocal): void {
+    if (item.estado === 'enviando') return;
     this._longPressDisparado = false;
-    return;
+    this._clearPressTimer();
+    this._pressTimer = setTimeout(() => {
+      this._longPressDisparado = true;
+      this._toggleSeleccion(item);
+      navigator.vibrate?.(15);
+    }, 500);
   }
-  if (this.modoSeleccion) {
-    this._toggleSeleccion(item);
-    return;
+
+  onPressEnd(): void {
+    this._clearPressTimer();
   }
-  if (item.estado === 'ok') this.editar(item);
-}
 
-cancelarSeleccion(): void {
-  this.seleccionMovil = new Set();
-  this._cdr.markForCheck();
-}
-
-quitarSeleccionados(): void {
-  const ids = this.seleccionMovil;
-  this.historial = this.historial.filter((h) => !ids.has(h.id));
-  this.seleccionMovil = new Set();
-  this._cdr.markForCheck();
-}
-
-private _toggleSeleccion(item: CorreccionLocal): void {
-  const s = new Set(this.seleccionMovil);
-  s.has(item.id) ? s.delete(item.id) : s.add(item.id);
-  this.seleccionMovil = s;
-  this._cdr.markForCheck();
-}
-
-private _clearPressTimer(): void {
-  if (this._pressTimer) {
-    clearTimeout(this._pressTimer);
-    this._pressTimer = null;
+  onTapMovil(item: CorreccionLocal): void {
+    // Si fue long press, el "click" que sigue se ignora
+    if (this._longPressDisparado) {
+      this._longPressDisparado = false;
+      return;
+    }
+    if (this.modoSeleccion) {
+      this._toggleSeleccion(item);
+      return;
+    }
+    if (item.estado === 'ok') this.editar(item);
   }
-}
 
+  cancelarSeleccion(): void {
+    this.seleccionMovil = new Set();
+    this._cdr.markForCheck();
+  }
 
+  quitarSeleccionados(): void {
+    const ids = this.seleccionMovil;
+    this.historial = this.historial.filter((h) => !ids.has(h.id));
+    this.seleccionMovil = new Set();
+    this._cdr.markForCheck();
+  }
+
+  private _toggleSeleccion(item: CorreccionLocal): void {
+    const s = new Set(this.seleccionMovil);
+    s.has(item.id) ? s.delete(item.id) : s.add(item.id);
+    this.seleccionMovil = s;
+    this._cdr.markForCheck();
+  }
+
+  private _clearPressTimer(): void {
+    if (this._pressTimer) {
+      clearTimeout(this._pressTimer);
+      this._pressTimer = null;
+    }
+  }
+
+  buscarManual(input: HTMLInputElement): void {
+    const codigo = input.value.trim();
+    if (!codigo) return;
+
+    this.procesarCodigo(codigo);
+    input.value = '';
+    input.focus();
+  }
+
+  soloNumeros(input: HTMLInputElement): void {
+    input.value = input.value.replace(/\D/g, '');
+  }
+
+  private _refrescar(): void {
+    if (this._destroyed) return;
+    this._ngZone.run(() => this._cdr.detectChanges());
+  }
 }

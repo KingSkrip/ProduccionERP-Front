@@ -44,7 +44,11 @@ export interface CorreccionAcabadoResponse {
 
 export interface CorreccionAcabadoError {
   ok: false;
-  motivo?: 'rollo_invalido' | 'rollo_no_encontrado' | 'estatus_no_permitido';
+  motivo?:
+    | 'rollo_invalido'
+    | 'rollo_no_encontrado'
+    | 'estatus_no_permitido'
+    | 'rollo_eliminado';
   error?: string;
   rollo?: string;
   estatus?: number | null;
@@ -76,6 +80,7 @@ export interface EditCAItem {
   peso?: number | null; // kg
   tara?: number | null;
   estatus?: number | null;
+  eliminado?: boolean;
 }
 
 export interface EditCAResultado {

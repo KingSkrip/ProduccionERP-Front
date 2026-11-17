@@ -60,6 +60,35 @@
 
       <!-- Acciones -->
       <div class="flex items-center gap-2">
+        <!-- Captura manual -->
+        <div
+          class="bg-card flex items-center gap-1 rounded-full pl-3 pr-1 shadow ring-1 ring-black/10 dark:ring-white/10"
+        >
+          <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-gray-500 dark:text-gray-300"
+            >keyboard</mat-icon
+          >
+          <input
+            #manualInputPc
+            type="text"
+            inputmode="numeric"
+            maxlength="10"
+            autocomplete="off"
+            placeholder="Número de rollo"
+            (keydown)="$event.stopPropagation()"
+            (keydown.enter)="buscarManual(manualInputPc)"
+            (input)="soloNumeros(manualInputPc)"
+            class="w-40 bg-transparent px-2 py-2 font-mono text-sm text-black outline-none placeholder:font-sans placeholder:text-gray-400 dark:text-white"
+          />
+          <button
+            (click)="buscarManual(manualInputPc)"
+            aria-label="Buscar rollo"
+            matTooltip="Buscar rollo"
+            class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 shadow transition active:scale-95"
+          >
+            <mat-icon class="!h-4 !w-4 !text-base !text-white">search</mat-icon>
+          </button>
+        </div>
+
         <!-- Escáner -->
         <button mat-icon-button (click)="abrirEscanerCamara()" matTooltip="Escanear con la cámara">
           <mat-icon
@@ -76,6 +105,33 @@
       </div>
     </div>
 
+    <!-- ===== Captura manual (solo móvil) ===== -->
+    <div
+      class="bg-card flex flex-shrink-0 items-center gap-2 rounded-2xl p-2 shadow ring-1 ring-black/5 sm:hidden dark:ring-white/10"
+    >
+      <mat-icon class="ml-2 flex-shrink-0 text-gray-500 dark:text-gray-300">keyboard</mat-icon>
+
+      <input
+        #manualInputMovil
+        type="text"
+        inputmode="numeric"
+        maxlength="10"
+        autocomplete="off"
+        placeholder="Escribe el número de rollo"
+        (keydown)="$event.stopPropagation()"
+        (keydown.enter)="buscarManual(manualInputMovil)"
+        (input)="soloNumeros(manualInputMovil)"
+        class="min-w-0 flex-1 bg-transparent px-2 py-2 font-mono text-base text-black outline-none placeholder:font-sans placeholder:text-gray-400 dark:text-white"
+      />
+
+      <button
+        (click)="buscarManual(manualInputMovil)"
+        aria-label="Buscar rollo"
+        class="flex h-10 flex-shrink-0 items-center gap-1.5 rounded-full bg-primary-500 px-4 text-sm font-medium text-white shadow transition active:scale-95"
+      >
+        <mat-icon class="!h-5 !w-5 !text-xl !text-white">search</mat-icon>
+      </button>
+    </div>
     <!-- ===== Último rollo escaneado ===== -->
     <div
       class="bg-card relative flex min-w-0 flex-shrink-0 items-center gap-4 overflow-hidden rounded-2xl p-4 shadow ring-1 ring-black/5 dark:ring-white/10"
