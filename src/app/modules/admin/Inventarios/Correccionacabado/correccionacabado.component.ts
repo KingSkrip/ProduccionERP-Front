@@ -238,15 +238,17 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   // Historial
   // ------------------------------------------------------------------
 
-  quitar(item: CorreccionLocal): void {
-    this.historial = this.historial.filter((h) => h.id !== item.id);
-    this._cdr.markForCheck();
-  }
+quitar(item: CorreccionLocal): void {
+  this.historial = this.historial.filter((h) => h.id !== item.id);
+  this.seleccionMovil.delete(item.id);
+  this._cdr.markForCheck();
+}
 
-  limpiarHistorial(): void {
-    this.historial = this.historial.filter((h) => h.estado === 'enviando');
-    this._cdr.markForCheck();
-  }
+limpiarHistorial(): void {
+  this.historial = this.historial.filter((h) => h.estado === 'enviando');
+  this.seleccionMovil = new Set();
+  this._cdr.markForCheck();
+}
 
   trackById(_: number, item: CorreccionLocal): number {
     return item.id;
@@ -433,4 +435,70 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
         },
       });
   }
+
+  seleccionMovil = new Set<number>();
+private _pressTimer: ReturnType<typeof setTimeout> | null = null;
+private _longPressDisparado = false;
+
+get modoSeleccion(): boolean {
+  return this.seleccionMovil.size > 0;
+}
+
+// ---- Selección múltiple (móvil) ----
+
+onPressStart(item: CorreccionLocal): void {
+  if (item.estado === 'enviando') return;
+  this._longPressDisparado = false;
+  this._clearPressTimer();
+  this._pressTimer = setTimeout(() => {
+    this._longPressDisparado = true;
+    this._toggleSeleccion(item);
+    navigator.vibrate?.(15);
+  }, 500);
+}
+
+onPressEnd(): void {
+  this._clearPressTimer();
+}
+
+onTapMovil(item: CorreccionLocal): void {
+  // Si fue long press, el "click" que sigue se ignora
+  if (this._longPressDisparado) {
+    this._longPressDisparado = false;
+    return;
+  }
+  if (this.modoSeleccion) {
+    this._toggleSeleccion(item);
+    return;
+  }
+  if (item.estado === 'ok') this.editar(item);
+}
+
+cancelarSeleccion(): void {
+  this.seleccionMovil = new Set();
+  this._cdr.markForCheck();
+}
+
+quitarSeleccionados(): void {
+  const ids = this.seleccionMovil;
+  this.historial = this.historial.filter((h) => !ids.has(h.id));
+  this.seleccionMovil = new Set();
+  this._cdr.markForCheck();
+}
+
+private _toggleSeleccion(item: CorreccionLocal): void {
+  const s = new Set(this.seleccionMovil);
+  s.has(item.id) ? s.delete(item.id) : s.add(item.id);
+  this.seleccionMovil = s;
+  this._cdr.markForCheck();
+}
+
+private _clearPressTimer(): void {
+  if (this._pressTimer) {
+    clearTimeout(this._pressTimer);
+    this._pressTimer = null;
+  }
+}
+
+
 }
