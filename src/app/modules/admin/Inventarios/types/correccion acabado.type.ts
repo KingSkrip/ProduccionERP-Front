@@ -1,6 +1,9 @@
 export interface CorreccionAcabadoRequest {
-  rollo: string; // ej. "0000413013"
+  rollo?: string; // CLAVE, ej. "0000413013" (pistola / cámara)
+  op?: string;    // captura manual
+  pieza?: string; // captura manual, ej. "0020"
 }
+
 
 export interface RolloAcabadoDatos {
   ID: number;
@@ -48,7 +51,9 @@ export interface CorreccionAcabadoError {
     | 'rollo_invalido'
     | 'rollo_no_encontrado'
     | 'estatus_no_permitido'
-    | 'rollo_eliminado';
+    | 'rollo_eliminado'
+    | 'pieza_no_encontrada'
+    | 'op_invalida';
   error?: string;
   rollo?: string;
   estatus?: number | null;
@@ -122,4 +127,18 @@ export interface EliminarCAResponse {
   ok: boolean;
   motivo?: string;
   error?: string;
+}
+
+type EstadoEnvio = 'enviando' | 'ok' | 'error';
+
+export interface CorreccionLocal {
+  id: number;
+  rollo: string;
+  op?: string | null;
+  pieza?: number | string | null;
+  fecha: Date;
+  estado: EstadoEnvio;
+  mensaje?: string | null;
+  datos?: RolloAcabadoDatos | null;
+  peso: number;
 }

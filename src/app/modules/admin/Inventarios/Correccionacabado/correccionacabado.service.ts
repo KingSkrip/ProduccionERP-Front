@@ -23,10 +23,9 @@ export class CorreccionAcabadoService {
 
   /** Envía el rollo escaneado; el back regresa OP, pieza y datos. */
   escanear(rollo: string): Observable<CorreccionAcabadoResponse> {
-    const body: CorreccionAcabadoRequest = { rollo };
-
-    return this.http.post<CorreccionAcabadoResponse>(this.baseUrl, body);
-  }
+  const body: CorreccionAcabadoRequest = { rollo };
+  return this.http.post<CorreccionAcabadoResponse>(this.baseUrl, body);
+}
 
   articulo(op: string): Observable<ArticuloCAResponse> {
     const params = new HttpParams().set('op', op);
@@ -40,4 +39,12 @@ export class CorreccionAcabadoService {
     const body: EliminarCARequest = { rollo };
     return this.http.post<EliminarCAResponse>(`${this.baseUrl}/eliminar`, body);
   }
+
+
+
+
+escanearManual(op: string, pieza: string): Observable<CorreccionAcabadoResponse> {
+  const body: CorreccionAcabadoRequest = { op, pieza };
+  return this.http.post<CorreccionAcabadoResponse>(this.baseUrl, body);
+}
 }

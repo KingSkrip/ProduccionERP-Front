@@ -19,33 +19,25 @@ import {
   ModalEscanerEmbarquesComponent,
   ScanFeedback,
 } from 'app/modules/modals/Embarques/scanner-embarques-modal.component';
+import { ModalEditCAComponent } from 'app/modules/modals/inventarios/correccionacabado/edit/edit_ca_modal.component';
 import { Observable, Subject } from 'rxjs';
 import { finalize, map, shareReplay, takeUntil, tap } from 'rxjs/operators';
-
-import { ModalEditCAComponent } from 'app/modules/modals/inventarios/correccionacabado/edit/edit_ca_modal.component';
 import {
   CorreccionAcabadoError,
   CorreccionAcabadoResponse,
+  CorreccionLocal,
   EditCAItem,
   EditCAResultado,
-  RolloAcabadoDatos,
 } from '../types/correccion acabado.type';
 import { CorreccionAcabadoService } from './correccionacabado.service';
 
-type EstadoEnvio = 'enviando' | 'ok' | 'error';
-
-/** Un rollo escaneado y el resultado de consultarlo en el backend. */
-interface CorreccionLocal {
-  id: number;
-  rollo: string;
-  op?: string | null;
-  pieza?: number | string | null;
-  fecha: Date;
-  estado: EstadoEnvio;
-  mensaje?: string | null;
-  datos?: RolloAcabadoDatos | null;
-  peso: number;
-}
+const MENSAJES_ERROR: Record<string, string> = {
+  rollo_invalido: 'Rollo inválido',
+  rollo_no_encontrado: 'No existe el rollo',
+  rollo_eliminado: 'El rollo ya fue eliminado',
+  pieza_no_encontrada: 'No existe esa pieza en esa OP',
+  op_invalida: 'OP inválida',
+};
 
 @Component({
   selector: 'app-correccionacabado',
@@ -68,18 +60,18 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   historial: CorreccionLocal[] = [];
   itemEditando: EditCAItem | null = null;
   seleccionadoId: number | null = null;
+  seleccionMovil = new Set<number>();
   guardando = false;
   eliminando = false;
-  // --- Cámara ---
   mostrarEscanerCamara = false;
   ultimoFeedbackCamara: ScanFeedback | null = null;
   totalEscaneadosCamara = 0;
   private _articulo$ = new Map<string, Observable<Partial<EditCAItem>>>();
-  private _articuloCache = new Map<string, Partial<EditCAItem>>();
-  private _articuloEnVuelo = new Set<string>();
   private _idCounter = 0;
   private _enVuelo = new Set<string>();
   private _feedbackTimeout: ReturnType<typeof setTimeout> | null = null;
+  private _pressTimer: ReturnType<typeof setTimeout> | null = null;
+  private _longPressDisparado = false;
   private _destroy$ = new Subject<void>();
   private _destroyed = false;
 
@@ -90,10 +82,16 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     protected _zebraScanner: ZebraScannerService,
   ) {}
 
+  get modoSeleccion(): boolean {
+    return this.seleccionMovil.size > 0;
+  }
+
+  get totalError(): number {
+    return this.historial.filter((h) => h.estado === 'error').length;
+  }
+
   ngOnInit(): void {
-    setTimeout(() => {
-      this._zebraScanner.init(this.scanInput?.nativeElement);
-    }, 100);
+    setTimeout(() => this._zebraScanner.init(this.scanInput?.nativeElement), 100);
 
     this._zebraScanner.scan$.pipe(takeUntil(this._destroy$)).subscribe((codigo) => {
       this._ngZone.run(() => {
@@ -109,9 +107,8 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     this._destroyed = true;
     this._destroy$.next();
     this._destroy$.complete();
-    if (this._feedbackTimeout) {
-      clearTimeout(this._feedbackTimeout);
-    }
+    if (this._feedbackTimeout) clearTimeout(this._feedbackTimeout);
+    this._clearPressTimer();
   }
 
   // ------------------------------------------------------------------
@@ -129,96 +126,111 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     this._enviar(codigo);
   }
 
-  private _enviar(rollo: string): void {
-    if (this._enVuelo.has(rollo)) {
-      this._notificar(rollo, false, 'Ya se está consultando');
+  buscarManual(opInput: HTMLInputElement, piezaInput: HTMLInputElement): void {
+    const op = opInput.value.trim();
+    const pieza = piezaInput.value.trim();
+
+    if (!op) {
+      this._notificar('Manual', false, 'Captura la OP');
+      opInput.focus();
+      return;
+    }
+    if (!pieza) {
+      this._notificar('Manual', false, 'Captura el no. de rollo');
+      piezaInput.focus();
+      return;
+    }
+    if (!/^\d{1,10}$/.test(pieza)) {
+      this._notificar(pieza, false, 'No. de rollo inválido (solo números)');
       return;
     }
 
-    this._enVuelo.add(rollo);
+    this._enviar(null, { op, pieza });
 
+    // La OP se queda; solo se limpia el no. de rollo
+    piezaInput.value = '';
+    piezaInput.focus();
+  }
+
+  soloNumeros(input: HTMLInputElement): void {
+    input.value = input.value.replace(/\D/g, '');
+  }
+
+  private _enviar(rolloClave: string | null, manual?: { op: string; pieza: string }): void {
+    const etiqueta = manual ? `${manual.op} · ${manual.pieza}` : rolloClave!;
+    const llave = manual ? `${manual.op}|${manual.pieza}` : rolloClave!;
+    if (this._enVuelo.has(llave)) {
+      this._notificar(etiqueta, false, 'Ya se está consultando');
+      return;
+    }
+    this._enVuelo.add(llave);
     const item: CorreccionLocal = {
       id: ++this._idCounter,
-      rollo,
+      rollo: etiqueta,
       fecha: new Date(),
       estado: 'enviando',
       peso: 0,
     };
     this.historial = [item, ...this.historial];
-    this._cdr.markForCheck();
-
-    this._scanService
-      .escanear(rollo)
+    this._render();
+    const peticion$ = manual
+      ? this._scanService.escanearManual(manual.op, manual.pieza)
+      : this._scanService.escanear(rolloClave!);
+    peticion$
       .pipe(
         finalize(() => {
-          this._enVuelo.delete(rollo);
-          this._cdr.markForCheck();
+          this._enVuelo.delete(llave);
+          this._render();
         }),
       )
       .subscribe({
         next: (res: CorreccionAcabadoResponse) => {
           this._actualizar(item.id, {
             estado: 'ok',
+            rollo: res.rollo,
             op: res.op,
             pieza: res.pieza,
             datos: res.datos,
             peso: res.peso,
           });
-
-          // Precarga el artículo para que "Editar" abra instantáneo
-          const op = (res.datos?.ORDEN ?? res.op ?? '').toString().trim();
-          if (op)
-            this._articuloObs(op)
+          const opArt = (res.datos?.ORDEN ?? res.op ?? '').toString().trim();
+          if (opArt) {
+            this._articuloObs(opArt)
               .pipe(takeUntil(this._destroy$))
               .subscribe({ error: () => {} });
-
-          if (this.mostrarEscanerCamara) {
-            this.totalEscaneadosCamara++;
           }
-          this._notificar(rollo, true, `OP ${res.op} · Pieza ${res.pieza ?? '—'}`);
+          if (this.mostrarEscanerCamara) this.totalEscaneadosCamara++;
+          this._notificar(res.rollo, true, `OP ${res.op} · Pieza ${res.pieza ?? '—'}`);
         },
         error: (e: HttpErrorResponse) => {
           const mensaje = this._mensajeError(e);
           this._actualizar(item.id, { estado: 'error', mensaje });
-          this._notificar(rollo, false, mensaje);
+          this._notificar(etiqueta, false, mensaje);
         },
       });
   }
 
   private _mensajeError(e: HttpErrorResponse): string {
     const err = (e?.error ?? {}) as CorreccionAcabadoError;
-
-    switch (err.motivo) {
-      case 'rollo_invalido':
-        return 'Rollo inválido';
-      case 'rollo_no_encontrado':
-        return 'No existe el rollo';
-      case 'rollo_eliminado':
-        return 'El rollo ya fue eliminado';
-      case 'estatus_no_permitido':
-        return `La orden tiene estatus ${err.estatus ?? '—'}; solo se puede modificar con estatus 3`;
-      default:
-        return err.error ?? 'No se pudo consultar';
+    if (err.motivo === 'estatus_no_permitido') {
+      return `La orden tiene estatus ${err.estatus ?? '—'}; solo se puede modificar con estatus 3`;
     }
+    return (err.motivo && MENSAJES_ERROR[err.motivo]) || err.error || 'No se pudo consultar';
   }
 
   private _actualizar(id: number, cambios: Partial<CorreccionLocal>): void {
     this.historial = this.historial.map((h) => (h.id === id ? { ...h, ...cambios } : h));
-    this._cdr.markForCheck();
+    this._render();
   }
 
   private _notificar(codigo: string, ok: boolean, mensaje: string): void {
-    if (this._feedbackTimeout) {
-      clearTimeout(this._feedbackTimeout);
-    }
-
+    if (this._feedbackTimeout) clearTimeout(this._feedbackTimeout);
     this.ultimoFeedbackCamara = { codigo, ok, mensaje };
-    this._cdr.markForCheck();
-
+    this._render();
     this._feedbackTimeout = setTimeout(() => {
       this.ultimoFeedbackCamara = null;
       this._feedbackTimeout = null;
-      this._cdr.markForCheck();
+      this._render();
     }, 2500);
   }
 
@@ -230,12 +242,12 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     this.ultimoFeedbackCamara = null;
     this.totalEscaneadosCamara = 0;
     this.mostrarEscanerCamara = true;
-    this._cdr.markForCheck();
+    this._render();
   }
 
   cerrarEscanerCamara(): void {
     this.mostrarEscanerCamara = false;
-    this._cdr.markForCheck();
+    this._render();
   }
 
   onCodigoEscaneadoCamara(codigo: string): void {
@@ -249,36 +261,32 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   quitar(item: CorreccionLocal): void {
     this.historial = this.historial.filter((h) => h.id !== item.id);
     this.seleccionMovil.delete(item.id);
-    this._cdr.markForCheck();
+    this._render();
   }
 
   limpiarHistorial(): void {
     this.historial = this.historial.filter((h) => h.estado === 'enviando');
     this.seleccionMovil = new Set();
-    this._cdr.markForCheck();
+    this._render();
   }
 
   trackById(_: number, item: CorreccionLocal): number {
     return item.id;
   }
 
-  get totalOk(): number {
-    return this.historial.filter((h) => h.estado === 'ok').length;
+  seleccionar(item: CorreccionLocal): void {
+    this.seleccionadoId = item.id;
+    this._render();
   }
 
-  get totalError(): number {
-    return this.historial.filter((h) => h.estado === 'error').length;
-  }
-
-  get kilosOk(): number {
-    return this.historial.filter((h) => h.estado === 'ok').reduce((acc, h) => acc + h.peso, 0);
-  }
+  // ------------------------------------------------------------------
+  // Edición
+  // ------------------------------------------------------------------
 
   editar(item: CorreccionLocal): void {
     const op = (item.datos?.ORDEN ?? item.op ?? '').toString().trim();
     const rollo = item.rollo;
     const psdEstatus = item.datos?.PSD_ESTATUS;
-
     this.itemEditando = {
       rollo,
       op: item.op,
@@ -289,30 +297,28 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
       estatus: item.datos?.OE_ESTATUS ?? null,
       eliminado: psdEstatus != null && Number(psdEstatus) === 0,
     };
-
-    this._cdr.markForCheck();
+    this._render();
     if (!op) return;
-
     this._articuloObs(op)
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: (extra) => {
           if (this.itemEditando?.rollo !== rollo) return;
           this.itemEditando = { ...this.itemEditando, ...extra };
-          this._cdr.markForCheck();
+          this._render();
         },
         error: () => this._notificar(rollo, false, 'No se pudo cargar el artículo'),
       });
   }
+
   cerrarEdicion(): void {
     this.itemEditando = null;
-    this._cdr.markForCheck();
+    this._render();
   }
 
   guardarEdicion(res: EditCAResultado): void {
     const h = this.historial.find((x) => x.rollo === res.rollo);
     const previo = h ? { peso: h.peso, datos: h.datos } : null;
-
     if (h) {
       this._actualizar(h.id, {
         peso: res.kilogramos,
@@ -329,7 +335,6 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     }
     this.cerrarEdicion();
     this._notificar(res.rollo, true, 'Rollo actualizado');
-
     this._scanService
       .guardar({
         rollo: res.rollo,
@@ -348,46 +353,31 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
       });
   }
 
-  seleccionar(item: CorreccionLocal): void {
-    this.seleccionadoId = item.id;
-    this._cdr.markForCheck();
-  }
-
-  private _cargarArticulo(
-    op: string,
-    alTerminar?: (extra: Partial<EditCAItem> | null) => void,
-  ): void {
-    const cached = this._articuloCache.get(op);
-    if (cached) {
-      alTerminar?.(cached);
-      return;
-    }
-    if (this._articuloEnVuelo.has(op)) {
-      return;
-    }
-
-    this._articuloEnVuelo.add(op);
+  onEliminar(rollo: string): void {
+    if (this.eliminando) return;
+    this.eliminando = true;
+    this._render();
     this._scanService
-      .articulo(op)
+      .eliminar(rollo)
       .pipe(
-        finalize(() => this._articuloEnVuelo.delete(op)),
+        finalize(() => {
+          this.eliminando = false;
+          this._render();
+        }),
         takeUntil(this._destroy$),
       )
       .subscribe({
-        next: (a) => {
-          const extra: Partial<EditCAItem> = {
-            articulo: a.articulo,
-            ancho: a.ancho,
-            anchoYds: a.ancho_yds,
-            gramaje: a.gramaje,
-            gramajeOz: a.gramaje_oz,
-            rendimiento: a.rendimiento,
-            rendimientoYdLb: a.rendimiento_yd_lb,
-          };
-          this._articuloCache.set(op, extra);
-          alTerminar?.(extra);
+        next: (res) => {
+          if (!res.ok) {
+            this._notificar(rollo, false, 'No se pudo eliminar');
+            return;
+          }
+
+          this.historial = this.historial.filter((h) => h.rollo !== rollo);
+          this.cerrarEdicion();
+          this._notificar(rollo, true, 'Rollo eliminado');
         },
-        error: () => alTerminar?.(null),
+        error: (e: HttpErrorResponse) => this._notificar(rollo, false, this._mensajeError(e)),
       });
   }
 
@@ -412,48 +402,9 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     return o;
   }
 
-  onEliminar(rollo: string): void {
-    if (this.eliminando) return;
-
-    this.eliminando = true;
-    this._cdr.markForCheck();
-
-    this._scanService
-      .eliminar(rollo)
-      .pipe(
-        finalize(() => {
-          this.eliminando = false;
-          this._cdr.markForCheck();
-        }),
-        takeUntil(this._destroy$),
-      )
-      .subscribe({
-        next: (res) => {
-          if (!res.ok) {
-            this._notificar(rollo, false, 'No se pudo eliminar');
-            return;
-          }
-
-          // Quita el rollo del historial y cierra el modal
-          this.historial = this.historial.filter((h) => h.rollo !== rollo);
-          this.cerrarEdicion();
-          this._notificar(rollo, true, 'Rollo eliminado');
-        },
-        error: (e: HttpErrorResponse) => {
-          this._notificar(rollo, false, this._mensajeError(e));
-        },
-      });
-  }
-
-  seleccionMovil = new Set<number>();
-  private _pressTimer: ReturnType<typeof setTimeout> | null = null;
-  private _longPressDisparado = false;
-
-  get modoSeleccion(): boolean {
-    return this.seleccionMovil.size > 0;
-  }
-
-  // ---- Selección múltiple (móvil) ----
+  // ------------------------------------------------------------------
+  // Selección múltiple (móvil)
+  // ------------------------------------------------------------------
 
   onPressStart(item: CorreccionLocal): void {
     if (item.estado === 'enviando') return;
@@ -471,7 +422,6 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   }
 
   onTapMovil(item: CorreccionLocal): void {
-    // Si fue long press, el "click" que sigue se ignora
     if (this._longPressDisparado) {
       this._longPressDisparado = false;
       return;
@@ -485,21 +435,21 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
 
   cancelarSeleccion(): void {
     this.seleccionMovil = new Set();
-    this._cdr.markForCheck();
+    this._render();
   }
 
   quitarSeleccionados(): void {
     const ids = this.seleccionMovil;
     this.historial = this.historial.filter((h) => !ids.has(h.id));
     this.seleccionMovil = new Set();
-    this._cdr.markForCheck();
+    this._render();
   }
 
   private _toggleSeleccion(item: CorreccionLocal): void {
     const s = new Set(this.seleccionMovil);
-    s.has(item.id) ? s.delete(item.id) : s.add(item.id);
+    if (!s.delete(item.id)) s.add(item.id);
     this.seleccionMovil = s;
-    this._cdr.markForCheck();
+    this._render();
   }
 
   private _clearPressTimer(): void {
@@ -509,20 +459,7 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     }
   }
 
-  buscarManual(input: HTMLInputElement): void {
-    const codigo = input.value.trim();
-    if (!codigo) return;
-
-    this.procesarCodigo(codigo);
-    input.value = '';
-    input.focus();
-  }
-
-  soloNumeros(input: HTMLInputElement): void {
-    input.value = input.value.replace(/\D/g, '');
-  }
-
-  private _refrescar(): void {
+  private _render(): void {
     if (this._destroyed) return;
     this._ngZone.run(() => this._cdr.detectChanges());
   }

@@ -60,7 +60,7 @@
 
       <!-- Acciones -->
       <div class="flex items-center gap-2">
-        <!-- Captura manual -->
+        <!-- Captura manual: OP + No. de rollo -->
         <div
           class="bg-card flex items-center gap-1 rounded-full pl-3 pr-1 shadow ring-1 ring-black/10 dark:ring-white/10"
         >
@@ -68,19 +68,30 @@
             >keyboard</mat-icon
           >
           <input
-            #manualInputPc
+            #opInputPc
+            type="text"
+            maxlength="30"
+            autocomplete="off"
+            placeholder="OP"
+            (keydown)="$event.stopPropagation()"
+            (keydown.enter)="piezaInputPc.focus()"
+            class="w-28 bg-transparent px-2 py-2 font-mono text-sm uppercase text-black outline-none placeholder:font-sans placeholder:normal-case placeholder:text-gray-400 dark:text-white"
+          />
+          <span class="h-5 w-px bg-gray-300 dark:bg-white/20"></span>
+          <input
+            #piezaInputPc
             type="text"
             inputmode="numeric"
             maxlength="10"
             autocomplete="off"
-            placeholder="Número de rollo"
+            placeholder="No. de rollo (ej. 0020)"
             (keydown)="$event.stopPropagation()"
-            (keydown.enter)="buscarManual(manualInputPc)"
-            (input)="soloNumeros(manualInputPc)"
+            (keydown.enter)="buscarManual(opInputPc, piezaInputPc)"
+            (input)="soloNumeros(piezaInputPc)"
             class="w-40 bg-transparent px-2 py-2 font-mono text-sm text-black outline-none placeholder:font-sans placeholder:text-gray-400 dark:text-white"
           />
           <button
-            (click)="buscarManual(manualInputPc)"
+            (click)="buscarManual(opInputPc, piezaInputPc)"
             aria-label="Buscar rollo"
             matTooltip="Buscar rollo"
             class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 shadow transition active:scale-95"
@@ -105,27 +116,38 @@
       </div>
     </div>
 
-    <!-- ===== Captura manual (solo móvil) ===== -->
+    <!-- ===== Captura manual (solo móvil): OP + No. de rollo ===== -->
     <div
       class="bg-card flex flex-shrink-0 items-center gap-2 rounded-2xl p-2 shadow ring-1 ring-black/5 sm:hidden dark:ring-white/10"
     >
       <mat-icon class="ml-2 flex-shrink-0 text-gray-500 dark:text-gray-300">keyboard</mat-icon>
 
       <input
-        #manualInputMovil
+        #opInputMovil
+        type="text"
+        maxlength="30"
+        autocomplete="off"
+        placeholder="OP"
+        (keydown)="$event.stopPropagation()"
+        (keydown.enter)="piezaInputMovil.focus()"
+        class="w-24 min-w-0 bg-transparent px-2 py-2 font-mono text-base uppercase text-black outline-none placeholder:font-sans placeholder:normal-case placeholder:text-gray-400 dark:text-white"
+      />
+
+      <input
+        #piezaInputMovil
         type="text"
         inputmode="numeric"
         maxlength="10"
         autocomplete="off"
-        placeholder="Escribe el número de rollo"
+        placeholder="No. rollo"
         (keydown)="$event.stopPropagation()"
-        (keydown.enter)="buscarManual(manualInputMovil)"
-        (input)="soloNumeros(manualInputMovil)"
-        class="min-w-0 flex-1 bg-transparent px-2 py-2 font-mono text-base text-black outline-none placeholder:font-sans placeholder:text-gray-400 dark:text-white"
+        (keydown.enter)="buscarManual(opInputMovil, piezaInputMovil)"
+        (input)="soloNumeros(piezaInputMovil)"
+        class="min-w-0 flex-1 border-l border-gray-300 bg-transparent px-2 py-2 font-mono text-base text-black outline-none placeholder:font-sans placeholder:text-gray-400 dark:border-white/20 dark:text-white"
       />
 
       <button
-        (click)="buscarManual(manualInputMovil)"
+        (click)="buscarManual(opInputMovil, piezaInputMovil)"
         aria-label="Buscar rollo"
         class="flex h-10 flex-shrink-0 items-center gap-1.5 rounded-full bg-primary-500 px-4 text-sm font-medium text-white shadow transition active:scale-95"
       >
