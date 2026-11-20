@@ -1,37 +1,63 @@
 // reportprod.component.scss
 
 :host {
-    display: flex;
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 0;
-    overflow: hidden;  // ← ESTO FALTABA
-    height: 100%;      // ← Y ESTO
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden; // ← ESTO FALTABA
+  height: 100%; // ← Y ESTO
 }
 
 .rp-inner-shell {
-    position: relative;
-    // z-index bajo para que el padre quede encima
-    z-index: 20;
+  position: relative;
+  // z-index bajo para que el padre quede encima
+  z-index: 20;
 }
 
 // Asegurar que el nav hijo tenga z-index BAJO
 :host ::ng-deep fuse-vertical-navigation {
-    z-index: 30 !important;
-    position: relative;
+  z-index: 30 !important;
+  position: relative;
 }
 
 // El nav padre debe tener z-index más alto
 :host-context(thin-layout) ::ng-deep {
-    fuse-vertical-navigation[name="mainNavigation"] {
-        z-index: 50 !important;
-    }
+  fuse-vertical-navigation[name='mainNavigation'] {
+    z-index: 50 !important;
+  }
 }
-
 
 @media (max-width: 768px) {
   fuse-vertical-navigation .fuse-vertical-navigation-content {
     height: 100% !important;
     overflow-y: auto !important;
+  }
+}
+
+fuse-vertical-navigation.main-nav {
+  // wrapper interno de Fuse: columna con altura fija
+  .fuse-vertical-navigation-wrapper {
+    display: flex !important;
+    flex-direction: column;
+    height: 100dvh; // dvh = respeta la barra de Chrome en móvil
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  // logo fijo
+  .fuse-vertical-navigation-header {
+    flex: 0 0 auto;
+  }
+
+  // items: ocupan el resto y scrollean
+  .fuse-vertical-navigation-content {
+    flex: 1 1 auto;
+    min-height: 0; // sin esto flex no deja scrollear
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 80px; // para que el último item no quede tapado por la barra del navegador
   }
 }

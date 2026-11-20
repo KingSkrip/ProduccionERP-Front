@@ -575,7 +575,7 @@ export class ReportProdService {
   }
 
   /**
-   * 🚀 NUEVO: Obtener TODOS los reportes en una sola petición
+   * Obtener TODOS los reportes en una sola petición
    */
   getAllReports(fechaInicio: Date, fechaFin: Date, silent = false): Observable<any> {
     const context = new HttpContext().set(SILENT_HTTP, silent);

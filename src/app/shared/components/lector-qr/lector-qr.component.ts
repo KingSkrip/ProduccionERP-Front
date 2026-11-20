@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -98,6 +99,8 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
   private readonly SCANNER_INTERVALO_MAX_MS = 50;
   private readonly SCANNER_TOKEN_MIN_LARGO = 6;
 
+  constructor(private readonly cdr: ChangeDetectorRef) {}
+
   ngAfterViewInit(): void {
     if (this.esPlataformaIOS) {
       asegurarWasmConfigurado();
@@ -181,6 +184,7 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
   private async iniciarCamaraIOS(): Promise<void> {
     this.estado = 'iniciando';
     this.mensajeError = null;
+     this.cdr.markForCheck();
     this.detenerCamaraIOS();
 
     try {
@@ -215,6 +219,7 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
 
       if (!camaras.length) {
         this.estado = 'sin-camara';
+         this.cdr.markForCheck();
         return;
       }
 
@@ -229,6 +234,7 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
       await video.play();
 
       this.estado = 'escaneando';
+       this.cdr.markForCheck();
       this.pausadoZxing = false;
       this.iniciarLoopDecodeIOS();
     } catch (error) {
@@ -306,12 +312,14 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
   private async iniciarCamaraAndroid(): Promise<void> {
     this.estado = 'iniciando';
     this.mensajeError = null;
+     this.cdr.markForCheck();
 
     try {
       const camaras = await Html5Qrcode.getCameras();
 
       if (!camaras?.length) {
         this.estado = 'sin-camara';
+         this.cdr.markForCheck();
         return;
       }
 
@@ -352,6 +360,7 @@ export class LectorQrComponent implements AfterViewInit, OnDestroy {
       );
 
       this.estado = 'escaneando';
+       this.cdr.markForCheck();
     } catch (error) {
       this.estado = 'error-camara';
       this.mensajeError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';

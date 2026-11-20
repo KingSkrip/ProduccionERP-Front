@@ -1,0 +1,595 @@
+<div class="flex h-full min-h-0 w-full flex-col overflow-hidden">
+  <!-- ============================================================
+       HEADER (sin cambios) + tarjetas superiores
+       ============================================================ -->
+  <div class="flex flex-shrink-0 flex-col gap-3 px-4 pb-2 pt-3 sm:px-6 sm:pb-3 sm:pt-5">
+    <!-- ===== MÓVIL: barra compacta ===== -->
+    <div class="flex items-center justify-between gap-2 sm:hidden">
+      <!-- Modo selección -->
+      <ng-container *ngIf="modoSeleccion; else barraNormal">
+        <div class="flex min-w-0 items-center gap-2">
+          <button
+            (click)="cancelarSeleccion()"
+            aria-label="Cancelar selección"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full active:bg-gray-200/40"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+          <h2 class="truncate text-lg font-semibold">{{ seleccionMovil.size }} seleccionado(s)</h2>
+        </div>
+
+        <button
+          (click)="quitarSeleccionados()"
+          aria-label="Quitar seleccionados"
+          class="flex h-10 flex-shrink-0 items-center gap-1.5 rounded-full bg-red-600 px-4 text-sm font-medium text-white shadow transition active:scale-95"
+        >
+          <mat-icon class="!h-5 !w-5 !text-xl !text-white">delete</mat-icon>
+          Quitar
+        </button>
+      </ng-container>
+
+      <!-- Modo normal -->
+      <ng-template #barraNormal>
+        <h2 class="text-lg font-semibold">Corrección de acabado</h2>
+
+        <div class="flex flex-shrink-0 items-center gap-2">
+          <button
+            (click)="abrirEscanerCamara()"
+            aria-label="Escanear con la cámara"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 shadow transition active:scale-95"
+          >
+            <mat-icon svgIcon="heroicons_outline:qr-code" class="!text-white"></mat-icon>
+          </button>
+
+          <button
+            (click)="limpiarHistorial()"
+            [disabled]="historial.length === 0"
+            aria-label="Limpiar historial"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 shadow transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <mat-icon class="!text-white"> delete_sweep </mat-icon>
+          </button>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- ===== TABLET / DESKTOP ===== -->
+    <div class="hidden flex-wrap items-center justify-between gap-3 sm:flex">
+      <!-- Título -->
+      <h2 class="text-xl font-semibold">Corrección de acabado</h2>
+
+      <!-- Acciones -->
+      <div class="flex items-center gap-2">
+        <!-- Captura manual: OP + No. de rollo -->
+        <div
+          class="bg-card flex items-center gap-1 rounded-full pl-3 pr-1 shadow ring-1 ring-black/10 dark:ring-white/10"
+        >
+          <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl text-gray-500 dark:text-gray-300"
+            >keyboard</mat-icon
+          >
+          <input
+            #opInputPc
+            type="text"
+            maxlength="30"
+            autocomplete="off"
+            placeholder="OP"
+            (keydown)="$event.stopPropagation()"
+            (keydown.enter)="piezaInputPc.focus()"
+            class="w-28 bg-transparent px-2 py-2 font-mono text-sm uppercase text-black outline-none placeholder:font-sans placeholder:normal-case placeholder:text-gray-400 dark:text-white"
+          />
+          <span class="h-5 w-px bg-gray-300 dark:bg-white/20"></span>
+          <input
+            #piezaInputPc
+            type="text"
+            inputmode="numeric"
+            maxlength="10"
+            autocomplete="off"
+            placeholder="No. de rollo (ej. 0020)"
+            (keydown)="$event.stopPropagation()"
+            (keydown.enter)="buscarManual(opInputPc, piezaInputPc)"
+            (input)="soloNumeros(piezaInputPc)"
+            class="w-40 bg-transparent px-2 py-2 font-mono text-sm text-black outline-none placeholder:font-sans placeholder:text-gray-400 dark:text-white"
+          />
+          <button
+            (click)="buscarManual(opInputPc, piezaInputPc)"
+            aria-label="Buscar rollo"
+            matTooltip="Buscar rollo"
+            class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 shadow transition active:scale-95"
+          >
+            <mat-icon class="!h-4 !w-4 !text-base !text-white">search</mat-icon>
+          </button>
+        </div>
+
+        <!-- Escáner -->
+        <button mat-icon-button (click)="abrirEscanerCamara()" matTooltip="Escanear con la cámara">
+          <mat-icon
+            svgIcon="heroicons_outline:qr-code"
+            class="text-black dark:text-white"
+          ></mat-icon>
+        </button>
+
+        <!-- Limpiar historial -->
+        <button mat-stroked-button [disabled]="historial.length === 0" (click)="limpiarHistorial()">
+          <mat-icon class="mr-1 !h-5 !w-5 !text-xl"> delete_sweep </mat-icon>
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Captura manual (solo móvil): OP + No. de rollo ===== -->
+    <div
+      class="bg-card flex flex-shrink-0 items-center gap-2 rounded-2xl p-2 shadow ring-1 ring-black/5 sm:hidden dark:ring-white/10"
+    >
+      <mat-icon class="ml-2 flex-shrink-0 text-gray-500 dark:text-gray-300">keyboard</mat-icon>
+
+      <input
+        #opInputMovil
+        type="text"
+        maxlength="30"
+        autocomplete="off"
+        placeholder="OP"
+        (keydown)="$event.stopPropagation()"
+        (keydown.enter)="piezaInputMovil.focus()"
+        class="w-24 min-w-0 bg-transparent px-2 py-2 font-mono text-base uppercase text-black outline-none placeholder:font-sans placeholder:normal-case placeholder:text-gray-400 dark:text-white"
+      />
+
+      <input
+        #piezaInputMovil
+        type="text"
+        inputmode="numeric"
+        maxlength="10"
+        autocomplete="off"
+        placeholder="No. rollo"
+        (keydown)="$event.stopPropagation()"
+        (keydown.enter)="buscarManual(opInputMovil, piezaInputMovil)"
+        (input)="soloNumeros(piezaInputMovil)"
+        class="min-w-0 flex-1 border-l border-gray-300 bg-transparent px-2 py-2 font-mono text-base text-black outline-none placeholder:font-sans placeholder:text-gray-400 dark:border-white/20 dark:text-white"
+      />
+
+      <button
+        (click)="buscarManual(opInputMovil, piezaInputMovil)"
+        aria-label="Buscar rollo"
+        class="flex h-10 flex-shrink-0 items-center gap-1.5 rounded-full bg-primary-500 px-4 text-sm font-medium text-white shadow transition active:scale-95"
+      >
+        <mat-icon class="!h-5 !w-5 !text-xl !text-white">search</mat-icon>
+      </button>
+    </div>
+    <!-- ===== Último rollo escaneado ===== -->
+    <div
+      class="bg-card relative flex min-w-0 flex-shrink-0 items-center gap-4 overflow-hidden rounded-2xl p-4 shadow ring-1 ring-black/5 dark:ring-white/10"
+    >
+      <!-- Barra de acento -->
+      <span class="absolute inset-y-0 left-0 w-1.5 bg-accent-500 dark:bg-primary-500"></span>
+
+      <span
+        class="ml-1 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-accent-500 dark:bg-primary-500/50"
+      >
+        <mat-icon svgIcon="heroicons_outline:qr-code" class="text-black dark:text-white"></mat-icon>
+      </span>
+
+      <div class="min-w-0 flex-1">
+        <div class="text-xs text-black md:text-sm dark:text-white">Último rollo</div>
+        <p class="mt-0.5 truncate text-lg text-black sm:text-2xl dark:text-white">
+          {{ historial[0]?.rollo ?? 'Escanea el rollo' }}
+        </p>
+
+        <div
+          *ngIf="historial[0]?.estado === 'ok'"
+          class="mt-1.5 flex flex-wrap items-center gap-1.5"
+        >
+          <span
+            class="rounded-full bg-accent-500 px-2.5 py-0.5 text-xs text-black dark:bg-primary-500/50 dark:text-white"
+          >
+            OP {{ historial[0].op }}
+          </span>
+          <span
+            class="rounded-full bg-accent-500 px-2.5 py-0.5 text-xs text-black dark:bg-primary-500/50 dark:text-white"
+          >
+            Pieza {{ historial[0].pieza }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Resumen ===== -->
+    <div
+      *ngIf="historial.length > 0"
+      class="grid flex-shrink-0 grid-cols-2 gap-3"
+      [ngClass]="totalError > 0 ? 'sm:grid-cols-3' : 'sm:max-w-md'"
+    >
+      <!-- Errores -->
+      <div
+        *ngIf="totalError > 0"
+        class="col-span-2 flex min-w-0 items-center gap-3 rounded-2xl bg-red-50 p-3 shadow ring-1 ring-red-200 sm:col-span-1 dark:bg-red-900/20 dark:ring-red-800"
+      >
+        <span
+          class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300"
+        >
+          <mat-icon class="!h-5 !w-5 !text-xl">warning_amber</mat-icon>
+        </span>
+        <div class="min-w-0 leading-tight">
+          <p class="text-2xl font-extrabold tabular-nums text-red-700 dark:text-red-300">
+            {{ totalError }}
+          </p>
+          <p class="truncate text-xs text-red-600 dark:text-red-300">con error</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       CONTENIDO
+       ============================================================ -->
+  <div class="flex min-h-0 flex-1 flex-col px-4 sm:px-6">
+    <!-- Aviso del último escaneo -->
+    <div
+      *ngIf="ultimoFeedbackCamara as fb"
+      class="mb-3 flex flex-shrink-0 items-center gap-2.5 rounded-xl border-l-4 px-3 py-2.5 text-xs shadow-sm sm:text-sm"
+      [ngClass]="
+        fb.ok
+          ? 'border-green-500 bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+          : 'border-red-500 bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+      "
+    >
+      <mat-icon class="!h-5 !w-5 flex-shrink-0 !text-xl">{{
+        fb.ok ? 'check_circle' : 'error_outline'
+      }}</mat-icon>
+
+      <span class="min-w-0 break-all">
+        <span class="font-mono font-semibold">{{ fb.codigo }}</span> · {{ fb.mensaje }}
+      </span>
+    </div>
+
+    <!-- ==========================================================
+         VISTA MÓVIL: tarjetas
+         ========================================================== -->
+    <div class="flex min-h-0 flex-1 flex-col sm:hidden">
+      <div
+        class="min-h-[12rem] flex-1 space-y-2.5 overflow-y-auto overflow-x-hidden overscroll-contain pb-2"
+      >
+        <div
+          *ngFor="let item of historial; trackBy: trackById"
+          (pointerdown)="onPressStart(item)"
+          (pointerup)="onPressEnd()"
+          (pointerleave)="onPressEnd()"
+          (pointercancel)="onPressEnd()"
+          (contextmenu)="$event.preventDefault()"
+          (click)="onTapMovil(item)"
+          style="-webkit-touch-callout: none"
+          class="bg-card flex min-h-[64px] cursor-pointer select-none items-center gap-3 rounded-2xl p-3 shadow ring-1 ring-black/5 transition dark:ring-white/10"
+          [ngClass]="{
+            'ring-red-300 dark:ring-red-800':
+              item.estado === 'error' && !seleccionMovil.has(item.id),
+            'bg-primary-500/10 !ring-2 !ring-primary-500': seleccionMovil.has(item.id),
+          }"
+        >
+          <!-- Estado -->
+          <span
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+            [ngClass]="{
+              'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-300':
+                item.estado === 'ok',
+              'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-300':
+                item.estado === 'error',
+              'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300':
+                item.estado === 'enviando',
+            }"
+          >
+            <mat-icon
+              class="!h-5 !w-5 !text-xl"
+              [ngClass]="{ 'animate-spin': item.estado === 'enviando' }"
+              >{{
+                item.estado === 'ok' ? 'check' : item.estado === 'error' ? 'close' : 'sync'
+              }}</mat-icon
+            >
+          </span>
+
+          <div class="min-w-0 flex-1">
+            <p class="break-all font-mono text-sm font-semibold text-gray-900 dark:text-gray-100">
+              {{ item.rollo }}
+            </p>
+
+            <p
+              *ngIf="item.datos as d"
+              class="truncate text-xs font-medium text-gray-700 dark:text-gray-300"
+            >
+              {{ d['ARTICULO'] }}
+            </p>
+
+            <p class="mt-0.5 text-xs text-black dark:text-white">
+              <ng-container *ngIf="item.estado === 'ok'"
+                >OP {{ item.op }} · Pieza {{ item.pieza }} ·
+              </ng-container>
+              {{ item.fecha | date: 'HH:mm:ss' }}
+            </p>
+
+            <p *ngIf="item.estado === 'error'" class="mt-0.5 text-xs font-medium text-red-600">
+              {{ item.mensaje }}
+            </p>
+
+            <p *ngIf="item.estado === 'enviando'" class="mt-0.5 text-xs font-medium text-blue-500">
+              Consultando…
+            </p>
+          </div>
+
+          <!-- Peso -->
+          <div *ngIf="item.estado === 'ok'" class="flex-shrink-0 text-right leading-tight">
+            <p class="text-base font-bold tabular-nums text-gray-900 dark:text-gray-100">
+              {{ item.peso | number: '1.2-2' }}
+            </p>
+            <p class="text-[10px] font-semibold uppercase text-gray-500">kg</p>
+          </div>
+
+          <!-- Indicador de selección (solo en modo selección) -->
+          <span
+            *ngIf="modoSeleccion && item.estado !== 'enviando'"
+            class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 transition"
+            [ngClass]="
+              seleccionMovil.has(item.id)
+                ? 'border-primary-500 bg-primary-500 text-white'
+                : 'border-gray-400 text-transparent'
+            "
+          >
+            <mat-icon class="!h-4 !w-4 !text-base">check</mat-icon>
+          </span>
+        </div>
+
+        <!-- Estado vacío -->
+        <div
+          *ngIf="historial.length === 0"
+          class="bg-card flex flex-col items-center justify-center gap-3 rounded-2xl px-6 py-14 text-center shadow ring-1 ring-black/5 dark:ring-white/10"
+        >
+          <span
+            class="flex h-16 w-16 items-center justify-center rounded-full bg-primary-500/10 text-primary-500"
+          >
+            <mat-icon class="!h-8 !w-8 !text-3xl">qr_code_scanner</mat-icon>
+          </span>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-300">
+            Escanea un rollo para empezar
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+     VISTA TABLET / DESKTOP: tabla
+     ========================================================== -->
+    <div
+      class="bg-card hidden min-h-0 flex-1 flex-col overflow-hidden rounded-2xl shadow ring-1 ring-black/5 sm:flex dark:ring-white/10"
+    >
+      <!-- Barra superior de la tabla -->
+      <div
+        class="flex flex-shrink-0 items-center justify-between gap-4 border-b border-gray-200 px-5 py-3 dark:border-white/10"
+      >
+        <div class="flex items-center gap-3">
+          <h3 class="text-base font-semibold text-black dark:text-white">Historial de escaneos</h3>
+          <span
+            class="rounded-full bg-accent-500 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-black dark:bg-primary-500/20 dark:text-white"
+          >
+            {{ historial.length }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Tabla (scroll solo si realmente no cabe) -->
+      <div class="min-h-0 flex-1 overflow-auto">
+        <table class="w-full min-w-max border-separate border-spacing-0 text-sm">
+          <thead>
+            <tr
+              class="[&>th]:bg-card [&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:whitespace-nowrap [&>th]:border-b [&>th]:border-gray-200 [&>th]:px-4 [&>th]:py-3 [&>th]:text-sm [&>th]:font-semibold [&>th]:text-black dark:[&>th]:border-white/10 dark:[&>th]:text-white"
+            >
+              <th class="pl-5 text-left">ID</th>
+              <th class="text-center">Pieza</th>
+              <th class="text-center">Tipo</th>
+              <th class="text-right">
+                Peso bruto <span class="font-normal normal-case">(kg)</span>
+              </th>
+              <th class="text-right">Tara <span class="font-normal normal-case">(kg)</span></th>
+              <th class="text-right">
+                Peso neto <span class="font-normal normal-case">(kg)</span>
+              </th>
+              <th class="text-right">Longitud <span class="font-normal normal-case">(m)</span></th>
+              <th class="text-right">Peso <span class="font-normal normal-case">(lbs)</span></th>
+              <th class="text-right">Long. <span class="font-normal normal-case">(yds)</span></th>
+              <th class="text-center">Tono</th>
+              <th class="text-left">Fecha</th>
+              <th class="text-center">Muestra</th>
+              <th class="text-center">¿PL?</th>
+              <th class="w-24"></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <ng-container *ngFor="let item of historial; trackBy: trackById">
+              <!-- ===== Fila con error / consultando ===== -->
+              <tr
+                *ngIf="item.estado !== 'ok'"
+                class="[&>td]:whitespace-nowrap [&>td]:border-b [&>td]:border-gray-100 [&>td]:px-4 [&>td]:py-3 dark:[&>td]:border-white/5"
+                [ngClass]="
+                  item.estado === 'error'
+                    ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                    : 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                "
+              >
+                <td
+                  class="border-l-4 pl-4 font-mono font-semibold"
+                  [ngClass]="item.estado === 'error' ? '!border-l-red-500' : '!border-l-blue-500'"
+                >
+                  {{ item.rollo }}
+                </td>
+                <td colspan="12">
+                  <span class="inline-flex items-center gap-2 font-medium">
+                    <mat-icon
+                      class="!h-4 !w-4 !text-base"
+                      [ngClass]="{ 'animate-spin': item.estado === 'enviando' }"
+                      >{{ item.estado === 'error' ? 'error_outline' : 'sync' }}</mat-icon
+                    >
+                    {{ item.estado === 'error' ? item.mensaje : 'Consultando…' }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button
+                    (click)="quitar(item); $event.stopPropagation()"
+                    [disabled]="item.estado === 'enviando'"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-black/10 disabled:opacity-40"
+                    matTooltip="Quitar"
+                  >
+                    <mat-icon class="!h-4 !w-4 !text-base">close</mat-icon>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- ===== Fila OK ===== -->
+              <tr
+                *ngIf="item.estado === 'ok'"
+                (click)="seleccionar(item)"
+                (dblclick)="editar(item)"
+                class="group cursor-pointer tabular-nums transition-colors [&>td]:whitespace-nowrap [&>td]:border-b [&>td]:border-gray-100 [&>td]:px-4 [&>td]:py-3 dark:[&>td]:border-white/5"
+                [ngClass]="
+                  seleccionadoId === item.id
+                    ? 'bg-primary-500/15 text-black dark:text-white'
+                    : 'text-gray-800 odd:bg-transparent even:bg-black/[0.02] hover:bg-primary-500/10 dark:text-gray-100 dark:even:bg-white/[0.02]'
+                "
+              >
+                <!-- ID con barra de selección -->
+                <td
+                  class="border-l-4 pl-4 font-mono font-semibold tracking-tight"
+                  [ngClass]="
+                    seleccionadoId === item.id ? '!border-l-primary-500' : '!border-l-transparent'
+                  "
+                >
+                  {{ item.rollo }}
+                </td>
+
+                <td class="text-center">{{ item.pieza ?? '—' }}</td>
+
+                <!-- Tipo -->
+                <td class="text-center">
+                  <span
+                    class="inline-flex items-center rounded-md bg-accent-500 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-black dark:bg-primary-500 dark:text-white"
+                  >
+                    {{ item.datos?.TIPO ?? '—' }}
+                  </span>
+                </td>
+
+                <td class="text-right">{{ item.datos?.PESO_BRUTO | number: '1.2-2' }}</td>
+                <td class="text-right text-gray-500 dark:text-gray-400">
+                  {{ item.datos?.TARA | number: '1.3-3' }}
+                </td>
+                <td class="text-right text-base font-bold">{{ item.peso | number: '1.2-2' }}</td>
+                <td class="text-right">{{ item.datos?.LONGITUD | number: '1.2-2' }}</td>
+                <td class="text-right text-gray-500 dark:text-gray-400">
+                  {{ item.peso * 2.20462 | number: '1.2-2' }}
+                </td>
+                <td class="text-right text-gray-500 dark:text-gray-400">
+                  {{ (item.datos?.LONGITUD ?? 0) * 1.09361 | number: '1.2-2' }}
+                </td>
+
+                <!-- Tono -->
+                <td class="text-center">
+                  <span
+                    class="inline-flex min-w-[2.5rem] items-center justify-center rounded-md bg-accent-500 px-2.5 py-1 text-xs font-bold text-black dark:bg-primary-500 dark:text-white"
+                  >
+                    {{ item.datos?.TONO ?? '—' }}
+                  </span>
+                </td>
+
+                <td class="text-left text-xs text-gray-500 dark:text-gray-400">
+                  {{ item.datos?.FECHA ?? item.fecha | date: 'yyyy.MM.dd HH:mm:ss' }}
+                </td>
+
+                <td class="text-center">{{ item.datos?.MUESTRA ?? '' }}</td>
+
+                <!-- PL -->
+                <td class="text-center">
+                  <span
+                    class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold"
+                    [ngClass]="
+                      item.datos?.PL
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                        : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-300'
+                    "
+                  >
+                    <span
+                      class="h-1.5 w-1.5 rounded-full"
+                      [ngClass]="item.datos?.PL ? 'bg-green-500' : 'bg-gray-400'"
+                    ></span>
+                    {{ item.datos?.PL ? 'SI' : 'NO' }}
+                  </span>
+                </td>
+
+                <!-- Acciones: siempre visibles -->
+                <td class="text-center">
+                  <div class="flex items-center justify-end gap-2">
+                    <button
+                      (click)="editar(item); $event.stopPropagation()"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-500/40 shadow-sm transition hover:bg-accent-500 dark:bg-primary-500/40 dark:hover:bg-primary-500"
+                      matTooltip="Editar rollo"
+                    >
+                      <mat-icon class="!h-4 !w-4 !text-base text-black dark:text-white"
+                        >edit</mat-icon
+                      >
+                    </button>
+                    <button
+                      (click)="quitar(item); $event.stopPropagation()"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-red-500/40 text-white shadow-sm transition hover:bg-red-600"
+                      matTooltip="Quitar"
+                    >
+                      <mat-icon class="!h-4 !w-4 !text-base text-black dark:text-white"
+                        >close</mat-icon
+                      >
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+
+            <!-- Estado vacío -->
+            <tr *ngIf="historial.length === 0">
+              <td colspan="14" class="px-3 py-20">
+                <div class="flex flex-col items-center justify-center gap-3 text-center">
+                  <span
+                    class="flex h-16 w-16 items-center justify-center rounded-full bg-primary-500/20"
+                  >
+                    <mat-icon class="!h-8 !w-8 !text-3xl text-black dark:text-white"
+                      >qr_code_scanner</mat-icon
+                    >
+                  </span>
+                  <p class="text-sm font-medium text-black dark:text-white">
+                    Escanea un rollo para empezar
+                  </p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+  </div>
+</div>
+
+<!-- al final del componente, fuera del contenedor principal -->
+@if (mostrarEscanerCamara) {
+  <app-modal-escaner-embarques
+    titulo="Escanear rollo"
+    [ultimoFeedback]="ultimoFeedbackCamara"
+    [totalEscaneados]="totalEscaneadosCamara"
+    (cerrar)="cerrarEscanerCamara()"
+    (codigoEscaneado)="onCodigoEscaneadoCamara($event)"
+  >
+  </app-modal-escaner-embarques>
+}
+
+@if (itemEditando) {
+  <app-modal-edit-ca
+    [item]="itemEditando"
+    [guardando]="guardando"
+    [eliminando]="eliminando"
+    (cerrar)="cerrarEdicion()"
+    (guardar)="guardarEdicion($event)"
+    (eliminar)="onEliminar($event)"
+  >
+  </app-modal-edit-ca>
+}

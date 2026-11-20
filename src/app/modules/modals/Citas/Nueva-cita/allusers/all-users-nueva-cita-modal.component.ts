@@ -109,7 +109,7 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
     if (data?.cita) {
       this.editandoCita = true;
 
-      // ← NUEVO: detectar tipo por cita_type_id
+      // Detectar tipo por cita_type_id
       this.tipoFormulario = data.cita.cita_type_id === 2 ? 'junta' : 'cita';
       this.tipoFormularioFijo = true; // bloquear los tabs al editar
 
@@ -132,7 +132,7 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
           this.usuariosSeleccionados = visitantesAgrupados.map((v: any) => ({
             mysql_id: v.id,
             nombre: v.nombre,
-            // ← NUEVO: guarda el firebird_user_clave si viene en el objeto visitante
+            // Guarda el firebird_user_clave si viene en el objeto visitante
             firebird_user_clave: v.firebird_user_clave ?? null,
             id: v.firebird_user_clave ?? null,
           }));
@@ -223,35 +223,39 @@ export class AllUsersNuevaCitaModalComponent implements OnInit {
     });
 
     // ── Usuarios para JUNTAS (internos) ──
-   this._citasService.getUsuariosDisponiblesJuntas('', 500).subscribe({
-  next: (res) => {
-    this.usuariosInternos = res;
-    this.cargandoUsuariosInternos = false;
+    this._citasService.getUsuariosDisponiblesJuntas('', 500).subscribe({
+      next: (res) => {
+        this.usuariosInternos = res;
+        this.cargandoUsuariosInternos = false;
 
-    if (this.editandoCita && this.tipoFormulario === 'junta' && this._visitantesIdsIniciales.length > 0) {
-      const fromList = res.filter((u: any) =>
-        this._visitantesIdsIniciales.includes(u.mysql_id),
-      );
-      if (fromList.length > 0) {
-        this.usuariosSeleccionados = fromList;
-      }
-    }
-
-    // Si el panel está abierto (usuario ya tocó el input), recargar resultados
-    if (this.tipoFormulario === 'junta') {
-      this.usuariosFiltrados = [...res];
-      setTimeout(() => {
-        if (this.autocomplete3?.panelOpen) {
-          this._cdr.detectChanges();
-        } else if (this.autocomplete4?.panelOpen) {
-          this._cdr.detectChanges();
+        if (
+          this.editandoCita &&
+          this.tipoFormulario === 'junta' &&
+          this._visitantesIdsIniciales.length > 0
+        ) {
+          const fromList = res.filter((u: any) =>
+            this._visitantesIdsIniciales.includes(u.mysql_id),
+          );
+          if (fromList.length > 0) {
+            this.usuariosSeleccionados = fromList;
+          }
         }
-      });
-    }
 
-    this._cdr.markForCheck();
-  },
-});
+        // Si el panel está abierto (usuario ya tocó el input), recargar resultados
+        if (this.tipoFormulario === 'junta') {
+          this.usuariosFiltrados = [...res];
+          setTimeout(() => {
+            if (this.autocomplete3?.panelOpen) {
+              this._cdr.detectChanges();
+            } else if (this.autocomplete4?.panelOpen) {
+              this._cdr.detectChanges();
+            }
+          });
+        }
+
+        this._cdr.markForCheck();
+      },
+    });
     this._juntaSearch$
       .pipe(
         debounceTime(250),
