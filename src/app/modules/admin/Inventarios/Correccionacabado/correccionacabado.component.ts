@@ -24,10 +24,13 @@ import { Observable, Subject } from 'rxjs';
 import { finalize, map, shareReplay, takeUntil, tap } from 'rxjs/operators';
 import {
   CorreccionAcabadoError,
+  CorreccionAcabadoLoteRequest,
+  CorreccionAcabadoLoteResponse,
   CorreccionAcabadoResponse,
   CorreccionLocal,
   EditCAItem,
   EditCAResultado,
+  EliminarLoteResponse,
 } from '../types/correccion acabado.type';
 import { CorreccionAcabadoService } from './correccionacabado.service';
 
@@ -38,6 +41,35 @@ const MENSAJES_ERROR: Record<string, string> = {
   pieza_no_encontrada: 'No existe esa pieza en esa OP',
   op_invalida: 'OP inválida',
 };
+
+export const TIPOS_CA: { cod: number; clave: string; etiqueta: string }[] = [
+  { cod: 51, clave: 'PRIMERA',   etiqueta: 'Primera' },
+  { cod: 52, clave: 'PREFERIDA', etiqueta: 'Preferida' },
+  { cod: 77, clave: 'SEGUNDA',   etiqueta: 'Segunda' },
+  { cod: 81, clave: 'MUESTRAS',  etiqueta: 'Muestras' },
+  { cod: 73, clave: 'ORILLAS',   etiqueta: 'Orillas' },
+  { cod: 74, clave: 'RETAZO',    etiqueta: 'Retazo' },
+];
+
+/** Orden en que se muestran los chips de filtro */
+const ORDEN_TIPOS = ['PRIMERA', 'PREFERIDA', 'SEGUNDA', 'MUESTRAS', 'ORILLAS', 'RETAZO', 'OTRAS'];
+
+const ETIQUETA_TIPO: Record<string, string> = {
+  TODOS: 'Todos',
+  PRIMERA: 'Primera',
+  PREFERIDA: 'Preferida',
+  SEGUNDA: 'Segunda',
+  MUESTRAS: 'Muestras',
+  ORILLAS: 'Orillas',
+  RETAZO: 'Retazo',
+  OTRAS: 'Otras',
+};
+
+export interface FiltroTipo {
+  valor: string;
+  etiqueta: string;
+  total: number;
+}
 
 @Component({
   selector: 'app-correccionacabado',
@@ -60,12 +92,24 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   historial: CorreccionLocal[] = [];
   itemEditando: EditCAItem | null = null;
   seleccionadoId: number | null = null;
-  seleccionMovil = new Set<number>();
+
+  /** Selección múltiple (PC y móvil) */
+  seleccion = new Set<number>();
+
+  /** Filtro por tipo */
+  filtroTipo = 'TODOS';
+  tiposFiltro: FiltroTipo[] = [];
+  visibles: CorreccionLocal[] = [];
+
+  /** Confirmación de borrado masivo en BD */
+  confirmarEliminar = false;
+
   guardando = false;
   eliminando = false;
   mostrarEscanerCamara = false;
   ultimoFeedbackCamara: ScanFeedback | null = null;
   totalEscaneadosCamara = 0;
+
   private _articulo$ = new Map<string, Observable<Partial<EditCAItem>>>();
   private _idCounter = 0;
   private _enVuelo = new Set<string>();
@@ -82,13 +126,51 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     protected _zebraScanner: ZebraScannerService,
   ) {}
 
+  // ------------------------------------------------------------------
+  // Getters
+  // ------------------------------------------------------------------
+
+  /** Modo selección (móvil): hay algo seleccionado */
   get modoSeleccion(): boolean {
-    return this.seleccionMovil.size > 0;
+    return this.seleccion.size > 0;
   }
 
   get totalError(): number {
     return this.historial.filter((h) => h.estado === 'error').length;
   }
+
+  /** Filas visibles que se pueden seleccionar (no "consultando") */
+  get seleccionables(): CorreccionLocal[] {
+    return this.visibles.filter((h) => h.estado !== 'enviando');
+  }
+
+  get todosSeleccionados(): boolean {
+    const s = this.seleccionables;
+    return s.length > 0 && s.every((h) => this.seleccion.has(h.id));
+  }
+
+  get algunosSeleccionados(): boolean {
+    return this.seleccionables.some((h) => this.seleccion.has(h.id));
+  }
+
+  /** Seleccionados que existen en BD (los que sí se pueden eliminar) */
+  get seleccionadosOk(): CorreccionLocal[] {
+    return this.historial.filter((h) => this.seleccion.has(h.id) && h.estado === 'ok');
+  }
+
+  /** Resumen por tipo de lo que se va a borrar, para el modal de confirmación */
+  get resumenEliminar(): { tipo: string; total: number }[] {
+    const m = new Map<string, number>();
+    for (const h of this.seleccionadosOk) {
+      const t = this._tipoDe(h);
+      m.set(t, (m.get(t) ?? 0) + 1);
+    }
+    return [...m.entries()].map(([tipo, total]) => ({ tipo: ETIQUETA_TIPO[tipo] ?? tipo, total }));
+  }
+
+  // ------------------------------------------------------------------
+  // Ciclo de vida
+  // ------------------------------------------------------------------
 
   ngOnInit(): void {
     setTimeout(() => this._zebraScanner.init(this.scanInput?.nativeElement), 100);
@@ -126,30 +208,147 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     this._enviar(codigo);
   }
 
-  buscarManual(opInput: HTMLInputElement, piezaInput: HTMLInputElement): void {
+  buscarManual(opInput: HTMLInputElement, rollosInput: HTMLInputElement): void {
     const op = opInput.value.trim();
-    const pieza = piezaInput.value.trim();
+    const texto = rollosInput.value.trim();
 
-    if (!op) {
-      this._notificar('Manual', false, 'Captura la OP');
+    if (!op && !texto) {
+      this._notificar('Manual', false, 'Captura la OP o el ID del rollo');
       opInput.focus();
       return;
     }
-    if (!pieza) {
-      this._notificar('Manual', false, 'Captura el no. de rollo');
-      piezaInput.focus();
-      return;
-    }
-    if (!/^\d{1,10}$/.test(pieza)) {
-      this._notificar(pieza, false, 'No. de rollo inválido (solo números)');
-      return;
+
+    let valores: number[] = [];
+    if (texto) {
+      const p = this._parsearLista(texto);
+      if (p.error) {
+        this._notificar(texto, false, p.error);
+        rollosInput.focus();
+        return;
+      }
+      valores = p.valores;
     }
 
-    this._enviar(null, { op, pieza });
+    if (!op) {
+      // Solo ID(s)
+      if (valores.length === 1) this._enviar(String(valores[0]));
+      else this._enviarLote({ claves: valores }, `${valores.length} IDs`);
+    } else if (valores.length === 1) {
+      this._enviar(null, { op, pieza: String(valores[0]) });
+    } else if (valores.length > 1) {
+      this._enviarLote({ op, piezas: valores }, `OP ${op} · ${valores.length} rollos`);
+    } else {
+      this._enviarLote({ op }, `OP ${op} · todos`);
+    }
 
-    // La OP se queda; solo se limpia el no. de rollo
-    piezaInput.value = '';
-    piezaInput.focus();
+    // La OP se queda; solo se limpian los rollos
+    rollosInput.value = '';
+    rollosInput.focus();
+  }
+
+  /** "1,4,7,9,3,7,4" · "1-10, 15" → números únicos, en orden de aparición */
+  private _parsearLista(texto: string): { valores: number[]; error?: string } {
+    const MAX = 300;
+    const valores: number[] = [];
+    const vistos = new Set<number>();
+
+    for (const t of texto.split(/[\s,;]+/).filter(Boolean)) {
+      const m = /^(\d{1,10})(?:-(\d{1,10}))?$/.exec(t);
+      if (!m) return { valores: [], error: `"${t}" no es válido. Usa 1,4,7 o rangos 1-10` };
+
+      const a = Number(m[1]);
+      const b = m[2] !== undefined ? Number(m[2]) : a;
+      if (b < a) return { valores: [], error: `Rango inválido: ${t}` };
+      if (b - a + 1 > MAX) return { valores: [], error: `Máximo ${MAX} rollos por búsqueda` };
+
+      for (let n = a; n <= b; n++) {
+        if (vistos.has(n)) continue;
+        vistos.add(n);
+        valores.push(n);
+        if (valores.length > MAX) {
+          return { valores: [], error: `Máximo ${MAX} rollos por búsqueda` };
+        }
+      }
+    }
+    return { valores };
+  }
+
+  private _enviarLote(req: CorreccionAcabadoLoteRequest, etiqueta: string): void {
+    const llave = `lote|${JSON.stringify(req)}`;
+    if (this._enVuelo.has(llave)) {
+      this._notificar(etiqueta, false, 'Ya se está consultando');
+      return;
+    }
+    this._enVuelo.add(llave);
+
+    const placeholder: CorreccionLocal = {
+      id: ++this._idCounter,
+      rollo: etiqueta,
+      fecha: new Date(),
+      estado: 'enviando',
+      peso: 0,
+    };
+    this.historial = [placeholder, ...this.historial];
+    this._render();
+
+    this._scanService
+      .escanearLote(req)
+      .pipe(
+        finalize(() => {
+          this._enVuelo.delete(llave);
+          this._render();
+        }),
+      )
+      .subscribe({
+        next: (res: CorreccionAcabadoLoteResponse) => {
+          const ahora = new Date();
+          const nuevos: CorreccionLocal[] = res.items.map((r) => ({
+            id: ++this._idCounter,
+            rollo: r.rollo,
+            op: r.op,
+            pieza: r.pieza,
+            datos: r.datos,
+            peso: r.peso,
+            fecha: ahora,
+            estado: 'ok',
+          }));
+
+          const faltantes: CorreccionLocal[] = res.no_encontradas.map((n) => ({
+            id: ++this._idCounter,
+            rollo: req.claves ? String(n).padStart(10, '0') : `${req.op} · ${n}`,
+            fecha: ahora,
+            estado: 'error',
+            mensaje: req.claves
+              ? MENSAJES_ERROR['rollo_no_encontrado']
+              : MENSAJES_ERROR['pieza_no_encontrada'],
+            peso: 0,
+          }));
+
+          // si el rollo ya estaba en el historial, se reemplaza por el nuevo
+          const rollosNuevos = new Set(nuevos.map((n) => n.rollo));
+          this.historial = [
+            ...faltantes,
+            ...nuevos,
+            ...this.historial.filter((h) => h.id !== placeholder.id && !rollosNuevos.has(h.rollo)),
+          ];
+
+          const opArt = (res.items[0]?.datos?.ORDEN ?? res.items[0]?.op ?? '').toString().trim();
+          if (opArt) {
+            this._articuloObs(opArt).pipe(takeUntil(this._destroy$)).subscribe({ error: () => {} });
+          }
+
+          let msg = `${nuevos.length} rollo(s) cargados`;
+          if (faltantes.length) msg += ` · ${faltantes.length} no encontrados`;
+          if (res.truncado) msg += ' · resultado limitado, usa una lista más corta';
+          this._notificar(etiqueta, nuevos.length > 0, msg);
+          this._render();
+        },
+        error: (e: HttpErrorResponse) => {
+          const mensaje = this._mensajeError(e);
+          this._actualizar(placeholder.id, { estado: 'error', mensaje });
+          this._notificar(etiqueta, false, mensaje);
+        },
+      });
   }
 
   soloNumeros(input: HTMLInputElement): void {
@@ -255,18 +454,22 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   }
 
   // ------------------------------------------------------------------
-  // Historial
+  // Historial (solo la vista; NO toca la BD)
   // ------------------------------------------------------------------
 
   quitar(item: CorreccionLocal): void {
     this.historial = this.historial.filter((h) => h.id !== item.id);
-    this.seleccionMovil.delete(item.id);
+    this.seleccion.delete(item.id);
+    this.seleccion = new Set(this.seleccion);
     this._render();
   }
 
+  /** Vacía la tabla. No borra nada de la BD. */
   limpiarHistorial(): void {
     this.historial = this.historial.filter((h) => h.estado === 'enviando');
-    this.seleccionMovil = new Set();
+    this.seleccion = new Set();
+    this.filtroTipo = 'TODOS';
+    this.seleccionadoId = null;
     this._render();
   }
 
@@ -274,9 +477,74 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     return item.id;
   }
 
+  trackByTipo(_: number, t: FiltroTipo): string {
+    return t.valor;
+  }
+
   seleccionar(item: CorreccionLocal): void {
     this.seleccionadoId = item.id;
     this._render();
+  }
+
+  // ------------------------------------------------------------------
+  // Filtro por tipo
+  // ------------------------------------------------------------------
+
+  setFiltro(valor: string): void {
+    this.filtroTipo = valor;
+    this._render();
+    // seguridad: no dejar seleccionados rollos que ya no se ven
+    const visibles = new Set(this.visibles.map((v) => v.id));
+    const s = new Set([...this.seleccion].filter((id) => visibles.has(id)));
+    if (s.size !== this.seleccion.size) {
+      this.seleccion = s;
+      this._render();
+    }
+  }
+
+  private _tipoDe(h: CorreccionLocal): string {
+    return (h.datos?.TIPO ?? 'OTRAS').toString().toUpperCase();
+  }
+
+  private _recalcularVista(): void {
+    // conteo por tipo (solo rollos cargados correctamente)
+    const conteo = new Map<string, number>();
+    let totalOk = 0;
+    for (const h of this.historial) {
+      if (h.estado !== 'ok') continue;
+      totalOk++;
+      const t = this._tipoDe(h);
+      conteo.set(t, (conteo.get(t) ?? 0) + 1);
+    }
+
+    const tipos = [...conteo.keys()].sort((a, b) => {
+      const ia = ORDEN_TIPOS.indexOf(a);
+      const ib = ORDEN_TIPOS.indexOf(b);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+
+    this.tiposFiltro =
+      tipos.length >= 2
+        ? [
+            { valor: 'TODOS', etiqueta: ETIQUETA_TIPO['TODOS'], total: totalOk },
+            ...tipos.map((t) => ({
+              valor: t,
+              etiqueta: ETIQUETA_TIPO[t] ?? t,
+              total: conteo.get(t)!,
+            })),
+          ]
+        : [];
+
+    // si el tipo filtrado ya no existe, regresa a "Todos"
+    if (this.filtroTipo !== 'TODOS' && !conteo.has(this.filtroTipo)) {
+      this.filtroTipo = 'TODOS';
+    }
+
+    // los errores / "consultando" siempre se ven, para no esconder fallos
+    this.visibles =
+      this.filtroTipo === 'TODOS'
+        ? this.historial
+        : this.historial.filter((h) => h.estado !== 'ok' || this._tipoDe(h) === this.filtroTipo);
   }
 
   // ------------------------------------------------------------------
@@ -319,12 +587,15 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   guardarEdicion(res: EditCAResultado): void {
     const h = this.historial.find((x) => x.rollo === res.rollo);
     const previo = h ? { peso: h.peso, datos: h.datos } : null;
+    const clave = TIPOS_CA.find((t) => t.cod === res.tipo)?.clave ?? 'OTRAS';
     if (h) {
-      this._actualizar(h.id, {
-        peso: res.kilogramos,
-        datos: h.datos && {
-          ...h.datos,
-          'PESO NETO': res.kilogramos,
+this._actualizar(h.id, {
+  peso: res.kilogramos,
+  datos: h.datos && {
+    ...h.datos,
+    TIPO: clave,
+    TIPO_COD: res.tipo,
+    'PESO NETO': res.kilogramos,
           PESO_BRUTO: res.pbruto,
           TARA: res.tara,
           PESO_LIBRAS: res.libras,
@@ -344,6 +615,7 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
         yardas: res.yardas,
         tara: res.tara,
         pbruto: res.pbruto,
+        tipo: res.tipo
       })
       .subscribe({
         error: (e: HttpErrorResponse) => {
@@ -403,8 +675,111 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
   }
 
   // ------------------------------------------------------------------
-  // Selección múltiple (móvil)
+  // Selección múltiple (PC y móvil)
   // ------------------------------------------------------------------
+
+  toggleSeleccion(item: CorreccionLocal): void {
+    if (item.estado === 'enviando') return;
+    const s = new Set(this.seleccion);
+    if (!s.delete(item.id)) s.add(item.id);
+    this.seleccion = s;
+    this._render();
+  }
+
+  /** Selecciona / deselecciona todo lo que se ve (respeta el filtro) */
+  toggleTodosVisibles(): void {
+    const s = new Set(this.seleccion);
+    if (this.todosSeleccionados) {
+      this.seleccionables.forEach((h) => s.delete(h.id));
+    } else {
+      this.seleccionables.forEach((h) => s.add(h.id));
+    }
+    this.seleccion = s;
+    this._render();
+  }
+
+  cancelarSeleccion(): void {
+    this.seleccion = new Set();
+    this._render();
+  }
+
+  /** Quita de la tabla lo seleccionado. NO toca la BD. */
+  quitarSeleccionados(): void {
+    const ids = this.seleccion;
+    this.historial = this.historial.filter((h) => !ids.has(h.id));
+    this.seleccion = new Set();
+    this._render();
+  }
+
+  // --- Borrado masivo en BD ---
+
+  pedirEliminarSeleccionados(): void {
+    if (this.seleccionadosOk.length === 0) {
+      this._notificar('Selección', false, 'No hay rollos válidos seleccionados');
+      return;
+    }
+    this.confirmarEliminar = true;
+    this._render();
+  }
+
+  cancelarEliminar(): void {
+    if (this.eliminando) return;
+    this.confirmarEliminar = false;
+    this._render();
+  }
+
+  confirmarEliminacion(): void {
+    if (this.eliminando) return;
+    const items = this.seleccionadosOk;
+    if (!items.length) {
+      this.confirmarEliminar = false;
+      this._render();
+      return;
+    }
+
+    this.eliminando = true;
+    this._render();
+
+    this._scanService
+      .eliminarLote(items.map((i) => i.rollo))
+      .pipe(
+        finalize(() => {
+          this.eliminando = false;
+          this.confirmarEliminar = false;
+          this._render();
+        }),
+        takeUntil(this._destroy$),
+      )
+      .subscribe({
+        next: (res: EliminarLoteResponse) => {
+          const eliminados = new Set(res.eliminados);
+          const fallos = new Map((res.fallidos ?? []).map((f) => [f.rollo, f]));
+
+          this.historial = this.historial
+            .filter((h) => !eliminados.has(h.rollo))
+            .map((h) => {
+              const f = fallos.get(h.rollo);
+              if (!f) return h;
+              const mensaje =
+                f.motivo === 'estatus_no_permitido'
+                  ? `Orden con estatus ${f.estatus ?? '—'}; no se puede eliminar`
+                  : (f.motivo && MENSAJES_ERROR[f.motivo]) || f.error || 'No se pudo eliminar';
+              return { ...h, estado: 'error' as const, mensaje };
+            });
+
+          this.seleccion = new Set();
+
+          const nOk = eliminados.size;
+          const nFail = fallos.size;
+          let msg = `${nOk} rollo(s) eliminados`;
+          if (nFail) msg += ` · ${nFail} con error (revisa la lista)`;
+          this._notificar('Eliminar', nOk > 0, msg);
+        },
+        error: (e: HttpErrorResponse) => this._notificar('Eliminar', false, this._mensajeError(e)),
+      });
+  }
+
+  // --- Móvil: long press + tap ---
 
   onPressStart(item: CorreccionLocal): void {
     if (item.estado === 'enviando') return;
@@ -412,7 +787,7 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     this._clearPressTimer();
     this._pressTimer = setTimeout(() => {
       this._longPressDisparado = true;
-      this._toggleSeleccion(item);
+      this.toggleSeleccion(item);
       navigator.vibrate?.(15);
     }, 500);
   }
@@ -427,29 +802,10 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.modoSeleccion) {
-      this._toggleSeleccion(item);
+      this.toggleSeleccion(item);
       return;
     }
     if (item.estado === 'ok') this.editar(item);
-  }
-
-  cancelarSeleccion(): void {
-    this.seleccionMovil = new Set();
-    this._render();
-  }
-
-  quitarSeleccionados(): void {
-    const ids = this.seleccionMovil;
-    this.historial = this.historial.filter((h) => !ids.has(h.id));
-    this.seleccionMovil = new Set();
-    this._render();
-  }
-
-  private _toggleSeleccion(item: CorreccionLocal): void {
-    const s = new Set(this.seleccionMovil);
-    if (!s.delete(item.id)) s.add(item.id);
-    this.seleccionMovil = s;
-    this._render();
   }
 
   private _clearPressTimer(): void {
@@ -461,6 +817,7 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
 
   private _render(): void {
     if (this._destroyed) return;
+    this._recalcularVista();
     this._ngZone.run(() => this._cdr.detectChanges());
   }
 }

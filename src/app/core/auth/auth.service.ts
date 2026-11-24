@@ -294,29 +294,29 @@ export class AuthService {
 
   // dentro de AuthService, junto a signOut()
 
-  pauseSession(): Observable<any> {
-    const token = this.encrypt;
-    if (!token) return of(true);
-    return this._httpClient
-      .post(`${this.apiUrl}auth/session/pause`, { encrypt: token })
-      .pipe(catchError(() => of(true)));
-  }
+  // pauseSession(): Observable<any> {
+  //   const token = this.encrypt;
+  //   if (!token) return of(true);
+  //   return this._httpClient
+  //     .post(`${this.apiUrl}auth/session/pause`, { encrypt: token })
+  //     .pipe(catchError(() => of(true)));
+  // }
 
-  resumeSession(): Observable<any> {
-    const token = this.encrypt;
-    if (!token) return of(true);
-    return this._httpClient
-      .post(`${this.apiUrl}auth/session/resume`, { encrypt: token })
-      .pipe(catchError(() => of(true)));
-  }
+  // resumeSession(): Observable<any> {
+  //   const token = this.encrypt;
+  //   if (!token) return of(true);
+  //   return this._httpClient
+  //     .post(`${this.apiUrl}auth/session/resume`, { encrypt: token })
+  //     .pipe(catchError(() => of(true)));
+  // }
 
-  heartbeat(): Observable<any> {
-    const token = this.encrypt;
-    if (!token) return of(true);
-    return this._httpClient
-      .post(`${this.apiUrl}auth/session/heartbeat`, { encrypt: token })
-      .pipe(catchError(() => of(true)));
-  }
+  // heartbeat(): Observable<any> {
+  //   const token = this.encrypt;
+  //   if (!token) return of(true);
+  //   return this._httpClient
+  //     .post(`${this.apiUrl}auth/session/heartbeat`, { encrypt: token })
+  //     .pipe(catchError(() => of(true)));
+  // }
 
   /**
    * Valida la sesión contra backend usando /dash/me (no rota el JWT,

@@ -4,10 +4,13 @@ import { APP_CONFIG } from 'app/core/config/app-config';
 import { Observable } from 'rxjs';
 import {
   ArticuloCAResponse,
+  CorreccionAcabadoLoteRequest,
+  CorreccionAcabadoLoteResponse,
   CorreccionAcabadoRequest,
   CorreccionAcabadoResponse,
   EliminarCARequest,
   EliminarCAResponse,
+  EliminarLoteResponse,
   GuardarCARequest,
   GuardarCAResponse,
 } from '../types/correccion acabado.type';
@@ -19,13 +22,13 @@ export class CorreccionAcabadoService {
   // POST {apiUrl}scanner/correccion-acabado
   private readonly baseUrl = `${APP_CONFIG.apiUrl}scanner/correccion-acabado`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /** Envía el rollo escaneado; el back regresa OP, pieza y datos. */
   escanear(rollo: string): Observable<CorreccionAcabadoResponse> {
-  const body: CorreccionAcabadoRequest = { rollo };
-  return this.http.post<CorreccionAcabadoResponse>(this.baseUrl, body);
-}
+    const body: CorreccionAcabadoRequest = { rollo };
+    return this.http.post<CorreccionAcabadoResponse>(this.baseUrl, body);
+  }
 
   articulo(op: string): Observable<ArticuloCAResponse> {
     const params = new HttpParams().set('op', op);
@@ -41,10 +44,17 @@ export class CorreccionAcabadoService {
   }
 
 
+  escanearLote(body: CorreccionAcabadoLoteRequest) {
+    return this.http.post<CorreccionAcabadoLoteResponse>(`${this.baseUrl}/lote`, body);
+  }
 
 
-escanearManual(op: string, pieza: string): Observable<CorreccionAcabadoResponse> {
-  const body: CorreccionAcabadoRequest = { op, pieza };
-  return this.http.post<CorreccionAcabadoResponse>(this.baseUrl, body);
-}
+  escanearManual(op: string, pieza: string): Observable<CorreccionAcabadoResponse> {
+    const body: CorreccionAcabadoRequest = { op, pieza };
+    return this.http.post<CorreccionAcabadoResponse>(this.baseUrl, body);
+  }
+
+  eliminarLote(rollos: string[]): Observable<EliminarLoteResponse> {
+    return this.http.post<EliminarLoteResponse>(`${this.baseUrl}/correccion-acabado/eliminar-lote`, { rollos });
+  }
 }

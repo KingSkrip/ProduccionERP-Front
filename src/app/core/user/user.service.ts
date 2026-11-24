@@ -83,13 +83,13 @@ export class UserService {
   /**
    * Refresca el token QR del usuario
    */
-  refreshQr(): Observable<{ token: string }> {
-    return this._httpClient.post<{ token: string }>(`${this.apiUrl}dash/qr/refresh`, {});
-  }
+  // refreshQr(): Observable<{ token: string }> {
+  //   return this._httpClient.post<{ token: string }>(`${this.apiUrl}dash/qr/refresh`, {});
+  // }
 
-  openProfileDrawer(): void {
-    this._openProfileDrawer.next();
-  }
+  // openProfileDrawer(): void {
+  //   this._openProfileDrawer.next();
+  // }
 
   /**
    * Actualiza el usuario haciendo merge con los datos existentes

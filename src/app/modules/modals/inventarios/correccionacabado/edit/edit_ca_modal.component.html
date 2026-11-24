@@ -35,76 +35,65 @@
     </div>
 
     <!-- Ancho / Peso / Rendimiento (solo lectura) -->
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <!-- Ancho -->
-      <div>
-        <label class="mb-1 block text-xs md:text-sm">Ancho</label>
-        <div class="space-y-2">
-          <div
-            class="flex w-full items-center justify-between rounded-2xl border border-gray-300 bg-gray-300 px-4 py-3 text-sm text-black md:rounded-lg md:border-slate-300 md:bg-transparent md:px-3 md:py-2.5 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
-          >
-            <span class="tabular-nums">{{
-              item.ancho != null ? (item.ancho | number: '1.2-3') : '—'
-            }}</span>
-            <span class="text-xs">mts</span>
-          </div>
-          <div
-            class="flex w-full items-center justify-between rounded-2xl border border-gray-300 bg-gray-300 px-4 py-3 text-sm text-black md:rounded-lg md:border-slate-300 md:bg-transparent md:px-3 md:py-2.5 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
-          >
-            <span class="tabular-nums">{{
-              item.anchoYds != null ? (item.anchoYds | number: '1.2-3') : '—'
-            }}</span>
-            <span class="text-xs">yds</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Peso -->
-      <div>
-        <label class="mb-1 block text-xs md:text-sm">Peso</label>
-        <div class="space-y-2">
-          <div
-            class="flex w-full items-center justify-between rounded-2xl border border-gray-300 bg-gray-300 px-4 py-3 text-sm text-black md:rounded-lg md:border-slate-300 md:bg-transparent md:px-3 md:py-2.5 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
-          >
-            <span class="tabular-nums">{{
-              item.gramaje != null ? (item.gramaje | number: '1.2-3') : '—'
-            }}</span>
-            <span class="text-xs">grs/m2</span>
-          </div>
-          <div
-            class="flex w-full items-center justify-between rounded-2xl border border-gray-300 bg-gray-300 px-4 py-3 text-sm text-black md:rounded-lg md:border-slate-300 md:bg-transparent md:px-3 md:py-2.5 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
-          >
-            <span class="tabular-nums">{{
-              item.gramajeOz != null ? (item.gramajeOz | number: '1.2-3') : '—'
-            }}</span>
-            <span class="text-xs">oz/yd2</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rendimiento -->
-      <div>
-        <label class="mb-1 block text-xs md:text-sm">Rendimiento</label>
-        <div class="space-y-2">
-          <div
-            class="flex w-full items-center justify-between rounded-2xl border border-gray-300 bg-gray-300 px-4 py-3 text-sm text-black md:rounded-lg md:border-slate-300 md:bg-transparent md:px-3 md:py-2.5 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
-          >
-            <span class="tabular-nums">{{
-              item.rendimiento != null ? (item.rendimiento | number: '1.2-3') : '—'
-            }}</span>
-            <span class="text-xs">m/Kg</span>
-          </div>
-          <div
-            class="flex w-full items-center justify-between rounded-2xl border border-gray-300 bg-gray-300 px-4 py-3 text-sm text-black md:rounded-lg md:border-slate-300 md:bg-transparent md:px-3 md:py-2.5 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
-          >
-            <span class="tabular-nums">{{
-              item.rendimientoYdLb != null ? (item.rendimientoYdLb | number: '1.2-3') : '—'
-            }}</span>
-            <span class="text-xs">yd/Lb</span>
-          </div>
-        </div>
-      </div>
+<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+  <!-- Artículo -->
+  <div class="sm:col-span-2">
+    <label class="mb-1 block text-xs md:text-sm">Artículo</label>
+    <div
+      class="flex w-full items-center truncate rounded-2xl border border-gray-300 bg-gray-300 px-4 py-3 text-left text-sm text-black md:rounded-lg md:border-slate-300 md:bg-transparent md:px-3 md:py-2.5 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
+    >
+      <span class="truncate">{{ item.articulo || '—' }}</span>
     </div>
+  </div>
+
+  <!-- Tipo (editable) -->
+  <div>
+    <label class="mb-1 block text-xs md:text-sm">Tipo</label>
+    <div class="relative">
+      <button
+        type="button"
+        [disabled]="bloqueado"
+        (click)="toggleSelect('tipo', $event)"
+        class="flex w-full items-center rounded-2xl border border-gray-300 bg-gray-300 py-3 pl-4 pr-12 text-left text-sm text-black outline-none transition-all focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60 md:rounded-lg md:border-slate-300 md:bg-transparent md:py-2.5 md:pl-3 md:pr-10 md:focus:ring-2 dark:bg-gray-500 dark:text-white md:dark:bg-gray-700"
+        [class.!border-primary-500]="tipoCambio"
+      >
+        {{ tipoEtiqueta }}
+      </button>
+      <mat-icon
+        class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black icon-size-5 dark:text-white"
+        >expand_more</mat-icon
+      >
+    </div>
+
+    @if (openSelect() === 'tipo') {
+      <div
+        class="fixed inset-0 z-40"
+        (click)="cerrarSelects(); $event.stopPropagation()"
+        (wheel)="cerrarSelects()"
+      ></div>
+      <ul
+        class="bg-card fixed z-50 overflow-hidden rounded-2xl border border-gray-300 shadow-xl md:rounded-lg md:border-slate-300 dark:border-gray-600"
+        [style.top.px]="menuPos().top"
+        [style.left.px]="menuPos().left"
+        [style.width.px]="menuPos().width"
+      >
+        @for (t of tipos; track t.cod) {
+          <li>
+            <button
+              type="button"
+              (click)="elegirTipo(t.cod, $event)"
+              class="w-full px-4 py-2.5 text-left text-sm text-black hover:bg-primary-500 hover:text-white md:px-3 md:py-2 dark:text-white"
+              [class.bg-primary-500]="t.cod === tipoSel"
+              [class.text-white]="t.cod === tipoSel"
+            >
+              {{ t.etiqueta }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>
 
     <!-- Cantidad / U.M. -->
     <div class="grid grid-cols-2 gap-3">

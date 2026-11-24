@@ -9,9 +9,9 @@
         <div class="flex min-w-0 flex-auto items-center">
           <div
             class="h-16 w-16 flex-0 cursor-pointer overflow-hidden rounded-full transition-transform active:scale-95"
-            (click)="openQrModal()"
             *ngIf="(user$ | async)?.QR_CHECADOR as qr"
           >
+                      <!-- (click)="openQrModal()" -->
             <img [src]="photoUrl" />
           </div>
 
@@ -60,7 +60,7 @@
 
         <!-- QR del checador -->
 
-        <div
+        <!-- <div
           class="mt-6 hidden flex-shrink-0 items-center gap-4 sm:ml-auto sm:mt-0 sm:flex"
           *ngIf="(user$ | async)?.QR_CHECADOR as qr"
         >
@@ -77,7 +77,7 @@
               [colorLight]="'#ffffff'"
             ></qrcode>
           </div>
-        </div>
+        </div> -->
       </div>
 
       <!-- Project selector -->
@@ -85,7 +85,7 @@
   </div>
 
   <!-- 🔳 Modal QR fullscreen (fondo negro para máxima legibilidad) -->
-  <div
+  <!-- <div
     *ngIf="showQrModal && (user$ | async)?.QR_CHECADOR as qr"
     class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black"
     (click)="closeQrModal()"
@@ -113,7 +113,7 @@
             [colorLight]="'#ffffff'"
           ></qrcode>
 
-          <!-- Watermark discreto para rastreo si alguien filtra el QR -->
+     
           <div
             class="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-medium text-gray-400 opacity-40"
             style="transform: rotate(-20deg)"
@@ -134,7 +134,7 @@
 
       <span class="text-sm font-medium text-gray-500">Escanea este código en el checador</span>
     </div>
-  </div>
+  </div> -->
 
   <!-- new Header -->
 
