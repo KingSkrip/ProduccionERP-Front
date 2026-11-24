@@ -26,16 +26,16 @@ export class SessionActivityService implements OnDestroy {
       if (document.hidden) {
         this.stopHeartbeat();
 
-        this.authService.pauseSession().subscribe();
+        //this.authService.pauseSession().subscribe();
       } else {
         // 🔥 Primero validar si el token expiró
         if (this.isSessionExpired()) {
           return;
         }
 
-        this.authService.resumeSession().subscribe();
+       // this.authService.resumeSession().subscribe();
 
-        this.startHeartbeat();
+        // this.startHeartbeat();
       }
     });
 
@@ -61,34 +61,34 @@ export class SessionActivityService implements OnDestroy {
         return;
       }
 
-      this.authService.resumeSession().subscribe();
+    //  this.authService.resumeSession().subscribe();
 
-      this.startHeartbeat();
+     // this.startHeartbeat();
     });
 
     if (this.authService.authenticated && !document.hidden) {
       if (!this.isSessionExpired()) {
-        this.startHeartbeat();
+      //  this.startHeartbeat();
       }
     }
   }
 
-  private startHeartbeat(): void {
-    this.stopHeartbeat();
+  // private startHeartbeat(): void {
+  //   this.stopHeartbeat();
 
-    this.heartbeatInterval = setInterval(() => {
-      if (document.hidden || !this.authService.authenticated) {
-        return;
-      }
+  //   this.heartbeatInterval = setInterval(() => {
+  //     if (document.hidden || !this.authService.authenticated) {
+  //       return;
+  //     }
 
-      // 🔥 VALIDACIÓN PROACTIVA
-      if (this.isSessionExpired()) {
-        return;
-      }
+  //     // 🔥 VALIDACIÓN PROACTIVA
+  //     if (this.isSessionExpired()) {
+  //       return;
+  //     }
 
-      this.authService.heartbeat().subscribe();
-    }, this.HEARTBEAT_MS);
-  }
+  //     this.authService.heartbeat().subscribe();
+  //   }, this.HEARTBEAT_MS);
+  // }
 
   private isSessionExpired(): boolean {
     if (this.authService.encrypt && AuthUtils.isTokenExpired(this.authService.encrypt)) {

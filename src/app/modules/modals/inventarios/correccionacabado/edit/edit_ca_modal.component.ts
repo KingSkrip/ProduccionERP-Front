@@ -17,6 +17,16 @@ const ESTATUS_EDITABLE = 3;
 const DISMISS_THRESHOLD = 120;
 const r3 = (n: number): number => Math.round(n * 1000) / 1000;
 
+// Códigos de PSDTABPZAS.TIPO (mismos que el CASE del back)
+export const TIPOS_CA: { cod: number; clave: string; etiqueta: string }[] = [
+  { cod: 51, clave: 'PRIMERA', etiqueta: 'Primera' },
+  { cod: 52, clave: 'PREFERIDA', etiqueta: 'Preferida' },
+  { cod: 77, clave: 'SEGUNDA', etiqueta: 'Segunda' },
+  { cod: 81, clave: 'MUESTRAS', etiqueta: 'Muestras' },
+  { cod: 73, clave: 'ORILLAS', etiqueta: 'Orillas' },
+  { cod: 74, clave: 'RETAZO', etiqueta: 'Retazo' },
+];
+
 @Component({
   selector: 'app-modal-edit-ca',
   standalone: true,
@@ -38,7 +48,7 @@ export class ModalEditCAComponent implements OnInit {
   pesoNeto: number | null = null;
   pesoBruto: number | null = null;
   unidad: UnidadCA = 'KGS';
-  readonly openSelect = signal<'unidad' | null>(null);
+  readonly openSelect = signal<'unidad' | 'tipo' | null>(null); 
   readonly menuPos = signal<{ top: number; left: number; width: number }>({
     top: 0,
     left: 0,
@@ -54,11 +64,16 @@ export class ModalEditCAComponent implements OnInit {
   dragTransform = 'none';
   dragTransition = 'transform 0.3s ease';
 
+  readonly tipos = TIPOS_CA;
+  tipoSel: number | null = null;
+
   ngOnInit(): void {
     this.tara = this.item?.tara ?? 0;
     this.pesoNeto = this.item?.peso ?? null;
     this.sincronizarBruto();
     if (this.pesoNeto != null) this.cantidad = this.pesoNeto;
+
+    this.tipoSel = this.item?.tipo ?? null;
   }
 
   // ------------------------------------------------------------------
@@ -100,6 +115,14 @@ export class ModalEditCAComponent implements OnInit {
     return lb == null || this.rend2 <= 0 ? null : lb * this.rend2;
   }
 
+  get tipoEtiqueta(): string {
+    return this.tipos.find((t) => t.cod === this.tipoSel)?.etiqueta ?? '—';
+  }
+
+  get tipoCambio(): boolean {
+    return this.tipoSel != null && this.tipoSel !== (this.item?.tipo ?? null);
+  }
+
   get puedeGuardar(): boolean {
     return (
       !this.bloqueado &&
@@ -110,6 +133,7 @@ export class ModalEditCAComponent implements OnInit {
       this.pesoBruto != null &&
       this.pesoBruto >= (this.pesoNeto ?? 0) &&
       this.metros != null &&
+      this.tipoSel != null &&
       this.yardas != null
     );
   }
@@ -130,6 +154,7 @@ export class ModalEditCAComponent implements OnInit {
       yardas: this.yardas as number,
       tara: r3(this.tara ?? 0),
       pbruto: r3(this.pesoBruto as number),
+      tipo: this.tipoSel as number,
     });
   }
 
@@ -156,7 +181,7 @@ export class ModalEditCAComponent implements OnInit {
   // Dropdown de U.M.
   // ------------------------------------------------------------------
 
-  toggleSelect(which: 'unidad', event: Event): void {
+  toggleSelect(which: 'unidad' | 'tipo', event: Event): void {
     event.stopPropagation();
 
     if (this.openSelect() === which) {
@@ -285,4 +310,11 @@ export class ModalEditCAComponent implements OnInit {
         return this.rend2 > 0 ? (kg / KG_POR_LB) * this.rend2 : null;
     }
   }
+
+
+  elegirTipo(cod: number, event: Event): void {
+  event.stopPropagation();
+  this.tipoSel = cod;
+  this.openSelect.set(null);
+}
 }

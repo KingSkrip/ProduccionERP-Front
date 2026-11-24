@@ -48,12 +48,12 @@ export interface CorreccionAcabadoResponse {
 export interface CorreccionAcabadoError {
   ok: false;
   motivo?:
-    | 'rollo_invalido'
-    | 'rollo_no_encontrado'
-    | 'estatus_no_permitido'
-    | 'rollo_eliminado'
-    | 'pieza_no_encontrada'
-    | 'op_invalida';
+  | 'rollo_invalido'
+  | 'rollo_no_encontrado'
+  | 'estatus_no_permitido'
+  | 'rollo_eliminado'
+  | 'pieza_no_encontrada'
+  | 'op_invalida';
   error?: string;
   rollo?: string;
   estatus?: number | null;
@@ -86,6 +86,7 @@ export interface EditCAItem {
   tara?: number | null;
   estatus?: number | null;
   eliminado?: boolean;
+  tipo?: number | null;
 }
 
 export interface EditCAResultado {
@@ -98,6 +99,7 @@ export interface EditCAResultado {
   yardas: number;
   tara: number;
   pbruto: number;
+  tipo: number;
 }
 
 export type UnidadCA = 'KGS' | 'LBS' | 'MTS' | 'YDS';
@@ -117,6 +119,7 @@ export interface GuardarCARequest {
   yardas: number;
   tara: number;
   pbruto: number;
+  tipo?: number;
 }
 
 export interface EliminarCARequest {
@@ -142,3 +145,36 @@ export interface CorreccionLocal {
   datos?: RolloAcabadoDatos | null;
   peso: number;
 }
+
+
+export interface CorreccionAcabadoLoteRequest {
+  op?: string;
+  piezas?: number[]; // con op; si no se manda, trae toda la OP
+  claves?: number[]; // sin op: varios IDs
+}
+
+export interface CorreccionAcabadoLoteResponse {
+  ok: boolean;
+  total: number;
+  items: CorreccionAcabadoResponse[];
+  no_encontradas: number[]; // piezas (modo OP) o claves (modo IDs)
+  truncado?: boolean;
+}
+
+export interface EliminarLoteResponse {
+  ok: boolean;
+  eliminados: string[];
+  fallidos: {
+    rollo: string;
+    motivo?: string | null;
+    estatus?: number | null;
+    error?: string | null;
+  }[];
+
+
+
+
+}
+
+
+
