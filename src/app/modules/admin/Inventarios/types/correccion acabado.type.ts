@@ -87,6 +87,7 @@ export interface EditCAItem {
   estatus?: number | null;
   eliminado?: boolean;
   tipo?: number | null;
+  
 }
 
 export interface EditCAResultado {

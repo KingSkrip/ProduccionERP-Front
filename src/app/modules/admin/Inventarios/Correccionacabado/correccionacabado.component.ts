@@ -555,6 +555,7 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
     const op = (item.datos?.ORDEN ?? item.op ?? '').toString().trim();
     const rollo = item.rollo;
     const psdEstatus = item.datos?.PSD_ESTATUS;
+      const tipoCod = Number(item.datos?.TIPO_COD);
     this.itemEditando = {
       rollo,
       op: item.op,
@@ -564,6 +565,7 @@ export class CorreccionAcabadoComponent implements OnInit, OnDestroy {
       tara: item.datos?.TARA != null ? Number(item.datos.TARA) : 0,
       estatus: item.datos?.OE_ESTATUS ?? null,
       eliminado: psdEstatus != null && Number(psdEstatus) === 0,
+        tipo: Number.isFinite(tipoCod) && tipoCod > 0 ? tipoCod : null,
     };
     this._render();
     if (!op) return;
